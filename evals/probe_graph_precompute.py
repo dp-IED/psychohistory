@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shlex
 import subprocess
 from dataclasses import dataclass
@@ -14,7 +15,15 @@ from typing import Any
 import typer
 
 from evals.objective_specs import parse_objective_spec
+from evals.graph_artifact_contract import GRAPH_ARTIFACT_FORMAT, GraphArtifactV1, normalize_graph_artifact
 from evals.structural_validity import iter_probe_files, load_probe_yaml
+from evals.wikidata_linking import (
+    DEFAULT_WIKIDATA_CACHE_PATH,
+    enrich_graph_with_wikidata,
+    iter_seed_entity_items,
+    normalize_entity_label,
+    seed_entity_node_type,
+)
 from schemas.schema_registry import load_graph_schema
 from schemas.schema_types import GraphSchema
 
@@ -123,6 +132,8 @@ def load_graph_artifact(path: Path) -> dict[str, Any]:
     edges = payload.get("edges")
     if not isinstance(nodes, list) or not isinstance(edges, list):
         raise ValueError(f"{path} must include 'nodes' list and 'edges' list")
+    if payload.get("artifact_format") == GRAPH_ARTIFACT_FORMAT:
+        GraphArtifactV1.model_validate(payload)
     return payload
 
 
@@ -156,9 +167,20 @@ def _synthesize_graph_for_probe(*, probe_file: Path, schema: GraphSchema) -> dic
     spec = parse_objective_spec(probe_data, probe_file.stem)
     nodes: list[dict[str, Any]] = []
     edges: list[dict[str, Any]] = []
+    task_labels: list[dict[str, Any]] = []
+    target_table: list[dict[str, Any]] = []
     node_ids: set[str] = set()
+    seed_ids_by_type: dict[str, list[str]] = {}
+    scope = probe_data.get("scope") if isinstance(probe_data.get("scope"), dict) else {}
+    temporal = probe_data.get("temporal") if isinstance(probe_data.get("temporal"), dict) else {}
+    temporal_window = scope.get("temporal_window") if isinstance(scope.get("temporal_window"), dict) else {}
+    time_span = {
+        "start": temporal.get("start") or temporal_window.get("start_year"),
+        "end": temporal.get("end") or temporal_window.get("end_year"),
+        "granularity": temporal.get("slice_granularity"),
+    }
 
-    def add_node(node_id: str, node_type: str) -> None:
+    def add_node(node_id: str, node_type: str, **extra: Any) -> None:
         if node_id in node_ids:
             return
         layer = None
@@ -166,22 +188,73 @@ def _synthesize_graph_for_probe(*, probe_file: Path, schema: GraphSchema) -> dic
             primary = schema.node_types[node_type].primary_layer
             if primary is not None:
                 layer = str(primary.value)
-        payload: dict[str, Any] = {"id": node_id, "type": node_type}
+        payload: dict[str, Any] = {
+            "id": node_id,
+            "type": node_type,
+            "time": time_span,
+            "slice_ids": [probe_data.get("probe_id") or probe_data.get("id") or probe_file.stem],
+            "train_eval_split": "eval",
+        }
         if layer:
             payload["layer"] = layer
+        payload.update(extra)
         nodes.append(payload)
         node_ids.add(node_id)
 
-    def add_edge(source: str, target: str, edge_type: str) -> None:
-        edges.append({"source": source, "target": target, "type": edge_type})
+    def add_edge(source: str, target: str, edge_type: str, task_id: str | None = None) -> None:
+        payload: dict[str, Any] = {
+            "source": source,
+            "target": target,
+            "type": edge_type,
+            "confidence": 1.0,
+            "time": time_span,
+            "slice_ids": [probe_data.get("probe_id") or probe_data.get("id") or probe_file.stem],
+            "train_eval_split": "eval",
+        }
+        if task_id:
+            payload["task_ids"] = [task_id]
+        edges.append(payload)
+
+    def intermediate_type_for_edge(edge_type: str, fallback: str) -> str:
+        normalized = edge_type.rstrip("?")
+        if normalized in {"transmits_through", "transmitsthrough"}:
+            return "TransmissionChannel"
+        if normalized in {"leaves_legacy_via", "leaveslegacyvia"}:
+            return "LegacyAggregate"
+        if normalized in {"inherits_from", "inheritsfrom"}:
+            return "LineageClaim"
+        if normalized in {"contests", "presupposes", "delegitimizes"}:
+            return "Claim"
+        return fallback
+
+    def seed_node_id(label: str) -> str:
+        slug = re.sub(r"[^a-z0-9]+", "_", normalize_entity_label(label)).strip("_")
+        return f"seed_entity__{slug or 'entity'}"
+
+    for group, label in iter_seed_entity_items(probe_data):
+        node_type = seed_entity_node_type(group)
+        node_id = seed_node_id(label)
+        add_node(
+            node_id,
+            node_type,
+            label=label,
+            seed_entity=True,
+            seed_entity_group=group,
+        )
+        seed_ids_by_type.setdefault(node_type, []).append(node_id)
 
     for task in spec.golden_tasks:
         if not task.start_types or not task.required_edges or not task.target_types:
             continue
         start_type = task.start_types[0]
         target_type = task.target_types[0]
-        start_id = f"{task.id}__start"
-        target_id = f"{task.id}__end"
+        start_id = next(iter(seed_ids_by_type.get(start_type, [])), f"{task.id}__start")
+        target_candidates = seed_ids_by_type.get(target_type, [])
+        target_id = (
+            target_candidates[-1]
+            if target_candidates and target_candidates[-1] != start_id
+            else f"{task.id}__end"
+        )
         add_node(start_id, start_type)
         add_node(target_id, target_type)
         cursor = start_id
@@ -189,16 +262,63 @@ def _synthesize_graph_for_probe(*, probe_file: Path, schema: GraphSchema) -> dic
             optional = edge_type.endswith("?")
             et = edge_type[:-1] if optional else edge_type
             if idx == len(task.required_edges) - 1:
-                add_edge(cursor, target_id, et)
+                add_edge(cursor, target_id, et, task.id)
                 cursor = target_id
             else:
                 mid_id = f"{task.id}__mid_{idx}"
-                mid_type = start_type
+                mid_type = intermediate_type_for_edge(et, start_type)
                 add_node(mid_id, mid_type)
-                add_edge(cursor, mid_id, et)
+                add_edge(cursor, mid_id, et, task.id)
                 cursor = mid_id
+        task_edge_indices = [idx for idx, edge in enumerate(edges) if task.id in edge.get("task_ids", [])]
+        task_node_ids = sorted(
+            {
+                str(edge["source"])
+                for idx, edge in enumerate(edges)
+                if idx in task_edge_indices
+            }
+            | {
+                str(edge["target"])
+                for idx, edge in enumerate(edges)
+                if idx in task_edge_indices
+            }
+        )
+        task_labels.append(
+            {
+                "task_id": task.id,
+                "label": "golden_task_path",
+                "node_ids": task_node_ids,
+                "edge_indices": task_edge_indices,
+                "split": "eval",
+            }
+        )
+        target_table.append(
+            {
+                "target_id": f"{task.id}__path_present",
+                "name": "path_present",
+                "value": True,
+                "split": "eval",
+                "slice_id": probe_data.get("probe_id") or probe_data.get("id") or probe_file.stem,
+                "node_ids": task_node_ids,
+                "metadata": {"task_id": task.id},
+            }
+        )
 
-    return {"nodes": nodes, "edges": edges}
+    graph = {
+        "artifact_format": GRAPH_ARTIFACT_FORMAT,
+        "probe_id": probe_data.get("probe_id") or probe_data.get("id") or probe_file.stem,
+        "schema_version": schema.version,
+        "nodes": nodes,
+        "edges": edges,
+        "task_labels": task_labels,
+        "target_table": target_table,
+        "metadata": {"builder": "__builtin__", "intended_use": "gnn_candidate_eval"},
+    }
+    return normalize_graph_artifact(
+        probe_id=str(graph["probe_id"]),
+        schema_version=schema.version,
+        graph=graph,
+    ).model_dump(mode="json")
 
 
 def _build_graph_with_command(
@@ -253,11 +373,14 @@ def precompute_graph_artifacts(
     force: bool = False,
     show_output: bool = False,
     repo_root: Path | None = None,
+    wikidata_enrich: bool = False,
+    wikidata_cache_path: Path | None = None,
 ) -> list[ArtifactStatus]:
     artifact_dir.mkdir(parents=True, exist_ok=True)
     root = repo_root or Path.cwd()
     statuses: list[ArtifactStatus] = []
     schema_fp = schema_fingerprint(schema)
+    resolved_wikidata_cache_path = wikidata_cache_path or (root / DEFAULT_WIKIDATA_CACHE_PATH)
     for probe_file in iter_probe_files(probe_dir, probe_ids=probe_ids):
         probe_data = load_probe_yaml(probe_file)
         probe_id = _probe_id(probe_file, probe_data)
@@ -270,6 +393,12 @@ def precompute_graph_artifacts(
             builder_version=builder_version,
         )
         should_build = force or (not status.fresh)
+        if wikidata_enrich and status.fresh:
+            try:
+                manifest = _read_json(manifest_path)
+                should_build = "wikidata_enrichment" not in manifest
+            except Exception:
+                should_build = True
         if should_build:
             _build_graph_with_command(
                 command_template=command_template,
@@ -280,6 +409,20 @@ def precompute_graph_artifacts(
                 schema=schema,
                 show_output=show_output,
             )
+            wikidata_meta: dict[str, Any] | None = None
+            if wikidata_enrich:
+                graph = load_graph_artifact(artifact_path)
+                graph = enrich_graph_with_wikidata(
+                    probe_data,
+                    graph,
+                    cache_path=resolved_wikidata_cache_path,
+                )
+                artifact_path.write_text(
+                    json.dumps(graph, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+                )
+                enrichment = graph.get("wikidata_enrichment")
+                if isinstance(enrichment, dict):
+                    wikidata_meta = enrichment
             manifest = {
                 "probe_id": probe_id,
                 "probe_file": str(probe_file),
@@ -289,6 +432,8 @@ def precompute_graph_artifacts(
                 "probe_fingerprint": probe_fingerprint(probe_data),
                 "builder_version": builder_version,
             }
+            if wikidata_meta is not None:
+                manifest["wikidata_enrichment"] = wikidata_meta
             manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
             status = ArtifactStatus(
                 probe_id=probe_id,
@@ -311,6 +456,8 @@ def ensure_probe_graph_artifacts(
     probe_ids: set[str] | None = None,
     show_output: bool = False,
     repo_root: Path | None = None,
+    wikidata_enrich: bool = False,
+    wikidata_cache_path: Path | None = None,
 ) -> list[ArtifactStatus]:
     return precompute_graph_artifacts(
         probe_dir=probe_dir,
@@ -322,6 +469,8 @@ def ensure_probe_graph_artifacts(
         force=False,
         show_output=show_output,
         repo_root=repo_root,
+        wikidata_enrich=wikidata_enrich,
+        wikidata_cache_path=wikidata_cache_path,
     )
 
 
@@ -341,6 +490,16 @@ def main(
     builder_version: str = typer.Option("v1", "--builder-version"),
     force: bool = typer.Option(False, "--force", help="Rebuild all artifacts regardless of freshness."),
     show_output: bool = typer.Option(False, "--show-output"),
+    wikidata_enrich: bool = typer.Option(
+        False,
+        "--wikidata-enrich",
+        help="Resolve probe seed_entities through Wikidata wbsearchentities and write QIDs into graph artifacts.",
+    ),
+    wikidata_cache_path: Path = typer.Option(
+        DEFAULT_WIKIDATA_CACHE_PATH,
+        "--wikidata-cache-path",
+        help="Shared local JSON cache for Wikidata search results.",
+    ),
 ) -> None:
     schema = load_graph_schema(schema_spec)
     statuses = precompute_graph_artifacts(
@@ -352,6 +511,8 @@ def main(
         force=force,
         show_output=show_output,
         repo_root=Path.cwd(),
+        wikidata_enrich=wikidata_enrich,
+        wikidata_cache_path=wikidata_cache_path,
     )
     payload = [
         {

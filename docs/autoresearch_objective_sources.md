@@ -59,3 +59,38 @@ The next useful autoresearch phase is immediately after the strict pilot passes.
 - `G` produces real signal from Wikidata coverage.
 - `V`, `I`, `F`, and `C` are present with clear stub or unavailable status until their adapters are implemented.
 - The remaining source adapters have documented artifact contracts and can be implemented incrementally.
+
+## Wikidata Grounding Contract
+
+Graph artifacts can now contribute to the `G` bucket by attaching Wikidata QIDs
+to graph nodes. The evaluator recognizes QIDs in common fields such as
+`wikidata_id`, `wikidata_qid`, `external_ids.wikidata`, `identifiers`,
+`same_as`, `provenance`, `references`, or canonical node IDs such as `wd:Q42`
+and `https://www.wikidata.org/wiki/Q42`.
+
+The Wikidata score reports both graph-node grounding coverage and
+`seed_entities` label coverage. A seed entity counts as linked when a grounded
+graph node exposes the same normalized `label`, `name`, `title`,
+`canonical_label`, `aliases`, or `alt_labels` value.
+
+To populate these fields from Wikidata during artifact refresh, run eval with:
+
+```bash
+python -m evals.run_eval \
+  --schema schemas.base_schema \
+  --probe-dir probes \
+  --probe-id roman_family_1A \
+  --wikidata-enrich-graph-artifacts
+```
+
+The enrichment step uses Wikidata's `wbsearchentities` Action API, writes QIDs
+into `external_ids.wikidata`, and stores a local ignored search cache at
+`cache/wikidata_search_cache.json` by default. Override it with
+`--wikidata-cache-path` when running isolated experiments.
+
+When enrichment produces a non-zero `G` score, the eval composite includes a
+`source_G` component. This is intentionally narrow while the remaining probes
+are still being annotated for strict objective mode and seed-entity coverage.
+First-pass Wikidata lookups are serialized with retry/backoff. Unresolved or
+rate-limited labels are cached as negative entries for a short TTL so repeated
+runs avoid hammering the API without treating failures as permanent.

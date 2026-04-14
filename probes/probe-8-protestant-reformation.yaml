@@ -49,6 +49,59 @@ grounding:
   note: >
     This is a representation-first historical probe, not a forecast-first case.
 
+seed_entities:
+  actors:
+    - Martin Luther
+    - John Calvin
+    - Huldrych Zwingli
+    - Henry VIII
+    - Thomas Müntzer
+    - Catholic Church
+    - Lutheranism
+    - Calvinism
+    - Anglicanism
+    - Anabaptism
+  events:
+    - Protestant Reformation
+    - Ninety-five Theses
+    - Diet of Worms
+    - German Peasants' War
+    - Peace of Augsburg
+    - Thirty Years' War
+    - Peace of Westphalia
+  institutions:
+    - Church of England
+    - Presbyterianism
+    - Puritans
+    - Congregational church
+    - Society of Jesus
+  transmission_channels:
+    - printing press
+    - Geneva Bible
+    - Puritan migration to New England
+    - Protestant missions
+  policies:
+    - United States foreign policy
+    - Monroe Doctrine
+    - Manifest destiny
+    - Wilsonianism
+  legacy_aggregates:
+    - American exceptionalism
+    - civil religion
+    - Christian right
+    - Evangelicalism in the United States
+  places:
+    - Wittenberg
+    - Geneva
+    - England
+    - New England
+    - United States
+  claims:
+    - sola scriptura
+    - priesthood of all believers
+    - religious liberty
+    - separation of church and state
+
 probe_type: conjunctural_with_persistence_legs
 
 schema_requirements:
@@ -201,3 +254,34 @@ sources_to_consult:
   - Heinz Schilling, Religion, Political Culture and the Emergence of Early Modern Society
   - Wolfgang Reinhard, confessionalization literature
   - Quentin Skinner, early modern political thought context
+
+golden_tasks:
+  - id: print_to_confessional_state
+    start_types: ["TransmissionChannel"]
+    required_edges: ["transmits_through", "reconfigures"]
+    target_types: ["Institution"]
+    min_hops: 2
+    must_cross_layers: ["institutional"]
+  - id: reformation_legacy_to_us_foreign_policy
+    start_types: ["Event"]
+    required_edges: ["transmits_through", "leaves_legacy_via"]
+    target_types: ["Policy"]
+    min_hops: 2
+    must_cross_layers: ["persistence", "institutional"]
+  - id: reformation_authority_contestation
+    start_types: ["Claim"]
+    required_edges: ["contests"]
+    target_types: ["Claim"]
+    min_hops: 1
+    must_cross_layers: ["epistemic"]
+
+designated_ablations:
+  - name: epistemic_off
+    for_tasks: ["reformation_authority_contestation"]
+  - name: persistence_off
+    for_tasks: ["reformation_legacy_to_us_foreign_policy"]
+
+complexity_budget:
+  max_node_types_used: 8
+  max_edge_types_used: 6
+  max_mean_supporting_path_len: 2.5
