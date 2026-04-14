@@ -1,0 +1,213 @@
+id: probe-7c-liberation-theology-popular-catholicism-grassroots-political-mobilization
+title: Liberation Theology, Popular Catholicism, and Grassroots Political Mobilization
+status: proposed
+family: cultural_movements
+tags:
+  - cultural_movements
+  - ideological_trends
+  - latin_america
+  - modern
+  - religion
+  - grassroots_politics
+  - counterweights
+
+summary: >
+  Tests whether the graph IR can represent how religious doctrine, pastoral
+  practice, base communities, dictatorship, anti-communism, class conflict, and
+  transnational church politics interact to produce or suppress grassroots
+  mobilization.
+
+temporal:
+  start: "1955-01-01"
+  end: "1995-12-31"
+  slice_granularity: decade
+  cutoff_rule: "Use only information available within each slice."
+
+scope:
+  regions:
+    - Brazil
+    - El Salvador
+    - Nicaragua
+    - Peru
+    - Guatemala
+    - broader Latin American Catholic networks
+  focus: >
+    The transformation of Catholic social thought and lay organization into
+    mass political mobilization under conditions of inequality, repression, and
+    Cold War polarization.
+
+core_question: >
+  How did strands of Catholic theology become vehicles for popular organization
+  and democratic or revolutionary struggle in Latin America, and why were those
+  same strands partially contained, disciplined, or rolled back before they
+  could become a stable counter-hegemonic settlement?
+
+grounding:
+  primary_entity_spine:
+    - Wikidata / Wikipedia entities for clergy, bishops, orders, church bodies, movements, parties, juntas, martyr figures
+  structural_backbone:
+    - historical institutional context and regional inequality data where available
+  event_streams:
+    - time-sliced church conferences, coups, repression waves, organizing moments, assassinations, peace processes
+  note: >
+    This is a representation-first ideological and movement probe with strong
+    repression and counterweight content.
+
+probe_type: conjunctural_with_eventive_spikes
+
+schema_requirements:
+  must_represent_node_types:
+    - ReligiousInstitution
+    - Institution
+    - Narrative
+    - Norm
+    - Claim
+    - Counterweight
+    - SocialMovement
+    - MassOrganization
+    - LaborUnion
+    - Event
+    - Policy
+    - Party
+    - SecurityForce
+    - SecurityApparatus
+    - ExternalPower
+    - MediaNarrative
+    - InternationalOrganization
+    - Region
+    - Actor
+    - LegacyAggregate
+    - TransmissionChannel
+  may_represent_node_types:
+    - Coalition
+    - DevelopmentProgram
+    - HumanitarianPopulation
+    - CivicMovement
+    - University
+  must_represent_edges:
+    - legitimizes
+    - delegitimizes
+    - contests
+    - mobilizes
+    - constrains
+    - funds
+    - supports
+    - undermines
+    - polarizes
+    - regulates
+    - trains
+    - respondsTo
+    - intervenesin
+    - sacralizes
+    - leaveslegacyvia
+    - transmitsthrough
+    - inheritsfrom
+  required_cross_scale_properties:
+    - "Must connect theology to institutions, institutions to organization, and organization to political outcomes."
+    - "Must represent repression and Vatican disciplining as distinct mechanisms."
+    - "Must include at least one transnational edge and one grassroots-local edge."
+
+expected_graph_axes:
+  - doctrine and exegesis: poor as historical subject, sin/justice, church mission
+  - organization: base ecclesial communities, pastoral networks, unions, peasant groups
+  - repression: dictatorships, death squads, counterinsurgency, anti-communist framing
+  - church hierarchy conflict: bishops, conferences, Vatican oversight, religious orders
+  - geopolitical pressure: Cold War patronage and anti-left intervention
+  - martyrdom and moral witness: assassination, sanctuary, rights language
+  - legacy and rollback: democratization, NGOization, evangelical competition, ecclesial disciplining
+
+causal_layers:
+  structural_drivers:
+    - Extreme social inequality and exclusion in Latin America
+    - Deep Catholic institutional reach into everyday life
+    - Cold War polarization shaping the permissible political field
+    - Weak or repressed secular left organization in many local settings
+  conjunctural_mechanisms:
+    - Vatican II and regional episcopal reinterpretation of church mission
+    - Base-community organizing linking scripture, literacy, and local grievance
+    - Military repression radicalizing pastoral and lay networks
+    - Anti-communist security doctrine collapsing social reform into subversion
+    - Internal church conflict over obedience, orthodoxy, and political commitment
+  trigger_candidates:
+    - "Medellín-type ecclesial turn as doctrinal-pastoral rupture"
+    - "Major martyrdom or assassination events as legitimacy shocks"
+    - "Vatican disciplinary interventions as rollback thresholds"
+
+ideological_layer_requirements:
+  dominant_episteme_questions:
+    - What made hierarchical, apolitical, or anti-communist Catholic order seem natural?
+    - How was poverty interpreted before liberationist reframing?
+  legitimating_apparatus_questions:
+    - Which bishops, Vatican offices, media, states, and foreign patrons validated acceptable religion?
+  suppressed_counterweight_questions:
+    - Which base communities, worker-priests, radical clergy, Christian socialists, or peasant Christian networks were contained?
+    - Was suppression theological, institutional, coercive, or financial?
+  ideological_rupture_rule:
+    - "Choose one datable rupture point for the main slice under analysis."
+  contested_claims_rule:
+    - "Do not settle whether liberation theology was primarily doctrinal innovation, class translation, pastoral adaptation, or political substitution for a weak secular left."
+
+must_include_contested_claims:
+  - "Liberation theology as genuine theological rupture vs class politics in religious language"
+  - "Base communities as primary driver vs armed conflict and dictatorship as primary radicalizers"
+  - "Vatican rollback as decisive containment vs broader neoliberal and political restructuring"
+  - "Martyrdom and witness as mobilizing cause vs symbolic amplification of prior organization"
+  - "Popular Catholicism as durable counterweight vs transient bridge to secular politics or NGO forms"
+
+probe_tasks:
+  retrieval_questions:
+    - "Can the graph show how doctrine translated into organizational capacity?"
+    - "Can it distinguish church hierarchy, grassroots church, secular left, and armed struggle?"
+    - "Can it retrieve both repression paths and ecclesial-disciplining paths?"
+    - "Can it show why some Catholic activism scaled while other strands were contained?"
+    - "Can it trace legacy into later rights discourse, community organization, or memory politics?"
+  traversal_tests:
+    - "Find a path from theological reinterpretation to grassroots mobilization."
+    - "Find a path from external anti-communist backing to local repression of church-linked movements."
+    - "Find a path from martyr event to widened legitimacy crisis."
+    - "Find a suppressed-alternative path where church radicalism is contained without total erasure."
+
+negative_tests:
+  - "Fail if religion is treated as a decorative wrapper over class conflict."
+  - "Fail if liberation theology is reduced to one cleric or one country."
+  - "Fail if Vatican conflict and military repression are merged into one mechanism."
+  - "Fail if grassroots Catholic networks are absent."
+  - "Fail if popular Catholicism and church hierarchy are modeled as identical."
+  - "Fail if later legacy is ignored after the 1980s rollback."
+
+ablations:
+  - name: no_counterweight_layer
+    expectation: "Should erase base communities and church-linked organizing as real brakes or alternatives."
+  - name: no_external_power_nodes
+    expectation: "Should weaken Cold War anti-communist constraint paths."
+  - name: no_ideological_layer
+    expectation: "Should reduce theology to material grievance only."
+  - name: no_persistence_nodes
+    expectation: "Should lose ability to model memory, martyr legacy, and post-rollback afterlife."
+
+fixture_hints:
+  target_node_count: "26-40"
+  expected_highest_centrality:
+    - base ecclesial communities
+    - anti-communist security doctrine
+    - liberationist theological frame
+    - Catholic hierarchy conflict
+    - grassroots mobilization infrastructure
+  expected_high_contention:
+    - theology-vs-class causation
+    - Vatican containment role
+    - martyrdom as catalyst
+    - legacy after neoliberal and ecclesial rollback
+  parsimony_exception: false
+
+sources_to_consult:
+  - Gustavo Gutiérrez, A Theology of Liberation
+  - Leonardo Boff, Church, Charism and Power
+  - Enrique Dussel, church and liberation history works
+  - CELAM Medellín documents
+  - CELAM Puebla documents
+  - Jon Sobrino, liberation theology writings
+  - Penny Lernoux, Cry of the People
+  - Christian Smith, The Emergence of Liberation Theology
+  - Michael Löwy, The War of Gods
+  - works on Romero, Brazilian base communities, and Central American church activism

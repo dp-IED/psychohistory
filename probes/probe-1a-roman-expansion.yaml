@@ -1,0 +1,479 @@
+probe_id: roman_family_1A
+name: Roman Expansion and Consolidation
+version: 0.3
+status: patched_candidate
+format: probe_spec_v2
+benchmark_pack: v0
+compatibility_tier: v1-patched
+ontology_delta_ref: ontology/ontology-delta-v1-persistence.yaml
+
+summary:
+  purpose: >-
+    Evaluate whether the intermediate graph representation can model long-run
+    imperial expansion, elite integration, administrative consolidation,
+    legitimacy under success, extraction, asymmetrical domination, and
+    changing frontier dynamics without leaking in later crisis-era
+    assumptions.
+  rationale: >-
+    This is a patch, not a rewrite. It preserves the structure and intent of
+    Roman 1A while broadening the ontology so the same schema can later be
+    applied to Global South, colonial, and postcolonial probes where
+    imperialism, extraction, mediated local rule, and external constraint must
+    be explicitly representable.
+
+scope:
+  region: Mediterranean and adjacent frontier zones
+  polity: Roman Republic to early Roman Empire
+  temporal_window:
+    start_year: -264
+    end_year: 117
+    label: First Punic War to death of Trajan
+  recommended_slices:
+    - slice_id: republic_expansion
+      start_year: -264
+      end_year: -27
+      label: Middle/Late Republic expansion
+    - slice_id: augustan_settlement
+      start_year: -31
+      end_year: 14
+      label: Augustan consolidation
+    - slice_id: high_empire
+      start_year: 14
+      end_year: 117
+      label: Julio-Claudian to Trajanic high empire
+  exclusions:
+    - Crisis of the Third Century
+    - Late imperial western collapse
+    - Post-117 developments unless used only as out-of-sample validation labels
+
+artifacts:
+  human_authored:
+    - probe_spec
+  frozen_inputs:
+    - slice_entity_lists
+    - source_snapshots
+    - target_tables
+  machine_generated:
+    - extracted_claims
+    - linked_entities
+    - instantiated_graphs
+    - node_projection_tables
+    - external_constraint_tables
+
+grounded_sources:
+  structural_backbone:
+    - source: Seshat Global History Databank
+      role: >-
+        Long-run context for social complexity, governance, scale, warfare,
+        religion, inequality, and macro-political organization.
+      required: true
+  entity_spine:
+    - source: Wikidata
+      role: Stable IDs for actors, institutions, places, offices, wars, provinces, treaties, and events.
+      required: true
+    - source: Wikipedia
+      role: Narrative grounding, event descriptions, chronology, and source expansion from entity pages.
+      required: true
+  optional_event_layer:
+    - source: DBpedia or derivative historical KGs
+      role: Supplemental linked-entity expansion where available.
+      required: false
+
+core_question:
+  text: >-
+    Can a single graph schema represent how Rome expanded and stabilized across
+    multiple centuries by linking material capacity, institutions, ideology,
+    counterweights, extraction, and imperial asymmetry in a way that is
+    queryable and GNN-consumable?
+
+historical_subquestions:
+  - What material and organizational capacities enabled Roman expansion at each slice?
+  - Which institutions converted conquest into durable control?
+  - Which narratives and norms legitimized expansion, hierarchy, and elite cooperation?
+  - Which counterweights or constraints existed, and how were they absorbed, bypassed, or neutralized?
+  - Which extractive relations tied conquered territories to Roman centers of power?
+  - Which shocks changed the expansion trajectory, and through what pathways?
+  - What differs between republican expansion and imperial consolidation?
+  - How should this probe prepare the ontology for later colonial and postcolonial cases without forcing anachronism into Rome?
+
+schema_requirements:
+  must_represent:
+    node_types:
+      - Actor
+      - Institution
+      - Office
+      - Province
+      - MilitaryFormation
+      - Resource
+      - Event
+      - Policy
+      - Narrative
+      - Norm
+      - Counterweight
+      - Shock
+      - Claim
+      - Empire
+      - FrontierPeople
+      - TributaryRelation
+      - AdministrativeRegion
+      - ExtractiveChannel
+      - LocalElite
+      - ExternalConstraint
+    edge_types:
+      - conquers
+      - administers
+      - taxes
+      - extracts_from
+      - recruits
+      - allies_with
+      - grants_status_to
+      - legitimizes
+      - constrains
+      - undermines
+      - presupposes
+      - contests
+      - benefits
+      - depends_on
+      - transforms_into
+      - responds_to
+      - channels_through
+      - coopts
+      - disciplines
+      - integrates
+      - resists
+      - imposes_order_on
+  must_support:
+    - time-scoped edges and nodes
+    - uncertain or contested claims
+    - many-to-many relations via relation nodes if needed
+    - perspective-aware queries (e.g., Senate, provincial elites, frontier peoples, subordinated communities)
+    - fixed-dimensional node projections for downstream GNN training
+    - explicit distinction between geography, administration, and extraction
+    - explicit representation of center-periphery asymmetry where relevant
+  anti_requirements:
+    - Do not hard-code later collapse mechanics into the expansion probe.
+    - Do not collapse ideology into untyped text blobs.
+    - Do not represent provinces only as geography; they must be administrative and fiscal units too.
+    - Do not import modern colonial terminology as literal labels when historically inappropriate; represent the structure, not anachronistic wording.
+    - Do not treat imperial domination as equivalent to simple bilateral conflict.
+
+  may_represent:
+    node_types:
+      - LineageClaim
+      - InstitutionalLineage
+      - InheritanceBundle
+      - TransmissionChannel
+      - LegacyAggregate
+    edge_types:
+      - inherits_from
+      - transmits_through
+      - supersedes_while_claiming_continuity
+      - leaves_legacy_via
+
+expected_graph_axes:
+  material:
+    - manpower
+    - tax extraction
+    - grain and logistics
+    - roads, ports, and mobility
+    - military organization
+    - tribute and resource flows
+  institutional:
+    - Senate
+    - magistracies and imperial office
+    - provincial governance
+    - citizenship and legal status
+    - alliance and patronage structures
+    - military command hierarchies
+  ideological:
+    - Roman citizenship as integrative frame
+    - legitimacy of conquest and order
+    - elite honor and glory norms
+    - narratives of security, civilization, or restoration
+    - narratives distinguishing center and frontier
+  counterweights:
+    - senatorial resistance
+    - provincial resistance
+    - rival elites and commanders
+    - fiscal constraints
+    - overextension pressures
+    - frontier military strain
+  asymmetry_and_extraction:
+    - center-periphery relations
+    - tribute flows
+    - incorporation of local elites
+    - coercion versus consent
+    - unequal legal and administrative status
+
+seed_entities:
+  actors:
+    - Roman Republic
+    - Roman Empire
+    - Roman Senate
+    - Augustus
+    - Julius Caesar
+    - Trajan
+    - Carthage
+    - Gauls
+    - provincial elites
+    - legions
+    - auxiliary troops
+    - client kings
+  events:
+    - First Punic War
+    - Second Punic War
+    - Social War
+    - Caesar's Civil War
+    - Battle of Actium
+    - conquest of Gaul
+    - annexation of Egypt
+    - Trajan's Dacian Wars
+  institutions:
+    - consulship
+    - principate
+    - provincial administration
+    - citizenship
+    - patronage
+    - tributary arrangements
+    - client kingdom structures
+  places:
+    - Rome
+    - Italy
+    - Gaul
+    - Hispania
+    - Egypt
+    - Dacia
+    - Mediterranean Sea
+
+generic_target_interface:
+  graph_level_targets:
+    - capacity_score
+    - integration_score
+    - legitimacy_score
+    - counterweight_strength_score
+    - shock_response_score
+    - extraction_intensity_score
+    - center_periphery_asymmetry_score
+  slice_transition_targets:
+    - expansion_delta
+    - integration_delta
+    - elite_cohesion_delta
+    - provincial_stability_delta
+    - extraction_delta
+  rule: All targets must be computable from evidence available at or before the slice cutoff.
+
+probe_tasks:
+  retrieval_tasks:
+    - id: rt1
+      prompt: What institutions turned military conquest into durable provincial control?
+      expected_answer_shape:
+        - Institution
+        - Policy
+        - Province
+        - Event
+    - id: rt2
+      prompt: Which norms or narratives made expansion politically desirable for Roman elites?
+      expected_answer_shape:
+        - Narrative
+        - Norm
+        - Actor
+        - Claim
+    - id: rt3
+      prompt: What plausible counterweights to expansion existed, and why were they not decisive?
+      expected_answer_shape:
+        - Counterweight
+        - Actor
+        - Institution
+        - Edge path with constrains/undermines/absorbs semantics
+    - id: rt4
+      prompt: How did republican expansion mechanisms differ from Augustan consolidation?
+      expected_answer_shape:
+        - time-scoped subgraphs across at least two slices
+    - id: rt5
+      prompt: Through which administrative and extractive channels were conquered territories tied to Roman centers of power?
+      expected_answer_shape:
+        - AdministrativeRegion
+        - ExtractiveChannel
+        - Province
+        - Resource
+        - Edge path with taxes/extracts_from/channels_through semantics
+    - id: rt6
+      prompt: Which local elites or mediated authorities were integrated into Roman rule, and under what asymmetrical terms?
+      expected_answer_shape:
+        - LocalElite
+        - Actor
+        - Institution
+        - Claim
+        - Edge path with grants_status_to/coopts/integrates semantics
+  structural_tasks:
+    - id: st1
+      check: Can the IR keep the same entity identity across slices while allowing role changes?
+    - id: st2
+      check: Can the IR represent both conquest events and slow institutional consolidation?
+    - id: st3
+      check: Can the IR encode contested interpretations without deleting minority claims?
+    - id: st4
+      check: Can the IR distinguish geography from administration and extraction?
+    - id: st5
+      check: Can the IR represent center-periphery asymmetry without requiring modern anachronistic labels?
+  gnn_tasks:
+    - id: gt1
+      target: Predict next-slice territorial or administrative expansion category from prior slice graph state.
+    - id: gt2
+      target: Predict whether a frontier campaign produces durable integration vs temporary gain.
+    - id: gt3
+      target: Predict change in extraction intensity or administrative penetration from prior slice graph state.
+
+labels_and_targets:
+  supervised_targets:
+    territorial_expansion_rate:
+      description: Net change in controlled territory or formally administered frontier zone during next slice.
+      source_priority:
+        - Wikidata event chronology
+        - Wikipedia chronology extraction
+      leakage_rule: No post-slice evidence in feature construction.
+    administrative_integration_score:
+      description: Degree to which conquest is converted into durable governance.
+      source_priority:
+        - Seshat governance variables
+        - Wikipedia evidence on provincial administration, taxation, legal incorporation
+    elite_cohesion_proxy:
+      description: Stability of elite cooperation around the governing settlement.
+      source_priority:
+        - article-derived relation counts
+        - event chronology on civil conflict, elite turnover, institutional rupture
+    provincial_stability_proxy:
+      description: Whether incorporated territories remain governable without immediate re-fragmentation.
+      source_priority:
+        - Wikipedia event chronology
+        - article-derived unrest / revolt signals
+    extraction_intensity_proxy:
+      description: Degree to which incorporated territories are tied into tribute, taxation, and resource transfer.
+      source_priority:
+        - Wikipedia evidence on tribute, taxation, provisioning, and grain/resource movement
+        - article-derived extraction relation counts
+        - Seshat governance and scale variables where informative
+  weak_labels:
+    - Seshat complexity/governance variables
+    - Wikidata event chronology
+    - article-derived relation counts
+  target_construction_rule: Freeze evidence by slice cutoff and emit one deterministic target record per slice.
+
+evaluation:
+  stage_1_validity:
+    checks:
+      - schema instantiates a graph for every slice
+      - all required node and edge types are representable
+      - all nodes are time-scoped or explicitly persistent
+      - entity IDs resolve to stable references where possible
+  stage_2_grounding:
+    metrics:
+      - wikidata_entity_link_rate
+      - wikipedia_citation_coverage
+      - seshat_variable_attachment_rate
+  stage_3_retrieval:
+    metrics:
+      - answer_path_recall
+      - ideological_node_recall
+      - counterweight_node_recall
+      - extraction_path_recall
+      - temporal_slice_precision
+      - origin_to_afterlife_path_recall
+      - survival_through_transformation_recall
+      - transmission_channel_recall
+  stage_4_prediction:
+    metrics:
+      - held-out slice classification accuracy
+      - calibration
+      - robustness across republican vs imperial subperiods
+      - gain_from_extraction_and_asymmetry_axes
+  win_condition: >-
+    A candidate schema wins only if it instantiates valid time-scoped graphs
+    for all slices, grounds entities and structural variables to the required
+    sources, retrieves material, institutional, ideological, counterweight,
+    and extraction subgraphs, passes negative leakage tests, preserves
+    fixed-dimensional projections for downstream GNN use, and shows
+    non-trivial improvement from adding ideology, counterweights, and
+    asymmetry/extraction structure in the ablation suite.
+  persistence_delta_v1:
+    doc_ref: ontology/ontology-delta-v1-persistence.yaml
+    ablation_addition: persistence_layer_ablation
+    optional_win_evidence: >-
+      Report whether stripping optional persistence types loses measurable
+      retrieval or prediction on lineage or legacy tasks versus full v1-patched graph.
+
+negative_tests:
+  - id: nt1
+    prompt: Explain Roman expansion using only post-117 crisis logic.
+    expected_result: fail
+    reason: prevents leakage from later decline mechanics
+  - id: nt2
+    prompt: Return ideology as a summary paragraph without typed nodes.
+    expected_result: fail
+    reason: ideology must stay queryable
+  - id: nt3
+    prompt: Treat provinces only as places, not administrative-fiscal units.
+    expected_result: fail
+    reason: province representation must be administrative as well as geographic
+  - id: nt4
+    prompt: Explain imperial control without modeling extraction or mediated local rule.
+    expected_result: fail
+    reason: asymmetry and extraction must be explicitly representable when relevant
+
+ablation_suite:
+  - material_only
+  - material_plus_institutions
+  - material_plus_institutions_plus_ideology
+  - material_plus_institutions_plus_ideology_plus_extraction
+  - full_model_with_counterweights
+win_expectation:
+  ideology_gain_required: true
+  counterweight_gain_required: true
+  extraction_gain_required: true
+
+splits:
+  suggested_train:
+    - republic_expansion
+    - augustan_settlement
+  suggested_validation:
+    - high_empire
+  suggested_stress_test:
+    - Apply the learned schema, without redesign, to Roman crisis/fall as a separate probe.
+    - Apply the learned schema, without redesign, to a later colonial or postcolonial probe where imperial asymmetry is more explicit.
+
+modern_bridge:
+  role: historical schema-shaping probe
+  purpose: tests long-run expressivity, temporal coherence, ideology retrieval, counterweight representation, and preparation for later imperial/postcolonial probes
+  downstream_alignment:
+    - share ontology with modern forecast probes
+    - reuse generic_target_interface where possible
+    - do not require direct market labels inside this probe
+    - keep extraction and asymmetry objects available for later Global South probes
+
+failure_modes_to_watch:
+  - Expansion explained only by military events with no institutional layer.
+  - Ideology represented as raw text with no queryable nodes.
+  - Provinces treated as passive territories rather than active administrative units.
+  - Counterweights omitted because they did not ultimately stop expansion.
+  - Role changes over time causing duplicate entities instead of stable identities.
+  - Leakage from later imperial decline into expansion-era graph construction.
+  - Extraction represented only as generic taxation with no directional center-periphery structure.
+  - Asymmetry flattened into neutral bilateral edges.
+
+autoresearch_objective_hint:
+  optimize_for:
+    - grounding quality
+    - retrieval of ideology and counterweights
+    - retrieval of extraction and asymmetry structure
+    - temporal coherence
+    - GNN-usable fixed projection
+  avoid:
+    - overfitting to one Roman subperiod
+    - schemas that only reward dominant successful actors
+    - collapse of contested interpretations into a single consensus story
+    - treating empire as simple territorial growth with no mediated domination
+
+notes:
+  - This is a family probe and should share ontology with Roman 1B (crisis/fall) while being scored independently.
+  - Keep the file human-editable; add machine-generated enrichments in separate derived artifacts.
+  - This patch keeps Roman 1A usable while making it compatible with a broader benchmark suite that includes Global South and imperial/postcolonial cases.

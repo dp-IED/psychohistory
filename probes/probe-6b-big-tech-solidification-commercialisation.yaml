@@ -1,0 +1,405 @@
+probeid: "6C-2"
+family: "businessfamily6C"
+name: "Big Tech Emergence, Platform Consolidation, and Political Reordering — Silicon Valley Commercialization"
+version: "0.1"
+status: "candidate"
+format: "probespecv2"
+benchmark_pack: v0
+compatibility_tier: v0-legacy
+
+summary:
+  purpose: >
+    Benchmark whether a single transferable graph intermediate representation can encode the commercialization
+    phase of Silicon Valley as an interaction among personal computing, venture capital, software firms,
+    standards contests, deregulation, labor circulation, and early internet market formation, while remaining
+    queryable for retrieval and consumable by downstream adaptive GNN systems.
+  rationale: >
+    This probe covers the bridge period in which computing moved from research- and hardware-centered origins
+    into scalable commercial ecosystems. It is valuable because later platform dominance was not created by one
+    firm or one invention alone, but by a layered commercial architecture that combined finance, software
+    standards, distribution channels, entrepreneurial ideology, labor networks, and permissive policy
+    environments. The probe is therefore designed to stress whether the IR can preserve typed distinctions
+    between material business structure, institutional support, ideological legitimation, and early lock-in
+    mechanisms without leaking post-2000 platform outcomes backward.
+
+scope:
+  region: "Western / U.S."
+  polity: "The commercialization phase of Silicon Valley through PCs, venture capital, software firms, deregulation, and early internet business formation"
+  temporalwindow:
+    startyear: 1975
+    endyear: 1998
+    label: "1975 to 1998"
+  recommendedslices:
+    - sliceid: "6c2_pc_and_hobbyist_transition"
+      startyear: 1975
+      endyear: 1983
+      label: "PCs, hobbyist computing, and entrepreneurial transition"
+    - sliceid: "6c2_venture_software_scaling"
+      startyear: 1984
+      endyear: 1993
+      label: "Venture capital, software firm scaling, and commercialization of computing"
+    - sliceid: "6c2_early_internet_business"
+      startyear: 1994
+      endyear: 1998
+      label: "Browser era, internet commercialization, and pre-platform consolidation"
+  exclusions:
+    - "Do not import smartphone, app-store, cloud, or social-media platform logic from after 1998."
+    - "Do not treat post-2000 monopoly outcomes as already resolved during the 1980s."
+    - "Do not collapse semiconductor or Cold War prehistory from 6C-1 into this probe except as prior context nodes."
+    - "Do not include Obama-era or Trump-era state-platform conflicts."
+    - "Do not model mature data-extractive ad-tech as the dominant business architecture for the full window."
+
+artifacts:
+  humanauthored:
+    - "Canonical probe metadata, slice boundaries, exclusions, and anti-leakage rules"
+    - "Core question and historical subquestions"
+    - "Required node and edge ontology"
+    - "Seed entities and negative test prompts"
+    - "Supervised target definitions and evaluation criteria"
+  machinegenerated:
+    - "Entity resolution and alias expansion across firms, investors, standards, and markets"
+    - "Candidate event extraction from source corpora"
+    - "Typed claim graphs for ideology, policy, and commercialization narratives"
+    - "Cross-slice continuity links for persistent entities and evolving market structures"
+    - "Feature projections for downstream GNN training and slice-transition prediction"
+
+groundedsources:
+  - source: "Wikidata"
+    role: "Canonical identifiers, entity disambiguation, organizational relationships, and temporal anchoring"
+    required: "always"
+  - source: "Wikipedia"
+    role: "High-coverage historical summaries for firms, products, standards battles, investor firms, and major events"
+    required: "always"
+  - source: "SEC filings"
+    role: "Grounding for public-company structure, market positioning, product lines, acquisitions, and risk framing when relevant"
+    required: "conditional"
+  - source: "Business histories"
+    role: "Narrative and analytical grounding for venture capital formation, distribution channels, software commercialization, and ideology"
+    required: "always"
+  - source: "GDELT"
+    role: "Optional retrospective media-salience layer for late-window events and public narrative shifts"
+    required: "optional"
+  - source: "U.S. policy or antitrust sources"
+    role: "Grounding for deregulation, antitrust memory, standards policy, and institutional permissiveness"
+    required: "conditional"
+
+corequestion: >
+  Can a single graph schema represent how venture capital, software firms, personal computers, early internet
+  markets, standards battles, and deregulation together created the commercial architecture that later enabled
+  Big Tech platform dominance, while preserving typed distinctions among firms, investors, institutions,
+  ideologies, and lock-in mechanisms?
+
+historicaloranalyticalsubquestions:
+  - "How did venture capital formation, syndication, and reputation networks shape which computing firms scaled and which did not?"
+  - "How did PC hardware-software market structure evolve from hobbyist and kit-oriented markets into branded, business, and mass-distribution ecosystems?"
+  - "Which standards, interfaces, operating systems, and compatibility layers became pivotal choke points for commercialization and lock-in?"
+  - "How did deregulation, antitrust memory, procurement choices, and broader U.S. policy environments enable or constrain commercialization?"
+  - "How did narratives of disruption, entrepreneurship, meritocracy, openness, and market-led innovation legitimize rapid commercialization?"
+  - "How did labor circulation among universities, firms, founders, executives, and investors create elite networks that accelerated scaling?"
+  - "What early signs of concentration, dependency, or ecosystem lock-in were visible before the fully mature platform era?"
+  - "What changed across the three slices in the relative importance of hardware, software, financing, standards, and internet-market formation?"
+
+schemarequirements:
+  mustrepresent:
+    - "Venture capital as causal structure rather than background financing"
+    - "Hardware-software complementarities and ecosystem dependence"
+    - "Standards, interfaces, compatibility, and distribution as first-class graph objects"
+    - "Deregulation and policy permissiveness as typed institutional context"
+    - "Commercial ideology and legitimacy narratives as discrete nodes and claims"
+    - "Labor circulation and elite-network reproduction across firms and investors"
+    - "Early concentration, switching costs, and lock-in signals"
+    - "Cross-slice persistence and transformation of firms, technologies, and markets"
+  nodetypes:
+    required:
+      - "Actor"
+      - "Firm"
+      - "Investor"
+      - "Institution"
+      - "Office"
+      - "Technology"
+      - "Standard"
+      - "PlatformComponent"
+      - "DistributionChannel"
+      - "Event"
+      - "Policy"
+      - "Narrative"
+      - "Norm"
+      - "Counterweight"
+      - "Shock"
+      - "Claim"
+      - "LaborPool"
+      - "MarketActor"
+  edgetypes:
+    required:
+      - "founds"
+      - "investsin"
+      - "distributesthrough"
+      - "standardizes"
+      - "locksin"
+      - "competeswith"
+      - "acquires"
+      - "legitimizes"
+      - "constrains"
+      - "recruitsfrom"
+      - "dependson"
+      - "scales"
+      - "diffusesinto"
+      - "respondsTo"
+  mustsupport:
+    - "Time-scoped nodes and edges, with explicit persistence flags for enduring entities"
+    - "Typed claims linking narratives and norms to firms, policies, and markets"
+    - "Slice-local graphs plus slice-transition graphs"
+    - "Many-to-many investor-firm and firm-standard relationships"
+    - "Multiple simultaneous distribution channels for the same technology or firm"
+    - "Explicit uncertainty or evidence weighting for weakly grounded claims"
+    - "Fixed-dimensional node projection compatibility for downstream GNN use"
+    - "Negative evidence handling when expected links or standards are absent"
+  antirequirements:
+    - "Do not reduce commercialization to a few charismatic founders."
+    - "Do not ignore venture capital structure."
+    - "Do not ignore standards wars and lock-in."
+    - "Do not collapse ideology into untyped text."
+    - "Do not import post-2000 platform monopoly into the 1980s."
+
+expectedgraphaxes:
+  material: "Hardware production, software products, capital flows, product launches, acquisitions, and market expansion."
+  institutional: "Firms, venture partnerships, stock markets, standards bodies, regulatory offices, and procurement-related institutions."
+  ideological: "Entrepreneurship, disruption, openness, deregulation, meritocracy, and market-led innovation."
+  counterweights: "Antitrust memory, technical bottlenecks, fragmentation, labor displacement concern, incumbent resistance, and policy scrutiny."
+  asymmetryandexternalconstraint: "Capital concentration, distribution gatekeeping, standards dependence, macro-financial cycles, and regulatory permissiveness."
+  firms: "PC manufacturers, chip firms, software firms, browser firms, enterprise vendors, and emerging internet businesses."
+  investors: "VC partnerships, angel networks, IPO channels, and public-market financing environments."
+  procurement: "Corporate IT purchasing, educational procurement, enterprise adoption channels, and indirect state demand where relevant."
+  standards: "Operating systems, interfaces, compatibility layers, file formats, networking protocols, and de facto ecosystem standards."
+  platforms: "Operating systems, browser stacks, PC ecosystems, development environments, and early online service layers."
+  labor: "Engineers, programmers, managers, founders, university spillovers, and executive-investor circulation."
+  regulatorychannels: "Deregulation climate, antitrust memory, financial-market rules, telecommunications policy, and standards governance."
+
+seedentities:
+  firms:
+    - "Apple"
+    - "Microsoft"
+    - "Intel"
+    - "Netscape"
+    - "IBM PC ecosystem"
+    - "Compaq"
+    - "Oracle"
+    - "Sun Microsystems"
+    - "Cisco"
+    - "AOL"
+  investors:
+    - "Kleiner Perkins"
+    - "Sequoia Capital"
+    - "Accel"
+    - "Mayfield"
+    - "NASDAQ tech financing environment"
+  technologies_and_platformcomponents:
+    - "Windows"
+    - "MS-DOS"
+    - "Macintosh"
+    - "IBM PC architecture"
+    - "x86 ecosystem"
+    - "web browser"
+    - "TCP/IP"
+  standards_and_events:
+    - "browser wars"
+    - "PC compatibility standards"
+    - "GUI transition"
+    - "client-server computing"
+    - "commercial internet adoption"
+  institutions_and_offices:
+    - "Federal Communications Commission"
+    - "Department of Justice Antitrust Division"
+    - "NASDAQ"
+    - "standards-setting bodies and trade associations"
+  narratives:
+    - "entrepreneurship"
+    - "disruption"
+    - "openness"
+    - "market-led innovation"
+    - "deregulation"
+
+generictargetinterface:
+  graphleveltargets:
+    - "concentrationscore"
+    - "standardslockinscore"
+    - "venturedependencyscore"
+    - "commercializationintensityscore"
+    - "legitimacyscore"
+    - "laborelitecirculationscore"
+  slicetransitiontargets:
+    - "concentrationdelta"
+    - "standardslockindelta"
+    - "venturedependencedelta"
+    - "commercializationdelta"
+    - "legitimacydelta"
+    - "laborelitecirculationdelta"
+  constraints:
+    - "All targets must be computable from evidence available at or before the slice cutoff."
+    - "No target may encode post-1998 outcomes as labels for earlier slices."
+    - "Targets should be recoverable from graph structure plus grounded evidence, not free-text intuition."
+
+probetasks:
+  retrievaltasks:
+    - "Identify which investors, syndicates, and financing channels most strongly supported firm formation and scaling in each slice."
+    - "Retrieve the standards, interfaces, and compatibility struggles that structured competition within PC and software markets."
+    - "Map the distribution channels through which hardware, operating systems, and software products reached consumers and enterprise buyers."
+    - "Retrieve policies, deregulation moves, or antitrust-relevant institutional decisions that altered commercialization conditions."
+    - "Identify the narratives and norms that legitimized startup culture, deregulation, and market openness."
+    - "Retrieve early signs of concentration, dependency, or lock-in visible before the mature platform era."
+  structuraltasks:
+    - "Construct a typed subgraph linking firms, investors, standards, and distribution channels for each slice."
+    - "Detect whether a firm's scaling path depends more on investor structure, distribution control, or standard adoption."
+    - "Infer which nodes function as lock-in hubs versus diffuse complements."
+    - "Differentiate ecosystem competition from direct firm-versus-firm competition."
+    - "Link labor-pool circulation to firm founding, scaling, and investor access."
+  gnntasks:
+    - "Predict slice-level concentrationscore from graph structure and grounded claims."
+    - "Predict which firms or standards become central lock-in points in the next slice without using future-only evidence."
+    - "Classify whether a slice is primarily hobbyist-commercial, scale-commercial, or early-internet-commercial based on graph topology."
+    - "Estimate transition deltas in venture dependence and legitimacy when standards, investors, or ideology layers are ablated."
+
+labelsandtargets:
+  concentrationscore:
+    description: "Degree to which market power and ecosystem control are concentrated in a limited set of firms, standards, or channels within a slice."
+    sourcepriority:
+      - "SEC filings"
+      - "business histories"
+      - "Wikipedia"
+      - "Wikidata"
+      - "U.S. policy or antitrust sources"
+    leakagerule: "Use only contemporaneous market-structure evidence from the slice; do not infer concentration from later dominance outcomes."
+    targetconstructionrule: "Aggregate normalized indicators of market share centrality, acquisition-linked centralization, distribution gatekeeping, and dependency hub score."
+  standardslockinscore:
+    description: "Strength of dependency on standards, interfaces, or compatibility layers that increase switching costs and ecosystem inertia."
+    sourcepriority:
+      - "business histories"
+      - "Wikipedia"
+      - "SEC filings"
+      - "Wikidata"
+      - "U.S. policy or antitrust sources"
+    leakagerule: "Only standards known, adopted, or contested by the slice cutoff may contribute."
+    targetconstructionrule: "Combine counts and weights for standard adoption edges, locksin edges, complement dependency, and interoperability asymmetry."
+  venturedependencyscore:
+    description: "Extent to which commercialization and firm scaling depend on venture-capital financing, investor reputation, and financing networks."
+    sourcepriority:
+      - "business histories"
+      - "SEC filings"
+      - "Wikipedia"
+      - "Wikidata"
+    leakagerule: "Do not use later financing rounds, exits, or retrospective prestige to score earlier slices."
+    targetconstructionrule: "Measure ratio and centrality of investsin edges, investor syndication density, financing-event importance, and investor-linked scaling pathways."
+  commercializationintensityscore:
+    description: "Overall intensity of conversion from technical capability into marketable products, revenue channels, and scaled distribution."
+    sourcepriority:
+      - "business histories"
+      - "SEC filings"
+      - "Wikipedia"
+      - "Wikidata"
+    leakagerule: "Use only evidence of products, channels, adoption, and scaling available inside the slice."
+    targetconstructionrule: "Blend counts of launch and scaling events, distribution breadth, product diffusion, revenue-oriented narratives, and market-actor uptake."
+  legitimacyscore:
+    description: "Strength of narratives and norms that make commercialization appear desirable, modern, efficient, or socially beneficial."
+    sourcepriority:
+      - "business histories"
+      - "Wikipedia"
+      - "U.S. policy or antitrust sources"
+      - "GDELT"
+    leakagerule: "Exclude later retrospective mythmaking when it cannot be grounded in slice-contemporaneous discourse."
+    targetconstructionrule: "Combine legitimizing narrative density, positive claim support, institutional endorsement, and low effective counterweight centrality."
+  laborelitecirculationscore:
+    description: "Intensity of labor and elite-network circulation linking universities, firms, founders, executives, and investors."
+    sourcepriority:
+      - "Wikidata"
+      - "business histories"
+      - "Wikipedia"
+      - "SEC filings"
+    leakagerule: "Only personnel links evidenced within or prior to the slice may be used."
+    targetconstructionrule: "Measure recruitsfrom edge density, shared-elite path centrality, repeat-founder/investor overlap, and university-to-firm spillover connectivity."
+
+evaluation:
+  stage1validity:
+    - "Check that all required node and edge types appear when the source evidence supports them."
+    - "Check that each slice preserves temporal coherence and excludes post-cutoff entities or relations."
+    - "Check that ideology, standards, investors, and distribution channels are represented as typed structure rather than prose-only residue."
+    - "Check entity persistence and alias resolution across slices."
+  stage2grounding:
+    - "Assess source coverage across firms, investors, standards, policies, and narratives."
+    - "Measure citation-level support density for graph edges and claims in the construction pipeline."
+    - "Score agreement between independently grounded sources for major entities and events."
+    - "Penalize unsupported lock-in or concentration claims."
+  stage3retrieval:
+    - "Evaluate precision and recall for investor-firm, firm-standard, and firm-distribution retrieval."
+    - "Evaluate retrieval of ideology and counterweight structure, not only material business facts."
+    - "Test slice-specific retrieval under ambiguity, especially for standards battles and early internet business formation."
+    - "Measure cross-slice retrieval consistency for persistent entities."
+  stage4prediction:
+    - "Compare GNN performance on graph-level and slice-transition targets against text-only and material-only baselines."
+    - "Run ablation tests for investors, standards, and ideology layers to verify causal contribution."
+    - "Measure robustness under held-out seed entities and partial-source regimes."
+    - "Inspect calibration and error concentration around commercialization-to-internet transition years."
+  wincondition: >
+    The probe is successful if the full typed graph materially outperforms weaker baselines on retrieval and
+    prediction, especially when explaining commercialization intensity, standards lock-in, and venture
+    dependence without temporal leakage.
+
+negativetests:
+  - "Explain Silicon Valley commercialization only as founder brilliance."
+  - "Treat VC as background finance rather than causal structure."
+  - "Ignore standards and interface control."
+  - "Return ideology only as prose."
+  - "Import smartphone-era platform rules into 1980-1998."
+  - "Collapse distribution channels into generic market growth."
+  - "Treat Microsoft, Apple, and IBM as isolated biographies rather than ecosystem participants."
+
+ablationsuite:
+  materialonly:
+    description: "Use firms, products, events, and markets only; omit institutions, ideology, investors, and counterweights."
+  materialplusinstitutions:
+    description: "Add institutions, offices, and policies, but omit ideology, standards-specific lock-in modeling, and investor structure."
+  materialplusinstitutionsplusideology:
+    description: "Add narratives, norms, claims, and legitimacy relations to test value of ideological structure."
+  materialplusinstitutionsplusstandards:
+    description: "Add standards, compatibility, and lock-in relations while withholding investor structure."
+  materialplusinstitutionsplusinvestors:
+    description: "Add investor structure and financing pathways while withholding standards-specific lock-in modeling."
+  fullmodelwithcounterweights:
+    description: "Use the complete schema including standards, investors, ideology, labor circulation, and counterweights."
+
+splits:
+  suggestedtrain:
+    - "Primary training on 6c2_pc_and_hobbyist_transition and early portions of 6c2_venture_software_scaling"
+    - "Allow cross-validation on subgraphs centered on PCs, operating systems, and VC-firm formation"
+  suggestedvalidation:
+    - "Late 6c2_venture_software_scaling holdout focused on software scaling, distribution expansion, and standards contests"
+    - "Evaluate transition prediction into early internet business without using 1994+ evidence during training"
+  suggestedstresstest:
+    - "6c2_early_internet_business as out-of-phase commercialization stress test"
+    - "Held-out entities such as Netscape or browser-war subgraphs"
+    - "Anti-leakage stress test with explicit removal of post-1998 references and mature-platform terminology"
+
+bridgerole:
+  historicalbridge: >
+    Connects the Cold War and semiconductor substrate of 6C-1 to the later platform and data-extractive probes
+    by modeling how commercialization architecture emerged before mature platform dominance.
+  purpose: >
+    Serve as the key transition probe for testing whether the IR can move from research-state origins to
+    investor-driven software and internet markets without losing typed causal structure.
+  downstreamalignment:
+    - "Aligns directly with 6C-1 as antecedent substrate and 6C-3 as successor platform-rise probe"
+    - "Provides transferable ontology for semiconductors, software ecosystems, venture networks, and standards lock-in"
+    - "Supports downstream adaptive GNN tasks around concentration, dependency, and legitimacy formation"
+  failuremodestowatch:
+    - "Founder-centric oversimplification"
+    - "Missing investor-network causality"
+    - "Underspecified standards and interface battles"
+    - "Conflation of ideology with summary text"
+    - "Backward leakage from post-2000 platform dominance"
+    - "Loss of distribution-channel structure"
+  autoresearchobjectivehint: >
+    Search for schema variants that maximize performance gains from explicitly typed investors, standards, and
+    ideological legitimacy layers relative to material-only graphs.
+  notes:
+    - "Keep commercialization distinct from prehistory and from later platform consolidation."
+    - "Treat technical breakthroughs, financing structure, and distribution power as separate but connected mechanisms."
+    - "Represent all entities as time-scoped or explicitly persistent to support leakage-resistant graph learning."

@@ -1,0 +1,93 @@
+# Shared ontology delta — optional persistence layer (v1)
+# Linked from probes via ontology_delta_ref. Does not replace probe-specific
+# must_represent; it adds optional types and evaluation hooks for long-run effects.
+
+id: ontology_delta_v1_persistence
+delta_version: "1.0"
+parent_benchmark_pack: v0
+status: active
+
+summary:
+  purpose: >-
+    Optional graph elements for lineage, institutional inheritance, transmission
+    channels, and bounded long-run legacy. Lets v1-patched probes represent
+    origin-to-afterlife structure without forcing a full rewrite of v0 probes.
+  non_goals:
+    - Replacing probe-local must_represent requirements
+    - Mandating persistence types on v0-legacy probes
+
+optional_schema_extensions:
+  node_types:
+    LineageClaim:
+      description: >-
+        Asserted or evidenced continuity of identity, law, or legitimacy across
+        time; may attach to Actor, Institution, Norm, or Narrative nodes.
+    InstitutionalLineage:
+      description: >-
+        Traced descent of an office, constitution, or rule bundle from prior forms.
+    InheritanceBundle:
+      description: >-
+        Many-to-many bundle for inheritance of statute, elite position, or fiscal
+        obligation when a single edge is insufficient.
+    TransmissionChannel:
+      description: >-
+        Mediated pathway for ideas, coercion, revenue, personnel, or doctrine
+        (schools, presses, parties, diaspora, procurement, media).
+    LegacyAggregate:
+      description: >-
+        Optional summary node for durable after-effects; may host long_run_legacy_score.
+
+  optional_node_attributes:
+    long_run_legacy_score:
+      type: float
+      range: [0.0, 1.0]
+      description: >-
+        Probe-specific bounded proxy for downstream influence or structural residue.
+
+  edge_types:
+    inherits_from:
+      description: Institutional or normative descent (not only biological).
+    transmits_through:
+      description: Links content or coercion to a TransmissionChannel.
+    supersedes_while_claiming_continuity:
+      description: Reform or successor claims continuity while replacing mechanisms.
+    leaves_legacy_via:
+      description: >-
+        Connects Shock, Event, Policy, or Institution to LegacyAggregate or downstream structure.
+
+compatibility_tiers:
+  v0_legacy:
+    meaning: Valid benchmark probe without persistence delta; persistence types not required.
+  v1_patched:
+    meaning: >-
+      Human spec may include optional may_represent entries pointing here; evaluators
+      may score persistence retrieval tasks.
+  v1_native:
+    meaning: >-
+      Future probes authored with persistence types required in must_represent (none in v0 pack).
+
+evaluation_hooks:
+  retrieval:
+    - id: origin_to_afterlife_path
+      description: >-
+        Typed path from originating mechanisms to at least one downstream legacy,
+        successor structure, or lineage claim; prose-only answers fail.
+    - id: survival_through_transformation
+      description: >-
+        Same entity identity across slices with role or institutional shell change.
+    - id: transmission_channel_recall
+      description: >-
+        Recover mediating channels, not only endpoints.
+  prediction_ablations:
+    - id: persistence_layer_ablation
+      description: >-
+        Compare prediction and retrieval with optional persistence nodes and edges
+        removed versus full v1-patched graph.
+      win_if: >-
+        Optional persistence layer shows measurable gain on at least one held-out
+        legacy or lineage task versus the stripped baseline.
+
+migration_notes:
+  - Add optional types under schema_requirements.may_represent; do not delete existing must_represent.
+  - Prefer new retrieval metrics and ablations over rewriting narrative sections.
+  - Keep human-authored probe bodies stable; machine enrichments stay in derived artifacts.

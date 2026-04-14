@@ -1,0 +1,215 @@
+id: probe-7d-hindutva-vernacular-media-majoritarian-nationhood
+title: Hindutva, Vernacular Media, and Majoritarian Nationhood
+status: proposed
+family: ideological_trends
+tags:
+  - ideological_trends
+  - politics
+  - cultural_movements
+  - asian
+  - contemporary
+  - india
+  - media
+  - majoritarianism
+
+summary: >
+  Tests whether the graph IR can represent how ideological organization,
+  vernacular media ecologies, party expansion, welfare-state penetration,
+  religious polarization, and institutional reconfiguration interact to produce
+  durable majoritarian nationhood.
+
+temporal:
+  start: "1980-01-01"
+  end: "2026-12-31"
+  slice_granularity: electoral-era
+  cutoff_rule: "Use only information available within each slice."
+
+scope:
+  regions:
+    - India
+  focus: >
+    The interaction between ideological cadre formation, vernacular public
+    spheres, electoral strategy, media infrastructure, and institutional
+    power in the rise and consolidation of Hindutva.
+
+core_question: >
+  How did Hindutva move from a bounded ideological current into a broad
+  architecture of mass politics, media normalization, institutional influence,
+  and majoritarian common sense, and what counterweights failed to arrest or
+  redirect that expansion?
+
+grounding:
+  primary_entity_spine:
+    - Wikidata / Wikipedia entities for organizations, parties, leaders, courts, media networks, movements, states, and key events
+  structural_backbone:
+    - institutional and electoral context where available
+  event_streams:
+    - mobilization campaigns, communal violence episodes, media shifts, elections, court decisions, welfare-nationalist linkage, regulatory interventions
+  note: >
+    Contemporary ideology-politics probe with dense media, institutional, and
+    counterweight structure.
+
+probe_type: slice_based_contemporary_political_ideology
+
+schema_requirements:
+  must_represent_node_types:
+    - Narrative
+    - Norm
+    - Claim
+    - Counterweight
+    - Party
+    - PoliticalCoalition
+    - Institution
+    - Policy
+    - Event
+    - MediaOutlet
+    - MediaNarrative
+    - SocialMovement
+    - MassOrganization
+    - ReligiousInstitution
+    - SecurityForce
+    - SecurityApparatus
+    - RegulatoryBody
+    - LegislativeBody
+    - ExecutiveOffice
+    - Region
+    - Actor
+    - UserPopulation
+    - TransmissionChannel
+    - LegacyAggregate
+    - LineageClaim
+  may_represent_node_types:
+    - CivicMovement
+    - LaborUnion
+    - InternationalOrganization
+    - Shock
+    - University
+    - Platform
+  must_represent_edges:
+    - contests
+    - legitimizes
+    - delegitimizes
+    - mobilizes
+    - polarizes
+    - constrains
+    - supports
+    - undermines
+    - alignswith
+    - regulates
+    - monitors
+    - pressures
+    - respondsTo
+    - sacralizes
+    - securitizes
+    - transmitsthrough
+    - leaveslegacyvia
+    - inheritsfrom
+    - coopts
+  required_cross_scale_properties:
+    - "Must distinguish long-run organizational buildup from electoral-event spikes."
+    - "Must include at least one media-normalization path and one street-to-institution path."
+    - "Must represent counterweights as active but weakened, not absent by assumption."
+
+expected_graph_axes:
+  - ideological lineage: civilizational nationalism, majority identity, historical grievance
+  - organizational infrastructure: cadre networks, affiliates, religious mobilization, civic fronts
+  - media ecology: vernacular press, television, digital amplification, influencer publics
+  - electoral expansion: coalition-building, welfare linkage, leadership branding, territorial spread
+  - institutional reconfiguration: courts, bureaucracy, education, security discourse, regulation
+  - polarization: communal violence, symbolic campaigns, loyalty tests, internal enemies
+  - counterweights: secular constitutionalism, regional parties, civil-rights groups, student movements, opposition media
+
+causal_layers:
+  structural_drivers:
+    - Long-standing debates over nationhood, secularism, caste, and majority-minority relations
+    - Uneven party-system anchoring and regional openings for ideological expansion
+    - Growth of vernacular mass media and later digital media ecosystems
+    - Institutional and social demand for strong-order, development, and civilizational narratives
+  conjunctural_mechanisms:
+    - Cadre-based organizational spread through religious, civic, and educational channels
+    - Symbolic mobilization campaigns converting ideology into mass identification
+    - Electoral packaging of welfare, nationalism, and leader-centered legitimacy
+    - Media repetition normalizing majoritarian frames and discrediting opponents
+    - Institutional adaptation or intimidation reducing counterweight capacity
+  trigger_candidates:
+    - "Ram Janmabhoomi mobilization moments as mass ideological activation"
+    - "2002 Gujarat-type crisis moments as legitimacy and polarization thresholds"
+    - "2014 national electoral breakthrough as consolidation threshold"
+    - "Post-2019 legal-symbolic settlements as normalization milestones"
+
+ideological_layer_requirements:
+  dominant_episteme_questions:
+    - What made majoritarian civilizational nationhood increasingly appear as common sense rather than one ideology among others?
+    - How were secularism and pluralism reframed as partial, weak, or suspect?
+  legitimating_apparatus_questions:
+    - Which party structures, media systems, educational channels, religious networks, and state institutions validated the shift?
+  suppressed_counterweight_questions:
+    - Which secular, socialist, caste-based, federal, minority-rights, or constitutional alternatives existed but were weakened?
+    - Was their weakening electoral, media-driven, legal-institutional, coercive, or discursive?
+  ideological_rupture_rule:
+    - "Choose one datable rupture or normalization point for each emphasized slice."
+  contested_claims_rule:
+    - "Do not settle whether media, long-run organization, elite strategy, neoliberal aspiration, or communal polarization was primary."
+
+must_include_contested_claims:
+  - "Long-run cadre organization as primary driver vs media-era leader politics as primary driver"
+  - "Vernacular media as decisive causal accelerator vs reflection of prior social demand"
+  - "Majoritarian nationhood as grievance politics vs developmental-national synthesis"
+  - "Institutional capture thesis vs institutional adaptation/cooperation thesis"
+  - "Counterweight failure due mainly to opposition fragmentation vs structural ideological shift"
+
+probe_tasks:
+  retrieval_questions:
+    - "Can the graph distinguish ideology, organization, media, elections, and institutions rather than merging them?"
+    - "Can it trace how a symbolic campaign becomes institutionalized common sense?"
+    - "Can it surface which counterweights existed and how each was weakened?"
+    - "Can it represent regional variation and later national consolidation?"
+    - "Can it retrieve both street mobilization and mediated normalization paths?"
+  traversal_tests:
+    - "Find a path from ideological lineage to vernacular media normalization."
+    - "Find a path from symbolic mobilization to electoral expansion."
+    - "Find a path from electoral consolidation to institutional reconfiguration."
+    - "Find a path showing why a counterweight failed without assuming it never existed."
+
+negative_tests:
+  - "Fail if Hindutva is reduced to one leader biography."
+  - "Fail if media is treated as epiphenomenal commentary only."
+  - "Fail if secular constitutionalism is absent as a real counterweight."
+  - "Fail if communal polarization is modeled without institutions or organization."
+  - "Fail if all opposition is collapsed into one generic anti-majoritarian node."
+  - "Fail if the graph leaks post-slice outcomes backward into earlier periods."
+
+ablations:
+  - name: no_media_layer
+    expectation: "Should weaken vernacular normalization and mass-amplification paths."
+  - name: no_counterweight_layer
+    expectation: "Should erase secular, federal, caste, and civil-liberties brakes."
+  - name: no_institutional_layer
+    expectation: "Should reduce the case to discourse and elections only."
+  - name: no_persistence_nodes
+    expectation: "Should weaken ideological-lineage and normalization-across-slices modeling."
+
+fixture_hints:
+  target_node_count: "30-44"
+  expected_highest_centrality:
+    - ideological lineage of majoritarian nationhood
+    - organizational cadre infrastructure
+    - vernacular media normalization
+    - electoral consolidation
+    - secular-constitutional counterweight weakening
+  expected_high_contention:
+    - media-causation thesis
+    - institutional capture vs adaptation
+    - development-plus-majoritarian synthesis thesis
+    - opposition-fragmentation explanation
+  parsimony_exception: false
+
+sources_to_consult:
+  - Christophe Jaffrelot, works on Hindu nationalism
+  - Thomas Blom Hansen, The Saffron Wave
+  - Vinayak Chaturvedi, edited work on Hindutva and violence
+  - Nalin Mehta, media and Indian politics works
+  - Pralay Kanungo, RSS and organizational studies
+  - Ayesha Jalal / comparative nationalism context where useful
+  - works on Ram Janmabhoomi movement, vernacular media, and post-2014 institutional change
+  - scholarship on secularism, constitutionalism, and opposition fragmentation in India

@@ -1,0 +1,216 @@
+id: probe-7b-pan-africanism-negritude-decolonial-cultural-politics
+title: Pan-Africanism, Negritude, and Decolonial Cultural Politics
+status: proposed
+family: cultural_movements
+tags:
+  - cultural_movements
+  - ideological_trends
+  - african
+  - modern
+  - transnational
+  - anti_colonial
+  - persistence
+
+summary: >
+  Tests whether the graph IR can represent a transnational cultural-political
+  formation linking diaspora thought, anti-colonial organizing, literary and
+  educational institutions, state projects, and postcolonial afterlives without
+  flattening them into a single "African nationalism" node.
+
+temporal:
+  start: "1910-01-01"
+  end: "1985-12-31"
+  slice_granularity: decade
+  cutoff_rule: "Use only information available within each slice."
+
+scope:
+  regions:
+    - West Africa
+    - Francophone Africa
+    - Caribbean
+    - United States
+    - United Kingdom
+    - African diaspora networks
+  focus: >
+    How Black internationalist thought, literary-cultural movements, and
+    anti-colonial politics interacted across metropole, colony, and diaspora to
+    reshape legitimacy, identity, statehood, and decolonial imagination.
+
+core_question: >
+  How did Pan-African and Negritude currents transform dispersed cultural and
+  political critique into anti-colonial mobilization, elite formation, and
+  postcolonial legitimacy projects, and why were some of their emancipatory
+  possibilities narrowed, co-opted, or institutionalized unevenly?
+
+grounding:
+  primary_entity_spine:
+    - Wikidata / Wikipedia entities for intellectuals, conferences, journals, parties, unions, colonial administrations, universities, and states
+  structural_backbone:
+    - historical institutional context for empire, education, and colonial rule
+  event_streams:
+    - congresses, publications, strikes, anti-colonial campaigns, independence moments, postcolonial cultural policy shifts
+  note: >
+    Representation-first transnational ideology probe with strong external
+    constraint and lineage components.
+
+probe_type: structural_conjunctural_transnational
+
+schema_requirements:
+  must_represent_node_types:
+    - Narrative
+    - Norm
+    - Claim
+    - Counterweight
+    - SocialMovement
+    - MassOrganization
+    - LaborUnion
+    - Institution
+    - University
+    - MediaOutlet
+    - MediaNarrative
+    - Party
+    - Policy
+    - Event
+    - ExternalPower
+    - Empire
+    - ReligiousInstitution
+    - Region
+    - Actor
+    - TransmissionChannel
+    - InstitutionalLineage
+    - InheritanceBundle
+    - LegacyAggregate
+    - LineageClaim
+  may_represent_node_types:
+    - Coalition
+    - CivicMovement
+    - InternationalOrganization
+    - DevelopmentProgram
+    - Office
+  must_represent_edges:
+    - contests
+    - legitimizes
+    - delegitimizes
+    - mobilizes
+    - constrains
+    - supports
+    - undermines
+    - alignswith
+    - polarizes
+    - funds
+    - fragments
+    - reconfigures
+    - transmitsthrough
+    - inheritsfrom
+    - leaveslegacyvia
+    - pressures
+    - disciplines
+    - sacralizes
+  required_cross_scale_properties:
+    - "Must represent metropole-colony-diaspora circulation, not just one national scene."
+    - "Must include at least one cultural transmission path and one organizational mobilization path."
+    - "Must show how anti-colonial ideology becomes either state doctrine, cultural prestige, or suppressed alternative."
+
+expected_graph_axes:
+  - diaspora circulation: congresses, journals, travel, study networks
+  - racial ontology and dignity: blackness, civilization, universality, cultural value
+  - colonial domination: administration, hierarchy, education, linguistic power
+  - movement infrastructure: unions, student groups, parties, literary circles
+  - decolonization: anti-colonial mobilization, sovereignty claims, elite formation
+  - postcolonial settlement: state ideology, official culture, symbolic unity
+  - afterlife: memory politics, educational canon, continental institutions, decolonial revival
+
+causal_layers:
+  structural_drivers:
+    - Racialized imperial hierarchy across colony and metropole
+    - Expansion of colonial education and literate intermediaries
+    - Atlantic and trans-imperial circulation of Black thought
+    - Uneven access to citizenship, labor rights, and political representation
+  conjunctural_mechanisms:
+    - Congresses, journals, poetry, and intellectual salons creating shared vocabulary
+    - Student, worker, and anti-colonial networks translating cultural critique into organization
+    - Colonial repression and world-war shifts destabilizing imperial legitimacy
+    - Independence transitions converting intellectual currents into state projects
+  trigger_candidates:
+    - "Pan-African Congress moments as transnational articulation thresholds"
+    - "Negritude publication/conference moments as cultural rupture nodes"
+    - "Independence-era state adoption of cultural-national legitimacy claims"
+
+ideological_layer_requirements:
+  dominant_episteme_questions:
+    - What assumptions made colonial tutelage, assimilation, or civilizational hierarchy appear natural?
+    - How did imperial education shape what counted as seriousness or universality?
+  legitimating_apparatus_questions:
+    - Which colonial schools, metropole intellectual institutions, journals, churches, and administrations authorized or filtered acceptable discourse?
+  suppressed_counterweight_questions:
+    - Which workerist, feminist, radical federalist, socialist, or vernacular alternatives existed but were subordinated or eclipsed?
+    - Which strands of Black internationalism were marginalized once states consolidated?
+  ideological_rupture_rule:
+    - "Choose one datable articulation or confrontation point per emphasized slice."
+  contested_claims_rule:
+    - "Do not settle whether culture, race consciousness, labor struggle, wartime disruption, or state strategy was primary."
+
+must_include_contested_claims:
+  - "Pan-Africanism as primary anti-colonial driver vs one discourse among broader material struggles"
+  - "Negritude as emancipatory cultural reconstruction vs elite literary politics with limited mass traction"
+  - "Diaspora intellectual networks as decisive vs local colonial labor and peasant struggles as decisive"
+  - "Postcolonial adoption as fulfillment vs domestication and narrowing of decolonial possibility"
+  - "Continental solidarity as durable lineage vs symbolic rhetoric with weak institutional transmission"
+
+probe_tasks:
+  retrieval_questions:
+    - "Can the graph show how ideas moved from diaspora circles into anti-colonial politics?"
+    - "Can it distinguish Negritude, Pan-Africanism, socialism, nationalism, and state ideology rather than merging them?"
+    - "Can it represent colonial institutions as active filters and constraints rather than backdrop?"
+    - "Can it trace afterlives into later decolonial politics and continental legitimacy claims?"
+    - "Can it surface suppressed alternatives within the anti-colonial field?"
+  traversal_tests:
+    - "Find a path from colonial education to anti-colonial ideological rupture."
+    - "Find a path from journal or congress network to party or movement formation."
+    - "Find a path from anti-colonial cultural politics to postcolonial state legitimation."
+    - "Find a rival inheritance path where radical possibilities are narrowed after independence."
+
+negative_tests:
+  - "Fail if all Black internationalist currents are collapsed into one node."
+  - "Fail if anti-colonial politics is represented without colonial metropole mediation."
+  - "Fail if culture is treated as decorative rather than causal."
+  - "Fail if labor and student infrastructures disappear."
+  - "Fail if postcolonial afterlife is asserted without transmission mechanisms."
+  - "Fail if state adoption is treated as pure victory rather than possible co-optation."
+
+ablations:
+  - name: no_external_power_nodes
+    expectation: "Should weaken empire and metropole constraint paths."
+  - name: no_transmission_layer
+    expectation: "Should collapse congresses, journals, schools, and diaspora circulation."
+  - name: no_counterweight_layer
+    expectation: "Should erase internal anti-colonial alternatives and suppressed strands."
+  - name: no_persistence_nodes
+    expectation: "Should weaken afterlife and postcolonial lineage modeling."
+
+fixture_hints:
+  target_node_count: "28-42"
+  expected_highest_centrality:
+    - diaspora intellectual circulation
+    - colonial legitimacy hierarchy
+    - anti-colonial cultural politics
+    - movement infrastructure
+    - postcolonial state legitimation
+  expected_high_contention:
+    - Negritude as elite vs emancipatory formation
+    - Pan-Africanism mass reach thesis
+    - postcolonial co-optation thesis
+    - suppressed socialist/federalist alternatives
+  parsimony_exception: false
+
+sources_to_consult:
+  - W.E.B. Du Bois, Pan-African Congress writings
+  - George Padmore, Pan-Africanism or Communism?
+  - Aimé Césaire, Discourse on Colonialism
+  - Léopold Sédar Senghor, Negritude writings
+  - Frantz Fanon, The Wretched of the Earth
+  - Brent Hayes Edwards, The Practice of Diaspora
+  - Gary Wilder, Freedom Time
+  - Adom Getachew, Worldmaking after Empire
+  - Hakim Adi, Pan-African history works
+  - Frederick Cooper, decolonization and empire works

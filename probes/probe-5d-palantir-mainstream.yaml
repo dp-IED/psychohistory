@@ -1,0 +1,366 @@
+probeid: "6B-4"
+parentprobe: "6B"
+name: "Palantir AI-War-Tech Mainstreaming and Public-Market Defense Identity"
+version: "0.1"
+status: candidate
+format: probespecv2
+benchmark_pack: v0
+compatibility_tier: v1-patched
+ontology_delta_ref: ontology/ontology-delta-v1-persistence.yaml
+
+summary:
+  purpose: "Evaluate whether a transferable graph schema can represent Palantir's 2022 to 2026 transition into AI-war-tech mainstreaming through Ukraine-linked legitimacy, AIP repositioning, allied-security extension, product-stack reframing, and public-market defense-tech identity."
+  rationale: "This subprobe isolates the shock-to-legitimacy grammar of the parent 6B case so the IR can be tested on war-tech branding, AI repositioning, geopolitical demand multipliers, and the distinction between institutional embedding and public narrative amplification."
+
+scope:
+  region: "Western / U.S. with allied-state and war-tech extensions"
+  polity: "Palantir as a public-market defense-tech and AI-war-tech platform"
+  temporalwindow:
+    startyear: 2022
+    endyear: 2026
+    label: "Ukraine branding, AI-war-tech legitimacy, public-market identity, and defense-tech mainstreaming"
+  recommendedslices:
+    - sliceid: "6b4_ai_wartech_mainstreaming"
+      startyear: 2022
+      endyear: 2026
+      label: "Conflict-linked legitimacy, AI repositioning, and public-market defense identity"
+  exclusions:
+    - "Do not read Ukraine-era legitimacy backward into earlier Palantir slices."
+    - "Do not confuse media branding with actual institutional embedding."
+    - "Do not collapse AIP, Gotham, Foundry, and Apollo into one product node."
+    - "Do not substitute broad geopolitical commentary for explicit product, contract, and institution structure."
+    - "Do not omit allied-state extension or public-market identity."
+
+artifacts:
+  humanauthored:
+    - "Canonical subprobe boundary for 2022 to 2026"
+    - "Ontology commitments for shock-to-legitimacy structure, AI repositioning, and allied-state extension"
+    - "Target definitions for war-tech legitimacy and market-position deltas"
+    - "Negative tests and ablations"
+  machinegenerated:
+    - "Entity linking for institutions, products, markets, and allied actors"
+    - "Narrative extraction for war-tech, AI, sovereignty, and defense framing"
+    - "Contract and institutional-path enrichment from public procurement evidence"
+    - "Fixed-dimensional node projections for downstream GNN use"
+
+groundedsources:
+  - source: "Wikidata"
+    role: "Canonical IDs for products, firms, actors, and institutions"
+    required: true
+  - source: "Wikipedia"
+    role: "Chronology, product launches, public milestones, and institutional relationships"
+    required: true
+  - source: "GDELT"
+    role: "Conflict-linked narrative dynamics, war-tech branding, and legitimacy amplification"
+    required: true
+  - source: "ICEWS"
+    role: "Optional structured interaction signals around conflict, alliances, and state-facing activity"
+    required: false
+  - source: "SEC filings / annual reports / investor letters"
+    role: "Public-market identity, customer concentration, AI repositioning, and management claims"
+    required: true
+  - source: "U.S. federal procurement or contract databases"
+    role: "Contract pathways and customer structure where public evidence exists"
+    required: true
+  - source: "Polymarket or similar forecast market"
+    role: "Optional downstream benchmarking alignment for war-tech or defense-related expectation questions"
+    required: false
+
+corequestion: "Can a single graph schema represent how external conflict, AI repositioning, allied-security demand, public-market identity, and product-stack differentiation together legitimated Palantir as defense or AI-war-tech infrastructure in a way that is queryable, temporally disciplined, and GNN-consumable?"
+
+subquestions:
+  - "Which conflict-linked events and narratives most strongly increased Palantir's war-tech legitimacy?"
+  - "How should Ukraine-linked branding be represented distinctly from actual institutional embedding and contracts?"
+  - "Which products, including AIP and legacy platforms, changed Palantir's market-facing identity in this slice?"
+  - "Which agencies or allied public-sector institutions deepened the firm's defense-tech positioning?"
+  - "What narratives around sovereignty, defense, AI, and strategic necessity legitimized the firm?"
+  - "Which counterweights, including skepticism, scrutiny, concentration risk, or branding-embedding mismatch, remained active?"
+  - "How can the graph distinguish geopolitical demand amplification from simple media attention?"
+  - "What within-slice changes show transition from defense contractor image to broader AI-war-tech platform identity?"
+
+schemarequirements:
+  mustrepresent:
+    nodetypes:
+      - "Actor"
+      - "Firm"
+      - "Institution"
+      - "Office"
+      - "ProcurementChannel"
+      - "Contract"
+      - "PlatformProduct"
+      - "Event"
+      - "Policy"
+      - "Narrative"
+      - "Norm"
+      - "Counterweight"
+      - "Shock"
+      - "Claim"
+      - "ExternalPower"
+      - "SecurityApparatus"
+      - "MilitaryFormation"
+      - "MarketActor"
+      - "MediaNarrative"
+    edgetypes:
+      - "contractswith"
+      - "procuresfrom"
+      - "embedsin"
+      - "brandsthrough"
+      - "marketsas"
+      - "legitimizes"
+      - "delegitimizes"
+      - "respondsTo"
+      - "alignswith"
+      - "dependson"
+      - "integrateswith"
+      - "constrains"
+      - "contests"
+      - "scrutinizes"
+      - "scales"
+  mustsupport:
+    - "Explicit distinction between institutional embedding and public war-tech branding."
+    - "Separate product nodes for Gotham, Foundry, Apollo, and AIP."
+    - "Typed shock nodes for conflict and geopolitical events."
+    - "Graphable allied-state extension and public-market identity relations."
+    - "Time-scoped representation of AI repositioning and defense-tech mainstreaming."
+    - "Fixed-dimensional node projections and evidence provenance for downstream GNN use."
+  antirequirements:
+    - "Do not read later legitimacy backward."
+    - "Do not collapse products into one blob."
+    - "Do not confuse branding with actual adoption."
+    - "Do not flatten conflict-linked legitimacy into generic media salience."
+    - "Do not omit counterweights."
+  mayrepresent:
+    nodetypes:
+      - "LineageClaim"
+      - "InstitutionalLineage"
+      - "InheritanceBundle"
+      - "TransmissionChannel"
+      - "LegacyAggregate"
+    edgetypes:
+      - "inherits_from"
+      - "transmits_through"
+      - "supersedes_while_claiming_continuity"
+      - "leaves_legacy_via"
+
+expectedgraphaxes:
+  material:
+    - "Contract continuity"
+    - "Customer concentration"
+    - "Product-stack expansion"
+    - "Public-market positioning"
+  institutional:
+    - "Defense institutions"
+    - "Allied public-sector institutions"
+    - "Procurement offices"
+  ideological:
+    - "AI-war-tech legitimacy"
+    - "Sovereignty"
+    - "Strategic necessity"
+    - "Defense modernization"
+  counterweights:
+    - "Branding versus embedding mismatch"
+    - "Reputational skepticism"
+    - "Concentration risk"
+    - "Oversight and scrutiny"
+  asymmetryandexternalconstraint:
+    - "Dependence on geopolitical shocks"
+    - "Alliance demand"
+    - "Public-market expectations"
+  firms:
+    - "Palantir as defense-tech and AI platform"
+  investors:
+    - "Market-facing legitimacy and investor expectations"
+  procurement:
+    - "Defense and allied-state customer pathways"
+    - "Expansion and renewal mechanisms"
+  standards:
+    - "Security compliance"
+    - "Interoperability"
+    - "Public-sector AI acceptability"
+  platforms:
+    - "Gotham"
+    - "Foundry"
+    - "Apollo"
+    - "AIP"
+  labor:
+    - "Mission-oriented defense-tech labor legitimacy"
+    - "AI and government-facing technical talent"
+  regulatorychannels:
+    - "Public reporting"
+    - "Procurement oversight"
+    - "Public-sector approval and compliance"
+
+seedentities:
+  actors:
+    - "Alex Karp"
+    - "Palantir leadership"
+  events:
+    - "Ukraine-related war-tech branding moments"
+    - "AIP launch and AI repositioning"
+    - "Public-market defense-tech identity milestones"
+  institutions:
+    - "Palantir Technologies"
+    - "U.S. Department of Defense"
+    - "Allied public-sector institutions where publicly evidenced"
+    - "U.S. federal procurement offices"
+  places:
+    - "United States"
+    - "Ukraine"
+    - "European allied public-sector contexts"
+  firmsproductsplatforms:
+    - "Palantir Technologies"
+    - "Gotham"
+    - "Foundry"
+    - "Apollo"
+    - "AIP"
+
+generictargetinterface:
+  graphleveltargets:
+    - target: "wartechlegitimacyscore"
+      description: "Extent to which conflict-linked use, branding, and institutional relations legitimate the firm as war-tech infrastructure."
+      computableat: "slice cutoff only"
+    - target: "marketpositioningscore"
+      description: "Degree to which the firm is positioned as a defense-tech or AI platform actor."
+      computableat: "slice cutoff only"
+    - target: "stateembeddingscore"
+      description: "Depth of embedding across defense and allied public-sector institutions."
+      computableat: "slice cutoff only"
+    - target: "productstackcoherencescore"
+      description: "Degree of visible coherence and differentiation across Palantir's product stack."
+      computableat: "slice cutoff only"
+    - target: "counterweightstrengthscore"
+      description: "Strength of active constraints, skepticism, and scrutiny."
+      computableat: "slice cutoff only"
+  slicetransitiontargets:
+    - target: "wartechdelta"
+      description: "Within-slice increase in conflict-linked legitimacy."
+    - target: "marketpositiondelta"
+      description: "Within-slice shift toward AI-war-tech and defense-platform identity."
+    - target: "productstackdelta"
+      description: "Within-slice change in visible product-stack framing and integration."
+
+probetasks:
+  retrievaltasks:
+    - "Through which products, contracts, institutions, and events did Palantir acquire war-tech legitimacy in this slice?"
+    - "Which narratives linked Ukraine and AI to Palantir's defense-tech positioning?"
+    - "What counterweights constrained or contested war-tech mainstreaming?"
+    - "Which institutional relations reflect actual embedding rather than brand amplification?"
+  structuraltasks:
+    - "Separate conflict-linked shock nodes from contracts and narrative effects."
+    - "Keep AIP, Gotham, Foundry, and Apollo as distinct products with separate relations."
+    - "Represent allied-state extension as distinct from domestic U.S. embedding."
+    - "Retrieve paths that connect shocks to products to institutions to legitimacy outcomes."
+  gnntasks:
+    - "Predict wartechlegitimacyscore from shock, product, institution, and narrative features."
+    - "Predict whether marketpositiondelta exceeds productstackdelta within the slice."
+    - "Classify whether graph change is driven more by actual embedding or by branded legitimacy amplification."
+
+labelsandtargets:
+  wartechlegitimacyscore:
+    description: "Degree to which Palantir is legitimated as war-tech or defense infrastructure."
+    sourcepriority:
+      - "GDELT"
+      - "SEC filings / annual reports / investor letters"
+      - "Wikipedia"
+      - "ICEWS"
+    leakagerule: "Use only evidence documented between 2022 and the evaluation cutoff."
+    targetconstructionrule: "Score conflict-linked product visibility, defense framing, institutional ties, and legitimizing narratives up to the cutoff."
+  marketpositioningscore:
+    description: "Strength of defense-tech and AI-platform public-market positioning."
+    sourcepriority:
+      - "SEC filings / annual reports / investor letters"
+      - "GDELT"
+      - "Wikipedia"
+    leakagerule: "Use only contemporaneous market-facing claims and public narrative."
+    targetconstructionrule: "Combine product, market-actor, and narrative relations into a bounded score."
+  stateembeddingscore:
+    description: "Depth of embeddedness across defense and allied public-sector institutions."
+    sourcepriority:
+      - "U.S. federal procurement or contract databases"
+      - "Wikipedia"
+      - "ICEWS"
+    leakagerule: "Require explicit institutional ties; do not infer from branding alone."
+    targetconstructionrule: "Aggregate agency diversity, continuity, and integration evidence."
+  productstackcoherencescore:
+    description: "Degree of differentiated but connected product-stack structure."
+    sourcepriority:
+      - "SEC filings / annual reports / investor letters"
+      - "Wikipedia"
+      - "Wikidata"
+    leakagerule: "Do not retroactively assign later significance to products absent in the cutoff state."
+    targetconstructionrule: "Score distinct product nodes, integration edges, and coherent platform framing."
+  counterweightstrengthscore:
+    description: "Strength of skepticism, scrutiny, and structural constraints active in the slice."
+    sourcepriority:
+      - "GDELT"
+      - "Wikipedia"
+      - "SEC filings / annual reports / investor letters"
+    leakagerule: "Count only active pre-cutoff counterweights."
+    targetconstructionrule: "Score the number, diversity, and centrality of constraining actors, claims, and narratives."
+
+evaluation:
+  stage1validitychecks:
+    - "Verify one slice covering 2022 through 2026."
+    - "Verify products remain distinct typed objects."
+    - "Verify branding and embedding are not collapsed."
+    - "Verify conflict-linked shocks are represented as typed nodes."
+  stage2groundingmetrics:
+    - "Entity-link precision for products, institutions, and market actors"
+    - "Grounding coverage for product and institutional claims"
+    - "Temporal grounding compliance for conflict-linked events and narratives"
+  stage3retrievalmetrics:
+    - "Shock-to-legitimacy path retrieval accuracy"
+    - "Product differentiation fidelity"
+    - "Branding-versus-embedding separation accuracy"
+    - "Counterweight retrieval recall"
+    - "Optional v1: origin_to_afterlife_path_recall from founding-era commitments to current defense-tech identity."
+    - "Optional v1: survival_through_transformation_recall for product and market-facing identity shifts."
+    - "Optional v1: transmission_channel_recall for procurement, media, and allied-state pathways."
+  stage4predictionmetrics:
+    - "Graph-level target accuracy for wartechlegitimacyscore and marketpositioningscore"
+    - "Within-slice delta accuracy for wartechdelta and marketpositiondelta"
+    - "Ablation gain from adding shock and ideology structure over procurement-only baseline"
+  wincondition: "The schema wins if it distinguishes conflict-linked legitimacy, product differentiation, institutional embedding, and public-market defense identity while avoiding backward leakage and branding-only shortcuts."
+  persistence_delta_v1:
+    doc_ref: "ontology/ontology-delta-v1-persistence.yaml"
+    ablation_addition: "persistence_layer_ablation"
+    optional_win_evidence: "Report whether stripping optional persistence types loses measurable retrieval or prediction on shock-to-legacy or market-identity pathway tasks versus full v1-patched graph."
+
+negativetests:
+  - "Read Ukraine-era legitimacy backward into the founding period."
+  - "Collapse AIP, Gotham, Foundry, and Apollo into one product."
+  - "Treat branding as equivalent to institutional adoption."
+  - "Return AI-war-tech legitimacy as a paragraph without typed nodes."
+  - "Ignore active skepticism and scrutiny."
+
+ablationsuite:
+  - "materialonly"
+  - "materialplusinstitutions"
+  - "materialplusinstitutionsplusprocurement"
+  - "materialplusinstitutionsplusideology"
+  - "materialplusinstitutionsplusideologyplusshockstructure"
+  - "fullmodelwithcounterweights"
+
+splits:
+  suggestedtrain:
+    - "6b4_ai_wartech_mainstreaming"
+  suggestedvalidation:
+    - "heldout_shock_and_product_subset"
+  suggestedstresstest:
+    - "transfer_to_semiconductor_or_other_wartech_probe"
+
+bridgerole:
+  modernbridge: "AI-war-tech business-state fusion probe"
+  purpose: "Bridge Palantir's parent case to broader defense-tech, AI-platform, and war-linked legitimacy probes through shared shock, product, and institutional ontology."
+  downstreamalignment:
+    - "Aligns with 6B-3 on public-market identity and controversy structure"
+    - "Aligns with semiconductor and defense-tech probes through strategic dependency and state demand"
+    - "Aligns with war probes through typed shocks and external-legitimacy pathways"
+  failuremodestowatch:
+    - "Branding-embedding collapse"
+    - "Product blobification"
+    - "Backward leakage"
+    - "Conflict salience substituted for institutional structure"
+  autoresearchobjectivehint: "Prefer schemas that improve retrieval and prediction when shocks, products, legitimacy, and institutional embedding are all modeled as first-class graph structure."
+  notes:
+    - "This child probe is especially useful as a stress test for shock-to-legitimacy modeling."

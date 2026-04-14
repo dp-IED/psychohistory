@@ -1,0 +1,26 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.log
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+*.egg-info/
+
+proposal.json
+
+data/polymarket_resolved/**
+data/gdelt/**
+!data/polymarket_resolved/.gitkeep
+!data/gdelt/.gitkeep
+cache/**
+!cache/.gitkeep
+
+autoresearch/experiments/candidates/
+autoresearch/experiments/graph_cache/
+autoresearch/experiments/best/latest/
+autoresearch/experiments/log.jsonl
+autoresearch/experiments/agent_subprocess.log
+
+# Bundled upstream clone (separate repository)
+autoresearch-mlx/

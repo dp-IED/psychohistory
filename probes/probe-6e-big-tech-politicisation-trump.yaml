@@ -1,0 +1,368 @@
+probeid: "6C-5"
+family: "businessfamily6C"
+name: "Big Tech Emergence, Platform Consolidation, and Political Reordering — Trump-Era Politicization and Backlash"
+version: "0.1"
+status: "candidate"
+format: "probespecv2"
+benchmark_pack: v0
+compatibility_tier: v1-patched
+ontology_delta_ref: ontology/ontology-delta-v1-persistence.yaml
+
+summary:
+  purpose: "Define a leakage-resistant benchmark probe for testing whether a shared graph IR can encode Big Tech's transition from liberal-technocratic legitimacy into open political contestation during 2017-2021, while remaining suitable for retrieval, explanation, and downstream adaptive GNN training."
+  rationale: "This probe stresses platform governance, speech moderation, antitrust attention, nationalism, advertiser pressure, and platform-state tension as interacting structures rather than reducing the period to partisan rhetoric or generic event flow. It is intended to force typed representation of firms, platforms, regulators, coalitions, narratives, policies, and counterweights across tightly bounded slices."
+
+scope:
+  region: "Western / U.S. with global platform effects"
+  polity_or_system: "Big Tech under content moderation conflict, populist backlash, nationalism, antitrust pressure, and platform-state tension"
+  temporal_window: "2017 to 2021"
+  startyear: 2017
+  endyear: 2021
+  label: "Moderation conflict, antitrust attention, nationalism, and backlash"
+  recommendedslices:
+    - sliceid: "6c5_populist_platform_tension"
+      startyear: 2017
+      endyear: 2018
+      label: "Rising populist conflict and platform legitimacy stress"
+    - sliceid: "6c5_antitrust_and_content_conflict"
+      startyear: 2019
+      endyear: 2020
+      label: "Antitrust scrutiny, moderation disputes, and sovereignty narratives"
+    - sliceid: "6c5_postelection_platform_crisis"
+      startyear: 2021
+      endyear: 2021
+      label: "Election aftermath, deplatforming crisis, and platform-state tension"
+  exclusions:
+    - "Exclude frontier-AI model races, safety debates, and compute-concentration narratives whose primary causal salience belongs to 2022 and later."
+    - "Exclude post-2022 war-tech convergence, defense-tech branding, battlefield software legitimacy, and cloud-security fusion."
+    - "Exclude retrospective importation of 2022-2026 export-control, AI-security, or industrial-policy logic into 2017-2021."
+    - "Do not treat later platform-AI integration as evidence for earlier moderation or political conflict mechanisms."
+    - "Do not include post-2022 war shocks as explanatory drivers for 2017-2021 legitimacy or regulatory shifts."
+
+artifacts:
+  humanauthored:
+    - "Probe definition, scope boundaries, slice design, and exclusions"
+    - "Gold subquestions and failure prompts"
+    - "Seed entity curation and ontology constraints"
+    - "Target definitions, leakage rules, and evaluation criteria"
+  machinegenerated:
+    - "Time-scoped entity linking to Wikidata and Wikipedia"
+    - "Event and claim extraction from GDELT, ICEWS, hearings, filings, and platform archives"
+    - "Candidate graph expansions for narratives, norms, policies, and counterweights"
+    - "Derived slice-level target features and transition deltas"
+    - "Retriever-ready query packs and contrastive negative examples"
+
+groundedsources:
+  - source: "Wikidata"
+    role: "Stable entity spine for firms, regulators, offices, hearings, and key events"
+    required: true
+  - source: "Wikipedia"
+    role: "Human-readable event, institution, platform, and policy grounding"
+    required: true
+  - source: "SEC filings"
+    role: "Firm disclosures, business-model dependence, risk framing, and concentration context"
+    required: true
+  - source: "GDELT"
+    role: "Time-indexed media-event flow, salience shifts, and narrative pressure proxies"
+    required: true
+  - source: "Antitrust filings or congressional hearings"
+    role: "Formal scrutiny, regulatory attention, elite signaling, and platform accountability episodes"
+    required: true
+  - source: "Platform policy archives"
+    role: "Primary-source evidence for moderation rules, enforcement changes, and governance mechanics"
+    required: true
+  - source: "ICEWS"
+    role: "Optional structured political interaction signals where useful for state-platform contention"
+    required: false
+
+corequestion: "Can a single graph schema represent how Big Tech moved from liberal-technocratic legitimacy into open political contestation through moderation conflict, antitrust pressure, populist backlash, and intensified platform-state tension in a way that remains queryable, time-scoped, and consumable by downstream GNNs?"
+
+historical_or_analytical_subquestions:
+  - "How should moderation governance be represented so that policy changes, enforcement actions, appeals, and deplatforming events are first-class graph structures rather than narrative residue?"
+  - "How did political polarization alter platform legitimacy among users, elites, and media ecosystems across the three slices?"
+  - "How did antitrust and regulatory attention interact with platform concentration and public controversy rather than operating as separate commentary streams?"
+  - "Which nationalist, sovereignty, and censorship narratives attached to platforms, and how did those narratives differ by coalition and slice?"
+  - "How did advertiser pressure, user mobilization, and direct or indirect state pressure constrain or redirect firm behavior?"
+  - "What counterweights and internal contradictions limited platform choices, including courts, federalism, internal employee dissent, civil-society critique, and business-model dependence?"
+  - "Did elite realignment around Big Tech produce durable coalition shifts, or did it mainly intensify rhetorical contestation without dissolving platform dependence?"
+  - "What structurally changed between 2017-2018, 2019-2020, and 2021, and which changes reflect governance mechanics rather than surface discourse?"
+
+schemarequirements:
+  mustrepresent:
+    - "Platform governance as typed policy and enforcement structure"
+    - "Distinct firms, platforms, regulators, legislative actors, executive actors, user populations, advertisers, and political coalitions"
+    - "Narratives and norms as separate nodes from claims, policies, and events"
+    - "Counterweights as explicit constraints rather than optional annotations"
+    - "Material business dependence and political backlash in the same graph without collapsing either into text"
+    - "Time-scoped legitimacy, contestation, and regulatory pressure across slices"
+  nodetypes:
+    - "Firm"
+    - "Platform"
+    - "RegulatoryBody"
+    - "LegislativeBody"
+    - "ExecutiveOffice"
+    - "UserPopulation"
+    - "Advertiser"
+    - "DataAsset"
+    - "Event"
+    - "Policy"
+    - "Narrative"
+    - "Norm"
+    - "Counterweight"
+    - "Claim"
+    - "PoliticalCoalition"
+    - "MediaNarrative"
+    - "LaborPool"
+  edgetypes:
+    - "moderates"
+    - "deplatforms"
+    - "scrutinizes"
+    - "regulates"
+    - "contests"
+    - "legitimizes"
+    - "delegitimizes"
+    - "dependson"
+    - "monetizes"
+    - "polarizes"
+    - "alignswith"
+    - "respondsTo"
+    - "constrains"
+  mustsupport:
+    - "Stable identities for firms, regulators, policies, and coalitions across slices"
+    - "Coexistence of business concentration and political backlash in the same graph state"
+    - "Typed retrieval over moderation events, antitrust events, and legitimacy narratives"
+    - "Fixed-dimensional node projection for downstream GNN training"
+    - "Pre-cutoff graph snapshots for leakage-safe supervision"
+    - "Querying for failed counterweights, not only successful drivers"
+    - "Contradictory signals such as elite endorsement alongside public delegitimation"
+  antirequirements:
+    - "Must forbid reducing the period to partisan rhetoric alone"
+    - "Must forbid ignoring platform governance mechanics"
+    - "Must forbid ignoring advertiser and regulatory pressure"
+    - "Must forbid returning ideology as prose only"
+    - "Must forbid importing post-2022 AI-security logic backward"
+  mayrepresent:
+    nodetypes:
+      - "LineageClaim"
+      - "InstitutionalLineage"
+      - "InheritanceBundle"
+      - "TransmissionChannel"
+      - "LegacyAggregate"
+    edgetypes:
+      - "inherits_from"
+      - "transmits_through"
+      - "supersedes_while_claiming_continuity"
+      - "leaves_legacy_via"
+
+expectedgraphaxes:
+  material: "Revenue dependence on advertising, user attention, market concentration, and traffic intermediation."
+  institutional: "FTC, DOJ, Congress, White House and agency relationships, hearing structures, and platform policy apparatus."
+  ideological: "Free speech, safety, openness, anti-elite backlash, censorship claims, nationalism, and technocratic legitimacy."
+  counterweights: "Courts, federalism, civil-society criticism, employee dissent, advertiser exits, and reputational blowback."
+  asymmetryandexternalconstraint: "Global platform reach, uneven regulatory capacity, election shocks, and dependence on legacy legal frameworks."
+  firms: "Meta/Facebook, Google/YouTube, Twitter, and Amazon where cross-platform dynamics or cloud/market power are relevant."
+  investors: "Capital-market expectations and governance pressures where they shape tolerance for moderation, concentration, or political risk."
+  procurement: "Only where state contracting or hosting relationships materially shape platform-state tension; not as a default driver."
+  standards: "Speech rules, enforcement rules, platform governance protocols, and quasi-public norms around acceptable online conduct."
+  platforms: "Feeds, recommender systems, ad systems, account governance, and deplatforming pathways."
+  labor: "Trust-and-safety workforces, contractors, engineering orgs, and internal dissent."
+  regulatorychannels: "Hearings, investigations, lawsuits, agency inquiries, executive signaling, and policy archive changes."
+
+seedentities:
+  firms:
+    - "Meta / Facebook"
+    - "Google / YouTube"
+    - "Twitter"
+    - "Amazon"
+  state_actors:
+    - "Trump administration"
+    - "Congress"
+    - "FTC"
+    - "DOJ"
+  platform_governance_objects:
+    - "Content moderation policies"
+    - "Community standards"
+    - "Account enforcement systems"
+    - "Deplatforming events"
+  conflict_objects:
+    - "Election misinformation conflicts"
+    - "Platform bans and suspensions"
+    - "Antitrust investigations"
+    - "Congressional hearings on platform power"
+  coalitions_and_pressures:
+    - "Populist backlash coalitions"
+    - "Advertiser pressure campaigns"
+    - "Civil-society critics"
+    - "Employee dissent networks"
+  narrative_examples:
+    - "Free speech versus safety"
+    - "Censorship claims"
+    - "Platform responsibility"
+    - "National sovereignty over information space"
+
+generictargetinterface:
+  graphleveltargets:
+    - "legitimacypolarizationscore"
+    - "moderationstressscore"
+    - "regulatorypressurescore"
+    - "concentrationscore"
+    - "counterweightstrengthscore"
+    - "platformstateconflictscore"
+  slicetransitiontargets:
+    - "legitimacypolarizationdelta"
+    - "moderationstressdelta"
+    - "regulatorypressuredelta"
+    - "counterweightdeltа"
+    - "platformstateconflictdelta"
+    - "governanceescalationdelta"
+
+probetasks:
+  retrievaltasks:
+    - "Retrieve the moderation policies, enforcement events, and governance actors most relevant to each slice."
+    - "Retrieve which political coalitions and media narratives most strongly delegitimized or defended major platforms in each slice."
+    - "Retrieve the main antitrust and congressional scrutiny events and link them to specific firms, platforms, and claims."
+    - "Retrieve advertiser, user, and state pressures that constrained platform behavior, distinguishing direct from indirect pressure."
+    - "Retrieve the strongest counterweights to platform power and explain why they were partial, delayed, or inconsistent."
+    - "Retrieve deplatforming-related events and connect them to prior governance rules rather than treating them as isolated shocks."
+  structuraltasks:
+    - "Construct a slice-level graph that separates Firm, Platform, Policy, Narrative, and PoliticalCoalition nodes."
+    - "Infer whether delegitimization pathways are primarily driven by governance events, media narratives, or regulatory scrutiny."
+    - "Detect cross-slice persistence of firm concentration even as legitimacy polarizes."
+    - "Identify minimal causal subgraphs linking moderation conflict to platform-state tension."
+    - "Map where advertiser pressure and regulatory pressure reinforce each other versus where they diverge."
+  gnntasks:
+    - "Predict next-slice moderationstressscore from pre-cutoff graph state."
+    - "Predict next-slice regulatorypressurescore from combined concentration, narrative, and scrutiny structure."
+    - "Classify whether a platform-state conflict transition is likely to intensify, stabilize, or diffuse in the next slice."
+    - "Estimate whether adding counterweight nodes improves prediction and retrieval performance relative to material-only baselines."
+
+labelsandtargets:
+  legitimacypolarizationscore:
+    description: "Degree to which platform legitimacy is split across coalitions, media narratives, and institutional actors rather than remaining broadly technocratic."
+    sourcepriority:
+      - "GDELT"
+      - "Wikipedia"
+      - "Congressional hearings"
+      - "Platform policy archives"
+    leakagerule: "Use only evidence timestamped at or before the slice cutoff; do not use later reinterpretations of earlier events."
+    targetconstructionrule: "Combine normalized counts of delegitimizing versus legitimizing claims across major coalitions, weighted by institutional salience and cross-platform persistence."
+  moderationstressscore:
+    description: "Intensity of governance strain visible in policy revisions, enforcement controversy, appeals, public criticism, and high-salience moderation events."
+    sourcepriority:
+      - "Platform policy archives"
+      - "Wikipedia"
+      - "GDELT"
+    leakagerule: "Do not use post-slice enforcement outcomes or later policy regimes to label earlier slices."
+    targetconstructionrule: "Aggregate policy change frequency, high-salience moderation incidents, deplatforming events, and claim conflict around safety versus free speech."
+  regulatorypressurescore:
+    description: "Strength of formal and quasi-formal pressure from agencies, hearings, investigations, and antitrust pathways."
+    sourcepriority:
+      - "Antitrust filings"
+      - "Congressional hearings"
+      - "DOJ"
+      - "FTC"
+      - "Wikipedia"
+    leakagerule: "Only count scrutiny visible by the slice cutoff; exclude later-filed cases or retroactive summaries."
+    targetconstructionrule: "Score the presence, intensity, and diversity of scrutiny channels, with higher weight for formal investigation and repeated bipartisan attention."
+  concentrationscore:
+    description: "Extent to which a small set of firms and platforms dominate attention, advertising, and governance chokepoints relevant to the probe."
+    sourcepriority:
+      - "SEC filings"
+      - "Wikipedia"
+      - "Antitrust materials"
+    leakagerule: "Do not infer concentration from later AI or cloud-security dominance outside the probe window."
+    targetconstructionrule: "Use firm/platform centrality, advertiser dependence, cross-platform integration, and cited antitrust concentration indicators available by slice."
+  counterweightstrengthscore:
+    description: "Relative strength of institutions and pressures capable of constraining platform power or moderating political backlash."
+    sourcepriority:
+      - "Congressional hearings"
+      - "Court or policy records when linked via Wikipedia"
+      - "GDELT"
+      - "Platform archives"
+    leakagerule: "Do not score counterweights by later successful reforms or later crises outside the slice."
+    targetconstructionrule: "Estimate the number, diversity, and realized constraining effect of courts, federalism, advertisers, civil society, and employee dissent."
+  platformstateconflictscore:
+    description: "Intensity of direct or indirect conflict between platforms and state actors over governance, speech, legitimacy, and enforcement."
+    sourcepriority:
+      - "Wikipedia"
+      - "GDELT"
+      - "Congressional hearings"
+      - "Platform policy archives"
+      - "ICEWS"
+    leakagerule: "Restrict labels to conflict signals available before the slice cutoff; exclude later national-security reinterpretations."
+    targetconstructionrule: "Combine executive and legislative contestation, public threats or pressure, platform responses, and high-salience deplatforming or misinformation conflicts."
+
+evaluation:
+  stage1validity:
+    - "Check that every graph snapshot is buildable from pre-cutoff evidence only."
+    - "Check that required node and edge types are instantiated in all slices."
+    - "Check that platform governance is represented as structure, not free-text summary."
+    - "Check that major firms retain stable identity across slices."
+  stage2grounding:
+    - "Measure percentage of salient entities linked to stable Wikidata or clearly grounded archive records."
+    - "Measure policy grounding coverage against platform policy archives and hearing records."
+    - "Measure event grounding coverage against Wikipedia and GDELT alignment."
+    - "Penalize unsupported narrative or claim nodes."
+  stage3retrieval:
+    - "Score whether retrieval returns typed subgraphs for moderation, antitrust, legitimacy, and counterweights."
+    - "Measure answerability of slice-specific questions without collapsing into prose-only ideology."
+    - "Test contrastive retrieval between similar firms and similar events across slices."
+    - "Require explanation paths that connect business concentration to political backlash via intermediate structures."
+    - "Optional v1: origin_to_afterlife_path_recall for platform governance norms and coalition realignments."
+    - "Optional v1: survival_through_transformation_recall when firms or policies retain identity across slices under new legitimacy frames."
+    - "Optional v1: transmission_channel_recall for media, parties, and advertiser pathways."
+  stage4prediction:
+    - "Evaluate next-slice target prediction using Brier score, calibration, ranking quality, and directional change accuracy."
+    - "Compare ablations to confirm gains from ideology, platform governance, and regulatory channels."
+    - "Stress-test on held-out prompts designed to confuse rhetoric-only models."
+    - "Reward models that preserve forecast skill without sacrificing grounding."
+  wincondition: "The probe passes when a single schema remains temporally valid, grounds core entities and policies, retrieves moderation and counterweight structure accurately, and materially improves held-out target prediction over material-only and prose-ideology baselines."
+  persistence_delta_v1:
+    doc_ref: "ontology/ontology-delta-v1-persistence.yaml"
+    ablation_addition: "persistence_layer_ablation"
+    optional_win_evidence: "Report whether stripping optional persistence types loses measurable retrieval or prediction on lineage or legacy tasks versus full v1-patched graph."
+
+negativetests:
+  - "Explain the era only as partisan culture war."
+  - "Ignore moderation and governance mechanics."
+  - "Treat regulators only as commentary."
+  - "Return ideology as prose only."
+  - "Import post-2022 AI-security convergence into 2017-2021."
+  - "Model deplatforming as isolated events with no prior policy structure."
+  - "Treat advertiser pressure as irrelevant noise rather than a causal constraint."
+
+ablationsuite:
+  - "materialonly"
+  - "materialplusinstitutions"
+  - "materialplusinstitutionsplusideology"
+  - "materialplusinstitutionsplusplatformgovernance"
+  - "materialplusinstitutionsplusregulatorychannels"
+  - "fullmodelwithcounterweights"
+
+splits:
+  suggestedtrain:
+    - "Train on entity linking, policy extraction, and target construction using 2017-2018 and 2019-2020 slices."
+    - "Use within-slice masking over firms, coalitions, and policy nodes to test reconstruction."
+  suggestedvalidation:
+    - "Validate on held-out questions and partial-graph retrieval from the 2019-2020 slice."
+    - "Use pre-2021 cutoff snapshots for transition prediction into the 2021 slice."
+  suggestedstresstest:
+    - "Stress-test on the 2021 slice with deplatforming crisis prompts, coalition ambiguity, and high narrative conflict."
+    - "Include adversarial prompts that try to collapse antitrust, legitimacy, and moderation into one undifferentiated rhetoric channel."
+
+bridgerole:
+  modernbridge: true
+  purpose: "Serve as the business-politics bridge between Obama-era platform consolidation and post-2022 AI-platform-security convergence without allowing leakage from later periods."
+  downstreamalignment: "Aligns with adjacent Big Tech probes by preserving transferable ontology for platform governance, concentration, legitimacy, regulation, and backlash while staying compatible with adaptive GNN forecasting tasks."
+  failuremodestowatch:
+    - "Rhetoric-only explanations that omit platform governance structure"
+    - "Overfitting to one firm, especially Twitter, at the expense of platform-system representation"
+    - "Treating antitrust and moderation as unrelated channels"
+    - "Using later AI-security frames to explain earlier state-platform conflict"
+    - "Encoding narratives but not counterweights"
+  autoresearchobjectivehint: "Search for graph designs that maximize temporal validity, grounding coverage, ideology retrieval, counterweight sensitivity, and next-slice target prediction while penalizing prose-only explanations and future leakage."
+  notes:
+    - "This probe must separate political backlash from underlying business-model concentration."
+    - "The graph should make legitimacy conflict visible without erasing durable structural dependence on major platforms."
+    - "Counterweights should be typed even when they fail, fragment, or constrain only partially."
+    - "All entities should be explicitly time-scoped or marked persistent to support slice-stable GNN embeddings."

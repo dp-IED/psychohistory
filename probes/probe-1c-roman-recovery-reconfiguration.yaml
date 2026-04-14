@@ -1,0 +1,534 @@
+probe_id: roman_family_1C
+name: Roman Recovery and Reconfiguration
+version: 0.3
+status: patched_candidate
+format: probe_spec_v2
+benchmark_pack: v0
+compatibility_tier: v1-patched
+ontology_delta_ref: ontology/ontology-delta-v1-persistence.yaml
+
+summary:
+  purpose: >-
+    Evaluate whether the intermediate graph representation can model partial
+    imperial recovery, administrative reconfiguration, ideological
+    transformation, asymmetric extraction, and uneven resilience after deep
+    crisis, without treating recovery as either full restoration or mere
+    delay before collapse.
+  rationale: >-
+    This patch preserves the original Roman 1C structure while extending the
+    shared ontology so the Roman family can transfer more cleanly into
+    Global South probes where imperial hierarchy, external domination,
+    extraction, mediated rule, and uneven sovereignty must be represented as
+    first-class graph objects rather than implicit background assumptions.
+
+scope:
+  region: Mediterranean and adjacent frontier zones
+  polity: Roman Empire, with focus on reform, reorganization, eastern-western divergence, imperial mediation, and partial recovery
+  temporal_window:
+    start_year: 270
+    end_year: 565
+    label: Aurelian to Justinian
+  recommended_slices:
+    - slice_id: late_third_century_recomposition
+      start_year: 270
+      end_year: 284
+      label: Aurelian and pre-Tetrarchic recomposition
+    - slice_id: tetrarchic_reconfiguration
+      start_year: 284
+      end_year: 337
+      label: Diocletian to Constantine
+    - slice_id: christian_imperial_order
+      start_year: 337
+      end_year: 395
+      label: Constantinian to Theodosian settlement
+    - slice_id: eastern_resilience_western_divergence
+      start_year: 395
+      end_year: 476
+      label: Eastern resilience and western fragmentation
+    - slice_id: post_western_reconfiguration
+      start_year: 476
+      end_year: 565
+      label: Ostrogothic, Vandal, and Justinianic reconfiguration
+  exclusions:
+    - Republican expansion logic unless used only as out-of-sample stress transfer from Roman 1A
+    - A pure fall narrative that ignores survival, adaptation, and institutional mutation
+    - Post-565 developments unless used only as downstream validation labels
+
+artifacts:
+  human_authored:
+    - probe_spec
+  frozen_inputs:
+    - slice_entity_lists
+    - source_snapshots
+    - target_tables
+  machine_generated:
+    - extracted_claims
+    - linked_entities
+    - instantiated_graphs
+    - node_projection_tables
+    - asymmetry_tables
+
+grounded_sources:
+  structural_backbone:
+    - source: Seshat Global History Databank
+      role: >-
+        Long-run context for social complexity, governance, scale, warfare,
+        religion, and inequality variables, especially for institutional
+        persistence, administrative transformation, macro-structural
+        resilience, and imperial scale.
+      required: true
+  entity_spine:
+    - source: Wikidata
+      role: Stable IDs for emperors, offices, institutions, provinces, frontier groups, reforms, churches, wars, successor polities, tributary relations, and events.
+      required: true
+    - source: Wikipedia
+      role: Narrative grounding, chronology, contested interpretations, and source expansion from entity pages.
+      required: true
+  optional_event_layer:
+    - source: DBpedia or derivative historical KGs
+      role: Supplemental linked-entity expansion where available.
+      required: false
+
+core_question:
+  text: >-
+    Can a single graph schema represent how Rome repeatedly reconstituted
+    authority after crisis by linking material capacity, institutional reform,
+    ideological transformation, imperial hierarchy, mediated rule, and uneven
+    counterweights in a way that is queryable and GNN-consumable, while also
+    capturing why recovery remained partial, regionally uneven, and dependent
+    on asymmetric power relations?
+
+historical_subquestions:
+  - What material and organizational capacities enabled recovery or reconstitution at each slice?
+  - Which institutions were preserved, redesigned, delegated, or replaced in response to prior crisis?
+  - Which narratives and norms legitimized restoration, Christian empire, imperial continuity, or differentiated rule?
+  - Which counterweights or constraints limited recovery, redirected it, or made it regionally uneven?
+  - Which forms of extraction, frontier bargaining, or mediated external dependence stabilized authority in one region while weakening it in another?
+  - Which shocks altered the path of reconfiguration, and through what pathways?
+  - What differs between military-political recovery, administrative reform, imperial hierarchy, and civilizational continuity claims?
+
+schema_requirements:
+  must_represent:
+    node_types:
+      - Actor
+      - Empire
+      - SuccessorPolity
+      - Institution
+      - ReligiousInstitution
+      - Office
+      - Province
+      - FrontierZone
+      - MilitaryFormation
+      - Resource
+      - Event
+      - Policy
+      - Narrative
+      - Norm
+      - Counterweight
+      - Shock
+      - Claim
+      - DependencyRegime
+      - ExtractionChannel
+      - ExternalPower
+    edge_types:
+      - restores
+      - reconfigures
+      - administers
+      - taxes
+      - recruits
+      - allies_with
+      - grants_status_to
+      - legitimizes
+      - constrains
+      - undermines
+      - presupposes
+      - contests
+      - benefits
+      - depends_on
+      - transforms_into
+      - responds_to
+      - reforms
+      - centralizes
+      - decentralizes
+      - integrates
+      - excludes
+      - sacralizes
+      - survives_as
+      - extracts_from
+      - channels_through
+      - delegates_to
+      - subordinates
+      - settles_within
+      - bargains_with
+      - externalizes_to
+      - fails_to_check
+  must_support:
+    - time-scoped edges and nodes
+    - uncertain or contested claims
+    - many-to-many relations via relation nodes if needed
+    - perspective-aware queries (e.g., emperors, bureaucrats, bishops, local elites, frontier groups, federates, eastern vs western administrations)
+    - fixed-dimensional node projections for downstream GNN training
+    - representation of imperial asymmetry, mediated rule, and extraction as typed graph structure
+    - representation of regional divergence without forcing separate incompatible ontologies
+  anti_requirements:
+    - Do not treat recovery as full restoration of the earlier imperial system.
+    - Do not collapse ideology into untyped text blobs.
+    - Do not represent Christianization only as religion; it must be representable as an institutional and legitimacy transformation.
+    - Do not flatten eastern resilience and western breakdown into one homogeneous late-Roman story.
+    - Do not model imperial hierarchy or extraction only as vague context; they must be queryable graph structure.
+
+  may_represent:
+    node_types:
+      - LineageClaim
+      - InstitutionalLineage
+      - InheritanceBundle
+      - TransmissionChannel
+      - LegacyAggregate
+    edge_types:
+      - inherits_from
+      - transmits_through
+      - supersedes_while_claiming_continuity
+      - leaves_legacy_via
+
+expected_graph_axes:
+  material:
+    - fiscal reconstruction
+    - manpower and army reorganization
+    - logistics and frontier defense
+    - urban and provincial resource capacity
+    - tax and requisition reforms
+    - extraction and redistribution channels
+  institutional:
+    - tetrarchy
+    - imperial office and succession redesign
+    - provincial and diocesan administration
+    - military command restructuring
+    - church-state coordination
+    - successor-state and eastern imperial continuity structures
+    - mediated governance through local elites and frontier arrangements
+  ideological:
+    - restoration and renewal narratives
+    - Christian imperial legitimacy
+    - norms of unity, orthodoxy, and imperial guardianship
+    - narratives of Roman continuity despite institutional mutation
+    - narratives that naturalize hierarchy, frontier protection, and differentiated membership
+  counterweights:
+    - elite resistance to reform
+    - fiscal exhaustion
+    - local autonomy and provincial divergence
+    - military particularism
+    - doctrinal conflict
+    - frontier and federate pressures
+    - administrative overreach and coordination failure
+  asymmetry_and_dependency:
+    - imperial core versus frontier bargaining zones
+    - mediated sovereignty through federates and successor rulers
+    - extraction from provinces to support military and court centers
+    - uneven burdens across regions
+    - survival through hierarchy rather than uniform integration
+
+seed_entities:
+  actors:
+    - Aurelian
+    - Diocletian
+    - Constantine the Great
+    - Theodosius I
+    - Justinian I
+    - Roman Empire
+    - Eastern Roman Empire
+    - Western Roman Empire
+    - imperial bureaucracy
+    - bishops
+    - provincial elites
+    - Goths
+    - Vandals
+    - Ostrogoths
+    - federate groups
+  events:
+    - reconquest of the Palmyrene Empire
+    - Diocletianic reforms
+    - Edict on Maximum Prices
+    - Battle of the Milvian Bridge
+    - Council of Nicaea
+    - division after Theodosius I
+    - sack of Rome in 410
+    - fall of the Western Roman Empire
+    - Ostrogothic Kingdom
+    - Justinianic reconquests
+  institutions:
+    - tetrarchy
+    - dominate
+    - diocesan administration
+    - comitatenses
+    - limitanei
+    - Christian church
+    - imperial court
+    - successor kingdoms
+    - federate arrangements
+  places:
+    - Rome
+    - Constantinople
+    - Ravenna
+    - Antioch
+    - Alexandria
+    - North Africa
+    - Italy
+    - Gaul
+    - Balkans
+    - eastern frontier
+
+generic_target_interface:
+  graph_level_targets:
+    - capacity_score
+    - integration_score
+    - legitimacy_score
+    - counterweight_strength_score
+    - shock_response_score
+    - resilience_score
+    - reconfiguration_score
+    - asymmetry_score
+  slice_transition_targets:
+    - administrative_capacity_delta
+    - legitimacy_delta
+    - regional_divergence_delta
+    - resilience_delta
+    - institutional_reconfiguration_delta
+    - extraction_dependency_delta
+  rule: All targets must be computable from evidence available at or before the slice cutoff.
+
+probe_tasks:
+  retrieval_tasks:
+    - id: rt1
+      prompt: Which reforms or institutions converted crisis into temporary or durable governability?
+      expected_answer_shape:
+        - Institution
+        - Policy
+        - Event
+        - Claim
+    - id: rt2
+      prompt: Which narratives and norms legitimized Roman continuity under changed institutions?
+      expected_answer_shape:
+        - Narrative
+        - Norm
+        - Actor
+        - Claim
+    - id: rt3
+      prompt: What counterweights limited recovery or made it uneven across regions?
+      expected_answer_shape:
+        - Counterweight
+        - Actor
+        - Institution
+        - Edge path with constrains/undermines/excludes semantics
+    - id: rt4
+      prompt: How did eastern resilience differ structurally from western fragmentation?
+      expected_answer_shape:
+        - time-scoped subgraphs across at least two slices
+    - id: rt5
+      prompt: How did Christianization alter legitimacy and institutional coordination rather than merely religious belief?
+      expected_answer_shape:
+        - Narrative
+        - Institution
+        - Policy
+        - Claim
+    - id: rt6
+      prompt: Which imperial extraction or mediated-rule pathways supported recovery in one region while producing fragility or dependency in another?
+      expected_answer_shape:
+        - Empire
+        - Province
+        - ExtractionChannel
+        - DependencyRegime
+        - Edge path with extracts_from/channels_through/delegates_to semantics
+  structural_tasks:
+    - id: st1
+      check: Can the IR keep the same entity identity across slices while allowing role changes, institutional mutation, and regional divergence?
+    - id: st2
+      check: Can the IR represent both recovery and persistent fragility in the same slice?
+    - id: st3
+      check: Can the IR encode contested interpretations without deleting minority claims?
+    - id: st4
+      check: Can the IR represent survival through transformation rather than only continuity or collapse?
+    - id: st5
+      check: Can the IR represent asymmetric imperial rule and extraction without requiring a separate ontology from later Global South probes?
+  gnn_tasks:
+    - id: gt1
+      target: Predict whether a reform episode yields durable resilience vs temporary stabilization.
+    - id: gt2
+      target: Predict whether a regional administration remains integrated with imperial authority in the next slice.
+    - id: gt3
+      target: Predict whether an ideological-institutional change increases coordination capacity or intensifies fragmentation.
+    - id: gt4
+      target: Predict whether an extraction-heavy recovery pattern increases short-run stabilization while worsening later regional divergence.
+
+labels_and_targets:
+  supervised_targets:
+    resilience_score:
+      description: Degree to which imperial or successor institutions maintain coordinated governance under stress in the next slice.
+      source_priority:
+        - Wikidata event chronology
+        - Wikipedia chronology extraction
+      leakage_rule: No post-slice evidence in feature construction.
+    administrative_capacity_score:
+      description: Degree to which institutions retain durable taxation, coordination, and territorial management.
+      source_priority:
+        - Seshat governance variables
+        - Wikipedia evidence on administration, taxation, military organization, and reform
+    legitimacy_proxy:
+      description: Degree to which authority is framed as rightful, restorative, orthodox, or continuous by major power centers.
+      source_priority:
+        - Wikipedia narrative evidence
+        - article-derived claim and relation counts
+    regional_divergence_proxy:
+      description: Degree to which eastern and western trajectories separate in governability, security, and continuity.
+      source_priority:
+        - Wikidata event chronology
+        - article-derived relation counts
+    institutional_reconfiguration_score:
+      description: Degree to which prior institutions are successfully transformed into new durable arrangements rather than merely preserved in name.
+      source_priority:
+        - Wikipedia narrative evidence
+        - article-derived policy and relation counts
+    extraction_dependency_proxy:
+      description: Degree to which recovery depends on asymmetric extraction, mediated rule, or regionally uneven burdens.
+      source_priority:
+        - Wikipedia narrative evidence
+        - article-derived relation counts
+        - Seshat governance and inequality variables where informative
+  weak_labels:
+    - Seshat complexity/governance variables
+    - Wikidata event chronology
+    - article-derived relation counts
+  target_construction_rule: Freeze evidence by slice cutoff and emit one deterministic target record per slice.
+
+evaluation:
+  stage_1_validity:
+    checks:
+      - schema instantiates a graph for every slice
+      - all required node and edge types are representable
+      - all nodes are time-scoped or explicitly persistent
+      - entity IDs resolve to stable references where possible
+      - continuity, mutation, and divergence can coexist in the same slice without schema conflict
+      - imperial hierarchy, mediated rule, and extraction can be represented without fallback to untyped notes
+  stage_2_grounding:
+    metrics:
+      - wikidata_entity_link_rate
+      - wikipedia_citation_coverage
+      - seshat_variable_attachment_rate
+      - asymmetry_attachment_rate
+  stage_3_retrieval:
+    metrics:
+      - answer_path_recall
+      - ideological_node_recall
+      - counterweight_node_recall
+      - temporal_slice_precision
+      - recovery_vs_continuity_disambiguation
+      - imperial_path_recall
+      - asymmetry_recall
+      - origin_to_afterlife_path_recall
+      - survival_through_transformation_recall
+      - transmission_channel_recall
+  stage_4_prediction:
+    metrics:
+      - held_out_slice_classification_accuracy
+      - calibration
+      - robustness_across_recovery_vs_divergence_vs_successor_state_subperiods
+      - gain_from_asymmetry_layer
+  win_condition: >-
+    A candidate schema wins only if it instantiates valid time-scoped graphs
+    for all slices, grounds entities and structural variables to the required
+    sources, retrieves material, institutional, ideological, counterweight,
+    and asymmetry subgraphs, passes negative leakage tests, preserves
+    fixed-dimensional projections for downstream GNN use, and shows
+    non-trivial improvement from adding ideology, counterweights, and
+    imperial-asymmetry structure in the ablation suite, especially when
+    distinguishing restoration claims from genuine durable reconfiguration.
+  persistence_delta_v1:
+    doc_ref: ontology/ontology-delta-v1-persistence.yaml
+    ablation_addition: persistence_layer_ablation
+    optional_win_evidence: >-
+      Report whether stripping optional persistence types loses measurable
+      retrieval or prediction on lineage or legacy tasks versus full v1-patched graph.
+
+negative_tests:
+  - id: nt1
+    prompt: Explain late Roman recovery as a simple return to the high empire.
+    expected_result: fail
+    reason: prevents false restoration narratives
+  - id: nt2
+    prompt: Return ideology as a summary paragraph without typed nodes.
+    expected_result: fail
+    reason: ideology must stay queryable
+  - id: nt3
+    prompt: Treat Christianization only as belief change with no institutional effect.
+    expected_result: fail
+    reason: legitimacy and coordination effects must be representable
+  - id: nt4
+    prompt: Infer post-565 outcomes while constructing pre-476 graph state.
+    expected_result: fail
+    reason: prevents temporal leakage from later outcomes
+  - id: nt5
+    prompt: Model extraction, federate mediation, or regional burden-shifting only as untyped background context.
+    expected_result: fail
+    reason: imperial asymmetry must be queryable graph structure
+
+ablation_suite:
+  - material_only
+  - material_plus_institutions
+  - material_plus_institutions_plus_ideology
+  - full_model_with_counterweights
+  - full_model_with_counterweights_and_asymmetry
+win_expectation:
+  ideology_gain_required: true
+  counterweight_gain_required: true
+  recovery_modeling_required: true
+  regional_divergence_gain_required: true
+  asymmetry_gain_required: true
+
+splits:
+  suggested_train:
+    - late_third_century_recomposition
+    - tetrarchic_reconfiguration
+    - christian_imperial_order
+  suggested_validation:
+    - eastern_resilience_western_divergence
+  suggested_stress_test:
+    - post_western_reconfiguration
+    - Apply the learned schema, without redesign, to Roman 1B crisis/fall and Roman 1A expansion as transfer tests.
+
+modern_bridge:
+  role: historical schema-shaping probe
+  purpose: tests recovery expressivity, institutional mutation, ideology retrieval, regional divergence modeling, counterweight-limited resilience, and explicit imperial asymmetry representation
+  downstream_alignment:
+    - share ontology with modern forecast probes
+    - share ontology with Global South imperial and postcolonial probes
+    - reuse generic_target_interface where possible
+    - do not require direct market labels inside this probe
+
+failure_modes_to_watch:
+  - Recovery explained only by great-man reforms with no institutional layer.
+  - Ideology represented as raw text with no queryable nodes.
+  - Christianization modeled only as belief and not as legitimacy/institutional transformation.
+  - Eastern resilience and western fragmentation collapsed into one late-Roman average.
+  - Counterweights omitted because recovery partially succeeded.
+  - Imperial hierarchy and extraction treated as invisible background rather than typed structure.
+  - Role changes over time causing duplicate entities instead of stable identities.
+  - Leakage from post-slice outcomes into earlier graph construction.
+
+autoresearch_objective_hint:
+  optimize_for:
+    - grounding quality
+    - retrieval of ideology and counterweights
+    - temporal coherence
+    - representation of recovery through transformation
+    - regional divergence modeling
+    - explicit asymmetry and extraction representation
+    - GNN-usable fixed projection
+  avoid:
+    - overfitting to one late-Roman subperiod
+    - schemas that only reward terminal collapse or simple restoration stories
+    - collapse of contested interpretations into a single consensus story
+    - hiding imperial hierarchy inside generic actor-event edges
+
+notes:
+  - This is a patched family probe and should share ontology with Roman 1A (expansion/consolidation) and Roman 1B (crisis/fall) while being scored independently.
+  - The patch is intended to make Roman-family ontology more transferable to later Global South probes without forcing a full rewrite of the Roman suite.
+  - Keep the file human-editable; add machine-generated enrichments in separate derived artifacts.

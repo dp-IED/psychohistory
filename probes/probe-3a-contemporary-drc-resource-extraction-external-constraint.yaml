@@ -1,0 +1,506 @@
+probe_id: africa_family_3A
+name: Contemporary DRC Resource Extraction, Armed Fragmentation, and External Constraint
+version: 0.1
+status: candidate
+format: probe_spec_v2
+benchmark_pack: v0
+compatibility_tier: v0-legacy
+
+summary:
+  purpose: >-
+    Evaluate whether the intermediate graph representation can model a modern
+    Global South political economy in which mineral extraction, armed group
+    competition, mediated sovereignty, regional intervention, humanitarian
+    crisis, and international supply-chain pressure interact without reducing
+    the case to either local ethnic conflict or generic state failure.
+  rationale: >-
+    This probe moves the benchmark suite from state formation and imperial
+    fragmentation toward present-day resource extraction and external
+    constraint. It tests whether the same schema can represent how coercion,
+    logistics, trade routes, mining sites, foreign backing, state weakness,
+    civilian displacement, and legitimacy claims combine in the Democratic
+    Republic of the Congo, especially in the east, while remaining queryable,
+    grounded, and GNN-consumable.
+
+scope:
+  region: Central Africa
+  polity: Democratic Republic of the Congo and interacting regional/external actors
+  temporal_window:
+    start_year: 2003
+    end_year: 2026
+    label: Post-Second Congo War fragmentation to contemporary M23 resurgence and supply-chain pressure
+  recommended_slices:
+    - slice_id: postwar_fragmented_sovereignty
+      start_year: 2003
+      end_year: 2012
+      label: Peace agreements, fragmented authority, armed pluralism, and mineralized local coercion
+    - slice_id: unstable_containment_and_resource_governance
+      start_year: 2013
+      end_year: 2020
+      label: M23 defeat, MONUSCO-centered containment, informal extraction, and contested state consolidation
+    - slice_id: m23_resurgence_and_external_constraint
+      start_year: 2021
+      end_year: 2026
+      label: M23 resurgence, regional pressure, humanitarian displacement, and intensified supply-chain scrutiny
+  exclusions:
+    - Belgian colonial rule except as frozen historical context or contrastive annotation
+    - Treating all violence as reducible to a single local grievance or ethnic narrative
+    - Treating the DRC only as a passive victim with no internal elite strategy, bargaining, or institutional variation
+    - Pure commodity-price explanations with no armed, institutional, or ideological layer
+
+artifacts:
+  human_authored:
+    - probe_spec
+  frozen_inputs:
+    - slice_entity_lists
+    - source_snapshots
+    - target_tables
+    - conflict_event_tables
+    - extraction_route_tables
+  machine_generated:
+    - extracted_claims
+    - linked_entities
+    - instantiated_graphs
+    - node_projection_tables
+    - external_constraint_tables
+    - supply_chain_alignment_tables
+
+grounded_sources:
+  structural_backbone:
+    - source: Seshat Global History Databank
+      role: >-
+        Optional deep-history context for governance, scale, inequality, and
+        long-run comparison classes relevant to state capacity and regional
+        political organization.
+      required: false
+  entity_spine:
+    - source: Wikidata
+      role: Stable IDs for actors, provinces, armed groups, mines, firms, international organizations, border crossings, and events.
+      required: true
+    - source: Wikipedia
+      role: Narrative grounding, event descriptions, chronology, and source expansion from entity pages.
+      required: true
+  event_layer:
+    - source: ACLED
+      role: Time-stamped conflict, protest, violence against civilians, and territorial-control events with geographic precision.
+      required: true
+    - source: GDELT
+      role: Time-stamped event flow, media salience, international reactions, sanctions discourse, and narrative bursts.
+      required: true
+  optional_forecast_layer:
+    - source: Polymarket or similar forecast market when relevant questions exist
+      role: Optional market-priced probabilities for adjacent geopolitical or conflict-escalation questions.
+      required: false
+
+core_question:
+  text: >-
+    Can a single graph schema represent how mineral extraction, armed-group
+    competition, regional intervention, supply-chain dependence, institutional
+    weakness, legitimacy claims, and failed or partial counterweights interact
+    to shape contemporary Congolese instability and constrained sovereignty in
+    a way that is queryable and GNN-consumable?
+
+historical_subquestions:
+  - Which material and logistical structures sustain extraction and armed competition at each slice?
+  - Which institutions mediate, constrain, or fail to constrain violence, extraction, and external influence?
+  - Which narratives and norms legitimize intervention, resistance, state authority, protection, reform, or security provision?
+  - Which counterweights to extraction-driven violence, fragmentation, or external domination existed, and why were they not decisive?
+  - Through which routes, firms, border nodes, and intermediaries are minerals tied to regional and global centers of power?
+  - Which shocks changed conflict and extraction dynamics, and through what pathways?
+  - What differs between postwar fragmentation, unstable containment, and renewed regionalized crisis?
+
+schema_requirements:
+  must_represent:
+    node_types:
+      - Actor
+      - Institution
+      - Office
+      - Province
+      - AdministrativeRegion
+      - ArmedGroup
+      - MilitaryFormation
+      - MiningSite
+      - Resource
+      - Commodity
+      - SupplyChainNode
+      - TransitCorridor
+      - Event
+      - Policy
+      - Narrative
+      - Norm
+      - Counterweight
+      - Shock
+      - Claim
+      - LocalElite
+      - ExternalPower
+      - ExternalConstraint
+      - HumanitarianPopulation
+      - InternationalOrganization
+      - ExtractiveChannel
+    edge_types:
+      - administers
+      - taxes
+      - extracts_from
+      - controls
+      - contests
+      - funds
+      - recruits
+      - displaces
+      - trades_with
+      - smuggles_through
+      - channels_through
+      - secures
+      - loots
+      - legitimizes
+      - delegitimizes
+      - constrains
+      - undermines
+      - presupposes
+      - benefits
+      - depends_on
+      - responds_to
+      - backs
+      - sanctions
+      - monitors
+      - negotiates_with
+      - coopts
+      - resists
+      - imposes_order_on
+  must_support:
+    - time-scoped edges and nodes
+    - uncertain or contested claims
+    - many-to-many relations via relation nodes if needed
+    - perspective-aware queries (e.g., FARDC, M23, local civilians, mining cooperatives, provincial elites, neighboring states, traders, MONUSCO, multilateral actors)
+    - fixed-dimensional node projections for downstream GNN training
+    - explicit distinction between geography, administration, coercion, extraction, and logistics
+    - explicit representation of center-periphery asymmetry and external dependency
+    - explicit representation of armed groups, mining sites, and supply-chain intermediaries as typed graph objects
+    - explicit representation of humanitarian displacement and civilian vulnerability as graph structure, not only summary statistics
+  anti_requirements:
+    - Do not collapse the DRC into an undifferentiated failed-state narrative.
+    - Do not reduce extraction to generic taxation without directional trade, smuggling, and supply-chain channels.
+    - Do not collapse ideology into untyped text blobs.
+    - Do not treat neighboring states or external firms as mere context when they act as causal participants.
+    - Do not treat provinces only as places; they must be political, military, and extractive arenas too.
+
+expected_graph_axes:
+  material:
+    - cobalt, coltan, gold, tin, tungsten, and other mineral extraction
+    - road corridors, border crossings, airstrips, and lake/river logistics
+    - taxation, extortion, smuggling, and protection rents
+    - armed financing, salaries, and procurement constraints
+    - displacement, camp economies, and humanitarian access
+  institutional:
+    - presidency and central state apparatus
+    - provincial governments
+    - FARDC and security-sector command
+    - customary and local authority structures
+    - mining regulation and licensing bodies
+    - MONUSCO and regional peace mechanisms
+    - sanctions and due-diligence regimes
+  ideological:
+    - sovereignty and anti-intervention claims
+    - protection-of-population and security narratives
+    - anti-corruption and reform narratives
+    - ethnic/community defense narratives where relevant
+    - narratives of territorial integrity, regional grievance, and stabilization
+  counterweights:
+    - peace agreements and monitoring mechanisms
+    - local ceasefires and civil-society mediation
+    - UN missions and regional diplomacy
+    - sanctions, certification, and due-diligence frameworks
+    - investigative journalism and activist exposure of supply chains
+    - elite defections and bargaining breakdowns within armed coalitions
+  asymmetry_and_extraction:
+    - center-periphery state weakness
+    - external backing and cross-border sanctuary
+    - mineral-to-market supply chains
+    - unequal bargaining between local producers, armed actors, traders, and global buyers
+    - mediated local rule and fragmented sovereignty
+
+seed_entities:
+  actors:
+    - Democratic Republic of the Congo
+    - FARDC
+    - M23
+    - Rwanda
+    - Uganda
+    - MONUSCO
+    - provincial elites in North Kivu
+    - artisanal miners
+    - mining traders
+    - internally displaced persons
+  events:
+    - end of the Second Congo War
+    - 23 March movement insurgency
+    - defeat of M23 in 2013
+    - M23 resurgence in 2021
+    - Goma-related crisis events
+    - regional peace talks
+    - sanctions announcements
+  institutions:
+    - Presidency of the Democratic Republic of the Congo
+    - FARDC command structure
+    - provincial administrations
+    - mining ministry and regulatory bodies
+    - MONUSCO
+    - East African Community regional mechanisms
+    - border customs and certification regimes
+  places:
+    - Democratic Republic of the Congo
+    - North Kivu
+    - South Kivu
+    - Ituri
+    - Goma
+    - Rutshuru
+    - Bunagana
+    - Rwanda-DRC border
+    - Uganda-DRC border
+
+generic_target_interface:
+  graph_level_targets:
+    - capacity_score
+    - legitimacy_score
+    - counterweight_strength_score
+    - shock_response_score
+    - extraction_intensity_score
+    - center_periphery_asymmetry_score
+    - humanitarian_stress_score
+  slice_transition_targets:
+    - conflict_intensity_delta
+    - territorial_control_delta
+    - displacement_delta
+    - extraction_route_shift_delta
+    - external_constraint_delta
+    - institutional_coherence_delta
+  rule: All targets must be computable from evidence available at or before the slice cutoff.
+
+probe_tasks:
+  retrieval_tasks:
+    - id: rt1
+      prompt: Which institutions and coercive arrangements govern or fail to govern extraction in eastern DRC?
+      expected_answer_shape:
+        - Institution
+        - ArmedGroup
+        - AdministrativeRegion
+        - MiningSite
+        - Event
+    - id: rt2
+      prompt: Through which routes, intermediaries, and extractive channels are minerals tied to regional and global centers of power?
+      expected_answer_shape:
+        - MiningSite
+        - ExtractiveChannel
+        - TransitCorridor
+        - SupplyChainNode
+        - Resource
+        - Edge path with extracts_from/smuggles_through/channels_through/trades_with semantics
+    - id: rt3
+      prompt: What plausible counterweights to extraction-driven violence or external domination existed, and why were they not decisive?
+      expected_answer_shape:
+        - Counterweight
+        - Institution
+        - Actor
+        - Claim
+        - Edge path with constrains/undermines/monitors/negotiates_with semantics
+    - id: rt4
+      prompt: Which narratives or norms legitimized intervention, resistance, reform, or protection claims across different actors?
+      expected_answer_shape:
+        - Narrative
+        - Norm
+        - Actor
+        - Claim
+    - id: rt5
+      prompt: How did postwar fragmented sovereignty differ structurally from the M23 resurgence and renewed regionalized crisis?
+      expected_answer_shape:
+        - time-scoped subgraphs across at least two slices
+    - id: rt6
+      prompt: Which external actors acted as causal participants rather than merely external observers, and through what mechanisms?
+      expected_answer_shape:
+        - ExternalPower
+        - Institution
+        - Event
+        - Edge path with backs/trades_with/sanctions/negotiates_with semantics
+  structural_tasks:
+    - id: st1
+      check: Can the IR keep the same entity identity across slices while allowing factional change, alliance shifts, and changing territorial control?
+    - id: st2
+      check: Can the IR represent both acute violence events and slow-moving extraction or institutional dependence?
+    - id: st3
+      check: Can the IR encode contested interpretations without deleting minority or locally grounded claims?
+    - id: st4
+      check: Can the IR distinguish geography from control, administration, extraction, and logistics?
+    - id: st5
+      check: Can the IR represent humanitarian populations and civilian vulnerability as structural objects rather than afterthought annotations?
+  gnn_tasks:
+    - id: gt1
+      target: Predict next-slice conflict-intensity category from prior slice graph state.
+    - id: gt2
+      target: Predict whether an extractive corridor becomes more contested, more consolidated, or rerouted in the next slice.
+    - id: gt3
+      target: Predict whether a shock produces durable institutional constraint versus temporary international attention.
+    - id: gt4
+      target: Predict next-slice displacement-risk bucket from graph state.
+
+labels_and_targets:
+  supervised_targets:
+    conflict_intensity_score:
+      description: Degree of organized armed conflict and civilian-targeted violence in the next slice.
+      source_priority:
+        - ACLED event counts and event-type breakdowns
+        - Wikipedia chronology extraction
+      leakage_rule: No post-slice evidence in feature construction.
+    territorial_fragmentation_score:
+      description: Degree of fragmented, overlapping, or unstable territorial control.
+      source_priority:
+        - ACLED territorial-control related events where available
+        - article-derived relation counts on control, contestation, and withdrawal
+    displacement_stress_proxy:
+      description: Degree of civilian displacement and humanitarian strain associated with conflict and extraction dynamics.
+      source_priority:
+        - article-derived displacement signals
+        - event chronology on displacement-related crises
+        - humanitarian summaries where integrated into frozen inputs
+    extraction_intensity_proxy:
+      description: Degree to which mining zones, corridors, and trading nodes are embedded in coercive or semi-coercive extraction circuits.
+      source_priority:
+        - Wikipedia evidence on mining sites, mineral types, and routes
+        - article-derived extraction and smuggling relation counts
+        - GDELT narrative/event bursts on sanctions, supply chains, and minerals
+    external_constraint_score:
+      description: Degree to which neighboring states, international missions, sanctions, or supply-chain regimes shape the next slice.
+      source_priority:
+        - GDELT international-reaction event flows
+        - article-derived relation counts on backing, sanctions, monitoring, and negotiation
+        - ACLED-linked regional escalation patterns
+    institutional_coherence_proxy:
+      description: Degree to which state and substate institutions achieve coherent authority over extraction and security.
+      source_priority:
+        - article-derived institutional relation counts
+        - event chronology on appointments, defections, peace arrangements, and command fragmentation
+  weak_labels:
+    - Wikidata event chronology
+    - Wikipedia chronology extraction
+    - ACLED event tables
+    - GDELT relation counts and narrative bursts
+  target_construction_rule: Freeze evidence by slice cutoff and emit one deterministic target record per slice.
+
+evaluation:
+  stage_1_validity:
+    checks:
+      - schema instantiates a graph for every slice
+      - all required node and edge types are representable
+      - all nodes are time-scoped or explicitly persistent
+      - entity IDs resolve to stable references where possible
+      - mining sites, armed groups, and external actors remain distinguishable object types
+  stage_2_grounding:
+    metrics:
+      - wikidata_entity_link_rate
+      - wikipedia_citation_coverage
+      - acled_event_attachment_rate
+      - gdelt_event_attachment_rate
+      - extraction_route_grounding_rate
+  stage_3_retrieval:
+    metrics:
+      - answer_path_recall
+      - ideological_node_recall
+      - counterweight_node_recall
+      - extraction_path_recall
+      - external_actor_path_recall
+      - temporal_slice_precision
+  stage_4_prediction:
+    metrics:
+      - held_out_slice_classification_accuracy
+      - calibration
+      - robustness_across_postwar_vs_resurgence_subperiods
+      - gain_from_extraction_and_external_constraint_axes
+      - displacement_risk_bucket_accuracy
+  win_condition: >-
+    A candidate schema wins only if it instantiates valid time-scoped graphs
+    for all slices, grounds entities, conflict events, extraction routes, and
+    external-participation structure to the required sources, retrieves
+    material, institutional, ideological, counterweight, extraction, external-
+    constraint, and humanitarian subgraphs, passes negative leakage tests,
+    preserves fixed-dimensional projections for downstream GNN use, and shows
+    non-trivial improvement from adding ideology, counterweights, extraction,
+    and external-constraint structure in the ablation suite.
+
+negative_tests:
+  - id: nt1
+    prompt: Explain contemporary Congolese conflict solely as ethnic violence with no extraction, logistics, or external participation.
+    expected_result: fail
+    reason: prevents reduction to a single localist story
+  - id: nt2
+    prompt: Explain extraction as generic taxation with no mining sites, routes, intermediaries, or supply chains.
+    expected_result: fail
+    reason: extraction must remain directional and queryable
+  - id: nt3
+    prompt: Return ideology and legitimacy as a summary paragraph without typed nodes.
+    expected_result: fail
+    reason: ideology must stay queryable
+  - id: nt4
+    prompt: Treat neighboring states and international actors only as background context, not causal participants.
+    expected_result: fail
+    reason: external constraint must be explicitly representable when relevant
+  - id: nt5
+    prompt: Treat provinces only as places, not political, military, and extractive arenas.
+    expected_result: fail
+    reason: territorial units must be more than geography
+
+ablation_suite:
+  - material_only
+  - material_plus_institutions
+  - material_plus_institutions_plus_ideology
+  - material_plus_institutions_plus_ideology_plus_extraction
+  - material_plus_institutions_plus_ideology_plus_external_constraint
+  - full_model_with_counterweights
+win_expectation:
+  ideology_gain_required: true
+  counterweight_gain_required: true
+  extraction_gain_required: true
+  external_constraint_gain_required: true
+
+splits:
+  suggested_train:
+    - postwar_fragmented_sovereignty
+    - unstable_containment_and_resource_governance
+  suggested_validation:
+    - m23_resurgence_and_external_constraint
+  suggested_stress_test:
+    - Apply the learned schema, without redesign, to another resource-extraction or regional-intervention probe in Africa or Latin America.
+
+modern_bridge:
+  role: modern Global South extraction-and-constraint probe
+  purpose: tests contemporary event-density, extraction modeling, humanitarian structure, and explicit external-constraint representation in a forecast-adjacent setting
+  downstream_alignment:
+    - share ontology with Roman and South Asia probes where possible
+    - reuse generic_target_interface where possible
+    - keep extraction, asymmetry, and external-constraint objects available for later forecast-facing probes
+    - do not require direct market labels inside this probe
+
+failure_modes_to_watch:
+  - Conflict explained only by armed events with no extractive or logistical layer.
+  - Ideology represented as raw text with no queryable nodes.
+  - Armed groups and state forces collapsed into generic actor nodes with no coercive specialization.
+  - External participation modeled as an exogenous bolt from the blue rather than an embedded structure.
+  - Counterweights omitted because they did not ultimately stop extraction-driven violence.
+  - Role changes over time causing duplicate entities instead of stable identities.
+  - Humanitarian populations represented only as consequences, not as structurally linked graph objects.
+  - Extraction represented as neutral trade with no coercive or asymmetrical dimension.
+
+autoresearch_objective_hint:
+  optimize_for:
+    - grounding quality
+    - retrieval of ideology and counterweights
+    - retrieval of extraction, logistics, and external-constraint structure
+    - temporal coherence
+    - GNN-usable fixed projection
+  avoid:
+    - overfitting to one subperiod of eastern DRC conflict
+    - schemas that only reward terminal military winners or official state narratives
+    - collapse of contested interpretations into a single consensus story
+    - treating resource extraction as a background variable instead of graph structure
+
+notes:
+  - This probe should remain human-editable; add machine-generated enrichments in separate derived artifacts.
+  - It is intentionally current-day and Global South centered, so external constraint and mediated sovereignty must stay first-class parts of the ontology.
+  - A later companion probe can add explicit forecast-market labels for a regional crisis or sanctions question without contaminating this core extraction probe.

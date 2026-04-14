@@ -1,0 +1,497 @@
+probe_id: south_asia_family_2C
+name: British India, Anti-Colonial Mass Politics, Partition, and Post-Imperial State Formation
+version: 0.1
+status: candidate
+format: probe_spec_v2
+benchmark_pack: v0
+compatibility_tier: v1-patched
+ontology_delta_ref: ontology/ontology-delta-v1-persistence.yaml
+
+summary:
+  purpose: >-
+    Evaluate whether the intermediate graph representation can model colonial
+    administration, extraction, anti-colonial mass politics, constitutional
+    bargaining, communal polarization, partition, and post-imperial state
+    formation in South Asia without collapsing the process into a single elite
+    negotiation story or a purely nationalist retrospective narrative.
+  rationale: >-
+    This probe completes the Mughal family arc after expansion and
+    fragmentation. It tests whether the same schema can represent transition
+    from imperial and successor-state orders into colonial domination, mass
+    ideological mobilization, rival projects of sovereignty, territorial
+    partition, and institutional inheritance in the formation of modern states.
+
+scope:
+  region: South Asia
+  polity: British India and emergent postcolonial successor states
+  temporal_window:
+    start_year: 1857
+    end_year: 1950
+    label: Rebellion of 1857 to republican-constitutional settlement after partition
+  recommended_slices:
+    - slice_id: crown_rule_and_colonial_consolidation
+      start_year: 1857
+      end_year: 1918
+      label: Crown rule, colonial consolidation, administrative expansion, and early organized nationalism
+    - slice_id: mass_anticolonial_mobilization
+      start_year: 1919
+      end_year: 1945
+      label: Mass mobilization, ideological competition, constitutional bargaining, and wartime strain
+    - slice_id: partition_and_postimperial_reconstitution
+      start_year: 1946
+      end_year: 1950
+      label: Partition, independence, violence, refugee flows, and constitutional reordering
+  exclusions:
+    - Post-1950 Cold War state development except as out-of-sample continuation labels
+    - Treating colonial rule as a neutral administrative backdrop rather than a structured extractive regime
+    - Purely retrospective nationalist teleology unless used only as contrastive annotations
+
+artifacts:
+  human_authored:
+    - probe_spec
+  frozen_inputs:
+    - slice_entity_lists
+    - source_snapshots
+    - target_tables
+  machine_generated:
+    - extracted_claims
+    - linked_entities
+    - instantiated_graphs
+    - node_projection_tables
+    - external_constraint_tables
+
+grounded_sources:
+  structural_backbone:
+    - source: Seshat Global History Databank
+      role: >-
+        Long-run context for governance, social complexity, religion,
+        inequality, and macro-political organization in South Asia and
+        comparison classes relevant to imperial and post-imperial transition.
+      required: true
+  entity_spine:
+    - source: Wikidata
+      role: Stable IDs for actors, institutions, offices, provinces, regions, parties, wars, treaties, commissions, and events.
+      required: true
+    - source: Wikipedia
+      role: Narrative grounding, event descriptions, chronology, and source expansion from entity pages.
+      required: true
+  optional_event_layer:
+    - source: DBpedia or derivative historical knowledge graphs
+      role: Supplemental linked-entity expansion where available.
+      required: false
+
+core_question:
+  text: >-
+    Can a single graph schema represent how colonial extraction, ideological
+    mass politics, constitutional bargaining, communal and territorial
+    reconfiguration, and institutional inheritance interacted to produce the
+    end of British India and the formation of post-imperial states in a way
+    that is queryable and GNN-consumable?
+
+historical_subquestions:
+  - Which material and administrative structures sustained colonial rule at each slice?
+  - Which institutions organized, constrained, or mediated anti-colonial mobilization?
+  - Which narratives and norms legitimized empire, reform, non-cooperation, communal representation, or sovereign nationhood?
+  - Which counterweights to partition, communal violence, or elite capture existed, and why were they not decisive?
+  - Which extractive and coercive channels tied the colony to imperial centers of power?
+  - Which shocks changed the political trajectory, and through what pathways?
+  - What differs between crown-rule consolidation, mass anti-colonial mobilization, and partition/post-imperial reconstitution?
+
+schema_requirements:
+  must_represent:
+    node_types:
+      - Actor
+      - Institution
+      - Office
+      - Province
+      - MilitaryFormation
+      - Resource
+      - Event
+      - Policy
+      - Narrative
+      - Norm
+      - Counterweight
+      - Shock
+      - Claim
+      - Empire
+      - FrontierPeople
+      - TributaryRelation
+      - AdministrativeRegion
+      - ExtractiveChannel
+      - LocalElite
+      - ExternalConstraint
+    edge_types:
+      - conquers
+      - administers
+      - taxes
+      - extracts_from
+      - recruits
+      - allies_with
+      - grants_status_to
+      - legitimizes
+      - constrains
+      - undermines
+      - presupposes
+      - contests
+      - benefits
+      - depends_on
+      - transforms_into
+      - responds_to
+      - channels_through
+      - coopts
+      - disciplines
+      - integrates
+      - resists
+      - imposes_order_on
+  must_support:
+    - time-scoped edges and nodes
+    - uncertain or contested claims
+    - many-to-many relations via relation nodes if needed
+    - perspective-aware queries (e.g., colonial administrators, Congress leaders, Muslim League leaders, princely states, peasant movements, workers, communal organizations, refugee populations)
+    - fixed-dimensional node projections for downstream GNN training
+    - explicit distinction between geography, administration, extraction, and sovereignty
+    - explicit representation of center-periphery asymmetry and imperial dependency
+    - mass politics and ideological mobilization as typed graph objects, not only elite negotiations
+  anti_requirements:
+    - Do not collapse ideology into untyped text blobs.
+    - Do not reduce anti-colonial politics to constitutional bargaining among elite actors alone.
+    - Do not model partition only as a terminal event; represent the layered pathways that made it possible.
+    - Do not treat provinces and princely states only as places; they must be administrative, fiscal, and political units too.
+    - Do not treat colonial extraction as generic taxation with no directional imperial channel.
+
+  may_represent:
+    node_types:
+      - LineageClaim
+      - InstitutionalLineage
+      - InheritanceBundle
+      - TransmissionChannel
+      - LegacyAggregate
+    edge_types:
+      - inherits_from
+      - transmits_through
+      - supersedes_while_claiming_continuity
+      - leaves_legacy_via
+
+expected_graph_axes:
+  material:
+    - agrarian extraction and land revenue
+    - trade, tariffs, and imperial economic integration
+    - railways, ports, telegraph, and logistical control
+    - military recruitment and coercive capacity
+    - famine, food distribution, and wartime strain
+  institutional:
+    - British Crown and colonial administration
+    - Indian Civil Service
+    - provincial governments
+    - princely states
+    - Indian National Congress
+    - All-India Muslim League
+    - legislative councils, commissions, and constituent assembly structures
+  ideological:
+    - imperial civilizing and order narratives
+    - anti-colonial nationalism
+    - non-cooperation and civil disobedience
+    - communal representation and minority-security claims
+    - federalism, sovereignty, and constituent power
+    - rights, citizenship, and secular versus confessional state narratives
+  counterweights:
+    - inter-communal coalitions
+    - federal compromise proposals
+    - labor and peasant movements
+    - provincial autonomy arrangements
+    - princely-state bargaining
+    - anti-violence norms and local peace mechanisms
+  asymmetry_and_extraction:
+    - imperial center-periphery relations
+    - extractive channels linking colony and metropole
+    - mediated local rule and coopted elites
+    - unequal legal and political status
+    - coercion versus consent in late colonial governance
+
+seed_entities:
+  actors:
+    - British Raj
+    - British Empire
+    - Indian National Congress
+    - All-India Muslim League
+    - Mohandas Karamchand Gandhi
+    - Jawaharlal Nehru
+    - Muhammad Ali Jinnah
+    - B. R. Ambedkar
+    - princely states
+    - peasant movements
+    - refugee populations
+  events:
+    - Indian Rebellion of 1857
+    - partition of Bengal
+    - Amritsar massacre
+    - Non-Cooperation Movement
+    - Salt March
+    - Quit India Movement
+    - Cabinet Mission
+    - Partition of India
+    - princely-state integration
+    - adoption of the Constitution of India
+  institutions:
+    - British Crown
+    - Viceroy of India
+    - Indian Civil Service
+    - provincial governments
+    - constituent assembly
+    - colonial army
+    - Indian National Congress
+    - All-India Muslim League
+  places:
+    - British India
+    - Bengal
+    - Punjab
+    - Delhi
+    - Bombay Presidency
+    - Madras Presidency
+    - princely states
+    - India
+    - Pakistan
+    - South Asia
+
+generic_target_interface:
+  graph_level_targets:
+    - capacity_score
+    - integration_score
+    - legitimacy_score
+    - counterweight_strength_score
+    - shock_response_score
+    - extraction_intensity_score
+    - center_periphery_asymmetry_score
+  slice_transition_targets:
+    - mobilization_delta
+    - legitimacy_delta
+    - communal_polarization_delta
+    - constitutional_settlement_delta
+    - violence_delta
+    - state_formation_delta
+  rule: All targets must be computable from evidence available at or before the slice cutoff.
+
+probe_tasks:
+  retrieval_tasks:
+    - id: rt1
+      prompt: Which institutions and administrative arrangements sustained colonial rule, and through which extractive channels did they operate?
+      expected_answer_shape:
+        - Institution
+        - Policy
+        - AdministrativeRegion
+        - ExtractiveChannel
+        - Event
+    - id: rt2
+      prompt: Which norms or narratives made anti-colonial mobilization, communal representation, or partition politically thinkable or legitimate?
+      expected_answer_shape:
+        - Narrative
+        - Norm
+        - Actor
+        - Claim
+    - id: rt3
+      prompt: What plausible counterweights to partition or communal violence existed, and why were they not decisive?
+      expected_answer_shape:
+        - Counterweight
+        - Actor
+        - Institution
+        - Edge path with constrains/undermines/coopts/contests semantics
+    - id: rt4
+      prompt: How did crown-rule consolidation differ structurally from mass anti-colonial mobilization and post-imperial reconstitution?
+      expected_answer_shape:
+        - time-scoped subgraphs across at least two slices
+    - id: rt5
+      prompt: Through which administrative and extractive channels was British India tied to imperial centers of power?
+      expected_answer_shape:
+        - Empire
+        - AdministrativeRegion
+        - ExtractiveChannel
+        - Resource
+        - Edge path with taxes/extracts_from/channels_through semantics
+    - id: rt6
+      prompt: Which local elites, parties, or mediated authorities were integrated into or resisted colonial rule, and under what asymmetrical terms?
+      expected_answer_shape:
+        - LocalElite
+        - Actor
+        - Institution
+        - Claim
+        - Edge path with grants_status_to/coopts/integrates/resists semantics
+  structural_tasks:
+    - id: st1
+      check: Can the IR keep the same entity identity across slices while allowing role changes and sovereignty transitions?
+    - id: st2
+      check: Can the IR represent both acute shocks and slow ideological or constitutional reconfiguration?
+    - id: st3
+      check: Can the IR encode contested interpretations without deleting minority claims?
+    - id: st4
+      check: Can the IR distinguish geography from administration, extraction, and sovereignty?
+    - id: st5
+      check: Can the IR represent center-periphery asymmetry and mediated local rule without flattening mass politics into elite-only bargaining?
+  gnn_tasks:
+    - id: gt1
+      target: Predict next-slice mobilization or constitutional-settlement category from prior slice graph state.
+    - id: gt2
+      target: Predict whether a shock produces durable institutional reconfiguration versus temporary disturbance.
+    - id: gt3
+      target: Predict change in communal polarization or violence risk from prior slice graph state.
+
+labels_and_targets:
+  supervised_targets:
+    mobilization_intensity_score:
+      description: Degree of organized mass anti-colonial political mobilization in the next slice.
+      source_priority:
+        - Wikidata event chronology
+        - Wikipedia chronology extraction
+      leakage_rule: No post-slice evidence in feature construction.
+    constitutional_reconfiguration_score:
+      description: Degree to which constitutional frameworks, sovereignty claims, or formal authority structures are reworked.
+      source_priority:
+        - Wikipedia evidence on acts, commissions, negotiations, assemblies, and constitutional documents
+        - article-derived institutional relation counts
+    communal_polarization_proxy:
+      description: Degree of entrenched communal or identity-political separation relevant to partition and state formation.
+      source_priority:
+        - event chronology
+        - article-derived relation counts
+        - evidence on communal bargaining breakdowns and violence
+    violence_displacement_proxy:
+      description: Degree of communal violence, displacement, and refugee movement associated with political transition.
+      source_priority:
+        - Wikipedia chronology
+        - article-derived unrest and displacement signals
+    extraction_intensity_proxy:
+      description: Degree to which colonial governance ties territory, labor, and resources into imperial channels.
+      source_priority:
+        - evidence on land revenue, trade channels, logistics, military recruitment, and imperial fiscal links
+        - article-derived extraction relation counts
+  weak_labels:
+    - Seshat complexity/governance variables
+    - Wikidata event chronology
+    - article-derived relation counts
+  target_construction_rule: Freeze evidence by slice cutoff and emit one deterministic target record per slice.
+
+evaluation:
+  stage_1_validity:
+    checks:
+      - schema instantiates a graph for every slice
+      - all required node and edge types are representable
+      - all nodes are time-scoped or explicitly persistent
+      - entity IDs resolve to stable references where possible
+  stage_2_grounding:
+    metrics:
+      - wikidata_entity_link_rate
+      - wikipedia_citation_coverage
+      - seshat_variable_attachment_rate
+  stage_3_retrieval:
+    metrics:
+      - answer_path_recall
+      - ideological_node_recall
+      - counterweight_node_recall
+      - extraction_path_recall
+      - temporal_slice_precision
+      - origin_to_afterlife_path_recall
+      - survival_through_transformation_recall
+      - transmission_channel_recall
+  stage_4_prediction:
+    metrics:
+      - held_out_slice_classification_accuracy
+      - calibration
+      - robustness_across_colonial_vs_postimperial_subperiods
+      - gain_from_extraction_asymmetry_and_mass_politics_axes
+  win_condition: >-
+    A candidate schema wins only if it instantiates valid time-scoped graphs
+    for all slices, grounds entities and structural variables to the required
+    sources, retrieves material, institutional, ideological, counterweight,
+    extraction, and sovereignty-transition subgraphs, passes negative leakage
+    tests, preserves fixed-dimensional projections for downstream GNN use, and
+    shows non-trivial improvement from adding ideology, counterweights,
+    asymmetry/extraction structure, and mass-political representation in the
+    ablation suite.
+  persistence_delta_v1:
+    doc_ref: ontology/ontology-delta-v1-persistence.yaml
+    ablation_addition: persistence_layer_ablation
+    optional_win_evidence: >-
+      Report whether stripping optional persistence types loses measurable
+      retrieval or prediction on colonial-to-postcolonial institutional inheritance
+      or partition-pathway tasks versus full v1-patched graph.
+
+negative_tests:
+  - id: nt1
+    prompt: Explain anti-colonial transition only as elite constitutional bargaining with no mass politics.
+    expected_result: fail
+    reason: mass politics must be explicitly representable
+  - id: nt2
+    prompt: Return ideology as a summary paragraph without typed nodes.
+    expected_result: fail
+    reason: ideology must stay queryable
+  - id: nt3
+    prompt: Treat provinces and princely states only as places, not administrative-fiscal-political units.
+    expected_result: fail
+    reason: regional units must be political and fiscal objects, not only geography
+  - id: nt4
+    prompt: Explain colonial rule without modeling extraction or mediated local rule.
+    expected_result: fail
+    reason: asymmetry and extraction must be explicitly representable when relevant
+  - id: nt5
+    prompt: Model partition only as a terminal event with no preceding ideological or institutional pathway.
+    expected_result: fail
+    reason: partition must be represented as a pathway, not a single terminal label
+
+ablation_suite:
+  - material_only
+  - material_plus_institutions
+  - material_plus_institutions_plus_ideology
+  - material_plus_institutions_plus_ideology_plus_extraction
+  - material_plus_institutions_plus_ideology_plus_mass_politics
+  - full_model_with_counterweights
+win_expectation:
+  ideology_gain_required: true
+  counterweight_gain_required: true
+  extraction_gain_required: true
+  mass_politics_gain_required: true
+
+splits:
+  suggested_train:
+    - crown_rule_and_colonial_consolidation
+    - mass_anticolonial_mobilization
+  suggested_validation:
+    - partition_and_postimperial_reconstitution
+  suggested_stress_test:
+    - Apply the learned schema, without redesign, to another anti-colonial or postcolonial state-formation probe in Africa or the Middle East.
+
+modern_bridge:
+  role: historical schema-shaping probe
+  purpose: tests long-run expressivity, temporal coherence, ideology retrieval, counterweight representation, extraction/asymmetry modeling, and mass-political reconstitution in a major Global South transition case
+  downstream_alignment:
+    - share ontology with Mughal 2A, Mughal 2B, Roman probes, and later modern forecast probes
+    - reuse generic_target_interface where possible
+    - do not require direct market labels inside this probe
+    - keep extraction, asymmetry, and mass-politics objects available for later postcolonial and forecast-facing probes
+
+failure_modes_to_watch:
+  - Colonial rule explained only by institutions with no extractive or coercive layer.
+  - Anti-colonial politics reduced to elite negotiations with no mass movement representation.
+  - Ideology represented as raw text with no queryable nodes.
+  - Partition treated as an abrupt terminal rupture with no graphable pathway.
+  - Counterweights omitted because they did not ultimately prevent violence or division.
+  - Role changes over time causing duplicate entities instead of stable identities.
+  - Asymmetry flattened into neutral bilateral edges.
+  - Leakage from post-1950 national narratives into earlier slice graph construction.
+
+autoresearch_objective_hint:
+  optimize_for:
+    - grounding quality
+    - retrieval of ideology and counterweights
+    - retrieval of extraction and asymmetry structure
+    - retrieval of mass-political pathways
+    - temporal coherence
+    - GNN-usable fixed projection
+  avoid:
+    - overfitting to one late-colonial subperiod
+    - schemas that only reward terminal winners or official state narratives
+    - collapse of contested interpretations into a single consensus story
+    - treating anti-colonial transition as purely elite or purely communal
+
+notes:
+  - This probe should share ontology with Mughal 2A and Mughal 2B while being scored independently.
+  - Keep the file human-editable; add machine-generated enrichments in separate derived artifacts.
+  - A later companion probe can focus on post-1950 democratic consolidation, developmentalism, or regional war without contaminating this transition probe.

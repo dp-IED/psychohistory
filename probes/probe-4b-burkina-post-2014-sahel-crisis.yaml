@@ -1,0 +1,493 @@
+probe_id: africa_family_4B
+name: Burkina Faso Post-2014 Uprising, Sahel Crisis, and Security Reordering
+version: 0.1
+status: candidate
+format: probe_spec_v2
+benchmark_pack: v0
+compatibility_tier: v0-legacy
+
+summary:
+  purpose: >-
+    Evaluate whether the intermediate graph representation can model how a
+    post-authoritarian rupture gave way to insurgency, military-security
+    reordering, anti-imperial and anti-French narratives, regional contagion,
+    and constrained sovereignty in Burkina Faso without collapsing the case
+    into either generic terrorism or generic democratic-transition failure.
+  rationale: >-
+    This probe isolates the post-2014 period rather than combining it with the
+    Sankara and Compaore eras. It tests whether the schema can represent a
+    contemporary Sahel crisis in which legitimacy, counterinsurgency,
+    displacement, regional military politics, ideology, and external
+    dependency interact in a dense modern event environment.
+
+scope:
+  region: West Africa / Sahel
+  polity: Burkina Faso and interacting regional/external actors
+  temporal_window:
+    start_year: 2014
+    end_year: 2026
+    label: Fall of Compaore through coups, insurgency escalation, and contemporary Sahel reordering
+  recommended_slices:
+    - slice_id: post_compaore_transition
+      start_year: 2014
+      end_year: 2017
+      label: Popular uprising, transitional contestation, and early insecurity
+    - slice_id: insurgency_expansion_and_legitimacy_erosion
+      start_year: 2018
+      end_year: 2021
+      label: Intensifying insurgency, displacement, and weakening civilian authority
+    - slice_id: coup_cycle_and_sahel_reordering
+      start_year: 2022
+      end_year: 2026
+      label: Coups, security-sector reordering, anti-French realignment, and regional bloc restructuring
+  exclusions:
+    - Sankara-era revolutionary development except as historical context or symbolic ideological reference
+    - Treating the crisis only as imported jihadism with no domestic legitimacy or governance dimension
+    - Treating anti-imperial rhetoric as purely decorative rather than politically operative
+    - Pure casualty-count explanations with no institutional, ideological, or external-constraint structure
+
+artifacts:
+  human_authored:
+    - probe_spec
+  frozen_inputs:
+    - slice_entity_lists
+    - source_snapshots
+    - target_tables
+    - conflict_event_tables
+    - displacement_tables
+  machine_generated:
+    - extracted_claims
+    - linked_entities
+    - instantiated_graphs
+    - node_projection_tables
+    - external_constraint_tables
+    - security_reordering_tables
+
+grounded_sources:
+  structural_backbone:
+    - source: Seshat Global History Databank
+      role: >-
+        Optional long-run comparison context for governance complexity,
+        inequality, and broader historical state-capacity patterns.
+      required: false
+  entity_spine:
+    - source: Wikidata
+      role: Stable IDs for actors, state offices, military figures, armed groups, regions, international organizations, and events.
+      required: true
+    - source: Wikipedia
+      role: Narrative grounding, event descriptions, chronology, and source expansion from entity pages.
+      required: true
+  event_layer:
+    - source: ACLED
+      role: Time-stamped conflict, protest, coup-related, violence-against-civilians, and territorial event data with geographic precision.
+      required: true
+    - source: GDELT
+      role: Time-stamped event flow, media salience, diplomatic reactions, and narrative bursts relevant to legitimacy and external realignment.
+      required: true
+  optional_forecast_layer:
+    - source: Polymarket or similar forecast market when relevant questions exist
+      role: Optional market-priced probabilities for adjacent coup, regional-war, or geopolitical escalation questions.
+      required: false
+
+core_question:
+  text: >-
+    Can a single graph schema represent how post-2014 regime rupture,
+    insurgency, security failure, anti-imperial rhetoric, regional contagion,
+    military takeover, and external realignment interacted to reshape
+    legitimacy and sovereignty in Burkina Faso in a way that is queryable and
+    GNN-consumable?
+
+historical_subquestions:
+  - Which material, logistical, and governance failures shaped the opportunity structure for insurgency and military reordering at each slice?
+  - Which institutions mediated, constrained, or failed to constrain violence, displacement, and executive breakdown?
+  - Which narratives and norms legitimized civilian authority, military intervention, anti-French repositioning, popular patience, or mass frustration?
+  - Which counterweights to coups, insurgent expansion, or regional militarization existed, and why were they not decisive?
+  - Through which regional, military, diplomatic, and informational channels did external actors shape domestic trajectories?
+  - Which shocks changed legitimacy, conflict intensity, or strategic alignment, and through what pathways?
+  - What differs between post-authoritarian transition, insurgency-driven erosion, and coup-cycle reordering?
+
+schema_requirements:
+  must_represent:
+    node_types:
+      - Actor
+      - Institution
+      - Office
+      - AdministrativeRegion
+      - Province
+      - ArmedGroup
+      - MilitaryFormation
+      - Event
+      - Policy
+      - Narrative
+      - Norm
+      - Counterweight
+      - Shock
+      - Claim
+      - ExternalPower
+      - ExternalConstraint
+      - InternationalOrganization
+      - HumanitarianPopulation
+      - SecurityForce
+      - LocalElite
+      - CivicMovement
+      - TransitCorridor
+      - Resource
+    edge_types:
+      - governs
+      - administers
+      - contests
+      - controls
+      - recruits
+      - mobilizes
+      - displaces
+      - secures
+      - undermines
+      - constrains
+      - legitimizes
+      - delegitimizes
+      - presupposes
+      - benefits
+      - depends_on
+      - responds_to
+      - backs
+      - sanctions
+      - trains
+      - negotiates_with
+      - monitors
+      - coopts
+      - resists
+      - coordinates_with
+      - channels_through
+      - imposes_order_on
+  must_support:
+    - time-scoped edges and nodes
+    - uncertain or contested claims
+    - many-to-many relations via relation nodes if needed
+    - perspective-aware queries (e.g., transitional elites, army officers, local civilians, displaced populations, insurgent groups, ECOWAS, France, neighboring juntas, activists)
+    - fixed-dimensional node projections for downstream GNN training
+    - explicit distinction between geography, administration, violence, displacement, and legitimacy
+    - explicit representation of external alignment and external pressure as graph structure
+    - explicit representation of coup dynamics and security-sector fragmentation
+    - explicit representation of civic mobilization and civilian legitimacy claims as typed objects
+  anti_requirements:
+    - Do not reduce the probe to terrorism event counts.
+    - Do not collapse ideology into untyped text blobs.
+    - Do not treat military takeover as a single terminal event with no pathway of legitimacy erosion.
+    - Do not treat anti-French or anti-imperial narratives as mere sentiment rather than political structure.
+    - Do not treat regions only as places; they must be governance, security, and displacement arenas too.
+
+expected_graph_axes:
+  material:
+    - rural insecurity and service collapse
+    - displacement, camp pressure, and humanitarian access
+    - logistics, road insecurity, and territorial isolation
+    - military capacity and procurement constraints
+    - local livelihood disruption and economic strain
+  institutional:
+    - transitional government structures
+    - presidency and executive authority
+    - army and security-sector command
+    - local administration and municipal governance
+    - ECOWAS and regional diplomatic mechanisms
+    - international military and aid partnerships
+  ideological:
+    - anti-imperial and anti-French sovereignty narratives
+    - military-as-savior and order-restoration narratives
+    - democratic legitimacy and constitutionalism claims
+    - frustration with elite failure and abandonment narratives
+    - Sahel solidarity and regional realignment narratives
+  counterweights:
+    - constitutional succession rules
+    - civil society and protest movements
+    - regional diplomatic pressure
+    - media scrutiny and investigative reporting
+    - local mediation and communal peace structures
+    - divisions within security institutions and political coalitions
+  asymmetry_and_external_constraint:
+    - dependence on external military support
+    - diplomatic pressure and sanctions threats
+    - cross-border insurgent mobility
+    - regional coup contagion and alliance effects
+    - unequal bargaining between domestic rulers and external patrons
+
+seed_entities:
+  actors:
+    - Burkina Faso
+    - Roch Marc Christian Kabore
+    - Ibrahim Traore
+    - Paul-Henri Sandaogo Damiba
+    - Burkinabe armed forces
+    - jihadist armed groups in the Sahel
+    - civil society movements
+    - internally displaced persons
+    - ECOWAS
+    - France
+  events:
+    - 2014 Burkina Faso uprising
+    - 2015 coup attempt
+    - major insurgent escalations after 2016
+    - January 2022 coup in Burkina Faso
+    - September 2022 coup in Burkina Faso
+    - regional sanctions and diplomatic disputes
+    - security realignment events
+  institutions:
+    - Presidency of Burkina Faso
+    - transitional authorities
+    - Burkinabe army
+    - ECOWAS
+    - local administrations
+    - security partnerships
+    - media and civil-society organizations
+  places:
+    - Burkina Faso
+    - Ouagadougou
+    - Sahel Region
+    - Centre-Nord
+    - Est
+    - Mali borderlands
+    - Niger borderlands
+    - West Africa
+
+generic_target_interface:
+  graph_level_targets:
+    - capacity_score
+    - legitimacy_score
+    - counterweight_strength_score
+    - shock_response_score
+    - conflict_intensity_score
+    - displacement_stress_score
+    - external_constraint_score
+  slice_transition_targets:
+    - conflict_intensity_delta
+    - displacement_delta
+    - executive_stability_delta
+    - coup_risk_delta
+    - regional_alignment_delta
+    - institutional_coherence_delta
+  rule: All targets must be computable from evidence available at or before the slice cutoff.
+
+probe_tasks:
+  retrieval_tasks:
+    - id: rt1
+      prompt: Which institutions and security arrangements governed or failed to govern violence after the 2014 rupture?
+      expected_answer_shape:
+        - Institution
+        - SecurityForce
+        - AdministrativeRegion
+        - Event
+    - id: rt2
+      prompt: Which narratives or norms legitimized military intervention, civilian rule, anti-French repositioning, or popular support for regime change?
+      expected_answer_shape:
+        - Narrative
+        - Norm
+        - Actor
+        - Claim
+    - id: rt3
+      prompt: What plausible counterweights to coups, insurgency expansion, or regional militarization existed, and why were they not decisive?
+      expected_answer_shape:
+        - Counterweight
+        - Institution
+        - Actor
+        - Claim
+        - Edge path with constrains/undermines/monitors/resists semantics
+    - id: rt4
+      prompt: Through which regional and international channels did external actors shape domestic legitimacy and security choices?
+      expected_answer_shape:
+        - ExternalPower
+        - InternationalOrganization
+        - Event
+        - Edge path with backs/sanctions/trains/negotiates_with semantics
+    - id: rt5
+      prompt: How did post-Compaore transition differ structurally from the coup cycle and later Sahel reordering?
+      expected_answer_shape:
+        - time-scoped subgraphs across at least two slices
+    - id: rt6
+      prompt: Which populations bore the effects of security failure and displacement, and how were they linked to governance breakdown?
+      expected_answer_shape:
+        - HumanitarianPopulation
+        - AdministrativeRegion
+        - Event
+        - Institution
+  structural_tasks:
+    - id: st1
+      check: Can the IR keep the same entity identity across slices while allowing office changes, coup replacement, alliance shifts, and evolving insurgent pressure?
+    - id: st2
+      check: Can the IR represent both acute shocks and slow legitimacy erosion or institutional hollowing?
+    - id: st3
+      check: Can the IR encode contested interpretations without deleting minority or locally grounded claims?
+    - id: st4
+      check: Can the IR distinguish geography from control, administration, displacement, and security reach?
+    - id: st5
+      check: Can the IR represent civilian legitimacy and military legitimacy as distinct but interacting pathways?
+  gnn_tasks:
+    - id: gt1
+      target: Predict next-slice coup-risk category from prior slice graph state.
+    - id: gt2
+      target: Predict whether an insurgency shock produces durable institutional reordering versus temporary disruption.
+    - id: gt3
+      target: Predict next-slice displacement-risk bucket from graph state.
+    - id: gt4
+      target: Predict regional-alignment shift category from graph state.
+
+labels_and_targets:
+  supervised_targets:
+    conflict_intensity_score:
+      description: Degree of organized armed conflict and violence against civilians in the next slice.
+      source_priority:
+        - ACLED event counts and event-type breakdowns
+        - Wikipedia chronology extraction
+      leakage_rule: No post-slice evidence in feature construction.
+    coup_risk_proxy:
+      description: Degree of vulnerability to executive overthrow or military takeover in the next slice.
+      source_priority:
+        - event chronology on coups, attempted coups, elite fractures, and command instability
+        - article-derived institutional relation counts
+    displacement_stress_proxy:
+      description: Degree of civilian displacement and humanitarian strain associated with insecurity and governance failure.
+      source_priority:
+        - article-derived displacement signals
+        - event chronology on displacement-related crises
+        - ACLED-linked violence-against-civilians patterns
+    external_alignment_score:
+      description: Degree to which foreign partnerships, sanctions pressures, and regional alignments shape domestic strategic choices.
+      source_priority:
+        - GDELT event flows on diplomacy, sanctions, and external reactions
+        - article-derived relation counts on training, support, and negotiation
+    institutional_coherence_proxy:
+      description: Degree to which civilian and military institutions maintain coherent authority across territory and command chains.
+      source_priority:
+        - article-derived institutional relation counts
+        - event chronology on appointments, dismissals, defections, and transitional changes
+    legitimacy_polarization_proxy:
+      description: Degree of divergence between civilian, military, and popular legitimacy claims.
+      source_priority:
+        - GDELT narrative bursts
+        - article-derived claim and narrative counts
+        - event chronology on protests, official messaging, and regional reactions
+  weak_labels:
+    - Wikidata event chronology
+    - Wikipedia chronology extraction
+    - ACLED event tables
+    - GDELT relation counts and narrative bursts
+  target_construction_rule: Freeze evidence by slice cutoff and emit one deterministic target record per slice.
+
+evaluation:
+  stage_1_validity:
+    checks:
+      - schema instantiates a graph for every slice
+      - all required node and edge types are representable
+      - all nodes are time-scoped or explicitly persistent
+      - entity IDs resolve to stable references where possible
+      - military, civilian, insurgent, and external actors remain distinguishable object types
+  stage_2_grounding:
+    metrics:
+      - wikidata_entity_link_rate
+      - wikipedia_citation_coverage
+      - acled_event_attachment_rate
+      - gdelt_event_attachment_rate
+      - external_alignment_grounding_rate
+  stage_3_retrieval:
+    metrics:
+      - answer_path_recall
+      - ideological_node_recall
+      - counterweight_node_recall
+      - external_actor_path_recall
+      - displacement_path_recall
+      - temporal_slice_precision
+  stage_4_prediction:
+    metrics:
+      - held_out_slice_classification_accuracy
+      - calibration
+      - robustness_across_transition_vs_coup_cycle_subperiods
+      - gain_from_legitimacy_and_external_constraint_axes
+      - displacement_risk_bucket_accuracy
+  win_condition: >-
+    A candidate schema wins only if it instantiates valid time-scoped graphs
+    for all slices, grounds entities, conflict events, displacement,
+    legitimacy structure, and external-alignment pathways to the required
+    sources, retrieves material, institutional, ideological, counterweight,
+    external-constraint, and humanitarian subgraphs, passes negative leakage
+    tests, preserves fixed-dimensional projections for downstream GNN use, and
+    shows non-trivial improvement from adding ideology, counterweights,
+    displacement, and external-constraint structure in the ablation suite.
+
+negative_tests:
+  - id: nt1
+    prompt: Explain post-2014 Burkina Faso solely as imported jihadist violence with no domestic legitimacy or governance breakdown.
+    expected_result: fail
+    reason: prevents collapse into a purely externalized conflict story
+  - id: nt2
+    prompt: Return ideology and legitimacy as a summary paragraph without typed nodes.
+    expected_result: fail
+    reason: ideology must stay queryable
+  - id: nt3
+    prompt: Treat coups as isolated events with no pathway of legitimacy erosion, command fragmentation, or civilian frustration.
+    expected_result: fail
+    reason: military takeover must be represented as structured process
+  - id: nt4
+    prompt: Treat anti-French or anti-imperial narratives as mere sentiment with no institutional or strategic effects.
+    expected_result: fail
+    reason: ideological repositioning must be graphable when politically operative
+  - id: nt5
+    prompt: Treat regions only as places, not governance, displacement, and security arenas.
+    expected_result: fail
+    reason: territorial units must be more than geography
+
+ablation_suite:
+  - material_only
+  - material_plus_institutions
+  - material_plus_institutions_plus_ideology
+  - material_plus_institutions_plus_ideology_plus_external_constraint
+  - material_plus_institutions_plus_ideology_plus_humanitarian_structure
+  - full_model_with_counterweights
+win_expectation:
+  ideology_gain_required: true
+  counterweight_gain_required: true
+  external_constraint_gain_required: true
+  humanitarian_structure_gain_required: true
+
+splits:
+  suggested_train:
+    - post_compaore_transition
+    - insurgency_expansion_and_legitimacy_erosion
+  suggested_validation:
+    - coup_cycle_and_sahel_reordering
+  suggested_stress_test:
+    - Apply the learned schema, without redesign, to another Sahel coup or insurgency probe in Mali or Niger.
+
+modern_bridge:
+  role: modern Global South legitimacy-and-security probe
+  purpose: tests contemporary event density, coup pathways, anti-imperial legitimacy structure, and explicit external-constraint representation in a Sahel case
+  downstream_alignment:
+    - share ontology with DRC extraction and earlier imperial/postcolonial probes where possible
+    - reuse generic_target_interface where possible
+    - keep external-constraint, legitimacy, and humanitarian objects available for later forecast-facing probes
+    - do not require direct market labels inside this probe
+
+failure_modes_to_watch:
+  - Crisis explained only by armed events with no legitimacy or institutional layer.
+  - Ideology represented as raw text with no queryable nodes.
+  - Coups treated as abrupt terminal events rather than pathways of erosion and reordering.
+  - External actors modeled as exogenous commentary rather than embedded structure.
+  - Counterweights omitted because they did not ultimately stop militarization.
+  - Role changes over time causing duplicate entities instead of stable identities.
+  - Displacement represented only as a scalar outcome rather than linked graph structure.
+  - Anti-imperial narratives reduced to decorative rhetoric.
+
+autoresearch_objective_hint:
+  optimize_for:
+    - grounding quality
+    - retrieval of ideology and counterweights
+    - retrieval of legitimacy, displacement, and external-constraint structure
+    - temporal coherence
+    - GNN-usable fixed projection
+  avoid:
+    - overfitting to one coup or one insurgent episode
+    - schemas that only reward terminal rulers or official state narratives
+    - collapse of contested interpretations into a single consensus story
+    - treating Sahel crisis as generic terrorism rather than structured political reordering
+
+notes:
+  - This probe should remain human-editable; add machine-generated enrichments in separate derived artifacts.
+  - It intentionally starts after the Compaore rupture so the evaluation target stays narrow enough for rapid iteration.
+  - A separate Sankara-era probe can handle anti-imperial development and rollback without contaminating this later security-reordering case.

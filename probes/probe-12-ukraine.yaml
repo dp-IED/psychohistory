@@ -1,0 +1,219 @@
+id: probe-8a-ukraine-war-sanctions-external-arming-sovereignty-full-scale-invasion
+title: Ukraine War, Sanctions, External Arming, and Sovereignty Under Full-Scale Invasion
+status: proposed
+family: wars
+tags:
+  - wars
+  - politics
+  - ideological_trends
+  - western
+  - contemporary
+  - external_constraint
+  - sovereignty
+  - sanctions
+
+summary: >
+  Tests whether the graph IR can represent sovereignty under invasion, external
+  arming, sanctions regimes, logistics, information operations, territorial
+  control, and war-economy transformation as distinct but interacting causal
+  structures.
+
+temporal:
+  start: "2014-01-01"
+  end: "2026-12-31"
+  slice_granularity: campaign_phase
+  cutoff_rule: "Use only information available within each slice."
+
+scope:
+  regions:
+    - Ukraine
+    - Russia
+    - NATO and EU support context
+    - Black Sea and wider European security context
+  focus: >
+    How external backing, sanctions, mobilization, logistics, and legitimacy
+    interact with sovereignty, territorial control, and information struggle
+    during a prolonged interstate war.
+
+core_question: >
+  How does a large-scale invasion reshape sovereignty, military capacity,
+  coalition dependence, legitimacy, and war-economy structure, and which
+  counterweights or constraints meaningfully alter the trajectory?
+
+grounding:
+  primary_entity_spine:
+    - Wikidata / Wikipedia entities for states, commanders, institutions, alliances, cities, fronts, sanctions packages, and major military events
+  event_streams:
+    - GDELT
+    - ICEWS
+    - ACLED where available
+  forecast_or_backtest_hooks:
+    - time-sliced market or forecast benchmarks where available
+  note: >
+    Contemporary war probe emphasizing external actors as causal participants,
+    not background context.
+
+probe_type: contemporary_war_multiactor
+
+schema_requirements:
+  must_represent_node_types:
+    - Actor
+    - Event
+    - Institution
+    - ExternalPower
+    - ExternalConstraint
+    - MilitaryFormation
+    - ArmedGroup
+    - SecurityForce
+    - SecurityApparatus
+    - Policy
+    - Narrative
+    - Norm
+    - Claim
+    - Counterweight
+    - Region
+    - Infrastructure
+    - AidChannel
+    - InternationalOrganization
+    - MediaNarrative
+    - Shock
+    - HumanitarianPopulation
+    - TransmissionChannel
+    - LegacyAggregate
+  may_represent_node_types:
+    - Coalition
+    - Office
+    - Province
+    - SupplyChainNode
+    - TransitCorridor
+    - Resource
+  must_represent_edges:
+    - invades
+    - sanctions
+    - backs
+    - supports
+    - constrains
+    - mobilizes
+    - contests
+    - legitimizes
+    - delegitimizes
+    - polarizes
+    - governs
+    - pressures
+    - secures
+    - respondsto
+    - trains
+    - funds
+    - coordinateswith
+    - undermines
+    - reconfigures
+    - transmitsthrough
+    - leaveslegacyvia
+  required_cross_scale_properties:
+    - "Must represent external actors as causal participants."
+    - "Must include territorial control, command structure, displacement, sanctions, logistics, and external arming."
+    - "Must connect battlefield dynamics to legitimacy, information operations, and reconstruction claims."
+
+expected_graph_axes:
+  - sovereignty and territorial control
+  - command structure and coalition support
+  - sanctions and external constraint
+  - logistics and military supply
+  - mobilization and war economy
+  - information operations and legitimacy
+  - displacement and infrastructure damage
+  - reconstruction and long-run state transformation
+
+causal_layers:
+  structural_drivers:
+    - Regional security rivalry and unresolved sovereignty conflict
+    - Military asymmetry and dependence on external backing
+    - Competing legitimacy narratives over statehood, alignment, and sphere of influence
+    - Exposure of domestic capacity to energy, logistics, and external finance constraints
+  conjunctural_mechanisms:
+    - External arming and training altering battlefield endurance
+    - Sanctions and export-control regimes reshaping state and war-economy capacity
+    - Information operations and symbolic events affecting coalition cohesion and legitimacy
+    - Mobilization, infrastructure targeting, and logistics adaptation changing campaign possibilities
+  trigger_candidates:
+    - "Escalation from prior conflict into full-scale invasion"
+    - "Major sanctions and arming packages as structural turning points"
+    - "Campaign-phase shifts in territorial control, logistics, or coalition posture"
+
+ideological_layer_requirements:
+  dominant_episteme_questions:
+    - What assumptions made spheres of influence, neutrality, alliance expansion, or rapid victory seem plausible to key actors?
+    - What narratives made sacrifice, resistance, or escalation appear legitimate?
+  legitimating_apparatus_questions:
+    - Which state institutions, allied governments, media systems, and international bodies authorize competing sovereignty claims?
+  suppressed_counterweight_questions:
+    - Which diplomatic, anti-escalation, anti-war, or negotiated-settlement alternatives existed but were weakened or delegitimized?
+    - Which domestic institutional brakes were overtaken by wartime imperatives?
+  ideological_rupture_rule:
+    - "Choose one datable legitimacy or escalation rupture point per slice."
+  contested_claims_rule:
+    - "Do not settle whether sanctions, external arming, morale, logistics, leadership, or information operations were primary."
+
+must_include_contested_claims:
+  - "External arming as decisive driver vs domestic resilience as decisive driver"
+  - "Sanctions as strategically constraining vs sanctions as limited or delayed in effect"
+  - "Information war as central causal lever vs secondary amplifier"
+  - "War-economy adaptation as source of endurance vs coalition support as source of endurance"
+  - "Negotiation failure due mainly to maximalist war aims vs battlefield and alliance incentives"
+
+probe_tasks:
+  retrieval_questions:
+    - "Can the graph identify external actors as causal nodes rather than context?"
+    - "Can it retrieve a path from sanctions to capacity change?"
+    - "Can it distinguish battlefield control from legitimacy and media effects?"
+    - "Can it surface which counterweights to escalation existed and why they weakened?"
+    - "Can it model displacement and infrastructure damage as typed structure rather than prose?"
+  traversal_tests:
+    - "Find a path from external arming to campaign endurance."
+    - "Find a path from sanctions to war-economy reconfiguration."
+    - "Find a path from information operations to alliance cohesion or legitimacy shifts."
+    - "Find a path from territorial contestation to reconstruction claims."
+  gnn_tasks:
+    - "Predict slice-transition conflict intensity."
+    - "Predict external-constraint score."
+    - "Predict counterweight-strength score."
+    - "Predict logistics-stress score."
+
+negative_tests:
+  - "Fail if the case is reduced to leader biography."
+  - "Fail if external actors are modeled as context only."
+  - "Fail if sanctions appear only as paragraph text."
+  - "Fail if territorial control and logistics are absent."
+  - "Fail if legitimacy and information operations are collapsed into one vague media node."
+  - "Fail if future outcomes leak backward into earlier slices."
+
+ablations:
+  - name: no_external_constraint_layer
+    expectation: "Should weaken sanction and alliance-support paths."
+  - name: no_logistics_structure
+    expectation: "Should weaken campaign-phase explanation."
+  - name: no_counterweight_layer
+    expectation: "Should erase negotiation and de-escalation alternatives."
+  - name: no_ideological_layer
+    expectation: "Should over-materialize the war and miss legitimacy conflict."
+
+fixture_hints:
+  target_node_count: "30-44"
+  expected_highest_centrality:
+    - sovereignty under invasion
+    - external arming coalition
+    - sanctions regime
+    - logistics capacity
+    - territorial control
+  expected_high_contention:
+    - sanctions effectiveness thesis
+    - arming-vs-resilience causation
+    - information-war causation
+    - negotiation-foreclosure thesis
+  parsimony_exception: false
+
+sources_to_consult:
+  - ACLED methodology and Ukraine coverage where available
+  - ICEWS/GDELT documentation and event records
+  - scholarship on sanctions, alliance support, war economy, and information operations
+  - major institutional timelines for aid, sanctions, and military escalation

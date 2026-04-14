@@ -1,0 +1,445 @@
+probeid: "6C-6"
+name: "Big Tech Emergence, Platform Consolidation, and Political Reordering — AI/Platform-Security Convergence"
+family: "businessfamily6C"
+version: "0.1"
+status: "candidate"
+format: "probespecv2"
+benchmark_pack: v0
+compatibility_tier: v0-legacy
+
+summary:
+  purpose: >-
+    Evaluate whether a single graph intermediate representation can encode the
+    late-stage transition of Big Tech from consumer-platform dominance toward
+    frontier-AI, cloud, compute, industrial-policy, and security-state
+    relevance in a form that supports retrieval, explanation, and downstream
+    adaptive GNN forecasting.
+  rationale: >-
+    The 2022 to 2026 period concentrates frontier-model races, hyperscaler
+    dependence, chip and energy bottlenecks, export-control logic, antitrust
+    concerns, safety and sovereignty narratives, and emerging defense or public
+    sector procurement pathways into one tightly coupled business-political
+    system. A strong probe must force the schema to keep material bottlenecks,
+    institutions, ideology, counterweights, and state-security alignment as
+    distinct typed structures rather than flattening them into generic firm
+    stories.
+
+scope:
+  region: "Western / U.S. with global compute and alliance spillover"
+  polity: "Frontier AI, cloud concentration, compute chokepoints, industrial policy, and defense-tech convergence"
+  temporalwindow: "2022 to 2026"
+  startyear: 2022
+  endyear: 2026
+  label: "Frontier models, cloud concentration, compute chokepoints, and state-tech convergence"
+  recommendedslices:
+    - sliceid: "6c6_frontier_model_acceleration"
+      startyear: 2022
+      endyear: 2023
+      label: "Frontier-model race and cloud dependence"
+    - sliceid: "6c6_compute_and_policy_chokepoints"
+      startyear: 2024
+      endyear: 2025
+      label: "Compute concentration, industrial policy, and export-control relevance"
+    - sliceid: "6c6_state_security_convergence"
+      startyear: 2026
+      endyear: 2026
+      label: "AI, defense-tech convergence, and platform-security legitimacy"
+  exclusions:
+    - "Do not backfill smartphone, app-store, ad-tech, or Obama-era platform-consolidation mechanisms unless they remain causally active inside 2022 to 2026 evidence."
+    - "Do not import Trump-era moderation conflict as the primary explanation for this probe unless directly connected to frontier-AI governance, compute, or security alignment."
+    - "Do not reduce the case to pre-2022 consumer-platform monopoly history; earlier platform eras may appear only as inherited context nodes with explicit temporal boundaries."
+    - "Do not leak post-slice procurement, policy, valuation, safety, or geopolitical outcomes backward into earlier slices."
+    - "Do not treat earlier Silicon Valley founder mythology as substitute explanation for compute concentration, export-control logic, or defense integration in this period."
+
+artifacts:
+  humanauthored:
+    - "Probe framing, slice design, leakage policy, ontology constraints, evaluation criteria, and task definitions."
+    - "Canonical node and edge type requirements for cross-probe transfer."
+    - "Target definitions, ablation plan, and split guidance."
+  machinegenerated:
+    - "Entity linking to Wikidata and Wikipedia pages."
+    - "Event extraction from GDELT and ICEWS into time-scoped Event nodes."
+    - "Auto-derived policy and filing references from SEC, export-control, industrial-policy, antitrust, and model-governance documents."
+    - "Candidate claim, narrative, and counterweight nodes with provenance and confidence."
+    - "Graph-ready slice snapshots, transition deltas, and fixed-dimensional node projections."
+
+grounded_sources:
+  - source: "Wikidata"
+    role: "Entity grounding, aliases, organizational continuity, and canonical IDs."
+    required: true
+  - source: "Wikipedia"
+    role: "High-level chronology, institutional context, and cross-checkable summaries."
+    required: true
+  - source: "SEC filings"
+    role: "Risk factors, capital dependence, cloud commitments, revenue concentration, and strategic disclosures for public firms."
+    required: true
+  - source: "GDELT"
+    role: "Media-event salience, narrative diffusion, and cross-border political attention."
+    required: true
+  - source: "ICEWS"
+    role: "Structured political-event context where state interaction or security signaling is relevant."
+    required: true
+  - source: "Policy papers"
+    role: "AI safety, sovereignty, competitiveness, and industrial-policy framing."
+    required: true
+  - source: "Antitrust materials"
+    role: "Concentration, platform power, and cloud or distribution concerns."
+    required: true
+  - source: "Export-control documents"
+    role: "Chip restrictions, compute-access asymmetries, and external-constraint logic."
+    required: true
+  - source: "Industrial-policy documents"
+    role: "Subsidy, manufacturing, and national-capacity programs affecting compute and chip supply."
+    required: true
+  - source: "Polymarket or similar forecast market"
+    role: "Optional forecasting targets or public expectation signals when clearly relevant to AI policy or firm trajectories."
+    required: false
+
+core_question: >-
+  Can a single graph schema represent how frontier AI, cloud infrastructure
+  concentration, compute dependence, industrial policy, export-control logic,
+  and defense-tech alignment reshaped Big Tech from consumer-platform dominance
+  toward explicit strategic-state relevance in a way that remains queryable,
+  temporally disciplined, and GNN-consumable?
+
+historical_or_analytical_subquestions:
+  - "How should the graph represent frontier model production as a joint function of model labs, cloud hosts, compute resources, investor backing, and deployment channels rather than as standalone product release events?"
+  - "Which firms and labs became structurally dependent on hyperscaler cloud infrastructure, and how did that dependence differ across the 2022 to 2023, 2024 to 2025, and 2026 slices?"
+  - "How do chip supply nodes, GPU access, fabrication bottlenecks, networking equipment, data-center buildout, and energy constraints combine into a material chokepoint layer?"
+  - "How should export controls, subsidy programs, antitrust actions, and industrial-policy initiatives be modeled as distinct policies with different constraint pathways rather than generic regulation?"
+  - "Which narratives and norms around safety, alignment, existential risk, national competitiveness, AI sovereignty, and openness legitimized or contested concentration and closure?"
+  - "What counterweights mattered most, including concentration critique, open-model alternatives, labor and copyright conflict, antitrust pressure, and regulatory uncertainty, and why were they only partially constraining?"
+  - "How did defense, intelligence, homeland-security, or public-sector procurement and partnership pathways alter legitimacy, market positioning, or state alignment by 2026?"
+  - "Which causal structures persist across all three slices, and which structures change sharply enough that slice-transition modeling should outperform a flat single-period graph?"
+
+schema_requirements:
+  mustrepresent:
+    - "Frontier-model production as a relation among labs, compute resources, cloud hosts, investors, policies, and claims."
+    - "Cloud concentration and compute access as first-class material structures."
+    - "Chip and supply-chain chokepoints as explicit nodes and edges, not background assumptions."
+    - "Industrial policy, export controls, and antitrust pressure as distinct institutional channels."
+    - "Ideology, narratives, and norms as typed objects linked to legitimization, securitization, and constraint."
+    - "Defense and security integration, including procurement and organizational alignment, when evidenced."
+    - "Counterweights and open-model alternatives as active graph structure."
+    - "Time-scoped persistence and slice transitions suitable for downstream message passing."
+  nodetypes:
+    - "Firm"
+    - "ModelLab"
+    - "CloudInfrastructure"
+    - "ComputeResource"
+    - "ChipSupplyNode"
+    - "RegulatoryBody"
+    - "ExecutiveOffice"
+    - "MilitaryFormation"
+    - "SecurityApparatus"
+    - "Event"
+    - "Policy"
+    - "Narrative"
+    - "Norm"
+    - "Counterweight"
+    - "Claim"
+    - "UserPopulation"
+    - "LaborPool"
+    - "Investor"
+    - "ExternalPower"
+  edgetypes:
+    - "trainson"
+    - "dependson"
+    - "hosts"
+    - "supplies"
+    - "restrictsexportTo"
+    - "legitimizes"
+    - "securitizes"
+    - "procuresfrom"
+    - "alignswith"
+    - "constrains"
+    - "regulates"
+    - "competeswith"
+    - "integrateswith"
+    - "respondsTo"
+  mustsupport:
+    - "Slice-specific subgraphs with persistent entity identity across time."
+    - "Typed paths from compute bottlenecks to strategic-state relevance."
+    - "Separate retrieval of material, institutional, ideological, and counterweight evidence."
+    - "Fixed-dimensional node projection for downstream adaptive GNN training."
+    - "Source provenance, confidence, and temporal validity on machine-generated enrichments."
+    - "Graph-level targets and slice-transition targets computable with evidence available at or before cutoff."
+  antirequirements:
+    - "Must forbid reducing AI convergence to product hype only."
+    - "Must forbid ignoring cloud concentration and compute dependence."
+    - "Must forbid ignoring state and defense integration."
+    - "Must forbid returning ideology as prose only."
+    - "Must forbid flattening export controls and industrial policy into generic regulation."
+    - "Must forbid treating all frontier labs as independent from cloud hosts and compute suppliers."
+    - "Must forbid leaking 2026 legitimacy or procurement effects backward into 2022 to 2023."
+    - "Must forbid collapsing counterweights into undifferentiated skepticism."
+
+expected_graph_axes:
+  material: "Compute resources, accelerator supply, chips, data centers, energy availability, networking capacity, and frontier models."
+  institutional: "Model labs, hyperscalers, regulators, executive offices, standards bodies, defense actors, and security apparatuses."
+  ideological: "Safety, alignment, existential risk, sovereignty, competitiveness, openness, closed-model control, and techno-sovereignty."
+  counterweights: "Concentration critique, labor and copyright conflict, antitrust pressure, open-model challenge, safety-regulation demands, and infrastructure bottlenecks."
+  asymmetryandexternalconstraint: "Chip chokepoints, export controls, alliance dependence, fabrication geography, and unequal compute access."
+  firms: "Platform firms, hyperscalers, chip firms, frontier labs, and enterprise integrators."
+  investors: "Strategic investors, venture funds, public markets, and corporate capital relationships relevant to compute and lab scaling."
+  procurement: "Defense, intelligence, homeland-security, and public-sector AI procurement or pilot channels where evidenced."
+  standards: "Safety frameworks, model-evaluation regimes, reporting standards, and governance templates for advanced models."
+  platforms: "Cloud platforms, API ecosystems, distribution layers, and enterprise deployment channels."
+  labor: "Researchers, data workers, contractors, legal-rights claimants, and talent pools constrained by firm concentration."
+  regulatorychannels: "Export-control regimes, industrial-policy programs, antitrust review, agency guidance, executive action, and procurement compliance."
+
+seed_entities:
+  actors:
+    - "OpenAI"
+    - "Anthropic"
+    - "Microsoft"
+    - "Google"
+    - "Amazon"
+    - "Nvidia"
+    - "Frontier AI labs"
+    - "Cloud providers"
+    - "AI safety institutions"
+    - "Defense-tech partnerships"
+  events:
+    - "Frontier model launch cycles"
+    - "Major cloud or compute partnership announcements"
+    - "Export-control updates"
+    - "Industrial-policy announcements"
+    - "Antitrust or competition actions"
+    - "Defense or public-sector AI procurement events"
+  institutions:
+    - "U.S. Department of Commerce"
+    - "Bureau of Industry and Security"
+    - "Federal Trade Commission"
+    - "Department of Defense"
+    - "White House or executive offices relevant to AI policy"
+  places:
+    - "United States"
+    - "Global cloud regions"
+    - "Allied semiconductor ecosystems"
+    - "Data-center clusters"
+  firms_products_platforms:
+    - "GPT-series frontier models"
+    - "Claude-series frontier models"
+    - "Gemini and related frontier model families"
+    - "Azure"
+    - "Amazon Web Services"
+    - "Google Cloud"
+    - "Nvidia accelerator stack"
+
+generic_target_interface:
+  graphleveltargets:
+    - "computeconcentrationscore"
+    - "clouddependencyscore"
+    - "statesecurityalignmentscore"
+    - "industrialpolicypressurescore"
+    - "legitimacyscore"
+    - "counterweightstrengthscore"
+    - "modelplatformintegrationscore"
+  slicetransitiontargets:
+    - "computedependencedelta"
+    - "cloudcentralizationdelta"
+    - "policyconstraintdelta"
+    - "statesecurityalignmentdelta"
+    - "legitimacydelta"
+    - "counterweightdelta"
+    - "modelplatformintegrationdelta"
+
+probe_tasks:
+  retrievaltasks:
+    - "Identify which frontier labs rely on which cloud infrastructures and compute resources in each slice."
+    - "Retrieve the chip, supply, energy, and data-center bottlenecks that most constrain model scaling."
+    - "Surface the policies and offices most responsible for export-control, industrial-policy, and antitrust pressure."
+    - "Extract the narratives and norms that justify concentration, closure, or securitization."
+    - "Retrieve counterweights, including open-model alternatives, labor and copyright conflict, antitrust critique, and regulatory uncertainty."
+    - "Identify defense, intelligence, or public-sector procurement and integration pathways that change legitimacy by slice."
+  structuraltasks:
+    - "Build a typed path from ModelLab to strategic-state relevance through CloudInfrastructure, ComputeResource, Policy, and SecurityApparatus."
+    - "Disambiguate whether a policy acts mainly through export restriction, subsidy, competition pressure, or procurement legitimation."
+    - "Separate firm competition edges from dependency edges when the same firms both partner and compete."
+    - "Represent ideology as linked Narrative, Norm, and Claim nodes rather than free text."
+    - "Preserve persistent entities across slices while changing their local neighborhoods and edge weights."
+  gnntasks:
+    - "Predict graph-level computeconcentrationscore at each slice cutoff."
+    - "Predict statesecurityalignmentscore for the next slice using only prior-slice evidence."
+    - "Classify whether counterweights meaningfully reduce or merely contest modelplatformintegrationscore."
+    - "Forecast which slice transition most increases legitimacy through securitization rather than product adoption."
+
+labels_and_targets:
+  computeconcentrationscore:
+    description: "Degree to which frontier-model development depends on a narrow set of compute suppliers, accelerator lines, and cloud hosts."
+    sourcepriority:
+      - "SEC filings"
+      - "export-control documents"
+      - "industrial-policy documents"
+      - "Wikidata"
+      - "Wikipedia"
+    leakagerule: "Use only evidence available at or before the slice cutoff; do not infer concentration from later market outcomes."
+    targetconstructionrule: >-
+      Combine concentration of relevant ComputeResource and CloudInfrastructure
+      nodes, dependency edge weights, and supply chokepoint centrality into a
+      normalized slice-level score.
+  clouddependencyscore:
+    description: "Extent to which major labs and platform firms require hyperscaler cloud infrastructure for training, hosting, or deployment."
+    sourcepriority:
+      - "SEC filings"
+      - "Wikipedia"
+      - "Wikidata"
+      - "policy papers"
+    leakagerule: "Do not use later partnership renewals or disclosed contracts to score earlier slices."
+    targetconstructionrule: >-
+      Measure the share and centrality of trainson, hosts, and dependson edges
+      linking ModelLab and Firm nodes to CloudInfrastructure nodes at cutoff.
+  statesecurityalignmentscore:
+    description: "Strength of alignment between frontier-AI actors and defense, intelligence, homeland-security, or strategic-state institutions."
+    sourcepriority:
+      - "policy papers"
+      - "SEC filings"
+      - "GDELT"
+      - "ICEWS"
+      - "Wikipedia"
+    leakagerule: "Only count alignment evidenced by contemporaneous procurement, integration, rhetoric, or policy engagement."
+    targetconstructionrule: >-
+      Aggregate securitizes, procuresfrom, alignswith, and integrateswith edges
+      between private actors and MilitaryFormation, SecurityApparatus, or
+      ExecutiveOffice nodes, weighted by institutional significance.
+  industrialpolicypressurescore:
+    description: "Intensity of policy pressure created by subsidy programs, manufacturing incentives, localization efforts, and export-control logic."
+    sourcepriority:
+      - "industrial-policy documents"
+      - "export-control documents"
+      - "policy papers"
+      - "GDELT"
+    leakagerule: "Exclude policies announced or operationalized after the relevant slice cutoff."
+    targetconstructionrule: >-
+      Sum active Policy-node pressures on Firm, ChipSupplyNode, and
+      ComputeResource subgraphs, distinguishing restrictive from enabling policy
+      channels before normalization.
+  legitimacyscore:
+    description: "Overall legitimacy of concentrated frontier-AI and cloud actors across public, policy, and strategic-state narratives."
+    sourcepriority:
+      - "GDELT"
+      - "policy papers"
+      - "SEC filings"
+      - "Wikipedia"
+      - "ICEWS"
+    leakagerule: "Do not infer legitimacy from later valuation, contracts, or post-cutoff narrative reversals."
+    targetconstructionrule: >-
+      Balance legitimizes versus constrains and contested Claim-node pathways,
+      with separate contributions from safety, competitiveness, sovereignty, and
+      security narratives.
+  counterweightstrengthscore:
+    description: "Relative strength of antitrust, open-model, labor, copyright, safety-regulation, and concentration-risk counterweights."
+    sourcepriority:
+      - "antitrust materials"
+      - "policy papers"
+      - "GDELT"
+      - "Wikipedia"
+    leakagerule: "Score only counterweights visible and activated by the cutoff date."
+    targetconstructionrule: >-
+      Combine number, centrality, diversity, and persistence of Counterweight
+      nodes and constrains edges against dominant firm, lab, and platform
+      clusters.
+  modelplatformintegrationscore:
+    description: "Degree to which frontier models are structurally integrated into large cloud and platform ecosystems rather than standing alone."
+    sourcepriority:
+      - "SEC filings"
+      - "Wikipedia"
+      - "Wikidata"
+      - "policy papers"
+    leakagerule: "Do not use downstream ecosystem dominance that materializes only after the slice."
+    targetconstructionrule: >-
+      Estimate the density and importance of hosts, dependson, trainson, and
+      integrateswith edges connecting ModelLab, Firm, CloudInfrastructure, and
+      UserPopulation nodes.
+
+evaluation:
+  stage1validity:
+    - "Check that all required node and edge types appear in at least one slice."
+    - "Check that every slice has explicit temporal boundaries and no post-cutoff evidence leakage."
+    - "Check that ideology, policy, and counterweights are typed nodes rather than residual prose blobs."
+    - "Check that cloud and compute dependence are explicit graph structure."
+  stage2grounding:
+    - "Entity-grounding precision against Wikidata and source-backed aliases."
+    - "Source-provenance coverage for policy, firm, and event nodes."
+    - "Temporal grounding quality for slice assignment and persistence."
+    - "Counterweight and narrative recall from grounded documents and event data."
+  stage3retrieval:
+    - "Path retrieval accuracy from model labs to compute chokepoints."
+    - "Policy-channel retrieval accuracy distinguishing export controls, antitrust, subsidy, and procurement."
+    - "Narrative retrieval quality for safety, sovereignty, openness, and competitiveness."
+    - "Cross-slice retrieval consistency for persistent firms and institutions."
+  stage4prediction:
+    - "Out-of-slice prediction of graph-level targets using only prior evidence."
+    - "Ablation sensitivity showing gains when compute, ideology, and state-security layers are added."
+    - "Calibration on slice-transition deltas rather than only static labels."
+    - "Comparative performance against flatter actor-event or prose-only baselines."
+  wincondition: >-
+    The probe is successful when a shared schema can recover the material,
+    institutional, ideological, and counterweight structure of the 2022 to 2026
+    AI/platform-security transition, preserve temporal discipline across slices,
+    and improve downstream target prediction relative to reduced or flattened
+    graph variants.
+
+negative_tests:
+  - "Explain the AI era only as product excitement."
+  - "Ignore cloud concentration and compute chokepoints."
+  - "Treat export controls as generic regulation."
+  - "Return ideology as prose only."
+  - "Omit defense and national-security integration."
+  - "Model frontier labs without chip, cloud, or data-center dependence."
+  - "Treat open models, labor conflict, and antitrust as irrelevant side notes."
+
+ablation_suite:
+  materialonly:
+    description: "Only compute, chips, models, data centers, and supply nodes."
+  materialplusinstitutions:
+    description: "Add labs, cloud providers, regulators, executive offices, and security institutions."
+  materialplusinstitutionsplusideology:
+    description: "Add narratives, norms, and claims around safety, sovereignty, competitiveness, and openness."
+  materialplusinstitutionspluscompute:
+    description: "Emphasize explicit compute and cloud dependence with chokepoint topology."
+  materialplusinstitutionsplusstatesecurity:
+    description: "Add procurement, securitization, and strategic-state alignment channels."
+  fullmodelwithcounterweights:
+    description: "Full schema including material, institutional, ideological, asymmetry, and counterweight layers."
+
+splits:
+  suggestedtrain:
+    - "6c6_frontier_model_acceleration"
+    - "Partial instances from 6c6_compute_and_policy_chokepoints with strict cutoff masking"
+  suggestedvalidation:
+    - "Held-out cases from 6c6_compute_and_policy_chokepoints"
+  suggestedstresstest:
+    - "6c6_state_security_convergence"
+    - "Counterfactual masking of ideology or compute layers"
+    - "Leakage-resistance tests with pre-2022-only context nodes"
+
+bridge_role:
+  modernbridge: true
+  purpose: >-
+    Serve as the modern bridge between earlier Big Tech platform-consolidation
+    probes and adjacent semiconductor, Palantir, industrial-policy, and war-tech
+    probes by forcing a shared ontology for compute dependence, strategic-state
+    relevance, and legitimacy.
+  downstreamalignment: >-
+    Align with downstream adaptive GNN objectives for retrieval-augmented
+    forecasting, slice-transition prediction, and explanation of how material
+    chokepoints and ideology reshape firm-state structure.
+  failuremodestowatch:
+    - "Schema explains everything through branding and ignores compute materiality."
+    - "Schema models firms and the state but omits procurement and security channels."
+    - "Schema captures policies as text but not as graphable constraints."
+    - "Schema overweights ideology while underweighting cloud and chip dependence."
+    - "Schema cannot distinguish concentration from legitimate coordination under safety rhetoric."
+    - "Schema leaks 2026 state-security relevance backward into 2022."
+  autoresearchobjectivehint: >-
+    Search for graph designs that maximize retrieval of typed causal paths from
+    compute and policy chokepoints to legitimacy and state alignment, while
+    remaining portable to semiconductor, platform, and security-technology
+    probes elsewhere in the suite.
+  notes:
+    - "This probe should remain transferable to other modern business-state convergence cases."
+    - "All entities should be time-scoped or explicitly persistent."
+    - "Machine-generated enrichments should remain separable from the human-authored core."
+    - "The ontology should support fixed-dimensional node projections for downstream GNN training."

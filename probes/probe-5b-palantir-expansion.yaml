@@ -1,0 +1,343 @@
+probeid: "6B-2"
+parentprobe: "6B"
+name: "Palantir Counterterror Expansion and Institutional Normalization"
+version: "0.1"
+status: candidate
+format: probespecv2
+benchmark_pack: v0
+compatibility_tier: v0-legacy
+
+summary:
+  purpose: "Evaluate whether a transferable graph schema can represent Palantir's 2009 to 2016 expansion through counterterror demand, defense-intelligence procurement, institutional normalization, platform deployment, and growing public-sector dependence."
+  rationale: "This subprobe isolates the scale-and-normalization grammar of the parent 6B case so the IR can be tested on contracts, agency breadth, procurement pathways, product deployment, and accepted institutional legitimacy without contamination from later border-security politicization or AI-war-tech branding."
+
+scope:
+  region: "Western / U.S. with limited allied extensions where evidenced"
+  polity: "Palantir as an expanding firm-state-security platform during counterterror normalization"
+  temporalwindow:
+    startyear: 2009
+    endyear: 2016
+    label: "Counterterror expansion, defense-intelligence embedding, and Obama-era institutional normalization"
+  recommendedslices:
+    - sliceid: "6b2_counterterror_normalization"
+      startyear: 2009
+      endyear: 2016
+      label: "Counterterror-era scaling, contract expansion, and normalized embedding"
+  exclusions:
+    - "Do not frame the period only as startup growth with no procurement structure."
+    - "Do not import Trump-era border controversy into this slice."
+    - "Do not treat contracts only as revenue totals."
+    - "Do not collapse intelligence, defense, and policing institutions into one customer node."
+    - "Do not project later AI-war-tech legitimacy backward."
+
+artifacts:
+  humanauthored:
+    - "Canonical subprobe boundary for 2009 to 2016"
+    - "Ontology commitments for procurement channels, contracts, agencies, products, and legitimating narratives"
+    - "Target definitions for institutional embedding and procurement dependence"
+    - "Negative tests and ablations"
+  machinegenerated:
+    - "Entity linking and temporal resolution for agencies, products, and contracts"
+    - "Contract-path enrichment from public procurement records"
+    - "Narrative extraction from public reporting and investor materials"
+    - "Fixed-dimensional node projections for downstream GNN use"
+
+groundedsources:
+  - source: "Wikidata"
+    role: "Canonical IDs for actors, institutions, products, and firms"
+    required: true
+  - source: "Wikipedia"
+    role: "Chronology, product and contract history, controversies, and public institutional relationships"
+    required: true
+  - source: "GDELT"
+    role: "Narrative dynamics and public visibility around security, efficiency, and institutional growth"
+    required: true
+  - source: "ICEWS"
+    role: "Optional structured political and security interaction signals relevant to institutional embedding"
+    required: false
+  - source: "SEC filings / annual reports / investor letters"
+    role: "Public disclosures and strategic identity claims, especially customer concentration and institutional positioning"
+    required: true
+  - source: "U.S. federal procurement or contract databases"
+    role: "Contract objects, agency pathways, award timing, and procurement structure"
+    required: true
+
+corequestion: "Can a single graph schema represent how Palantir scaled through counterterror demand, procurement channels, agency embedding, product deployment, and normalization narratives in a way that remains queryable, temporally disciplined, and usable by downstream GNNs?"
+
+subquestions:
+  - "Which agencies and procurement pathways drove Palantir's expansion during 2009 to 2016?"
+  - "How should contracts be represented as distinct from the procurement channel, the customer institution, and the deployed product?"
+  - "Which products became central to institutional embedding, and how did their role differ across agencies?"
+  - "Which narratives around efficiency, security, and mission legitimacy normalized Palantir within defense and intelligence settings?"
+  - "What degree of dependence on public-sector demand and long procurement cycles structured growth in this period?"
+  - "Which counterweights, including concentration risk, scrutiny, and scaling frictions, were present but not decisive?"
+  - "How can the graph distinguish real institutional embedding from marketing claims or general visibility?"
+  - "What within-slice changes mark the shift from niche access to normalized institutional presence?"
+
+schemarequirements:
+  mustrepresent:
+    nodetypes:
+      - "Actor"
+      - "Firm"
+      - "Investor"
+      - "Institution"
+      - "Office"
+      - "ProcurementChannel"
+      - "Contract"
+      - "PlatformProduct"
+      - "Event"
+      - "Policy"
+      - "Narrative"
+      - "Norm"
+      - "Counterweight"
+      - "Shock"
+      - "Claim"
+      - "SecurityApparatus"
+      - "MilitaryFormation"
+      - "RegulatoryBody"
+      - "MediaNarrative"
+    edgetypes:
+      - "procuresfrom"
+      - "contractswith"
+      - "embedsin"
+      - "integrateswith"
+      - "scales"
+      - "dependson"
+      - "legitimizes"
+      - "delegitimizes"
+      - "constrains"
+      - "alignswith"
+      - "marketsas"
+      - "scrutinizes"
+      - "regulates"
+      - "respondsTo"
+      - "funds"
+      - "investsin"
+  mustsupport:
+    - "Explicit contract objects distinct from institutions, procurement channels, and products."
+    - "Time-scoped embedding across agencies and apparatus types."
+    - "Typed representation of legitimizing narratives and operational norms."
+    - "Public-sector dependence and customer concentration as graphable structure."
+    - "Cross-slice identity continuity with 6B-1 and later child probes."
+    - "Evidence-level provenance for all contract and agency relationships."
+    - "Fixed-dimensional node projections for downstream GNN use."
+  antirequirements:
+    - "Do not collapse contracts into revenue aggregates."
+    - "Do not collapse intelligence, defense, and policing institutions."
+    - "Do not flatten ideology into text blobs."
+    - "Do not infer embedding from later fame."
+    - "Do not import later politicization into this slice."
+
+expectedgraphaxes:
+  material:
+    - "Contract expansion"
+    - "Revenue concentration"
+    - "Platform deployment"
+    - "Scaling capacity"
+  institutional:
+    - "CIA"
+    - "DoD"
+    - "U.S. Army"
+    - "Policing and public-sector institutions where publicly evidenced"
+    - "Procurement offices"
+  ideological:
+    - "Security"
+    - "Efficiency"
+    - "Mission legitimacy"
+    - "Counterterror necessity"
+  counterweights:
+    - "Concentration risk"
+    - "Long-cycle procurement dependence"
+    - "Operational scrutiny"
+    - "Reputational friction"
+  asymmetryandexternalconstraint:
+    - "Dependence on state demand"
+    - "Customer concentration"
+    - "Public-sector approval pathways"
+  firms:
+    - "Palantir corporate scaling"
+  investors:
+    - "Persistent capital backing and tolerance for long sales cycles"
+  procurement:
+    - "Prime contracts"
+    - "Agency-specific award pathways"
+    - "Renewal and expansion mechanisms"
+  standards:
+    - "Security accreditation"
+    - "Data-handling approval norms"
+    - "Interoperability expectations"
+  platforms:
+    - "Gotham"
+    - "Foundry"
+  labor:
+    - "Government-facing technical talent"
+    - "Mission-oriented recruitment"
+  regulatorychannels:
+    - "Oversight"
+    - "Government compliance"
+    - "Public procurement rules"
+
+seedentities:
+  actors:
+    - "Alex Karp"
+    - "Peter Thiel"
+    - "U.S. defense and intelligence leadership where publicly evidenced"
+  events:
+    - "Counterterror-era federal expansion"
+    - "Major agency deployment milestones"
+    - "Product scaling milestones"
+  institutions:
+    - "Palantir Technologies"
+    - "CIA"
+    - "U.S. Department of Defense"
+    - "U.S. Army"
+    - "U.S. federal procurement offices"
+  places:
+    - "United States"
+    - "Washington, D.C."
+    - "Silicon Valley"
+  firmsproductsplatforms:
+    - "Palantir Technologies"
+    - "Gotham"
+    - "Foundry"
+
+generictargetinterface:
+  graphleveltargets:
+    - target: "capacityscore"
+      description: "Operational and institutional capacity implied by contracts, agency breadth, and product deployment."
+      computableat: "slice cutoff only"
+    - target: "stateembeddingscore"
+      description: "Depth and breadth of embedding across intelligence, defense, and other public-sector institutions."
+      computableat: "slice cutoff only"
+    - target: "procurementdependencyscore"
+      description: "Degree of dependence on public-sector procurement pathways for growth."
+      computableat: "slice cutoff only"
+    - target: "institutionallegitimacyscore"
+      description: "Net accepted legitimacy inside state institutions by the cutoff."
+      computableat: "slice cutoff only"
+    - target: "counterweightstrengthscore"
+      description: "Strength of constraints active during this period."
+      computableat: "slice cutoff only"
+  slicetransitiontargets:
+    - target: "procurementdelta"
+      description: "Within-slice change in procurement breadth and pathway complexity."
+    - target: "embeddingdelta"
+      description: "Within-slice change in agency reach and depth of institutional integration."
+    - target: "productdeploymentdelta"
+      description: "Within-slice change in visible product deployment across agencies."
+
+probetasks:
+  retrievaltasks:
+    - "Which institutions and procurement channels drove Palantir's expansion in this slice?"
+    - "Which products were central to institutional embedding, and for which agencies?"
+    - "Which narratives legitimized Palantir as necessary, efficient, or mission-critical?"
+    - "What counterweights constrained growth, and why were they not decisive?"
+  structuraltasks:
+    - "Represent a contract as distinct from product, procurement channel, and customer institution."
+    - "Construct typed paths from agencies to procurement channels to contracts to products."
+    - "Separate institutional legitimacy from media narrative."
+    - "Preserve continuity with 6B-1 while allowing relation changes."
+  gnntasks:
+    - "Predict procurementdependencyscore from graph structure."
+    - "Predict embeddingdelta from procurement and product features."
+    - "Classify whether growth is driven more by institutional breadth or product-depth integration."
+
+labelsandtargets:
+  capacityscore:
+    description: "Operational and institutional scaling capacity."
+    sourcepriority:
+      - "U.S. federal procurement or contract databases"
+      - "SEC filings / annual reports / investor letters"
+      - "Wikipedia"
+    leakagerule: "Use only contracts, deployments, and relationships evidenced by or before 2016."
+    targetconstructionrule: "Combine normalized features for agency breadth, contract structure, and product deployment into a bounded score."
+  stateembeddingscore:
+    description: "Depth of Palantir's embedding in state institutions."
+    sourcepriority:
+      - "U.S. federal procurement or contract databases"
+      - "Wikipedia"
+      - "ICEWS"
+    leakagerule: "Require explicit pre-cutoff agency ties."
+    targetconstructionrule: "Aggregate agency diversity, continuity, and product integration evidence."
+  procurementdependencyscore:
+    description: "Extent of dependence on public-sector procurement."
+    sourcepriority:
+      - "SEC filings / annual reports / investor letters"
+      - "U.S. federal procurement or contract databases"
+    leakagerule: "Use only contemporaneous customer and contract exposure."
+    targetconstructionrule: "Map concentration and centrality of public-sector contracts into a bounded score."
+  institutionallegitimacyscore:
+    description: "Net institutional legitimacy during the normalization period."
+    sourcepriority:
+      - "GDELT"
+      - "Wikipedia"
+      - "SEC filings / annual reports / investor letters"
+    leakagerule: "Exclude later political controversies or AI-war-tech reframing."
+    targetconstructionrule: "Aggregate legitimizing institutional and narrative relations minus active delegitimizing structures."
+  counterweightstrengthscore:
+    description: "Strength of constraints and scrutiny active during the slice."
+    sourcepriority:
+      - "GDELT"
+      - "Wikipedia"
+      - "SEC filings / annual reports / investor letters"
+    leakagerule: "Count only pre-2017 counterweights."
+    targetconstructionrule: "Score number, persistence, and authority of constraining nodes and edges."
+
+evaluation:
+  stage1validitychecks:
+    - "Verify one slice covering 2009 through 2016."
+    - "Verify contracts, procurement channels, agencies, and products are distinct typed objects."
+    - "Verify public-sector institutions are not collapsed into one generic state node."
+    - "Verify all contract and legitimacy relations are time-scoped."
+  stage2groundingmetrics:
+    - "Entity-link precision for agencies, products, and firms"
+    - "Contract-path grounding coverage against public procurement records"
+    - "Chronology consistency across product and agency relations"
+  stage3retrievalmetrics:
+    - "Accuracy of procurement-path retrieval"
+    - "Product-to-agency linkage fidelity"
+    - "Counterweight retrieval recall"
+    - "Legitimacy narrative separation accuracy"
+  stage4predictionmetrics:
+    - "Graph-level target accuracy for stateembeddingscore and procurementdependencyscore"
+    - "Within-slice delta accuracy for embeddingdelta and productdeploymentdelta"
+    - "Ablation gain from adding procurement and ideology over material-only baseline"
+  wincondition: "The schema wins if it represents contracts, procurement channels, agency embedding, products, and legitimacy as separate but queryable structures and improves prediction when procurement and ideology are included."
+
+negativetests:
+  - "Treat contracts only as revenue totals."
+  - "Treat all state customers as one node."
+  - "Return efficiency and mission legitimacy as an untyped paragraph."
+  - "Infer deep embedding from later public prominence."
+  - "Collapse Gotham, Foundry, agencies, and contracts into a generic platform blob."
+
+ablationsuite:
+  - "materialonly"
+  - "materialplusinstitutions"
+  - "materialplusinstitutionsplusideology"
+  - "materialplusinstitutionsplusprocurement"
+  - "fullmodelwithcounterweights"
+
+splits:
+  suggestedtrain:
+    - "6b2_counterterror_normalization"
+  suggestedvalidation:
+    - "heldout_contract_and_agency_subset"
+  suggestedstresstest:
+    - "transfer_to_6B-3"
+
+bridgerole:
+  modernbridge: "Institutional-normalization business-state probe"
+  purpose: "Bridge founding-stage access and later politicized scale by forcing procurement, contracts, and institutional embedding into a transferable ontology."
+  downstreamalignment:
+    - "Aligns with 6B-1 on identity continuity"
+    - "Aligns with 6B-3 on preserved institutions, products, and counterweight structure"
+    - "Aligns with semiconductor and other state-demand probes through procurement ontology"
+  failuremodestowatch:
+    - "Contract flattening"
+    - "State homogenization"
+    - "Narrative blobification"
+    - "Backward leakage from later slices"
+  autoresearchobjectivehint: "Prefer schemas that improve retrieval and prediction when procurement and institutional embedding are first-class objects."
+  notes:
+    - "This child probe should reward genuine procurement structure, not just growth summaries."

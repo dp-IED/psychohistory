@@ -1,0 +1,541 @@
+probeid: "6C-1"
+family: "businessfamily6C"
+name: "Big Tech Emergence, Platform Consolidation, and Political Reordering — Pre-Silicon Valley Foundations"
+version: "0.1"
+status: "candidate"
+format: "probespecv2"
+benchmark_pack: v0
+compatibility_tier: v0-legacy
+summary:
+  purpose: >-
+    Evaluate whether a single transferable graph IR can represent the prehistory of
+    later Big Tech by linking Cold War state funding, defense demand, research
+    universities, laboratories, semiconductor formation, regional clustering, and
+    proto-network infrastructure in a form that supports grounded retrieval,
+    structural querying, and downstream adaptive GNN training.
+  rationale: >-
+    This probe pressures the schema on a historically foundational business-state
+    formation problem in which firms do not emerge from isolated entrepreneurship
+    alone, but from dense interactions among federal R&D, military procurement,
+    university-laboratory systems, technical ideology, early supply chains, and
+    network infrastructure. It is intended as the historical substrate for later
+    Big Tech probes, while explicitly preventing temporal leakage from mature
+    platform logics back into 1945 to 1975.
+
+scope:
+  region: "Western / U.S."
+  polity: >-
+    The prehistory of Big Tech through Cold War research, universities,
+    semiconductor roots, federal R&D, and proto-network infrastructure
+  temporalwindow:
+    startyear: 1945
+    endyear: 1975
+    label: "Cold War research state, semiconductors, universities, and proto-network infrastructure"
+  recommendedslices:
+    - sliceid: "6c1_postwar_research_state"
+      startyear: 1945
+      endyear: 1956
+      label: "Postwar military research state and university-laboratory system"
+    - sliceid: "6c1_semiconductor_origins"
+      startyear: 1957
+      endyear: 1968
+      label: "Semiconductor industry formation, aerospace links, and regional clustering"
+    - sliceid: "6c1_proto_network_infrastructure"
+      startyear: 1969
+      endyear: 1975
+      label: "ARPA-networking, computing infrastructure, and early ecosystem institutionalization"
+  exclusions:
+    - "Do not import post-1975 venture-capital scaling, personal-computing mass markets, or software-platform dominance."
+    - "Do not treat mature platform monopoly, app-store control, cloud concentration, or ad-tech extraction as present in this window."
+    - "Do not backfill later firm identities, valuations, or consumer-market logics into earlier slices."
+    - "Do not reduce defense demand to generic context; it must remain typed causal structure."
+    - "Do not collapse university, lab, and contractor roles into one undifferentiated innovation sector."
+    - "Do not treat Silicon Valley as the only relevant region; Route 128, military geographies, and federal centers remain in scope where causally relevant."
+
+artifacts:
+  humanauthored:
+    - "Probe framing, scope boundaries, slice definitions, exclusions, and anti-leakage rules."
+    - "Core ontology commitments for institutions, ideology, procurement, geography, and counterweights."
+    - "Seed entities and supervised target definitions."
+    - "Evaluation logic, negative tests, and ablation design."
+  machinegenerated:
+    - "Entity expansion from grounded sources into time-scoped node candidates."
+    - "Alias resolution, cross-slice identity linking, and source-backed claim extraction."
+    - "Candidate edges for funding, research collaboration, spinouts, procurement, standards, and diffusion."
+    - "Target feature estimation from retrieved evidence available at or before each slice cutoff."
+    - "Stress-test query generation and slice-transition comparison instances."
+
+groundedsources:
+  - source: "Wikidata"
+    role: "Canonical entity IDs, aliases, dates, and institutional relationship scaffolding."
+    required: true
+  - source: "Wikipedia"
+    role: "High-recall narrative grounding for events, organizations, technologies, and timeline verification."
+    required: true
+  - source: "Seshat"
+    role: "Comparative historical framing when useful for state capacity, institutional complexity, and long-run context."
+    required: false
+  - source: "GDELT"
+    role: "Retrospective salience or later memory of foundational events only; not primary evidence for the period itself."
+    required: false
+  - source: "U.S. government and defense-history sources"
+    role: "Grounding for ARPA/DARPA, Department of Defense, procurement structures, federal R&D programs, and defense demand."
+    required: true
+  - source: "University and laboratory histories"
+    role: "Grounding for Stanford, MIT, Bell Labs, Lincoln Laboratory, SRI, and related institutional pathways."
+    required: true
+
+corequestion: >-
+  Can a single graph schema represent how Cold War state funding, universities,
+  laboratories, semiconductors, military demand, and early networking
+  infrastructure created the structural conditions for later Big Tech in a way
+  that is queryable, temporally disciplined, and consumable by downstream GNNs?
+
+historicaloranalyticalsubquestions:
+  - "How did federal R&D programs, defense procurement, and national-security demand shape which technologies, labs, and firms became durable nodes in the ecosystem?"
+  - "Which roles were played by research universities, federally linked laboratories, and hybrid public-private institutions in translating research capacity into organizational power?"
+  - "How did semiconductor production, component supply chains, fabrication know-how, and aerospace demand interact during industry formation?"
+  - "How should the graph represent ideology around innovation, anti-communism, security, scientific modernity, openness, and technical elite governance as typed causal structure rather than prose residue?"
+  - "How did geographic clustering, land use, regional labor pipelines, military proximity, and research park development generate durable regional advantage?"
+  - "What corporate formation, spinout, recruitment, and talent-circulation dynamics linked labs, universities, and early firms such as Shockley and Fairchild?"
+  - "What counterweights or constraints limited or redirected growth, including cost, technical bottlenecks, antitrust memory, bureaucratic rivalry, academic norms, and procurement dependence?"
+  - "What changes across the three slices distinguish postwar research-state formation, semiconductor industrialization, and proto-network infrastructural institutionalization?"
+
+schemarequirements:
+  mustrepresent:
+    nodetypes:
+      - "Actor"
+      - "Firm"
+      - "University"
+      - "Laboratory"
+      - "Institution"
+      - "Office"
+      - "FundingProgram"
+      - "ResearchNetwork"
+      - "Technology"
+      - "Infrastructure"
+      - "Event"
+      - "Policy"
+      - "Narrative"
+      - "Norm"
+      - "Counterweight"
+      - "Shock"
+      - "Claim"
+      - "Region"
+      - "SupplyChainNode"
+      - "Investor"
+    edgetypes:
+      - "funds"
+      - "researches"
+      - "spinsoutfrom"
+      - "procuresfrom"
+      - "builds"
+      - "standardizes"
+      - "clustersin"
+      - "legitimizes"
+      - "constrains"
+      - "recruitsfrom"
+      - "collaborateswith"
+      - "dependson"
+      - "diffusesinto"
+      - "respondsTo"
+  mustsupport:
+    - "Time-scoped entities with persistent identity and slice-local state."
+    - "Typed distinction among funding, procurement, research collaboration, commercialization, and diffusion."
+    - "Explicit ideology nodes and claims linked to institutions, policies, and events."
+    - "Queryable geography with regions, clusters, and cross-region comparisons as first-class graph objects."
+    - "Representation of supply-chain dependencies, fabrication capacity, and contractor relationships."
+    - "Cross-slice transitions for clustering, commercialization, procurement, infrastructure, elite networks, and standards."
+    - "Provenance-aware claims that can be retrieved and aggregated without flattening source distinctions."
+    - "Fixed-dimensional node projection and edge-type stability for downstream GNN training."
+  antirequirements:
+    - "Forbid reducing the story to garage-founder mythology."
+    - "Forbid flattening military demand into background context."
+    - "Forbid collapsing ideology into text blobs."
+    - "Forbid treating geography as untyped backdrop only."
+    - "Forbid reading later platform logic backward into 1945-1975."
+
+expectedgraphaxes:
+  material:
+    focus:
+      - "chips"
+      - "computing hardware"
+      - "contracts"
+      - "lab capacity"
+    intent: "Capture the physical and production substrate of early computing and semiconductor emergence."
+  institutional:
+    focus:
+      - "ARPA/DARPA"
+      - "Department of Defense"
+      - "universities"
+      - "laboratories"
+    intent: "Represent the research-state architecture and hybrid public-private institutional pathways."
+  ideological:
+    focus:
+      - "innovation"
+      - "anti-communism"
+      - "security"
+      - "progress"
+    intent: "Keep narratives of scientific modernity and national-security legitimacy graphable."
+  counterweights:
+    focus:
+      - "cost"
+      - "concentration"
+      - "technical limits"
+      - "bureaucratic rivalry"
+    intent: "Model constraints and rival institutional logics rather than assuming linear growth."
+  asymmetryandexternalconstraint:
+    focus:
+      - "defense dependence"
+      - "federal funding concentration"
+    intent: "Make asymmetry explicit where public funding and military demand disproportionately shape outcomes."
+  firms:
+    focus:
+      - "early semiconductor firms"
+      - "defense contractors"
+      - "lab spinouts"
+    intent: "Track corporate formation without collapsing firms into generic actors."
+  investors:
+    focus:
+      - "early private backers"
+      - "corporate-finance channels"
+      - "state-adjacent capital"
+    intent: "Represent capital formation even where classic venture-capital logic is still nascent."
+  procurement:
+    focus:
+      - "defense contracts"
+      - "aerospace demand"
+      - "federal purchasing channels"
+    intent: "Model procurement as a causal bridge from research to production scale."
+  standards:
+    focus:
+      - "chip standards"
+      - "networking protocols"
+      - "procurement standards"
+    intent: "Capture how technical and procurement standards stabilize ecosystems."
+  platforms:
+    focus:
+      - "proto-platform infrastructure"
+      - "network backbones"
+      - "shared computing environments"
+    intent: "Represent infrastructural coordination layers without importing mature platform monopoly."
+  labor:
+    focus:
+      - "engineers"
+      - "scientists"
+      - "university pipelines"
+    intent: "Track talent production, recruitment, and circulation across labs, universities, and firms."
+  regulatorychannels:
+    focus:
+      - "defense appropriations"
+      - "contracting offices"
+      - "research governance"
+      - "security classification and oversight norms"
+    intent: "Keep state channels legible without reducing them to generic policy background."
+
+seedentities:
+  actors:
+    - "Vannevar Bush"
+    - "Frederick Terman"
+    - "William Shockley"
+    - "Robert Noyce"
+    - "Gordon Moore"
+    - "J.C.R. Licklider"
+  events:
+    - "1947 transistor invention"
+    - "1957 Sputnik shock"
+    - "1957 founding of Fairchild Semiconductor"
+    - "1958 creation of ARPA"
+    - "1958 to 1959 integrated-circuit breakthrough"
+    - "1969 ARPANET launch"
+  institutions:
+    - "Bell Labs"
+    - "Fairchild Semiconductor"
+    - "Stanford University"
+    - "Massachusetts Institute of Technology"
+    - "ARPA / DARPA"
+    - "U.S. Department of Defense"
+    - "Shockley Semiconductor Laboratory"
+    - "SRI International"
+    - "Lincoln Laboratory"
+  places:
+    - "Silicon Valley / Santa Clara Valley"
+    - "Stanford Research Park"
+    - "Route 128"
+    - "Cambridge, Massachusetts"
+    - "Mountain View, California"
+    - "Palo Alto, California"
+  firms_products_platforms:
+    - "transistor"
+    - "integrated circuit"
+    - "ARPANET"
+    - "semiconductor fabrication lines"
+    - "minicomputing and time-sharing infrastructure"
+
+generictargetinterface:
+  graphleveltargets:
+    - "capacityscore"
+    - "legitimacyscore"
+    - "counterweightstrengthscore"
+    - "shockresponsescore"
+    - "statefundingdependencyscore"
+    - "clusteringintensityscore"
+    - "researchcommercializationscore"
+    - "infrastructuralreadinessscore"
+  slicetransitiontargets:
+    - "clusteringdelta"
+    - "commercializationdelta"
+    - "procurementdelta"
+    - "infrastructuredelta"
+    - "elite_network_delta"
+    - "standardsdelta"
+
+probetasks:
+  retrievaltasks:
+    - "Retrieve the principal funding programs, offices, and procurement channels that connect postwar defense demand to specific universities, laboratories, and firms in each slice."
+    - "Retrieve the institutional paths linking Stanford, MIT, Bell Labs, SRI, ARPA, and the Department of Defense to semiconductor and networking outcomes."
+    - "Retrieve evidence for how ideology around national security, progress, scientific modernity, and innovation is attached to institutions, policies, and events rather than left as prose."
+    - "Retrieve the main geographic clustering mechanisms, including labor pipelines, research parks, defense demand, and regional co-location effects."
+    - "Retrieve the major counterweights and constraints in each slice and explain why they limited, redirected, or failed to block ecosystem consolidation."
+  structuraltasks:
+    - "Construct a typed path from federal funding to lab capacity to firm spinout to regional cluster formation."
+    - "Differentiate procurement-driven diffusion from open research collaboration and from direct commercialization."
+    - "Represent semiconductor supply-chain dependencies without collapsing production, design, fabrication, and procurement into one edge type."
+    - "Map cross-slice elite recruitment and spinout networks while preserving entity identity over time."
+    - "Compare the graph structure of the three slices and identify which edge families become more central in each transition."
+  gnntasks:
+    - "Predict statefundingdependencyscore for a slice using only evidence available before the slice cutoff."
+    - "Predict clusteringintensityscore from institutional, labor, and procurement subgraphs."
+    - "Predict researchcommercializationscore from relations among universities, labs, firms, and technologies."
+    - "Predict infrastructuredelta between adjacent slices from prior funding, standards, and collaboration structure."
+
+labelsandtargets:
+  capacityscore:
+    description: "Overall system capacity to generate durable research, production, and infrastructural output within the slice."
+    sourcepriority:
+      - "U.S. government and defense-history sources"
+      - "University and laboratory histories"
+      - "Wikipedia"
+      - "Wikidata"
+    leakagerule: "Use only institutions, facilities, programs, contracts, and technologies evidenced at or before slice endyear."
+    targetconstructionrule: "Aggregate normalized evidence for lab capacity, funded programs, infrastructure build-out, and production-relevant technology maturity."
+  legitimacyscore:
+    description: "Strength of legitimating narratives tying research, procurement, and institutional expansion to security, progress, and modernization."
+    sourcepriority:
+      - "U.S. government and defense-history sources"
+      - "University and laboratory histories"
+      - "Wikipedia"
+    leakagerule: "Exclude retrospective narratives that arise primarily after the slice cutoff unless explicitly marked as retrospective and unused for supervision."
+    targetconstructionrule: "Score density and centrality of narrative, norm, claim, and policy links that justify the ecosystem within the slice."
+  counterweightstrengthscore:
+    description: "Relative strength of constraints and rival logics acting against concentration, scale, or unbounded expansion."
+    sourcepriority:
+      - "U.S. government and defense-history sources"
+      - "University and laboratory histories"
+      - "Wikipedia"
+    leakagerule: "Do not use later antitrust or platform-era critiques to score earlier slices."
+    targetconstructionrule: "Combine evidence for budget limits, technical bottlenecks, academic resistance, bureaucratic rivalry, and concentration concerns."
+  shockresponsescore:
+    description: "Ability of the system to redirect resources, institutions, and narratives after major shocks."
+    sourcepriority:
+      - "U.S. government and defense-history sources"
+      - "Wikipedia"
+      - "Wikidata"
+    leakagerule: "Only shocks known by the slice cutoff may be included as response triggers."
+    targetconstructionrule: "Measure post-shock formation or acceleration of funding programs, offices, collaborations, and infrastructure."
+  statefundingdependencyscore:
+    description: "Degree to which ecosystem growth depends on federal R&D and defense-linked financial support."
+    sourcepriority:
+      - "U.S. government and defense-history sources"
+      - "University and laboratory histories"
+      - "Wikipedia"
+    leakagerule: "Do not infer dependence from later firm outcomes or later market success."
+    targetconstructionrule: "Estimate the share of critical nodes and edges whose viability depends on state funding or procurement pathways."
+  clusteringintensityscore:
+    description: "Strength of regional concentration among institutions, firms, labor pipelines, and infrastructure."
+    sourcepriority:
+      - "University and laboratory histories"
+      - "Wikipedia"
+      - "Wikidata"
+    leakagerule: "Use only regional evidence established by the slice endyear."
+    targetconstructionrule: "Score co-location, repeated recruitment, collaboration density, research park links, and local supplier concentration."
+  researchcommercializationscore:
+    description: "Extent to which research activity converts into firm formation, production capability, or marketable technology."
+    sourcepriority:
+      - "University and laboratory histories"
+      - "U.S. government and defense-history sources"
+      - "Wikipedia"
+    leakagerule: "Exclude commercialization evidence that materializes after the slice cutoff."
+    targetconstructionrule: "Weight spinouts, patents or equivalent technological breakthroughs, procurement uptake, and diffusion into firms or infrastructure."
+  infrastructuralreadinessscore:
+    description: "Degree to which computing and networking infrastructure is sufficiently organized for later ecosystem scaling."
+    sourcepriority:
+      - "U.S. government and defense-history sources"
+      - "University and laboratory histories"
+      - "Wikipedia"
+    leakagerule: "Do not use later internet-scale usage or platform outcomes."
+    targetconstructionrule: "Combine evidence for network build-out, shared computing resources, protocol formation, and institutional support for infrastructure."
+  clusteringdelta:
+    description: "Change in regional clustering intensity between adjacent slices."
+    sourcepriority:
+      - "University and laboratory histories"
+      - "Wikipedia"
+      - "Wikidata"
+    leakagerule: "Compute only from evidence available in the two slices being compared."
+    targetconstructionrule: "Subtract prior-slice clusteringintensityscore from current-slice clusteringintensityscore."
+  commercializationdelta:
+    description: "Change in research-to-commercialization conversion between adjacent slices."
+    sourcepriority:
+      - "University and laboratory histories"
+      - "U.S. government and defense-history sources"
+    leakagerule: "No evidence after the later slice cutoff."
+    targetconstructionrule: "Difference in researchcommercializationscore across adjacent slices."
+  procurementdelta:
+    description: "Change in the weight and reach of procurement pathways between adjacent slices."
+    sourcepriority:
+      - "U.S. government and defense-history sources"
+      - "Wikipedia"
+    leakagerule: "Do not use later procurement histories outside the compared slices."
+    targetconstructionrule: "Compare count, centrality, and value proxies of procurement-linked edges across adjacent slices."
+  infrastructuredelta:
+    description: "Change in the maturity and reach of computing and networking infrastructure between adjacent slices."
+    sourcepriority:
+      - "U.S. government and defense-history sources"
+      - "University and laboratory histories"
+    leakagerule: "Restrict to infrastructure evidence inside compared slices."
+    targetconstructionrule: "Difference in infrastructuralreadinessscore across adjacent slices."
+  elite_network_delta:
+    description: "Change in density and reach of elite recruitment, collaboration, and spinout networks between adjacent slices."
+    sourcepriority:
+      - "University and laboratory histories"
+      - "Wikipedia"
+      - "Wikidata"
+    leakagerule: "Use only actors and ties evidenced by the relevant slice cutoffs."
+    targetconstructionrule: "Measure change in centrality, cross-institution recruitment, and spinout connectivity among key actors and institutions."
+  standardsdelta:
+    description: "Change in the salience and stabilization of standards-related structures between adjacent slices."
+    sourcepriority:
+      - "U.S. government and defense-history sources"
+      - "University and laboratory histories"
+      - "Wikipedia"
+    leakagerule: "No backfilling from later protocol dominance."
+    targetconstructionrule: "Compare the density and centrality of standardizes edges and standards-linked nodes across adjacent slices."
+
+evaluation:
+  stage1validity:
+    - "Check that all required node types and edge types are instantiated or explicitly not-found with evidence gaps."
+    - "Check that every slice preserves temporal discipline and no node or edge is justified only by post-cutoff evidence."
+    - "Check that ideology, geography, procurement, and counterweights are typed objects rather than free-text summaries."
+    - "Check that persistent entities retain identity across slices while allowing attribute changes over time."
+  stage2grounding:
+    - "Measure source coverage across government, university/lab, and encyclopedic grounding classes."
+    - "Measure provenance completeness for supervised targets and structural claims."
+    - "Measure entity-link precision and source-backed edge justification."
+    - "Measure whether slice-local graphs can be reconstructed from cited evidence without hidden assumptions."
+  stage3retrieval:
+    - "Evaluate path retrieval for funding-to-lab-to-firm and procurement-to-technology-to-cluster chains."
+    - "Evaluate ideology retrieval as typed nodes linked to institutions, policies, and claims."
+    - "Evaluate geographic retrieval for clustering, regional comparison, and place-mediated causality."
+    - "Evaluate counterweight retrieval for constraints that differ by slice."
+  stage4prediction:
+    - "Predict graph-level targets from pre-cutoff evidence only."
+    - "Predict slice-transition targets from prior and current slice structure."
+    - "Compare full model against ablations for improvements in commercialization, clustering, and infrastructure prediction."
+    - "Penalize models that improve by importing post-1975 or mature-platform information."
+  wincondition: >-
+    The probe is passed when the full model outperforms ablations on retrieval and
+    supervised targets while preserving temporal validity, typed ideology,
+    procurement causality, and geographically explicit clustering structure.
+
+negativetests:
+  - "Explain the origin of Big Tech only as founder genius."
+  - "Return ideology as prose only."
+  - "Treat defense demand as background rather than causal structure."
+  - "Treat Silicon Valley only as a place-name."
+  - "Import mature platform monopoly logic into the 1950s."
+  - "Collapse universities, labs, and firms into one generic innovation actor."
+  - "Describe ARPANET only as a later internet precursor without modeling the institutions and funding that built it."
+
+ablationsuite:
+  materialonly:
+    includes:
+      - "Technology"
+      - "Infrastructure"
+      - "SupplyChainNode"
+      - "Event"
+    expectedloss: "Understates procurement, institutional design, ideology, and regional clustering."
+  materialplusinstitutions:
+    includes:
+      - "materialonly"
+      - "University"
+      - "Laboratory"
+      - "Institution"
+      - "Office"
+      - "FundingProgram"
+      - "ResearchNetwork"
+    expectedloss: "Improves causal structure but still under-recovers legitimacy narratives and counterweights."
+  materialplusinstitutionsplusideology:
+    includes:
+      - "materialplusinstitutions"
+      - "Narrative"
+      - "Norm"
+      - "Claim"
+      - "Policy"
+    expectedloss: "Improves legitimacy modeling but still weak on procurement intensity and firm formation pathways."
+  materialplusinstitutionsplusprocurement:
+    includes:
+      - "materialplusinstitutions"
+      - "procuresfrom"
+      - "funds"
+      - "respondsTo"
+      - "Office"
+      - "FundingProgram"
+    expectedloss: "Captures state demand better but under-specifies ideological legitimation and counterweights."
+  fullmodelwithcounterweights:
+    includes:
+      - "All required node types"
+      - "All required edge types"
+      - "Geography, ideology, procurement, investors, and counterweights"
+    expectedloss: "Reference condition; no intended omission."
+
+splits:
+  suggestedtrain:
+    - "Train on 6c1_postwar_research_state and 6c1_semiconductor_origins with mixed retrieval, structural, and target tasks."
+    - "Allow shared-ontology transfer from other historical business and state-formation probes, but prohibit post-1975 facts."
+  suggestedvalidation:
+    - "Validate on held-out tasks from 6c1_proto_network_infrastructure."
+    - "Hold out ideology and standards retrieval prompts that require cross-object reasoning."
+  suggestedstresstest:
+    - "Cross-slice transfer from early slices to late-slice infrastructure prediction."
+    - "Counterfactual prompts that try to erase defense demand, geography, or universities."
+    - "Adversarial prompts that import later platform logic backward."
+
+bridgerole:
+  historicalbridge: >-
+    This probe serves as the historical bridge between state-centered Cold War
+    research formation and later Silicon Valley commercialization, platform
+    concentration, and political backlash probes in the 6C family.
+  purpose: >-
+    Force the shared ontology to learn how business sectors become historically
+    possible through the interaction of state patronage, institutions, ideology,
+    infrastructure, and regional clustering before consumer-platform dominance exists.
+  downstreamalignment:
+    - "Aligns with 6C-2 by passing forward commercialization, standards, clustering, and investor pathways."
+    - "Aligns with later Big Tech probes by establishing proto-platform infrastructure and research-commercialization structure."
+    - "Aligns with semiconductor and war-tech probes through procurement, defense dependence, and supply-chain ontology."
+  failuremodestowatch:
+    - "Founder-centric compression of institution-heavy history."
+    - "State funding represented as metadata rather than explicit causal edges."
+    - "Geography reduced to labels rather than cluster mechanisms."
+    - "Ideology omitted or collapsed into narrative paragraphs."
+    - "Later internet or platform outcomes leaked backward into early slices."
+  autoresearchobjectivehint: >-
+    Prefer graph designs that preserve typed distinctions among funding,
+    procurement, research collaboration, spinout formation, ideological
+    legitimation, and regional clustering, then test whether those distinctions
+    improve both retrieval fidelity and slice-transition prediction.
+  notes:
+    - "Keep all entities time-scoped or explicitly persistent."
+    - "Support source-specific provenance for all supervised targets."
+    - "Maintain transferability of this ontology to later 6C subprobes without importing their era-specific assumptions."
+    - "Treat proto-platform infrastructure as infrastructure first, not as a mature platform market."
