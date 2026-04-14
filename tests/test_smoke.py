@@ -35,6 +35,14 @@ from schemas.schema_registry import load_graph_schema
 from schemas.schema_types import EdgeSpec, GraphSchema, Layer, NodeSpec, ProjectionSpec
 from evals.run_eval import evaluate_schema, run_eval_cli
 
+PILOT_PROBE_IDS = {
+    "roman_family_1A",
+    "roman_family_1B",
+    "6C-3",
+    "probe-8a-ukraine-war-sanctions-external-arming-sovereignty-full-scale-invasion",
+    "probe-8b-sudan-war-fragmented-sovereignty-regionalized-armed-competition",
+}
+
 
 def test_load_one_probe(repo_root: Path):
     probes = iter_probe_files(repo_root / "probes")
@@ -76,13 +84,28 @@ def test_schema_registry_module():
     assert s.name
 
 
-def test_noop_eval(repo_root: Path):
+def test_strict_pilot_eval(repo_root: Path, tmp_path: Path):
     s = load_graph_schema("schemas.base_schema")
-    r = evaluate_schema(s, repo_root / "probes", objective_strict_mode=False)
+    r = evaluate_schema(
+        s,
+        repo_root / "probes",
+        graph_artifact_dir=tmp_path / "graph_cache",
+        graph_precompute_cmd="__builtin__",
+        auto_refresh_graph_artifacts=True,
+        probe_ids=PILOT_PROBE_IDS,
+    )
     payload = r.model_dump()
+    gates = payload.get("meta", {}).get("gate_rates", {})
     assert "composite_score" in payload
-    assert payload["structural_ok"] in (True, False)
-    assert "gate_rates" in payload.get("meta", {})
+    assert payload["failure_class"] is None
+    assert payload["meta"]["objective_v1"]["applied"] is True
+    assert payload["meta"]["objective_v1"]["ok"] is True
+    assert gates["structural"] == 1.0
+    assert gates["functional"] == 1.0
+    assert gates["constraints"] == 1.0
+    assert gates["traversal"] > 0.0
+    assert gates["discipline"] > 0.0
+    assert gates["ablation_gain"] > 0.0
 
 
 def test_objective_spec_parser_extracts_core_fields():
@@ -184,7 +207,6 @@ def test_objective_eval_penalizes_registry_breadth_without_task_lift(tmp_path: P
         schema=baseline,
         artifact_dir=artifact_dir,
         builder_version="v1",
-        strict_mode=True,
     )
     assert baseline_result.ok
     assert baseline_result.discipline_score > 0.0
@@ -199,7 +221,6 @@ def test_objective_eval_penalizes_registry_breadth_without_task_lift(tmp_path: P
         schema=broad,
         artifact_dir=artifact_dir,
         builder_version="v1",
-        strict_mode=True,
     )
     assert broad_result.ok
     assert broad_result.discipline_score < baseline_result.discipline_score
@@ -238,7 +259,6 @@ def test_run_eval_cli_strict_mode_refreshes_graph_artifacts(tmp_path: Path):
         weights=None,
         out=None,
         graph_artifact_dir=artifact_dir,
-        objective_strict_mode=True,
         graph_builder_version="v1",
         traversal_promotion_threshold=None,
         graph_precompute_cmd="__builtin__",

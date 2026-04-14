@@ -53,7 +53,9 @@ def _probe_wants_persistence(data: dict[str, Any]) -> bool:
     return bool(may)
 
 
-def check_persistence_hooks(probe_dir: Path, schema: GraphSchema) -> ConstraintResult:
+def check_persistence_hooks(
+    probe_dir: Path, schema: GraphSchema, probe_ids: set[str] | None = None
+) -> ConstraintResult:
     """
     If any probe references ontology deltas / may_represent persistence types,
     ensure optional persistence node/edge kinds exist when hooks are enabled.
@@ -61,7 +63,7 @@ def check_persistence_hooks(probe_dir: Path, schema: GraphSchema) -> ConstraintR
 
     issues: list[str] = []
     need_persist = False
-    for p in iter_probe_files(probe_dir):
+    for p in iter_probe_files(probe_dir, probe_ids=probe_ids):
         data = load_probe_yaml(p)
         if _probe_wants_persistence(data):
             need_persist = True
@@ -83,11 +85,13 @@ def check_persistence_hooks(probe_dir: Path, schema: GraphSchema) -> ConstraintR
     return ConstraintResult(ok=not issues, issues=issues)
 
 
-def run_schema_constraints(probe_dir: Path, schema: GraphSchema) -> ConstraintResult:
+def run_schema_constraints(
+    probe_dir: Path, schema: GraphSchema, probe_ids: set[str] | None = None
+) -> ConstraintResult:
     acc: list[str] = []
     for fn in (check_projection, check_epistemic_anti_collapse):
         r = fn(schema)
         acc.extend(r.issues)
-    r2 = check_persistence_hooks(probe_dir, schema)
+    r2 = check_persistence_hooks(probe_dir, schema, probe_ids=probe_ids)
     acc.extend(r2.issues)
     return ConstraintResult(ok=not acc, issues=acc)

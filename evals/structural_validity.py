@@ -113,13 +113,30 @@ def load_probe_yaml(path: Path) -> dict[str, Any]:
     return data
 
 
-def iter_probe_files(probe_dir: Path) -> list[Path]:
+def probe_identifiers(probe_path: Path, data: dict[str, Any]) -> set[str]:
+    return {
+        str(value)
+        for value in (
+            data.get("probe_id"),
+            data.get("probeid"),
+            data.get("id"),
+            probe_path.stem,
+        )
+        if value
+    }
+
+
+def iter_probe_files(probe_dir: Path, probe_ids: set[str] | None = None) -> list[Path]:
     """Benchmark probe YAML files (excludes ontology deltas and CSV)."""
 
     out: list[Path] = []
     for p in sorted(probe_dir.glob("*.yaml")):
         if p.name.startswith("."):
             continue
+        if probe_ids:
+            data = load_probe_yaml(p)
+            if probe_identifiers(p, data).isdisjoint(probe_ids):
+                continue
         out.append(p)
     return out
 
@@ -166,11 +183,11 @@ def check_probe_structural(probe_path: Path, schema: GraphSchema) -> StructuralR
 
 
 def run_structural_validity(
-    probe_dir: Path, schema: GraphSchema
+    probe_dir: Path, schema: GraphSchema, probe_ids: set[str] | None = None
 ) -> tuple[bool, list[StructuralResult]]:
     results: list[StructuralResult] = []
     all_ok = True
-    for path in iter_probe_files(probe_dir):
+    for path in iter_probe_files(probe_dir, probe_ids=probe_ids):
         r = check_probe_structural(path, schema)
         results.append(r)
         if not r.ok:

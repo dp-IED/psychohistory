@@ -477,3 +477,34 @@ notes:
   - This is a family probe and should share ontology with Roman 1B (crisis/fall) while being scored independently.
   - Keep the file human-editable; add machine-generated enrichments in separate derived artifacts.
   - This patch keeps Roman 1A usable while making it compatible with a broader benchmark suite that includes Global South and imperial/postcolonial cases.
+
+golden_tasks:
+  - id: roman_expansion_to_administration
+    start_types: ["Actor"]
+    required_edges: ["conquers", "integrates"]
+    target_types: ["Institution"]
+    min_hops: 2
+    must_cross_layers: ["material", "institutional"]
+  - id: roman_legitimacy_contestation
+    start_types: ["Claim"]
+    required_edges: ["contests"]
+    target_types: ["Claim"]
+    min_hops: 1
+    must_cross_layers: ["epistemic"]
+  - id: roman_persistence_lineage
+    start_types: ["LineageClaim"]
+    required_edges: ["inherits_from"]
+    target_types: ["LegacyAggregate"]
+    min_hops: 1
+    must_cross_layers: ["persistence"]
+
+designated_ablations:
+  - name: epistemic_off
+    for_tasks: ["roman_legitimacy_contestation"]
+  - name: persistence_off
+    for_tasks: ["roman_persistence_lineage"]
+
+complexity_budget:
+  max_node_types_used: 6
+  max_edge_types_used: 4
+  max_mean_supporting_path_len: 2.5

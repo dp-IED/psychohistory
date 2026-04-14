@@ -217,3 +217,32 @@ sources_to_consult:
   - ICEWS/GDELT event records
   - scholarship on fragmented sovereignty, militia politics, war finance, and regional patronage
   - major timelines for transition breakdown, mediation, and displacement
+
+golden_tasks:
+  - id: fragmented_sovereignty_path
+    start_types: ["Institution"]
+    required_edges: ["fragments"]
+    target_types: ["ArmedGroup"]
+    min_hops: 1
+    must_cross_layers: ["institutional", "material"]
+  - id: patronage_to_factional_endurance
+    start_types: ["ExternalPower"]
+    required_edges: ["supports", "backs"]
+    target_types: ["ArmedGroup"]
+    min_hops: 2
+    must_cross_layers: ["material"]
+  - id: sudan_civilian_counterweight_contestation
+    start_types: ["Claim"]
+    required_edges: ["contests"]
+    target_types: ["Claim"]
+    min_hops: 1
+    must_cross_layers: ["epistemic"]
+
+designated_ablations:
+  - name: epistemic_off
+    for_tasks: ["sudan_civilian_counterweight_contestation"]
+
+complexity_budget:
+  max_node_types_used: 7
+  max_edge_types_used: 5
+  max_mean_supporting_path_len: 2.5

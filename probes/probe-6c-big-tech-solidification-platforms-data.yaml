@@ -409,3 +409,32 @@ bridgerole:
     - "This probe should remain portable across adjacent Big Tech subprobes."
     - "Entity persistence and anti-leakage rules matter more than exhaustive detail."
     - "The schema should make fixed-dimensional node projections possible while preserving time-scoped causal interpretability."
+
+golden_tasks:
+  - id: platform_data_monetization_path
+    start_types: ["Platform"]
+    required_edges: ["extractsfrom", "monetizes"]
+    target_types: ["AdMarket"]
+    min_hops: 2
+    must_cross_layers: ["institutional"]
+  - id: ranking_legitimacy_contestation
+    start_types: ["Claim"]
+    required_edges: ["contests"]
+    target_types: ["Claim"]
+    min_hops: 1
+    must_cross_layers: ["epistemic"]
+  - id: platform_dependency_path
+    start_types: ["Firm"]
+    required_edges: ["dependson", "intermediates"]
+    target_types: ["UserPopulation"]
+    min_hops: 2
+    must_cross_layers: ["institutional", "counterweight"]
+
+designated_ablations:
+  - name: epistemic_off
+    for_tasks: ["ranking_legitimacy_contestation"]
+
+complexity_budget:
+  max_node_types_used: 7
+  max_edge_types_used: 5
+  max_mean_supporting_path_len: 2.5

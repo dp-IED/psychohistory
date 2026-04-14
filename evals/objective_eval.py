@@ -305,7 +305,7 @@ def evaluate_objective_layer(
     schema: GraphSchema,
     artifact_dir: Path,
     builder_version: str,
-    strict_mode: bool,
+    probe_ids: set[str] | None = None,
 ) -> ObjectiveLayerResult:
     probe_results: list[ObjectiveProbeResult] = []
     global_errors: list[str] = []
@@ -313,8 +313,8 @@ def evaluate_objective_layer(
     discipline_scores: list[float] = []
     ablation_scores: list[float] = []
     benchmark_probe_count = 0
-    probe_files = iter_probe_files(probe_dir)
-    if strict_mode and not probe_files:
+    probe_files = iter_probe_files(probe_dir, probe_ids=probe_ids)
+    if not probe_files:
         global_errors.append("strict objective mode requires at least one probe yaml")
 
     for probe_file in probe_files:
@@ -323,13 +323,9 @@ def evaluate_objective_layer(
         spec = parse_objective_spec(probe_data, probe_file.stem)
         errors = list(spec.errors)
         required_keys = ("golden_tasks", "designated_ablations", "complexity_budget")
-        if strict_mode:
-            for key in required_keys:
-                if key not in probe_data:
-                    errors.append(f"strict benchmark mode requires '{key}'")
-        else:
-            if not any(key in probe_data for key in required_keys):
-                continue
+        for key in required_keys:
+            if key not in probe_data:
+                errors.append(f"strict benchmark mode requires '{key}'")
 
         status = get_artifact_status(
             artifact_dir=artifact_dir,
@@ -352,8 +348,7 @@ def evaluate_objective_layer(
                 )
             )
             global_errors.extend(errors)
-            if strict_mode:
-                continue
+            continue
 
         if not status.artifact_path.exists():
             continue
@@ -443,7 +438,7 @@ def evaluate_objective_layer(
         ablation_scores.append(ablation_gain)
 
     applied = benchmark_probe_count > 0
-    if strict_mode and not applied:
+    if not applied:
         global_errors.append("strict objective mode requires at least one probe with golden_tasks")
     return ObjectiveLayerResult(
         ok=not global_errors,

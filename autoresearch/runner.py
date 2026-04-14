@@ -484,10 +484,10 @@ def main(
         file_okay=False,
         help="Directory containing precomputed per-probe graph artifacts.",
     ),
-    objective_strict_mode: bool = typer.Option(
-        True,
-        "--objective-strict-mode/--objective-lenient-mode",
-        help="Fail candidate eval when objective fields/artifacts are missing or stale.",
+    probe_ids: list[str] | None = typer.Option(
+        None,
+        "--probe-id",
+        help="Restrict eval to selected probe IDs. May be passed multiple times.",
     ),
     graph_precompute_cmd: str | None = typer.Option(
         "__builtin__",
@@ -617,13 +617,13 @@ def main(
                 probe_dir,
                 weights=None,
                 graph_artifact_dir=graph_artifact_dir,
-                objective_strict_mode=objective_strict_mode,
                 graph_builder_version=graph_builder_version,
                 traversal_promotion_threshold=traversal_promotion_threshold,
                 graph_precompute_cmd=graph_precompute_cmd,
                 auto_refresh_graph_artifacts=auto_refresh_graph_artifacts,
                 graph_precompute_show_output=graph_precompute_show_output,
                 graph_precompute_repo_root=paths.root,
+                probe_ids=set(probe_ids or []) or None,
             )
             report_obj = report_to_jsonable(report)
             composite = float(report_obj.get("composite_score", 0.0))

@@ -144,12 +144,14 @@ def check_probe_functional(probe_path: Path, schema: GraphSchema) -> list[Functi
     return out
 
 
-def run_probe_functional(probe_dir: Path, schema: GraphSchema) -> tuple[bool, list[FunctionalTaskResult]]:
+def run_probe_functional(
+    probe_dir: Path, schema: GraphSchema, probe_ids: set[str] | None = None
+) -> tuple[bool, list[FunctionalTaskResult]]:
     from evals.structural_validity import iter_probe_files
 
     all_ok = True
     acc: list[FunctionalTaskResult] = []
-    for path in iter_probe_files(probe_dir):
+    for path in iter_probe_files(probe_dir, probe_ids=probe_ids):
         for r in check_probe_functional(path, schema):
             acc.append(r)
             if not r.ok:

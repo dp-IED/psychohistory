@@ -51,9 +51,32 @@ flowchart LR
 | Structural validity (types ⊆ schema)                                         | Implemented                                                           |
 | Schema constraints (projection, anti-collapse, persistence hooks)            | Implemented (persistence optional)                                    |
 | Functional checks (retrieval task shapes vs node types)                      | Implemented (lightweight; no full graph)                              |
+| Strict objective pilot (`golden_tasks`, ablations, complexity budgets)       | Implemented for selected probes; run with `--probe-id` filters         |
 | Composite score + JSON report                                                | Implemented                                                           |
 | GDELT coverage, traversal QA, Polymarket Brier, persistence ablation metrics | **Stubbed** in `evals/reporting.py` (`StubScores`)                    |
 | Automatic LLM calls                                                          | **Not included** — Cursor Agent CLI (or human) writes `proposal.json` |
+
+## Strict objective pilot
+
+Objective eval is strict-only: probes selected for evaluation must provide
+`golden_tasks`, `designated_ablations`, and `complexity_budget`. While the full
+probe pack is being annotated, run the pilot subset explicitly:
+
+```bash
+python -m evals.run_eval \
+  --schema schemas.base_schema \
+  --probe-dir probes \
+  --probe-id roman_family_1A \
+  --probe-id roman_family_1B \
+  --probe-id 6C-3 \
+  --probe-id probe-8a-ukraine-war-sanctions-external-arming-sovereignty-full-scale-invasion \
+  --probe-id probe-8b-sudan-war-fragmented-sovereignty-regionalized-armed-competition \
+  --out /tmp/psychohistory-strict-pilot-report.json
+```
+
+The same `--probe-id` filters can be passed to `autoresearch.runner` during the
+next schema-search phase. A strict full-pack eval is expected to fail until all
+probe YAML files are annotated.
 
 ## Cursor Agent CLI workflow
 
@@ -109,8 +132,16 @@ cd /path/to/psychohistory
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-python -m evals.run_eval --schema schemas.base_schema --probe-dir probes --out /tmp/report.json
-python -m autoresearch.runner --iterations 1 --probe-dir probes --seed-schema schemas.base_schema --allow-noop
+python -m evals.run_eval \
+  --schema schemas.base_schema \
+  --probe-dir probes \
+  --probe-id roman_family_1A \
+  --probe-id roman_family_1B \
+  --probe-id 6C-3 \
+  --probe-id probe-8a-ukraine-war-sanctions-external-arming-sovereignty-full-scale-invasion \
+  --probe-id probe-8b-sudan-war-fragmented-sovereignty-regionalized-armed-competition \
+  --out /tmp/report.json
+python -m autoresearch.runner --iterations 1 --probe-dir probes --seed-schema schemas.base_schema --allow-noop --probe-id roman_family_1A
 ```
 
 Help:

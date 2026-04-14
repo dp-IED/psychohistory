@@ -217,3 +217,32 @@ sources_to_consult:
   - ICEWS/GDELT documentation and event records
   - scholarship on sanctions, alliance support, war economy, and information operations
   - major institutional timelines for aid, sanctions, and military escalation
+
+golden_tasks:
+  - id: sanctions_to_capacity_constraint
+    start_types: ["ExternalConstraint"]
+    required_edges: ["constrains"]
+    target_types: ["Policy"]
+    min_hops: 1
+    must_cross_layers: ["material", "institutional"]
+  - id: external_arming_support_path
+    start_types: ["ExternalPower"]
+    required_edges: ["supports", "trains"]
+    target_types: ["MilitaryFormation"]
+    min_hops: 2
+    must_cross_layers: ["material"]
+  - id: ukraine_legitimacy_contestation
+    start_types: ["Claim"]
+    required_edges: ["contests"]
+    target_types: ["Claim"]
+    min_hops: 1
+    must_cross_layers: ["epistemic"]
+
+designated_ablations:
+  - name: epistemic_off
+    for_tasks: ["ukraine_legitimacy_contestation"]
+
+complexity_budget:
+  max_node_types_used: 7
+  max_edge_types_used: 5
+  max_mean_supporting_path_len: 2.5

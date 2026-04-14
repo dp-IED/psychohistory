@@ -249,6 +249,7 @@ def precompute_graph_artifacts(
     artifact_dir: Path,
     command_template: str,
     builder_version: str,
+    probe_ids: set[str] | None = None,
     force: bool = False,
     show_output: bool = False,
     repo_root: Path | None = None,
@@ -257,7 +258,7 @@ def precompute_graph_artifacts(
     root = repo_root or Path.cwd()
     statuses: list[ArtifactStatus] = []
     schema_fp = schema_fingerprint(schema)
-    for probe_file in iter_probe_files(probe_dir):
+    for probe_file in iter_probe_files(probe_dir, probe_ids=probe_ids):
         probe_data = load_probe_yaml(probe_file)
         probe_id = _probe_id(probe_file, probe_data)
         artifact_path, manifest_path = _paths_for_probe(artifact_dir, probe_id)
@@ -307,6 +308,7 @@ def ensure_probe_graph_artifacts(
     artifact_dir: Path,
     command_template: str,
     builder_version: str,
+    probe_ids: set[str] | None = None,
     show_output: bool = False,
     repo_root: Path | None = None,
 ) -> list[ArtifactStatus]:
@@ -316,6 +318,7 @@ def ensure_probe_graph_artifacts(
         artifact_dir=artifact_dir,
         command_template=command_template,
         builder_version=builder_version,
+        probe_ids=probe_ids,
         force=False,
         show_output=show_output,
         repo_root=repo_root,

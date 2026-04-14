@@ -56,18 +56,18 @@ def evaluate_schema(
     probe_dir: Path,
     weights: dict[str, float] | None = None,
     graph_artifact_dir: Path = Path("autoresearch/experiments/graph_cache"),
-    objective_strict_mode: bool = False,
     graph_builder_version: str = "v1",
     traversal_promotion_threshold: float | None = None,
     graph_precompute_cmd: str | None = None,
     auto_refresh_graph_artifacts: bool = False,
     graph_precompute_show_output: bool = False,
     graph_precompute_repo_root: Path | None = None,
+    probe_ids: set[str] | None = None,
 ) -> EvalReport:
-    if objective_strict_mode and auto_refresh_graph_artifacts:
+    if auto_refresh_graph_artifacts:
         if not graph_precompute_cmd:
             raise ValueError(
-                "objective_strict_mode requires graph_precompute_cmd (or disable auto_refresh_graph_artifacts)"
+                "strict objective eval requires graph_precompute_cmd (or disable auto_refresh_graph_artifacts)"
             )
         ensure_probe_graph_artifacts(
             probe_dir=probe_dir,
@@ -75,12 +75,13 @@ def evaluate_schema(
             artifact_dir=graph_artifact_dir,
             command_template=graph_precompute_cmd,
             builder_version=graph_builder_version,
+            probe_ids=probe_ids,
             show_output=graph_precompute_show_output,
             repo_root=graph_precompute_repo_root or Path.cwd(),
         )
-    s_ok, s_res = run_structural_validity(probe_dir, schema)
-    f_ok, f_res = run_probe_functional(probe_dir, schema)
-    c_res = run_schema_constraints(probe_dir, schema)
+    s_ok, s_res = run_structural_validity(probe_dir, schema, probe_ids=probe_ids)
+    f_ok, f_res = run_probe_functional(probe_dir, schema, probe_ids=probe_ids)
+    c_res = run_schema_constraints(probe_dir, schema, probe_ids=probe_ids)
     proj_ok = check_projection(schema).ok
 
     structural_rate = _rate(s_res, lambda r: bool(getattr(r, "ok", False)))
@@ -93,7 +94,7 @@ def evaluate_schema(
         schema=schema,
         artifact_dir=graph_artifact_dir,
         builder_version=graph_builder_version,
-        strict_mode=objective_strict_mode,
+        probe_ids=probe_ids,
     )
     objective_scores = {
         "traversal": objective.traversal_score,
@@ -118,7 +119,7 @@ def evaluate_schema(
         objective_scores=objective_scores,
         traversal_promotion_threshold=traversal_promotion_threshold,
     )
-    objective_ok = objective.ok if objective_strict_mode else True
+    objective_ok = objective.ok
 
     fc = classify_failure(
         eval_crashed=False,
@@ -155,7 +156,7 @@ def evaluate_schema(
                 "ablation_gain": objective.ablation_gain_score,
             },
             "objective_v1": {
-                "strict_mode": objective_strict_mode,
+                "strict_mode": True,
                 "graph_artifact_dir": str(graph_artifact_dir),
                 "graph_builder_version": graph_builder_version,
                 "applied": objective.applied,
@@ -197,13 +198,13 @@ def run_eval_cli(
     weights: dict[str, float] | None = None,
     out: Path | None = None,
     graph_artifact_dir: Path = Path("autoresearch/experiments/graph_cache"),
-    objective_strict_mode: bool = True,
     graph_builder_version: str = "v1",
     traversal_promotion_threshold: float | None = None,
     graph_precompute_cmd: str | None = "__builtin__",
     auto_refresh_graph_artifacts: bool = True,
     graph_precompute_show_output: bool = False,
     graph_precompute_repo_root: Path | None = None,
+    probe_ids: set[str] | None = None,
 ) -> EvalReport:
     schema = load_graph_schema(schema_spec)
     report = evaluate_schema(
@@ -211,13 +212,13 @@ def run_eval_cli(
         probe_dir,
         weights=weights,
         graph_artifact_dir=graph_artifact_dir,
-        objective_strict_mode=objective_strict_mode,
         graph_builder_version=graph_builder_version,
         traversal_promotion_threshold=traversal_promotion_threshold,
         graph_precompute_cmd=graph_precompute_cmd,
         auto_refresh_graph_artifacts=auto_refresh_graph_artifacts,
         graph_precompute_show_output=graph_precompute_show_output,
         graph_precompute_repo_root=graph_precompute_repo_root,
+        probe_ids=probe_ids,
     )
     payload = report_to_jsonable(report)
     if out:
@@ -240,10 +241,10 @@ def main(
         "--graph-artifact-dir",
         help="Directory with precomputed per-probe graph artifacts and manifests.",
     ),
-    objective_strict_mode: bool = typer.Option(
-        True,
-        "--objective-strict-mode/--objective-lenient-mode",
-        help="Fail eval when objective fields/artifacts are missing or stale.",
+    probe_ids: list[str] | None = typer.Option(
+        None,
+        "--probe-id",
+        help="Restrict eval to selected probe IDs. May be passed multiple times.",
     ),
     graph_builder_version: str = typer.Option(
         "v1",
@@ -287,12 +288,12 @@ def main(
             weights=w,
             out=out,
             graph_artifact_dir=graph_artifact_dir,
-            objective_strict_mode=objective_strict_mode,
             graph_builder_version=graph_builder_version,
             traversal_promotion_threshold=traversal_promotion_threshold,
             graph_precompute_cmd=graph_precompute_cmd,
             auto_refresh_graph_artifacts=auto_refresh_graph_artifacts,
             graph_precompute_show_output=graph_precompute_show_output,
+            probe_ids=set(probe_ids or []) or None,
         )
     except Exception:
         print(traceback.format_exc())
