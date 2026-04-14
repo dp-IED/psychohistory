@@ -53,7 +53,9 @@ flowchart LR
 | Functional checks (retrieval task shapes vs node types)                      | Implemented (lightweight; no full graph)                              |
 | Strict objective pilot (`golden_tasks`, ablations, complexity budgets)       | Implemented for selected probes; run with `--probe-id` filters         |
 | Composite score + JSON report                                                | Implemented                                                           |
-| GDELT coverage, traversal QA, Polymarket Brier, persistence ablation metrics | **Stubbed** in `evals/reporting.py` (`StubScores`)                    |
+| Wikidata grounding bucket (`G`)                                              | Implemented in `evals/objective_sources.py` against graph artifacts    |
+| Temporal validity, ideology retrieval, forecast skill, counterweight buckets | Present as `V/I/F/C` unavailable stubs in `objective_sources_v1`        |
+| GDELT coverage, traversal QA, Polymarket Brier                               | **Stubbed** in `evals/reporting.py` (`StubScores`)                    |
 | Automatic LLM calls                                                          | **Not included** — Cursor Agent CLI (or human) writes `proposal.json` |
 
 ## Strict objective pilot
@@ -74,9 +76,23 @@ python -m evals.run_eval \
   --out /tmp/psychohistory-strict-pilot-report.json
 ```
 
+Add `--wikidata-enrich-graph-artifacts` to resolve probe `seed_entities`
+through Wikidata and write `external_ids.wikidata` into refreshed graph
+artifacts before scoring the `G` bucket. When this flag produces a non-zero
+grounding score, eval adds a `source_G` weight to the composite so incomplete
+grounding can affect candidate ranking before the source-objective rollout is
+expanded to more probes. Wikidata search results are cached by default in
+`cache/wikidata_search_cache.json`; pass `--wikidata-cache-path` for isolated
+cache experiments.
+
 The same `--probe-id` filters can be passed to `autoresearch.runner` during the
 next schema-search phase. A strict full-pack eval is expected to fail until all
 probe YAML files are annotated.
+
+Graph builders should emit the versioned training artifact contract documented
+in `docs/gnn_graph_artifact_contract.md`. The built-in precompute path emits
+`graph_artifact_v1` while preserving the legacy `nodes` / `edges` lists used by
+the current eval harness.
 
 ## Cursor Agent CLI workflow
 

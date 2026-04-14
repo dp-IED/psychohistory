@@ -52,6 +52,42 @@ grounding:
     Contemporary Global South war probe stressing elite fragmentation,
     asymmetry, external patrons, and humanitarian structure.
 
+seed_entities:
+  actors:
+    - Sudan
+    - Abdel Fattah al-Burhan
+    - Mohamed Hamdan Dagalo
+    - Omar al-Bashir
+    - Rapid Support Forces
+    - Sudanese Armed Forces
+    - Forces of Freedom and Change
+  external_powers:
+    - Egypt
+    - United Arab Emirates
+    - Saudi Arabia
+    - Chad
+    - African Union
+    - Intergovernmental Authority on Development
+  institutions:
+    - Transitional Sovereignty Council
+    - United Nations Integrated Transition Assistance Mission in Sudan
+  events:
+    - Sudanese revolution
+    - 2019 Sudanese coup d'état
+    - 2021 Sudanese coup d'état
+    - War in Sudan
+    - Battle of Khartoum
+  places:
+    - Khartoum
+    - Darfur
+    - Omdurman
+    - Port Sudan
+  resources:
+    - gold
+  claims:
+    - civilian rule
+    - military government
+
 probe_type: contemporary_fragmented_sovereignty
 
 schema_requirements:

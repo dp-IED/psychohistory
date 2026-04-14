@@ -15,7 +15,9 @@ from schemas.schema_types import GraphSchema
 from autoresearch.scoring import compose_score
 
 from evals.objective_eval import evaluate_objective_layer
+from evals.objective_sources import evaluate_source_objectives
 from evals.probe_graph_precompute import ensure_probe_graph_artifacts
+from evals.wikidata_linking import DEFAULT_WIKIDATA_CACHE_PATH
 from evals.probe_functional import run_probe_functional
 from evals.reporting import (
     EvalReport,
@@ -62,6 +64,8 @@ def evaluate_schema(
     auto_refresh_graph_artifacts: bool = False,
     graph_precompute_show_output: bool = False,
     graph_precompute_repo_root: Path | None = None,
+    wikidata_enrich_graph_artifacts: bool = False,
+    wikidata_cache_path: Path | None = None,
     probe_ids: set[str] | None = None,
 ) -> EvalReport:
     if auto_refresh_graph_artifacts:
@@ -78,6 +82,8 @@ def evaluate_schema(
             probe_ids=probe_ids,
             show_output=graph_precompute_show_output,
             repo_root=graph_precompute_repo_root or Path.cwd(),
+            wikidata_enrich=wikidata_enrich_graph_artifacts,
+            wikidata_cache_path=wikidata_cache_path,
         )
     s_ok, s_res = run_structural_validity(probe_dir, schema, probe_ids=probe_ids)
     f_ok, f_res = run_probe_functional(probe_dir, schema, probe_ids=probe_ids)
@@ -96,10 +102,20 @@ def evaluate_schema(
         builder_version=graph_builder_version,
         probe_ids=probe_ids,
     )
+    source_objectives = evaluate_source_objectives(
+        probe_dir=probe_dir,
+        schema=schema,
+        artifact_dir=graph_artifact_dir,
+        builder_version=graph_builder_version,
+        probe_ids=probe_ids,
+    )
     objective_scores = {
         "traversal": objective.traversal_score,
         "discipline": objective.discipline_score,
         "ablation_gain": objective.ablation_gain_score,
+    }
+    source_scores = {
+        key: metric.score for key, metric in source_objectives.buckets.items()
     }
 
     stub = StubScores(schema_quality=_schema_quality_score(schema))
@@ -109,7 +125,12 @@ def evaluate_schema(
         if objective.applied and any(objective_scores.values())
         else {}
     )
-    merged_weights = {**objective_weight_defaults, **(weights or {})}
+    source_weight_defaults = (
+        {"source_G": 0.20}
+        if wikidata_enrich_graph_artifacts and source_scores.get("G", 0.0) > 0.0
+        else {}
+    )
+    merged_weights = {**objective_weight_defaults, **source_weight_defaults, **(weights or {})}
     composite, parts = compose_score(
         structural_rate,
         functional_rate,
@@ -117,6 +138,7 @@ def evaluate_schema(
         stub_dict,
         merged_weights,
         objective_scores=objective_scores,
+        source_scores=source_scores,
         traversal_promotion_threshold=traversal_promotion_threshold,
     )
     objective_ok = objective.ok
@@ -154,6 +176,7 @@ def evaluate_schema(
                 "traversal": objective.traversal_score,
                 "discipline": objective.discipline_score,
                 "ablation_gain": objective.ablation_gain_score,
+                "source_G": source_scores.get("G", 0.0),
             },
             "objective_v1": {
                 "strict_mode": True,
@@ -188,6 +211,7 @@ def evaluate_schema(
                     for p in objective.probes
                 ],
             },
+            "objective_sources_v1": source_objectives.to_jsonable(),
         },
     )
 
@@ -204,6 +228,8 @@ def run_eval_cli(
     auto_refresh_graph_artifacts: bool = True,
     graph_precompute_show_output: bool = False,
     graph_precompute_repo_root: Path | None = None,
+    wikidata_enrich_graph_artifacts: bool = False,
+    wikidata_cache_path: Path | None = None,
     probe_ids: set[str] | None = None,
 ) -> EvalReport:
     schema = load_graph_schema(schema_spec)
@@ -218,6 +244,8 @@ def run_eval_cli(
         auto_refresh_graph_artifacts=auto_refresh_graph_artifacts,
         graph_precompute_show_output=graph_precompute_show_output,
         graph_precompute_repo_root=graph_precompute_repo_root,
+        wikidata_enrich_graph_artifacts=wikidata_enrich_graph_artifacts,
+        wikidata_cache_path=wikidata_cache_path,
         probe_ids=probe_ids,
     )
     payload = report_to_jsonable(report)
@@ -275,6 +303,16 @@ def main(
         "--graph-precompute-show-output",
         help="Print stdout from graph precompute commands.",
     ),
+    wikidata_enrich_graph_artifacts: bool = typer.Option(
+        False,
+        "--wikidata-enrich-graph-artifacts",
+        help="Resolve probe seed_entities through Wikidata and write QIDs into refreshed graph artifacts.",
+    ),
+    wikidata_cache_path: Path = typer.Option(
+        DEFAULT_WIKIDATA_CACHE_PATH,
+        "--wikidata-cache-path",
+        help="Shared local JSON cache for Wikidata search results.",
+    ),
 ) -> None:
     w: dict[str, float] | None = None
     if weights:
@@ -293,6 +331,8 @@ def main(
             graph_precompute_cmd=graph_precompute_cmd,
             auto_refresh_graph_artifacts=auto_refresh_graph_artifacts,
             graph_precompute_show_output=graph_precompute_show_output,
+            wikidata_enrich_graph_artifacts=wikidata_enrich_graph_artifacts,
+            wikidata_cache_path=wikidata_cache_path,
             probe_ids=set(probe_ids or []) or None,
         )
     except Exception:

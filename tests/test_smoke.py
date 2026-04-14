@@ -6,9 +6,13 @@ from pathlib import Path
 import pytest
 
 from autoresearch.logging import ExperimentRecord, append_experiment
+from evals import wikidata_linking
+from evals.graph_artifact_contract import GRAPH_ARTIFACT_FORMAT, GraphArtifactV1
 from evals.objective_eval import evaluate_objective_layer
+from evals.objective_sources import evaluate_wikidata_grounding, wikidata_qid_for_node
 from evals.objective_specs import parse_objective_spec
-from evals.probe_graph_precompute import probe_fingerprint, schema_fingerprint
+from evals.probe_graph_precompute import load_graph_artifact, probe_fingerprint, schema_fingerprint
+from evals.run_eval import evaluate_schema, run_eval_cli
 from autoresearch.runner import (
     _apply_noop_penalty,
     _candidate_change_info,
@@ -33,7 +37,6 @@ from evals.structural_validity import (
 from schemas.base_schema import get_seed_graph_schema
 from schemas.schema_registry import load_graph_schema
 from schemas.schema_types import EdgeSpec, GraphSchema, Layer, NodeSpec, ProjectionSpec
-from evals.run_eval import evaluate_schema, run_eval_cli
 
 PILOT_PROBE_IDS = {
     "roman_family_1A",
@@ -100,6 +103,9 @@ def test_strict_pilot_eval(repo_root: Path, tmp_path: Path):
     assert payload["failure_class"] is None
     assert payload["meta"]["objective_v1"]["applied"] is True
     assert payload["meta"]["objective_v1"]["ok"] is True
+    source_objectives = payload["meta"]["objective_sources_v1"]
+    assert set(source_objectives["buckets"]) == {"V", "G", "I", "F", "C"}
+    assert source_objectives["buckets"]["G"]["metrics"]["source"] == "Wikidata"
     assert gates["structural"] == 1.0
     assert gates["functional"] == 1.0
     assert gates["constraints"] == 1.0
@@ -128,6 +134,83 @@ def test_objective_spec_parser_extracts_core_fields():
     assert spec.is_valid
     assert spec.golden_tasks[0].id == "t1"
     assert spec.designated_ablations[0].name == "epistemic_off"
+
+
+def test_wikidata_grounding_accepts_common_identifier_shapes():
+    assert wikidata_qid_for_node({"external_ids": {"wikidata": "Q42"}}) == "Q42"
+    assert wikidata_qid_for_node({"same_as": ["https://www.wikidata.org/wiki/Q123"]}) == "Q123"
+    assert wikidata_qid_for_node({"id": "wd:Q456"}) == "Q456"
+
+
+def test_wikidata_grounding_scores_seed_entity_matches():
+    probe_data = {
+        "probe_id": "probe-grounding",
+        "seed_entities": {"actors": ["Roman Republic", "Carthage"], "places": ["Rome"]},
+    }
+    graph_payload = {
+        "nodes": [
+            {
+                "id": "wd:Q17167",
+                "type": "Actor",
+                "label": "Roman Republic",
+                "external_ids": {"wikidata": "Q17167"},
+            },
+            {
+                "id": "carthage",
+                "type": "Actor",
+                "label": "Carthage",
+                "wikidata_id": "Q6343",
+            },
+            {"id": "rome", "type": "Place", "label": "Rome"},
+        ],
+        "edges": [],
+    }
+    result = evaluate_wikidata_grounding(probe_data, graph_payload)
+    assert result.metrics["grounded_nodes"] == 2
+    assert result.metrics["groundable_nodes"] == 3
+    assert result.metrics["matched_seed_entities"] == 2
+    assert result.metrics["seed_entity_link_rate"] == pytest.approx(2 / 3)
+    assert result.score == pytest.approx((0.65 * (2 / 3)) + (0.35 * (2 / 3)))
+
+
+def test_wikidata_enrichment_adds_seed_entity_nodes(monkeypatch):
+    def fake_search(label: str, *, timeout: float = 10.0) -> dict:
+        return {"id": {"Rome": "Q220", "Carthage": "Q6343"}[label], "label": label}
+
+    monkeypatch.setattr(wikidata_linking, "search_wikidata_entity", fake_search)
+    probe_data = {"probe_id": "probe-grounding", "seed_entities": {"places": ["Rome"], "actors": ["Carthage"]}}
+    graph_payload = {"nodes": [], "edges": []}
+
+    enriched = wikidata_linking.enrich_graph_with_wikidata(
+        probe_data,
+        graph_payload,
+        request_delay_s=0.0,
+    )
+
+    qids = {node["external_ids"]["wikidata"] for node in enriched["nodes"]}
+    assert qids == {"Q220", "Q6343"}
+    assert enriched["wikidata_enrichment"]["resolved"] == 2
+
+
+def test_wikidata_enrichment_updates_existing_seed_entity_nodes(monkeypatch):
+    def fake_search(label: str, *, timeout: float = 10.0) -> dict:
+        return {"id": "Q220", "label": label}
+
+    monkeypatch.setattr(wikidata_linking, "search_wikidata_entity", fake_search)
+    probe_data = {"probe_id": "probe-grounding", "seed_entities": {"places": ["Rome"]}}
+    graph_payload = {
+        "nodes": [{"id": "seed_entity__rome", "type": "Place", "label": "Rome", "seed_entity": True}],
+        "edges": [],
+    }
+
+    enriched = wikidata_linking.enrich_graph_with_wikidata(
+        probe_data,
+        graph_payload,
+        request_delay_s=0.0,
+    )
+
+    assert len(enriched["nodes"]) == 1
+    assert enriched["nodes"][0]["external_ids"]["wikidata"] == "Q220"
 
 
 def _write_probe_and_artifact(
@@ -270,6 +353,113 @@ def test_run_eval_cli_strict_mode_refreshes_graph_artifacts(tmp_path: Path):
     assert (artifact_dir / "probe-mini-cli.manifest.json").exists()
 
 
+def test_builtin_graph_artifact_emits_gnn_contract(tmp_path: Path):
+    probe_dir = tmp_path / "probes"
+    artifact_dir = tmp_path / "graph_cache"
+    probe_dir.mkdir(parents=True, exist_ok=True)
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    probe_payload = {
+        "probe_id": "probe-contract",
+        "seed_entities": {"claims": ["Grounded claim"]},
+        "schema_requirements": {
+            "must_represent_node_types": ["Claim"],
+            "must_represent_edges": ["contests"],
+        },
+        "golden_tasks": [
+            {
+                "id": "chain",
+                "start_types": ["Claim"],
+                "required_edges": ["contests"],
+                "target_types": ["Claim"],
+                "min_hops": 1,
+                "must_cross_layers": ["epistemic"],
+            }
+        ],
+        "designated_ablations": [{"name": "epistemic_off", "for_tasks": ["chain"]}],
+        "complexity_budget": {"max_node_types_used": 3, "max_edge_types_used": 3},
+    }
+    (probe_dir / "probe-contract.yaml").write_text(json.dumps(probe_payload), encoding="utf-8")
+
+    run_eval_cli(
+        "schemas.base_schema",
+        probe_dir,
+        graph_artifact_dir=artifact_dir,
+        graph_precompute_cmd="__builtin__",
+    )
+
+    artifact = load_graph_artifact(artifact_dir / "probe-contract.graph.json")
+    assert artifact["artifact_format"] == GRAPH_ARTIFACT_FORMAT
+    parsed = GraphArtifactV1.model_validate(artifact)
+    assert parsed.task_labels[0].task_id == "chain"
+    assert parsed.target_table[0].name == "path_present"
+    assert parsed.nodes[0].train_eval_split == "eval"
+    assert parsed.edges[0].confidence == 1.0
+
+
+def test_wikidata_cache_reused_across_artifact_dirs(monkeypatch, tmp_path: Path):
+    calls: list[str] = []
+
+    def fake_search(label: str, *, timeout: float = 10.0, max_retries: int = 2) -> dict:
+        calls.append(label)
+        return {"id": "Q220", "label": label}
+
+    monkeypatch.setattr(wikidata_linking, "search_wikidata_entity", fake_search)
+    probe_payload = {
+        "probe_id": "probe-cache",
+        "seed_entities": {"places": ["Rome"]},
+        "schema_requirements": {
+            "must_represent_node_types": ["Claim"],
+            "must_represent_edges": ["contests"],
+        },
+        "golden_tasks": [
+            {
+                "id": "chain",
+                "start_types": ["Claim"],
+                "required_edges": ["contests"],
+                "target_types": ["Claim"],
+                "min_hops": 1,
+                "must_cross_layers": ["epistemic"],
+            }
+        ],
+        "designated_ablations": [{"name": "epistemic_off", "for_tasks": ["chain"]}],
+        "complexity_budget": {"max_node_types_used": 3, "max_edge_types_used": 3},
+    }
+    probe_dir = tmp_path / "probes"
+    probe_dir.mkdir()
+    (probe_dir / "probe-cache.yaml").write_text(json.dumps(probe_payload), encoding="utf-8")
+    cache_path = tmp_path / "shared" / "wikidata.json"
+
+    for artifact_dir in (tmp_path / "graph-a", tmp_path / "graph-b"):
+        run_eval_cli(
+            "schemas.base_schema",
+            probe_dir,
+            graph_artifact_dir=artifact_dir,
+            graph_precompute_cmd="__builtin__",
+            wikidata_enrich_graph_artifacts=True,
+            wikidata_cache_path=cache_path,
+        )
+
+    assert calls == ["Rome"]
+
+
+def test_wikidata_negative_cache_avoids_immediate_retries(monkeypatch, tmp_path: Path):
+    calls: list[str] = []
+
+    def fake_search(label: str, *, timeout: float = 10.0, max_retries: int = 2) -> None:
+        calls.append(label)
+        return None
+
+    monkeypatch.setattr(wikidata_linking, "search_wikidata_entity", fake_search)
+    cache_path = tmp_path / "wikidata.json"
+    probe_data = {"probe_id": "probe-grounding", "seed_entities": {"places": ["Missing Place"]}}
+    graph_payload = {"nodes": [], "edges": []}
+
+    wikidata_linking.enrich_graph_with_wikidata(probe_data, graph_payload, cache_path=cache_path, request_delay_s=0.0)
+    wikidata_linking.enrich_graph_with_wikidata(probe_data, graph_payload, cache_path=cache_path, request_delay_s=0.0)
+
+    assert calls == ["Missing Place"]
+
+
 def test_experiment_log_append(tmp_path: Path):
     log = tmp_path / "log.jsonl"
     rec = ExperimentRecord(
@@ -329,6 +519,27 @@ def test_compose_score_allows_partial_gate_progress():
     mixed, parts = compose_score(0.5, 1.0, 1.0, {}, None)
     assert mixed < strong
     assert parts["structural"] == 0.5
+
+
+def test_compose_score_can_weight_wikidata_grounding():
+    baseline, _ = compose_score(
+        1.0,
+        1.0,
+        1.0,
+        {},
+        {"source_G": 0.2, "external_stub": 0.0},
+        source_scores={"G": 0.0},
+    )
+    grounded, parts = compose_score(
+        1.0,
+        1.0,
+        1.0,
+        {},
+        {"source_G": 0.2, "external_stub": 0.0},
+        source_scores={"G": 0.8},
+    )
+    assert parts["source_G"] == 0.8
+    assert grounded > baseline
 
 
 def test_run_proposal_command_writes_proposal(tmp_path: Path):

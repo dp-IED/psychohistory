@@ -53,6 +53,41 @@ grounding:
     Contemporary war probe emphasizing external actors as causal participants,
     not background context.
 
+seed_entities:
+  actors:
+    - Ukraine
+    - Russia
+    - Volodymyr Zelenskyy
+    - Vladimir Putin
+    - Armed Forces of Ukraine
+    - Russian Armed Forces
+  external_powers:
+    - United States
+    - European Union
+    - NATO
+    - United Kingdom
+    - Poland
+  institutions:
+    - Verkhovna Rada
+    - European Commission
+    - United Nations Security Council
+  events:
+    - Annexation of Crimea by the Russian Federation
+    - Russian invasion of Ukraine
+    - Battle of Kyiv
+    - Battle of Bakhmut
+  policies:
+    - International sanctions during the Russo-Ukrainian War
+    - Lend-Lease Act of 2022
+  places:
+    - Kyiv
+    - Donbas
+    - Crimea
+    - Black Sea
+  claims:
+    - Ukrainian sovereignty
+    - Russian irredentism
+
 probe_type: contemporary_war_multiactor
 
 schema_requirements:
