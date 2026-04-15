@@ -9,14 +9,12 @@ import sys
 from pathlib import Path
 from typing import Any, Sequence
 
-from baselines.features import extract_features_for_origin
 from baselines.metrics import brier_score, mean_absolute_error, recall_at_k, top_k_hit_rate
 from baselines.recurrence import (
     RECURRENCE_MODEL_NAMES,
     ForecastRow,
     build_recurrence_forecasts_for_origin,
 )
-from baselines.tabular import TabularForecastRow, predict_tabular, train_tabular_model
 from ingest.event_tape import load_event_tape
 
 
@@ -144,6 +142,8 @@ def run_tabular_backtest(
             f"train_origin_end ({train_origin_end}) must be before eval_origin_start ({eval_origin_start})"
         )
 
+    from baselines.features import extract_features_for_origin
+    from baselines.tabular import TabularForecastRow, predict_tabular, train_tabular_model
     from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
 
     records = load_event_tape(tape_path)
@@ -248,6 +248,7 @@ def run_gnn_backtest(
         raise ValueError(
             f"train_origin_end ({train_origin_end}) must be before eval_origin_start ({eval_origin_start})"
         )
+    from baselines.features import extract_features_for_origin
     from baselines.gnn import GNNForecastRow, build_graph_from_snapshot, predict_gnn, train_gnn
     from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
 
