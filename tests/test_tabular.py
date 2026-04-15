@@ -85,7 +85,7 @@ def test_predict_tabular_returns_one_row_per_admin1() -> None:
     universe = ["FR11", "FR22", "FR33"]
     n = 60
     feature_rows = _make_feature_rows(n, n_pos=30, universe=universe)
-    targets = {(r.forecast_origin, r.admin1_code): (hash(r.admin1_code) % 2 == 0) for r in feature_rows}
+    targets = {(r.forecast_origin, r.admin1_code): (r.admin1_code in {"FR11", "FR33"}) for r in feature_rows}
     model = train_tabular_model(feature_rows=feature_rows, targets=targets)
 
     origin = dt.date(2021, 3, 1)
