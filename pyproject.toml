@@ -9,6 +9,7 @@ description = "Temporal graph IR primitives for a narrow geopolitical forecastin
 readme = "forecast_charter.md"
 requires-python = ">=3.11"
 dependencies = [
+  "numpy>=1.26",
   "pydantic>=2.5",
 ]
 
