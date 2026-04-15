@@ -9,12 +9,14 @@ import sys
 from pathlib import Path
 from typing import Any, Sequence
 
+from baselines.features import extract_features_for_origin
 from baselines.metrics import brier_score, mean_absolute_error, recall_at_k, top_k_hit_rate
 from baselines.recurrence import (
     RECURRENCE_MODEL_NAMES,
     ForecastRow,
     build_recurrence_forecasts_for_origin,
 )
+from baselines.tabular import TabularForecastRow, predict_tabular, train_tabular_model
 from ingest.event_tape import load_event_tape
 
 
@@ -127,6 +129,99 @@ def run_recurrence_backtest(
     return audit
 
 
+def run_tabular_backtest(
+    *,
+    tape_path: Path,
+    train_origin_start: dt.date,
+    train_origin_end: dt.date,
+    eval_origin_start: dt.date,
+    eval_origin_end: dt.date,
+    out_path: Path,
+    progress: bool = False,
+) -> dict[str, Any]:
+    from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
+
+    records = load_event_tape(tape_path)
+    scoring_universe = sorted(
+        {r.admin1_code for r in records if r.admin1_code not in EXCLUDED_REGIONAL_ADMIN1_CODES}
+    )
+
+    train_origins = weekly_origins(train_origin_start, train_origin_end)
+    eval_origins = weekly_origins(eval_origin_start, eval_origin_end)
+    all_origins = train_origins + eval_origins
+
+    feature_rows_by_origin: dict[dt.date, list] = {}
+    target_lookup: dict[tuple[dt.date, str], tuple[int, bool]] = {}
+
+    total = len(all_origins)
+    for idx, origin in enumerate(all_origins, start=1):
+        rows = extract_features_for_origin(
+            records=records,
+            origin_date=origin,
+            scoring_universe=scoring_universe,
+        )
+        feature_rows_by_origin[origin] = rows
+        payload = build_snapshot_payload(records=records, origin_date=origin)
+        for row in payload["target_table"]:
+            code = row["metadata"]["admin1_code"]
+            if code in EXCLUDED_REGIONAL_ADMIN1_CODES:
+                continue
+            if row["name"] == "target_count_next_7d":
+                existing = target_lookup.get((origin, code), (0, False))
+                target_lookup[(origin, code)] = (int(row["value"]), existing[1])
+            elif row["name"] == "target_occurs_next_7d":
+                existing = target_lookup.get((origin, code), (0, False))
+                target_lookup[(origin, code)] = (existing[0], bool(row["value"]))
+        if progress:
+            print(
+                f"[tabular] features {idx}/{total} origin={origin.isoformat()}",
+                file=sys.stderr,
+                flush=True,
+            )
+
+    train_feature_rows = [r for o in train_origins for r in feature_rows_by_origin[o]]
+    train_targets = {k: v[1] for k, v in target_lookup.items() if k[0] in set(train_origins)}
+
+    if progress:
+        print("[tabular] training XGBoost model...", file=sys.stderr, flush=True)
+
+    model = train_tabular_model(feature_rows=train_feature_rows, targets=train_targets)
+
+    eval_rows: list[TabularForecastRow] = []
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8") as handle:
+        for origin in eval_origins:
+            origin_feature_rows = feature_rows_by_origin[origin]
+            preds = predict_tabular(
+                model=model,
+                feature_rows=origin_feature_rows,
+                target_lookup=target_lookup,
+            )
+            for pred in preds:
+                handle.write(pred.model_dump_json() + "\n")
+            eval_rows.extend(preds)
+        handle.flush()
+
+    model_name = "xgboost_tabular"
+    audit: dict[str, Any] = {
+        "model_name": model_name,
+        "train_origin_start": train_origin_start.isoformat(),
+        "train_origin_end": train_origin_end.isoformat(),
+        "eval_origin_start": eval_origin_start.isoformat(),
+        "eval_origin_end": eval_origin_end.isoformat(),
+        "train_row_count": len(train_feature_rows),
+        "eval_row_count": len(eval_rows),
+        "admin1_count": len(scoring_universe),
+        "brier": brier_score(eval_rows, model_name),
+        "mae": mean_absolute_error(eval_rows, model_name),
+        "top5_hit_rate": top_k_hit_rate(eval_rows, model_name, k=5),
+        "recall_at_5": recall_at_k(eval_rows, model_name, k=5),
+    }
+    audit_path = out_path.with_suffix(".audit.json")
+    audit_path.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return audit
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -137,6 +232,16 @@ def _build_parser() -> argparse.ArgumentParser:
     recurrence.add_argument(
         "--out",
         default="data/gdelt/baselines/france_protest/recurrence_predictions.jsonl",
+    )
+    tabular = subparsers.add_parser("tabular")
+    tabular.add_argument("--tape", default="data/gdelt/tape/france_protest/events.jsonl")
+    tabular.add_argument("--train-origin-start", default="2021-01-04")
+    tabular.add_argument("--train-origin-end", default="2024-12-30")
+    tabular.add_argument("--eval-origin-start", default="2025-01-06")
+    tabular.add_argument("--eval-origin-end", default="2025-12-29")
+    tabular.add_argument(
+        "--out",
+        default="data/gdelt/baselines/france_protest/tabular_predictions.jsonl",
     )
     return parser
 
@@ -150,6 +255,21 @@ def main(argv: Sequence[str] | None = None) -> int:
                 tape_path=Path(args.tape),
                 origin_start=dt.date.fromisoformat(args.origin_start),
                 origin_end=dt.date.fromisoformat(args.origin_end),
+                out_path=Path(args.out),
+                progress=True,
+            )
+        except Exception as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
+    if args.command == "tabular":
+        try:
+            run_tabular_backtest(
+                tape_path=Path(args.tape),
+                train_origin_start=dt.date.fromisoformat(args.train_origin_start),
+                train_origin_end=dt.date.fromisoformat(args.train_origin_end),
+                eval_origin_start=dt.date.fromisoformat(args.eval_origin_start),
+                eval_origin_end=dt.date.fromisoformat(args.eval_origin_end),
                 out_path=Path(args.out),
                 progress=True,
             )

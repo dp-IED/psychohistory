@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from baselines.backtest import run_tabular_backtest
 from baselines.features import FEATURE_NAMES, FeatureRow, build_feature_matrix, extract_features_for_origin
 from baselines.tabular import (
     TabularForecastRow,
@@ -119,3 +120,66 @@ def test_tabular_forecast_row_serializes_to_json() -> None:
     parsed = json.loads(serialized)
     assert parsed["model_name"] == "xgboost_tabular"
     assert parsed["admin1_code"] == "FR11"
+
+
+def test_tabular_backtest_writes_output(tmp_path: Path) -> None:
+    tape_path = tmp_path / "events.jsonl"
+    out_path = tmp_path / "tabular_predictions.jsonl"
+
+    records = []
+    for week in range(20):
+        origin = dt.date(2021, 1, 4) + dt.timedelta(weeks=week)
+        # Alternate regions so training labels include both positive and negative
+        # rows (XGBoost requires both classes).
+        admin1_code = "FR11" if week % 2 == 0 else "FR22"
+        records.append(
+            EventTapeRecord(
+                source_name="gdelt_v2_events",
+                source_event_id=f"gdelt:{week}",
+                event_date=origin - dt.timedelta(days=3),
+                source_available_at=dt.datetime.combine(
+                    origin - dt.timedelta(days=2), dt.time(), tzinfo=dt.timezone.utc
+                ),
+                retrieved_at=dt.datetime(2021, 1, 1, tzinfo=dt.timezone.utc),
+                country_code="FR",
+                admin1_code=admin1_code,
+                location_name=None,
+                latitude=None,
+                longitude=None,
+                event_class="protest",
+                event_code="141",
+                event_base_code="14",
+                event_root_code="14",
+                quad_class=3,
+                goldstein_scale=None,
+                num_mentions=None,
+                num_sources=None,
+                num_articles=None,
+                avg_tone=None,
+                actor1_name=None,
+                actor1_country_code=None,
+                actor2_name=None,
+                actor2_country_code=None,
+                source_url=None,
+                raw={},
+            )
+        )
+
+    tape_path.parent.mkdir(parents=True, exist_ok=True)
+    tape_path.write_text(
+        "".join(r.model_dump_json() + "\n" for r in records), encoding="utf-8"
+    )
+
+    audit = run_tabular_backtest(
+        tape_path=tape_path,
+        train_origin_start=dt.date(2021, 1, 4),
+        train_origin_end=dt.date(2021, 4, 26),
+        eval_origin_start=dt.date(2021, 5, 3),
+        eval_origin_end=dt.date(2021, 5, 17),
+        out_path=out_path,
+    )
+
+    assert out_path.exists()
+    assert audit["eval_row_count"] > 0
+    assert "brier" in audit
+    assert "recall_at_5" in audit
