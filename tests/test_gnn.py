@@ -176,6 +176,80 @@ def test_train_gnn_runs_without_error() -> None:
 
 
 @pytest.mark.torch_train
+def test_gnn_backtest_writes_output(tmp_path: Path) -> None:
+    import json
+
+    snap_dir = tmp_path / "snapshots"
+    snap_dir.mkdir()
+    tape_path = tmp_path / "events.jsonl"
+    out_path = tmp_path / "gnn_predictions.jsonl"
+
+    from ingest.event_tape import EventTapeRecord
+
+    records = []
+    for week in range(12):
+        origin = dt.date(2021, 1, 4) + dt.timedelta(weeks=week)
+        records.append(
+            EventTapeRecord(
+                source_name="gdelt_v2_events",
+                source_event_id=f"gdelt:{week}",
+                event_date=origin - dt.timedelta(days=3),
+                source_available_at=dt.datetime.combine(
+                    origin - dt.timedelta(days=2), dt.time(), tzinfo=dt.timezone.utc
+                ),
+                retrieved_at=dt.datetime(2021, 1, 1, tzinfo=dt.timezone.utc),
+                country_code="FR",
+                admin1_code="FR11",
+                location_name=None,
+                latitude=None,
+                longitude=None,
+                event_class="protest",
+                event_code="141",
+                event_base_code="14",
+                event_root_code="14",
+                quad_class=3,
+                goldstein_scale=-6.5,
+                num_mentions=4,
+                num_sources=None,
+                num_articles=3,
+                avg_tone=-1.5,
+                actor1_name=None,
+                actor1_country_code=None,
+                actor2_name=None,
+                actor2_country_code=None,
+                source_url=None,
+                raw={},
+            )
+        )
+    tape_path.write_text("".join(r.model_dump_json() + "\n" for r in records), encoding="utf-8")
+
+    for week in range(12):
+        origin = dt.date(2021, 1, 4) + dt.timedelta(weeks=week)
+        snap = _minimal_snapshot(origin)
+        snap_path = snap_dir / f"as_of_{origin.isoformat()}.json"
+        snap_path.write_text(json.dumps(snap), encoding="utf-8")
+
+    from baselines.backtest import run_gnn_backtest
+
+    audit = run_gnn_backtest(
+        tape_path=tape_path,
+        snapshots_dir=snap_dir,
+        train_origin_start=dt.date(2021, 1, 4),
+        train_origin_end=dt.date(2021, 2, 22),
+        eval_origin_start=dt.date(2021, 3, 1),
+        eval_origin_end=dt.date(2021, 3, 22),
+        out_path=out_path,
+        epochs=2,
+        hidden_dim=16,
+    )
+
+    assert out_path.exists()
+    assert audit["eval_row_count"] > 0
+    assert "brier" in audit
+    assert "recall_at_5" in audit
+
+
+@pytest.mark.torch_train
 def test_predict_gnn_returns_one_row_per_location_per_origin() -> None:
     train_origins = [dt.date(2021, 1, 4) + dt.timedelta(weeks=i) for i in range(4)]
     train_graphs = []
