@@ -11,7 +11,7 @@ The right way to do this is to de-risk in this order:
 
 That sequence matters because the data layer and evaluation layer will decide whether the rest is science or just an impressive demo.
 
-Wikidata remains a viable backbone for canonical entities and relationships, with multiple access methods and weekly dumps; ACLED exposes a documented API; Polymarket currently documents market data and WebSocket access; and GDELT still provides its event/GKG streams and documentation. Twitter/X could provide general discussions and more realtime information. That means your proposed stack is implementable now, at least for an MVP built around those sources. ([Wikidata][1])
+Wikidata remains a viable backbone for canonical entities and relationships, with multiple access methods and weekly dumps; ACLED exposes a documented API; Polymarket currently documents market data and WebSocket access; and GDELT still provides its event/GKG streams and documentation. X/Twitter may later provide narrative, attention, or realtime discussion signals, but it is not part of the first event-source tape or baseline benchmark. That means your proposed stack is implementable now, at least for an MVP built around those sources. ([Wikidata][1])
 
 ## Stage 0 — Frame the problem like a forecasting program, not a philosophy project
 
