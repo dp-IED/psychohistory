@@ -1,7 +1,8 @@
-# GNN Graph Artifact Contract
+# Graph Artifact Contract
 
 Graph builders should emit `graph_artifact_v1` JSON. This is the boundary
-between probe-specific graph construction and downstream GNN projection/training.
+between temporally clean event ingestion and downstream baselines, GNNs, or
+forecast explainability.
 
 ## Top-Level Shape
 
@@ -75,9 +76,8 @@ Use `target_table` for downstream supervised targets:
 - `node_ids`
 - `metadata`
 
-## Current Builder Behavior
+## Current Direction
 
-The built-in graph precompute command emits `graph_artifact_v1` and keeps legacy
-`nodes` / `edges` fields compatible with existing evals. It creates seed-entity
-nodes first, uses them in golden-task paths when types match, and Wikidata
-enrichment attaches QIDs to `external_ids.wikidata`.
+There is no active built-in graph builder after the cleanup. The next builder
+should emit artifacts that can be reconstructed as of date `t` without later
+facts leaking into nodes, edges, labels, or derived narrative states.

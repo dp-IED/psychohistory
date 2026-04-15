@@ -3,23 +3,20 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "psychohistory-autoresearch"
+name = "psychohistory-forecast-ir"
 version = "0.1.0"
-description = "Local graph-IR autoresearch harness (probes as benchmarks)"
-readme = "AUTORESEARCH.md"
+description = "Temporal graph IR primitives for a narrow geopolitical forecasting MVP"
+readme = "forecast_charter.md"
 requires-python = ">=3.11"
 dependencies = [
   "pydantic>=2.5",
-  "pyyaml>=6.0",
-  "typer>=0.12",
-  "networkx>=3.2",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
 
 [tool.setuptools.packages.find]
-include = ["autoresearch*", "evals*", "schemas*"]
+include = ["evals*", "schemas*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

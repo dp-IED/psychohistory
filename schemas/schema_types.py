@@ -1,10 +1,4 @@
-"""
-Pydantic models for an extensible graph IR schema specification.
-
-Probe-specific types are not hardcoded here: they appear as registered strings
-on NodeSpec/EdgeSpec. The seed schema in base_schema.py may include common
-benchmark types; autoresearch mutates that file or candidate copies.
-"""
+"""Pydantic models for the temporal graph IR schema specification."""
 
 from __future__ import annotations
 
@@ -15,7 +9,7 @@ from pydantic import BaseModel, Field
 
 
 class Layer(str, Enum):
-    """Semantic layers aligned with benchmark probes (axes + epistemic framing)."""
+    """Semantic layers used by the forecasting graph."""
 
     MATERIAL = "material"
     INSTITUTIONAL = "institutional"
