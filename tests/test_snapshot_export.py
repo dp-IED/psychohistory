@@ -85,6 +85,26 @@ def test_label_window_uses_event_date_not_availability_date() -> None:
     assert _target_value(payload, "FR11", "target_occurs_next_7d") is True
 
 
+def test_label_window_counts_admin1_codes_without_prior_feature_events() -> None:
+    payload = build_snapshot_payload(
+        records=[
+            _record("gdelt:feature", event_date="2021-01-01", source_available_at="2021-01-02T00:00:00Z"),
+            _record(
+                "gdelt:new-admin1-label",
+                event_date="2021-01-05",
+                source_available_at="2021-01-06T00:00:00Z",
+                admin1_code="FR22",
+            ),
+        ],
+        origin_date=dt.date(2021, 1, 4),
+    )
+
+    assert _target_value(payload, "FR22", "target_count_next_7d") == 1
+    assert _target_value(payload, "FR22", "target_occurs_next_7d") is True
+    assert payload["metadata"]["label_audit"]["unscored_admin1_event_count"] == 0
+    assert payload["metadata"]["scoring_universe"]["source"] == "all_admin1_codes_in_event_tape"
+
+
 def test_late_labels_go_to_audit() -> None:
     payload = build_snapshot_payload(
         records=[

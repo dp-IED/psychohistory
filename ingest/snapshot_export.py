@@ -85,6 +85,12 @@ def _best_location_labels(feature_events: list[EventTapeRecord]) -> dict[str, st
     return labels
 
 
+def _scoring_universe(records: list[EventTapeRecord]) -> list[str]:
+    """Return the fixed country-qualified GDELT location grid for this tape."""
+
+    return sorted({record.admin1_code for record in records} | {"FR_UNKNOWN"})
+
+
 def _actor_pairs(record: EventTapeRecord) -> list[tuple[str, str | None, str]]:
     pairs: list[tuple[str, str | None, str]] = []
     if record.actor1_name:
@@ -112,7 +118,7 @@ def build_snapshot_payload(
         if record.source_available_at.astimezone(UTC) < origin_dt
         and record.event_date < origin_date
     ]
-    scoring_universe = sorted({record.admin1_code for record in feature_events} | {"FR_UNKNOWN"})
+    scoring_universe = _scoring_universe(sorted_records)
     label_by_admin = _best_location_labels(feature_events)
 
     primary_candidates = [
@@ -295,6 +301,12 @@ def build_snapshot_payload(
             "label_audit": {
                 "unscored_admin1_event_count": unscored_count,
                 "unscored_admin1_codes": sorted(unscored_codes),
+            },
+            "scoring_universe": {
+                "country_code": "FR",
+                "location_id_field": "ActionGeo_ADM1Code",
+                "source": "all_admin1_codes_in_event_tape",
+                "admin1_count": len(scoring_universe),
             },
             "source_name": "gdelt_v2_events",
         },
