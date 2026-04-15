@@ -23,4 +23,7 @@ include = ["evals*", "schemas*", "ingest*", "baselines*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-q"
+addopts = "-q -m 'not torch_train'"
+markers = [
+  "torch_train: GNN training tests that require an isolated process (run with: pytest -m torch_train tests/test_gnn.py)",
+]

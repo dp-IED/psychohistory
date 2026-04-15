@@ -161,6 +161,7 @@ def test_gnn_model_forward_pass_returns_location_logits() -> None:
     assert logits.dtype == torch.float32
 
 
+@pytest.mark.torch_train
 def test_train_gnn_runs_without_error() -> None:
     origins = [dt.date(2021, 1, 4) + dt.timedelta(weeks=i) for i in range(4)]
     graphs = []
@@ -174,6 +175,7 @@ def test_train_gnn_runs_without_error() -> None:
     assert isinstance(model, HeteroGNNModel)
 
 
+@pytest.mark.torch_train
 def test_predict_gnn_returns_one_row_per_location_per_origin() -> None:
     train_origins = [dt.date(2021, 1, 4) + dt.timedelta(weeks=i) for i in range(4)]
     train_graphs = []
