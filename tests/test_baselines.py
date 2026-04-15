@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from baselines.backtest import run_recurrence_backtest
-from baselines.metrics import brier_score, mean_absolute_error, top_k_hit_rate
+from baselines.metrics import brier_score, mean_absolute_error, recall_at_k, top_k_hit_rate
 from baselines.recurrence import ForecastRow, build_recurrence_forecasts_for_origin
 from ingest.event_tape import EventTapeRecord
 from ingest.snapshot_export import build_snapshot_payload
@@ -138,6 +138,25 @@ def test_metrics_for_forecast_rows() -> None:
     assert mean_absolute_error(rows, "m") == pytest.approx((0.75 + 0.75) / 2)
     assert top_k_hit_rate(rows, "m", k=1) == 0.0
     assert top_k_hit_rate(rows, "m", k=2) == 1.0
+
+
+def test_recall_at_k_captures_fraction_of_positives() -> None:
+    rows = [
+        ForecastRow(
+            forecast_origin=dt.date(2021, 1, 4),
+            admin1_code=f"FR{i:02d}",
+            model_name="m",
+            predicted_count=float(10 - i),
+            predicted_occurrence_probability=float(10 - i) / 10,
+            target_count_next_7d=1 if i < 4 else 0,
+            target_occurs_next_7d=i < 4,
+        )
+        for i in range(10)
+    ]
+
+    assert recall_at_k(rows, "m", k=5) == pytest.approx(1.0)
+    assert recall_at_k(rows, "m", k=2) == pytest.approx(0.5)
+    assert recall_at_k(rows, "m", k=0) == pytest.approx(0.0)
 
 
 def test_recurrence_backtest_writes_jsonl_and_audit(tmp_path: Path) -> None:

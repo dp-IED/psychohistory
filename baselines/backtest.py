@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Any, Sequence
 
-from baselines.metrics import brier_score, mean_absolute_error, top_k_hit_rate
+from baselines.metrics import brier_score, mean_absolute_error, recall_at_k, top_k_hit_rate
 from baselines.recurrence import (
     RECURRENCE_MODEL_NAMES,
     ForecastRow,
@@ -80,6 +80,10 @@ def build_audit(
         },
         "top5_hit_rate_by_model": {
             model_name: top_k_hit_rate(rows, model_name, k=5)
+            for model_name in model_names
+        },
+        "recall_at_5_by_model": {
+            model_name: recall_at_k(rows, model_name, k=5)
             for model_name in model_names
         },
     }
