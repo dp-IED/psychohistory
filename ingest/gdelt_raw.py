@@ -485,6 +485,7 @@ def fetch_france_protests(
     allow_partial: bool = False,
     max_retries: int = 3,
     retry_backoff_seconds: float = 2.0,
+    progress: bool = False,
 ) -> dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
     masterfile_text = _read_text_url(masterfilelist_url)
@@ -515,7 +516,29 @@ def fetch_france_protests(
     completed_count = 0
     failed_count = 0
     kept_row_count = 0
+    processed_count = 0
     manifest_path = out_dir / "fetch_manifest.jsonl"
+
+    def maybe_print_progress(entry: MasterfileEntry | None = None) -> None:
+        if not progress:
+            return
+        if processed_count % 1000 != 0 and processed_count != len(selected):
+            return
+        timestamp = (
+            format_datetime_z(entry.source_file_timestamp)
+            if entry is not None
+            else "n/a"
+        )
+        print(
+            (
+                f"[fetch] {processed_count}/{len(selected)} "
+                f"completed={completed_count} failed={failed_count} "
+                f"kept_rows={kept_row_count} last_source={timestamp}"
+            ),
+            file=sys.stderr,
+            flush=True,
+        )
+
     with manifest_path.open("a", encoding="utf-8") as handle:
         for entry in selected:
             previous = completed.get(entry.url)
@@ -529,6 +552,8 @@ def fetch_france_protests(
                 _write_manifest_row(handle, row)
                 completed_count += 1
                 kept_row_count += int(row.get("kept_row_count") or 0)
+                processed_count += 1
+                maybe_print_progress(entry)
             else:
                 to_fetch.append(entry)
 
@@ -549,6 +574,17 @@ def fetch_france_protests(
             elif row["status"] == "failed":
                 failed_count += 1
             kept_row_count += int(row.get("kept_row_count") or 0)
+            processed_count += 1
+            maybe_print_progress(
+                MasterfileEntry(
+                    expected_size=int(row.get("expected_size") or 0),
+                    expected_md5=str(row.get("expected_md5") or ""),
+                    url=str(row.get("url") or ""),
+                    source_file_timestamp=parse_datetime_utc(
+                        str(row.get("source_file_timestamp"))
+                    ),
+                )
+            )
 
     retrieved_at = format_datetime_z(utc_now())
     metadata = {
@@ -618,6 +654,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 allow_partial=args.allow_partial,
                 max_retries=args.max_retries,
                 retry_backoff_seconds=args.retry_backoff_seconds,
+                progress=True,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)

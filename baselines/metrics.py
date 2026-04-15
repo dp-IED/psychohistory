@@ -50,3 +50,26 @@ def top_k_hit_rate(rows: list[ForecastRow], model_name: str, k: int = 5) -> floa
         )
         hits += int(any(row.target_occurs_next_7d for row in ranked[:k]))
     return hits / len(by_origin)
+
+
+def recall_at_k(rows: list[ForecastRow], model_name: str, k: int = 5) -> float:
+    if k <= 0:
+        return 0.0
+    selected = _rows_for_model(rows, model_name)
+    by_origin: dict[object, list[ForecastRow]] = defaultdict(list)
+    for row in selected:
+        by_origin[row.forecast_origin].append(row)
+
+    total_positives = 0
+    captured = 0
+    for origin_rows in by_origin.values():
+        ranked = sorted(
+            origin_rows,
+            key=lambda row: (-row.predicted_count, row.admin1_code),
+        )
+        top_k = ranked[:k]
+        captured += sum(row.target_occurs_next_7d for row in top_k)
+        total_positives += sum(row.target_occurs_next_7d for row in origin_rows)
+    if total_positives == 0:
+        return 0.0
+    return captured / total_positives

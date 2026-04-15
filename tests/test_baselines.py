@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from baselines.backtest import run_recurrence_backtest
-from baselines.metrics import brier_score, mean_absolute_error, top_k_hit_rate
+from baselines.metrics import brier_score, mean_absolute_error, recall_at_k, top_k_hit_rate
 from baselines.recurrence import ForecastRow, build_recurrence_forecasts_for_origin
 from ingest.event_tape import EventTapeRecord
 from ingest.snapshot_export import build_snapshot_payload
@@ -83,7 +83,7 @@ def test_recurrence_uses_point_in_time_features_and_snapshot_targets() -> None:
         if row.model_name == "previous_week_count"
     }
 
-    assert sorted(previous_week) == ["FR11", "FR22", "FR_UNKNOWN"]
+    assert sorted(previous_week) == ["FR11", "FR22"]
     assert previous_week["FR11"].predicted_count == 1.0
     assert previous_week["FR11"].predicted_occurrence_probability == 1.0
     assert previous_week["FR11"].target_count_next_7d == 1
@@ -140,6 +140,25 @@ def test_metrics_for_forecast_rows() -> None:
     assert top_k_hit_rate(rows, "m", k=2) == 1.0
 
 
+def test_recall_at_k_captures_fraction_of_positives() -> None:
+    rows = [
+        ForecastRow(
+            forecast_origin=dt.date(2021, 1, 4),
+            admin1_code=f"FR{i:02d}",
+            model_name="m",
+            predicted_count=float(10 - i),
+            predicted_occurrence_probability=float(10 - i) / 10,
+            target_count_next_7d=1 if i < 4 else 0,
+            target_occurs_next_7d=i < 4,
+        )
+        for i in range(10)
+    ]
+
+    assert recall_at_k(rows, "m", k=5) == pytest.approx(1.0)
+    assert recall_at_k(rows, "m", k=2) == pytest.approx(0.5)
+    assert recall_at_k(rows, "m", k=0) == pytest.approx(0.0)
+
+
 def test_recurrence_backtest_writes_jsonl_and_audit(tmp_path: Path) -> None:
     tape_path = tmp_path / "events.jsonl"
     out_path = tmp_path / "baselines" / "recurrence_predictions.jsonl"
@@ -163,10 +182,10 @@ def test_recurrence_backtest_writes_jsonl_and_audit(tmp_path: Path) -> None:
         for line in out_path.read_text(encoding="utf-8").splitlines()
     ]
     written_audit = json.loads(out_path.with_suffix(".audit.json").read_text(encoding="utf-8"))
-    assert len(written_rows) == 6
-    assert audit["row_count"] == 6
-    assert written_audit["row_count"] == 6
-    assert written_audit["admin1_count"] == 2
+    assert len(written_rows) == 3
+    assert audit["row_count"] == 3
+    assert written_audit["row_count"] == 3
+    assert written_audit["admin1_count"] == 1
     assert written_audit["model_names"] == [
         "previous_week_count",
         "trailing_4_week_mean",

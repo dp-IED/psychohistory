@@ -9,7 +9,9 @@ description = "Temporal graph IR primitives for a narrow geopolitical forecastin
 readme = "forecast_charter.md"
 requires-python = ">=3.11"
 dependencies = [
+  "numpy>=1.26",
   "pydantic>=2.5",
+  "xgboost>=2.0",
 ]
 
 [project.optional-dependencies]
@@ -21,4 +23,7 @@ include = ["evals*", "schemas*", "ingest*", "baselines*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-q"
+addopts = "-q -m 'not torch_train'"
+markers = [
+  "torch_train: GNN training tests that require an isolated process (run with: pytest -m torch_train tests/test_gnn.py)",
+]

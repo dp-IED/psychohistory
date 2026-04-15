@@ -18,6 +18,7 @@ from ingest.event_tape import EventTapeRecord, load_event_tape
 UTC = dt.timezone.utc
 LABEL_GRACE_DAYS = 14
 WINDOW_DAYS = 7
+EXCLUDED_REGIONAL_ADMIN1_CODES = frozenset({"FR", "FR00", "FR_UNKNOWN"})
 
 
 def _format_datetime_z(value: dt.datetime) -> str:
@@ -85,10 +86,22 @@ def _best_location_labels(feature_events: list[EventTapeRecord]) -> dict[str, st
     return labels
 
 
-def _scoring_universe(records: list[EventTapeRecord]) -> list[str]:
-    """Return the fixed country-qualified GDELT location grid for this tape."""
+def _location_universe(records: list[EventTapeRecord]) -> list[str]:
+    """Return all country-qualified GDELT location codes needed by graph edges."""
 
     return sorted({record.admin1_code for record in records} | {"FR_UNKNOWN"})
+
+
+def _regional_scoring_universe(records: list[EventTapeRecord]) -> list[str]:
+    """Return clean regional admin1 codes, excluding country/unresolved buckets."""
+
+    return sorted(
+        {
+            record.admin1_code
+            for record in records
+            if record.admin1_code not in EXCLUDED_REGIONAL_ADMIN1_CODES
+        }
+    )
 
 
 def _actor_pairs(record: EventTapeRecord) -> list[tuple[str, str | None, str]]:
@@ -118,7 +131,8 @@ def build_snapshot_payload(
         if record.source_available_at.astimezone(UTC) < origin_dt
         and record.event_date < origin_date
     ]
-    scoring_universe = _scoring_universe(sorted_records)
+    location_universe = _location_universe(sorted_records)
+    scoring_universe = _regional_scoring_universe(sorted_records)
     label_by_admin = _best_location_labels(feature_events)
 
     primary_candidates = [
@@ -135,10 +149,19 @@ def build_snapshot_payload(
     ]
 
     target_counts = {admin1_code: 0 for admin1_code in scoring_universe}
+    excluded_primary_counts = Counter[str]()
+    excluded_feature_counts = Counter(
+        record.admin1_code
+        for record in feature_events
+        if record.admin1_code in EXCLUDED_REGIONAL_ADMIN1_CODES
+    )
     unscored_codes: set[str] = set()
     unscored_count = 0
     label_record_count = 0
     for record in primary_candidates:
+        if record.admin1_code in EXCLUDED_REGIONAL_ADMIN1_CODES:
+            excluded_primary_counts[record.admin1_code] += 1
+            continue
         if record.admin1_code not in target_counts:
             unscored_count += 1
             unscored_codes.add(record.admin1_code)
@@ -156,7 +179,7 @@ def build_snapshot_payload(
             "provenance": _node_provenance(),
         }
     ]
-    for admin1_code in scoring_universe:
+    for admin1_code in location_universe:
         nodes.append(
             {
                 "id": _location_node_id(admin1_code),
@@ -301,12 +324,23 @@ def build_snapshot_payload(
             "label_audit": {
                 "unscored_admin1_event_count": unscored_count,
                 "unscored_admin1_codes": sorted(unscored_codes),
+                "excluded_regional_admin1_event_count": sum(excluded_primary_counts.values()),
+                "excluded_regional_admin1_counts": dict(sorted(excluded_primary_counts.items())),
+            },
+            "feature_audit": {
+                "excluded_regional_admin1_event_count": sum(excluded_feature_counts.values()),
+                "excluded_regional_admin1_counts": dict(sorted(excluded_feature_counts.items())),
             },
             "scoring_universe": {
                 "country_code": "FR",
                 "location_id_field": "ActionGeo_ADM1Code",
-                "source": "all_admin1_codes_in_event_tape",
+                "source": "regional_admin1_codes_excluding_country_and_unresolved",
                 "admin1_count": len(scoring_universe),
+                "excluded_admin1_codes": sorted(EXCLUDED_REGIONAL_ADMIN1_CODES),
+            },
+            "graph_location_universe": {
+                "source": "all_admin1_codes_in_event_tape",
+                "admin1_count": len(location_universe),
             },
             "source_name": "gdelt_v2_events",
         },
@@ -319,11 +353,13 @@ def export_weekly_snapshots(
     origin_start: dt.date,
     origin_end: dt.date,
     out_dir: Path,
+    progress: bool = False,
 ) -> list[Path]:
     records = load_event_tape(tape_path)
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
-    for origin_date in _weekly_origins(origin_start, origin_end):
+    origins = _weekly_origins(origin_start, origin_end)
+    for index, origin_date in enumerate(origins, start=1):
         payload = build_snapshot_payload(records=records, origin_date=origin_date)
         try:
             GraphArtifactV1.model_validate(payload)
@@ -339,6 +375,16 @@ def export_weekly_snapshots(
         temp_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         temp_path.replace(out_path)
         written.append(out_path)
+        if progress:
+            print(
+                (
+                    f"[snapshot] {index}/{len(origins)} origin={origin_date.isoformat()} "
+                    f"nodes={len(payload['nodes'])} edges={len(payload['edges'])} "
+                    f"targets={len(payload['target_table'])} wrote={out_path}"
+                ),
+                file=sys.stderr,
+                flush=True,
+            )
     return written
 
 
@@ -363,6 +409,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 origin_start=dt.date.fromisoformat(args.origin_start),
                 origin_end=dt.date.fromisoformat(args.origin_end),
                 out_dir=Path(args.out),
+                progress=True,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)
