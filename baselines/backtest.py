@@ -139,6 +139,11 @@ def run_tabular_backtest(
     out_path: Path,
     progress: bool = False,
 ) -> dict[str, Any]:
+    if train_origin_end >= eval_origin_start:
+        raise ValueError(
+            f"train_origin_end ({train_origin_end}) must be before eval_origin_start ({eval_origin_start})"
+        )
+
     from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
 
     records = load_event_tape(tape_path)
@@ -180,7 +185,8 @@ def run_tabular_backtest(
             )
 
     train_feature_rows = [r for o in train_origins for r in feature_rows_by_origin[o]]
-    train_targets = {k: v[1] for k, v in target_lookup.items() if k[0] in set(train_origins)}
+    train_origin_set = set(train_origins)
+    train_targets = {k: v[1] for k, v in target_lookup.items() if k[0] in train_origin_set}
 
     if progress:
         print("[tabular] training XGBoost model...", file=sys.stderr, flush=True)
