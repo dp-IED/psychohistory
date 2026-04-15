@@ -102,7 +102,57 @@ def test_label_window_counts_admin1_codes_without_prior_feature_events() -> None
     assert _target_value(payload, "FR22", "target_count_next_7d") == 1
     assert _target_value(payload, "FR22", "target_occurs_next_7d") is True
     assert payload["metadata"]["label_audit"]["unscored_admin1_event_count"] == 0
-    assert payload["metadata"]["scoring_universe"]["source"] == "all_admin1_codes_in_event_tape"
+    assert (
+        payload["metadata"]["scoring_universe"]["source"]
+        == "regional_admin1_codes_excluding_country_and_unresolved"
+    )
+
+
+def test_regional_targets_exclude_country_and_unresolved_admin1_codes() -> None:
+    payload = build_snapshot_payload(
+        records=[
+            _record(
+                "gdelt:fr00-feature",
+                event_date="2021-01-01",
+                source_available_at="2021-01-02T00:00:00Z",
+                admin1_code="FR00",
+            ),
+            _record(
+                "gdelt:fr-label",
+                event_date="2021-01-05",
+                source_available_at="2021-01-06T00:00:00Z",
+                admin1_code="FR",
+            ),
+            _record(
+                "gdelt:regional-label",
+                event_date="2021-01-05",
+                source_available_at="2021-01-06T00:00:00Z",
+                admin1_code="FR22",
+            ),
+        ],
+        origin_date=dt.date(2021, 1, 4),
+    )
+
+    target_admin1_codes = {
+        row["metadata"]["admin1_code"]
+        for row in payload["target_table"]
+    }
+    location_node_ids = {
+        node["id"]
+        for node in payload["nodes"]
+        if node["type"] == "Location"
+    }
+
+    assert target_admin1_codes == {"FR22"}
+    assert "location:FR:FR00" in location_node_ids
+    assert "location:FR:FR" in location_node_ids
+    assert payload["metadata"]["label_audit"]["excluded_regional_admin1_counts"] == {"FR": 1}
+    assert payload["metadata"]["feature_audit"]["excluded_regional_admin1_counts"] == {"FR00": 1}
+    assert payload["metadata"]["scoring_universe"]["excluded_admin1_codes"] == [
+        "FR",
+        "FR00",
+        "FR_UNKNOWN",
+    ]
 
 
 def test_late_labels_go_to_audit() -> None:

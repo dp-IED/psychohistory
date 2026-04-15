@@ -83,7 +83,7 @@ def test_recurrence_uses_point_in_time_features_and_snapshot_targets() -> None:
         if row.model_name == "previous_week_count"
     }
 
-    assert sorted(previous_week) == ["FR11", "FR22", "FR_UNKNOWN"]
+    assert sorted(previous_week) == ["FR11", "FR22"]
     assert previous_week["FR11"].predicted_count == 1.0
     assert previous_week["FR11"].predicted_occurrence_probability == 1.0
     assert previous_week["FR11"].target_count_next_7d == 1
@@ -163,10 +163,10 @@ def test_recurrence_backtest_writes_jsonl_and_audit(tmp_path: Path) -> None:
         for line in out_path.read_text(encoding="utf-8").splitlines()
     ]
     written_audit = json.loads(out_path.with_suffix(".audit.json").read_text(encoding="utf-8"))
-    assert len(written_rows) == 6
-    assert audit["row_count"] == 6
-    assert written_audit["row_count"] == 6
-    assert written_audit["admin1_count"] == 2
+    assert len(written_rows) == 3
+    assert audit["row_count"] == 3
+    assert written_audit["row_count"] == 3
+    assert written_audit["admin1_count"] == 1
     assert written_audit["model_names"] == [
         "previous_week_count",
         "trailing_4_week_mean",

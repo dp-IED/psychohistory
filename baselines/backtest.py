@@ -91,16 +91,31 @@ def run_recurrence_backtest(
     origin_start: dt.date,
     origin_end: dt.date,
     out_path: Path,
+    progress: bool = False,
 ) -> dict[str, Any]:
-    rows = build_recurrence_backtest_rows(
-        tape_path=tape_path,
-        origin_start=origin_start,
-        origin_end=origin_end,
-    )
+    records = load_event_tape(tape_path)
+    origins = weekly_origins(origin_start, origin_end)
+    rows: list[ForecastRow] = []
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8") as handle:
-        for row in rows:
-            handle.write(row.model_dump_json() + "\n")
+        for index, forecast_origin in enumerate(origins, start=1):
+            origin_rows = build_recurrence_forecasts_for_origin(
+                records=records,
+                forecast_origin=forecast_origin,
+            )
+            rows.extend(origin_rows)
+            for row in origin_rows:
+                handle.write(row.model_dump_json() + "\n")
+            handle.flush()
+            if progress:
+                print(
+                    (
+                        f"[backtest] {index}/{len(origins)} "
+                        f"origin={forecast_origin.isoformat()} rows={len(rows)}"
+                    ),
+                    file=sys.stderr,
+                    flush=True,
+                )
 
     audit = build_audit(rows, origin_start=origin_start, origin_end=origin_end)
     audit_path = out_path.with_suffix(".audit.json")
@@ -132,6 +147,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 origin_start=dt.date.fromisoformat(args.origin_start),
                 origin_end=dt.date.fromisoformat(args.origin_end),
                 out_path=Path(args.out),
+                progress=True,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)
