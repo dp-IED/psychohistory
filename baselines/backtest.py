@@ -147,6 +147,9 @@ def run_tabular_backtest(
     from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
 
     records = load_event_tape(tape_path)
+    # Derive scoring universe from all tape records (not just train-visible ones). France's
+    # administrative regions are stable, so including codes that first appear post-cutoff
+    # is a deliberate simplification that avoids per-origin universe re-computation.
     scoring_universe = sorted(
         {r.admin1_code for r in records if r.admin1_code not in EXCLUDED_REGIONAL_ADMIN1_CODES}
     )
@@ -249,6 +252,9 @@ def run_gnn_backtest(
     from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
 
     records = load_event_tape(tape_path)
+    # Derive scoring universe from all tape records (not just train-visible ones). France's
+    # administrative regions are stable, so including codes that first appear post-cutoff
+    # is a deliberate simplification that avoids per-origin universe re-computation.
     scoring_universe = sorted(
         {r.admin1_code for r in records if r.admin1_code not in EXCLUDED_REGIONAL_ADMIN1_CODES}
     )
@@ -366,6 +372,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--out",
         default="data/gdelt/baselines/france_protest/tabular_predictions.jsonl",
     )
+    tabular.add_argument("--no-progress", dest="progress", action="store_false", default=True)
     gnn = subparsers.add_parser("gnn")
     gnn.add_argument("--tape", default="data/gdelt/tape/france_protest/events.jsonl")
     gnn.add_argument("--snapshots-dir", default="data/gdelt/snapshots/france_protest")
@@ -376,6 +383,7 @@ def _build_parser() -> argparse.ArgumentParser:
     gnn.add_argument("--out", default="data/gdelt/baselines/france_protest/gnn_predictions.jsonl")
     gnn.add_argument("--epochs", type=int, default=30)
     gnn.add_argument("--hidden-dim", type=int, default=64)
+    gnn.add_argument("--no-progress", dest="progress", action="store_false", default=True)
     return parser
 
 
@@ -404,7 +412,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 eval_origin_start=dt.date.fromisoformat(args.eval_origin_start),
                 eval_origin_end=dt.date.fromisoformat(args.eval_origin_end),
                 out_path=Path(args.out),
-                progress=True,
+                progress=args.progress,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)
@@ -422,7 +430,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 out_path=Path(args.out),
                 epochs=args.epochs,
                 hidden_dim=args.hidden_dim,
-                progress=True,
+                progress=args.progress,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)

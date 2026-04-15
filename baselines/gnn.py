@@ -149,7 +149,7 @@ def train_gnn(
     hidden_dim: int = 64,
 ) -> HeteroGNNModel:
     location_feature_dim = graphs[0]["location"].x.shape[1]
-    event_feature_dim = graphs[0]["event"].x.shape[1] if len(graphs[0]["event"].x) > 0 else EVENT_FEATURE_DIM
+    event_feature_dim = graphs[0]["event"].x.shape[1]
     model = HeteroGNNModel(
         location_feature_dim=location_feature_dim,
         event_feature_dim=event_feature_dim,
