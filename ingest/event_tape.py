@@ -18,7 +18,7 @@ UTC = dt.timezone.utc
 
 
 class EventTapeRecord(BaseModel):
-    source_name: Literal["gdelt_v2_events"]
+    source_name: Literal["gdelt_v2_events", "acled_api_v1"]
     source_event_id: str
     event_date: dt.date
     source_available_at: dt.datetime

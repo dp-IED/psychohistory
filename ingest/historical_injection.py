@@ -21,7 +21,7 @@ UTC = dt.timezone.utc
 
 class HistoricalInjectionBatch(BaseModel):
     batch_id: str
-    source_name: Literal["gdelt_v2_events"]
+    source_name: Literal["gdelt_v2_events", "acled_api_v1"]
     source_available_start: dt.datetime
     source_available_end: dt.datetime
     record_count: int
