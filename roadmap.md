@@ -9,7 +9,16 @@ The right way to do this is to de-risk in this order:
 5. **Can the system explain forecasts with historical analogs?**
 6. **Can it generalize across domains?**
 
-That sequence matters because the data layer and evaluation layer will decide whether the rest is science or just an impressive demo.
+That sequence matters because the data layer and evaluation layer decide whether
+the rest is science or just an impressive demo. The France protest benchmark has
+now served its purpose as the first validation domain: the temporal tape,
+snapshot exporter, recurrence baselines, XGBoost baseline, and heterogeneous GNN
+all run on the same historical replay setup, and the GNN improves the main
+calibration/error metrics on the holdout period.
+
+The roadmap therefore moves from "prove a GNN is worth trying" to "expand the
+graph while preserving the benchmark discipline." France protest forecasting is
+the regression benchmark, not the final product definition.
 
 Wikidata remains a viable backbone for canonical entities and relationships, with multiple access methods and weekly dumps; ACLED exposes a documented API; Polymarket currently documents market data and WebSocket access; and GDELT still provides its event/GKG streams and documentation. X/Twitter may later provide narrative, attention, or realtime discussion signals, but it is not part of the first event-source tape or baseline benchmark. That means your proposed stack is implementable now, at least for an MVP built around those sources. ([Wikidata][1])
 
@@ -123,9 +132,9 @@ The gate:
 
 If you cannot do that, stop everything else.
 
-## Stage 3 — Establish non-neural baselines before touching a GNN
+## Stage 3 — Establish non-neural baselines before trusting a GNN
 
-This stage is non-negotiable.
+This stage is non-negotiable, and the first version is now in place.
 
 A lot of temporal KG work looks strong until you compare it to recurrence-heavy baselines. A 2024 IJCAI paper found that a simple recurrence-based baseline ranked first or third on three of five temporal KG benchmarks, which is exactly why you need this stage before you trust any graph model gains. ([Wikidata][1])
 
@@ -152,17 +161,22 @@ Feature families should include:
 You want to answer one question:
 **Is there any real predictive structure in the data after temporal hygiene is enforced?**
 
-The gate:
+The initial France protest gate:
 
 - rolling backtests over multiple years
 - Brier score and calibration materially better than naive baseline
 - at least one prediction slice where simple engineered features work
 
-If this stage fails, the issue is probably task formulation or leakage, not lack of model sophistication.
+Status: passed for the first benchmark. Recurrence and XGBoost provide usable
+comparison points, and the tabular model improves over recurrence on the 2025
+holdout. Keep this stage alive as a regression suite whenever a new source,
+entity type, or target is added.
 
-## Stage 4 — Train the first dynamic graph forecaster
+## Stage 4 — Expand the dynamic graph forecaster
 
-Only now do you train the graph model.
+The first graph model is now trained. The result supports the central modeling
+bet: graph message passing can improve the main forecast quality metrics beyond
+recurrence and tabular engineered features on the controlled benchmark.
 
 Use the graph model for what it is good at:
 
@@ -173,16 +187,17 @@ Use the graph model for what it is good at:
 
 Do not ask it to infer everything.
 
-Architecturally, this stage should combine:
+Architecturally, the next version should combine:
 
 - temporal event encoder
 - heterogeneous graph structure
 - autoregressive or continuous-time update mechanism
 - optional narrative-state side channel
 
-This is where you test whether the project’s central hypothesis is true:
+This is where you now test the stronger version of the project hypothesis:
 
-**Does modeling ideas, actors, and event topology improve forecasts beyond recurrence and tabular features?**
+**Which additional graph sources and relations improve forecasts beyond the
+validated event-location GNN?**
 
 The evaluation should be adversarial. Slice performance by:
 
@@ -191,12 +206,22 @@ The evaluation should be adversarial. Slice performance by:
 - conflict vs cooperation
 - local vs cross-border spillovers
 
-You are done with Stage 4 only if the graph model delivers one of two things:
+You are done with Stage 4 only if the expanded graph model delivers one of two things:
 
 - better overall predictive performance
 - same predictive performance, but much better transfer in sparse / hard regimes
 
 If it does neither, then the graph is not yet earning its complexity.
+
+Immediate Stage 4 work:
+
+- freeze the France protest benchmark as the regression harness
+- add deterministic GNN seeds and multi-seed audits
+- add ablations for location-only, event-edge, actor-edge, source-edge, and
+  narrative features
+- add ACLED as a second event evidence layer
+- add point-in-time Wikidata grounding for actors and locations
+- promote only the node and edge types that survive backtest comparison
 
 ## Stage 5 — Add the “lame de fond” layer as explicit latent macro-dynamics
 
@@ -334,11 +359,20 @@ The gate:
 - clear evaluation of whether market features improve calibration
 - at least a few historically interesting disagreement case studies
 
-## Stage 9 — Stress-test across one unrelated domain
+## Stage 9 — Stress-test across one related and one unrelated domain
 
-Only after one domain works should you test your “deep currents” thesis across domains.
+Only after the expanded graph works in the first benchmark should you test your
+"deep currents" thesis across domains.
 
-A good second domain should share dynamics but not vocabulary. Examples:
+A good second domain should first be adjacent, then unrelated.
+
+Adjacent examples:
+
+- protests in another country
+- conflict escalation in ACLED
+- election-related unrest
+
+Unrelated examples:
 
 - labor unrest
 - public-health panic dynamics
@@ -375,13 +409,17 @@ That decision should happen after evidence, not before.
 
 I would sequence the program like this:
 
-**Month 1:** freeze forecast charter, ontology v1, temporal hygiene rules.
-**Month 2:** build the replayable historical graph and source normalization layer.
-**Month 3:** baseline forecasting and calibration.
-**Month 4:** dynamic graph model and ablations against baselines.
-**Month 5:** macro-state layer and historical analog retrieval.
-**Month 6:** constrained Q&A and analyst-facing explanations.
-**Month 7+:** market integration, disagreement analytics, second-domain transfer.
+**Completed:** freeze forecast charter, build the replayable France protest
+event tape, export weekly snapshots, run recurrence/XGBoost/GNN backtests.
+
+**Next:** freeze comparison audits, add GNN reproducibility, run ablations, and
+ingest a second event source.
+
+**After that:** add point-in-time Wikidata grounding, actor/source/narrative
+node types, and historical analog retrieval.
+
+**Later:** constrained Q&A, market integration, disagreement analytics, and
+second-domain transfer.
 
 The important thing is not the calendar duration. It is that each stage has a hard go/no-go test.
 
@@ -419,7 +457,9 @@ Avoid moving to a second domain before the first one has a live decision workflo
 
 Your implementation roadmap should be centered on one sentence:
 
-**First prove that a temporally clean heterogeneous graph can forecast narrow event classes better than recurrence, then prove that it can explain those forecasts with valid historical analogs.**
+**Now that a temporally clean heterogeneous graph has beaten the main baselines
+on the first benchmark, expand sources and node types under ablation, then prove
+that the model can explain forecasts with valid historical analogs.**
 
 Everything else is expansion.
 
