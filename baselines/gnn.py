@@ -27,6 +27,8 @@ class GNNGraphAblation:
     use_location_features: bool = True
     use_event_features: bool = True
     use_event_edges: bool = True
+    use_source_identity: bool = True
+    allowed_source_names: tuple[str, ...] | None = None
     description: str = ""
 
     def metadata(self) -> dict[str, Any]:
@@ -35,6 +37,10 @@ class GNNGraphAblation:
             "use_location_features": self.use_location_features,
             "use_event_features": self.use_event_features,
             "use_event_edges": self.use_event_edges,
+            "use_source_identity": self.use_source_identity,
+            "allowed_source_names": list(self.allowed_source_names)
+            if self.allowed_source_names is not None
+            else None,
             "description": self.description,
         }
 
@@ -165,6 +171,13 @@ def build_graph_from_snapshot(
     data["location"].admin1_codes = loc_admin1
 
     event_nodes = [n for n in snapshot["nodes"] if n["type"] == "Event"]
+    if ablation.allowed_source_names is not None:
+        allowed_source_names = set(ablation.allowed_source_names)
+        event_nodes = [
+            node
+            for node in event_nodes
+            if node.get("attributes", {}).get("source_name") in allowed_source_names
+        ]
     event_id_to_idx: dict[str, int] = {n["id"]: i for i, n in enumerate(event_nodes)}
     evt_x = torch.zeros((len(event_nodes), EVENT_FEATURE_DIM), dtype=torch.float32)
     if ablation.use_event_features:

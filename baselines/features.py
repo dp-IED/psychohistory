@@ -51,14 +51,24 @@ def _visible_before(records: list[EventTapeRecord], origin_dt: dt.datetime) -> l
     ]
 
 
+def _filter_records_by_sources(
+    records: list[EventTapeRecord],
+    source_names: set[str] | None,
+) -> list[EventTapeRecord]:
+    if source_names is None:
+        return records
+    return [record for record in records if record.source_name in source_names]
+
+
 def extract_features_for_origin(
     *,
     records: list[EventTapeRecord],
     origin_date: dt.date,
     scoring_universe: list[str],
+    source_names: set[str] | None = None,
 ) -> list[FeatureRow]:
     origin_dt = dt.datetime.combine(origin_date, dt.time(), tzinfo=UTC)
-    visible = _visible_before(records, origin_dt)
+    visible = _visible_before(_filter_records_by_sources(records, source_names), origin_dt)
 
     w1_start = origin_date - dt.timedelta(days=WINDOW_DAYS)
     w4_start = origin_date - dt.timedelta(days=WINDOW_DAYS * 4)

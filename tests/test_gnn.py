@@ -284,6 +284,44 @@ def test_gnn_backtest_writes_output(tmp_path: Path) -> None:
 
 
 @pytest.mark.torch_train
+def test_gnn_backtest_from_payloads_writes_gzip_output(tmp_path: Path) -> None:
+    from baselines.backtest import OriginInputs, run_gnn_backtest_from_payloads
+
+    train_inputs = []
+    eval_inputs = []
+    target_lookup = {}
+    for week in range(6):
+        origin = dt.date(2021, 1, 4) + dt.timedelta(weeks=week)
+        snapshot = _minimal_snapshot(origin)
+        feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+        item = OriginInputs(origin=origin, snapshot=snapshot, feature_rows=feature_rows)
+        for row in snapshot["target_table"]:
+            code = row["metadata"]["admin1_code"]
+            existing = target_lookup.get((origin, code), (0, False))
+            if row["name"] == "target_count_next_7d":
+                target_lookup[(origin, code)] = (int(row["value"]), existing[1])
+            elif row["name"] == "target_occurs_next_7d":
+                target_lookup[(origin, code)] = (existing[0], bool(row["value"]))
+        if week < 4:
+            train_inputs.append(item)
+        else:
+            eval_inputs.append(item)
+
+    out_path = tmp_path / "gnn_predictions.jsonl.gz"
+    audit = run_gnn_backtest_from_payloads(
+        train_inputs=train_inputs,
+        eval_inputs=eval_inputs,
+        target_lookup=target_lookup,
+        out_path=out_path,
+        epochs=1,
+        hidden_dim=16,
+    )
+
+    assert out_path.exists()
+    assert audit["eval_row_count"] > 0
+
+
+@pytest.mark.torch_train
 def test_gnn_ablation_backtest_writes_variant_audit(tmp_path: Path) -> None:
     import json
 

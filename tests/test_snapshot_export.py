@@ -18,9 +18,10 @@ def _record(
     source_available_at: str,
     admin1_code: str = "FR11",
     actor1_name: str | None = None,
+    source_name: str = "gdelt_v2_events",
 ) -> EventTapeRecord:
     return EventTapeRecord(
-        source_name="gdelt_v2_events",
+        source_name=source_name,
         source_event_id=source_event_id,
         event_date=dt.date.fromisoformat(event_date),
         source_available_at=dt.datetime.fromisoformat(source_available_at.replace("Z", "+00:00")),
@@ -31,15 +32,15 @@ def _record(
         latitude=48.8566,
         longitude=2.3522,
         event_class="protest",
-        event_code="141",
-        event_base_code="14",
-        event_root_code="14",
-        quad_class=3,
-        goldstein_scale=-6.5,
-        num_mentions=4,
-        num_sources=2,
-        num_articles=3,
-        avg_tone=-1.2,
+        event_code="141" if source_name == "gdelt_v2_events" else "Protests",
+        event_base_code="14" if source_name == "gdelt_v2_events" else "Protests",
+        event_root_code="14" if source_name == "gdelt_v2_events" else "Protests",
+        quad_class=3 if source_name == "gdelt_v2_events" else None,
+        goldstein_scale=-6.5 if source_name == "gdelt_v2_events" else None,
+        num_mentions=4 if source_name == "gdelt_v2_events" else None,
+        num_sources=2 if source_name == "gdelt_v2_events" else None,
+        num_articles=3 if source_name == "gdelt_v2_events" else None,
+        avg_tone=-1.2 if source_name == "gdelt_v2_events" else None,
         actor1_name=actor1_name,
         actor1_country_code="FRA" if actor1_name else None,
         actor2_name=None,
@@ -193,6 +194,106 @@ def test_snapshot_validates_graph_artifact_contract(tmp_path: Path) -> None:
     assert event_nodes[0]["time"]["start"] == "2021-01-01"
     assert event_nodes[0]["provenance"]["sources"] == ["gdelt_v2_events"]
     assert event_nodes[0]["external_ids"]["gdelt"] == "gdelt:feature"
+
+
+def test_mixed_snapshot_has_source_nodes_and_source_reports_edges() -> None:
+    payload = build_snapshot_payload(
+        records=[
+            _record(
+                "gdelt:feature",
+                event_date="2021-01-01",
+                source_available_at="2021-01-02T00:00:00Z",
+            ),
+            _record(
+                "acled:FRA123",
+                event_date="2021-01-02",
+                source_available_at="2021-01-03T00:00:00Z",
+                source_name="acled",
+            ),
+        ],
+        origin_date=dt.date(2021, 1, 4),
+    )
+
+    GraphArtifactV1.model_validate(payload)
+    source_nodes = {node["id"] for node in payload["nodes"] if node["type"] == "Source"}
+    acled_event = next(
+        node
+        for node in payload["nodes"]
+        if node["type"] == "Event" and node["attributes"]["source_name"] == "acled"
+    )
+    reports_edges = [edge for edge in payload["edges"] if edge["type"] == "reports"]
+
+    assert source_nodes == {"source:gdelt_v2_events", "source:acled"}
+    assert acled_event["external_ids"]["acled"] == "acled:FRA123"
+    assert acled_event["attributes"]["source_name"] == "acled"
+    assert any(
+        edge["source"] == "source:acled" and edge["target"] == acled_event["id"]
+        for edge in reports_edges
+    )
+    assert payload["metadata"]["source_names"] == ["acled", "gdelt_v2_events"]
+    assert payload["metadata"]["feature_source_counts"] == {
+        "acled": 1,
+        "gdelt_v2_events": 1,
+    }
+
+
+def test_snapshot_source_filter_excludes_other_sources_and_labels() -> None:
+    payload = build_snapshot_payload(
+        records=[
+            _record(
+                "gdelt:feature",
+                event_date="2021-01-01",
+                source_available_at="2021-01-02T00:00:00Z",
+            ),
+            _record(
+                "acled:label",
+                event_date="2021-01-05",
+                source_available_at="2021-01-06T00:00:00Z",
+                source_name="acled",
+            ),
+        ],
+        origin_date=dt.date(2021, 1, 4),
+        source_names={"gdelt_v2_events"},
+    )
+
+    assert {node["type"] for node in payload["nodes"] if node["id"].startswith("event:")} == {
+        "Event"
+    }
+    assert all(
+        node["attributes"]["source_name"] == "gdelt_v2_events"
+        for node in payload["nodes"]
+        if node["type"] == "Event"
+    )
+    assert _target_value(payload, "FR11", "target_count_next_7d") == 0
+    assert payload["metadata"]["source_names"] == ["gdelt_v2_events"]
+    assert payload["metadata"]["label_source_counts"] == {"gdelt_v2_events": 0}
+
+
+def test_snapshot_source_identity_collapse_uses_generic_source_node() -> None:
+    payload = build_snapshot_payload(
+        records=[
+            _record(
+                "gdelt:feature",
+                event_date="2021-01-01",
+                source_available_at="2021-01-02T00:00:00Z",
+            ),
+            _record(
+                "acled:FRA123",
+                event_date="2021-01-02",
+                source_available_at="2021-01-03T00:00:00Z",
+                source_name="acled",
+            ),
+        ],
+        origin_date=dt.date(2021, 1, 4),
+        source_identity_mode="collapse",
+    )
+
+    source_nodes = {node["id"] for node in payload["nodes"] if node["type"] == "Source"}
+    reports_sources = {edge["source"] for edge in payload["edges"] if edge["type"] == "reports"}
+
+    assert source_nodes == {"source:events"}
+    assert reports_sources == {"source:events"}
+    assert payload["metadata"]["source_identity_mode"] == "collapse"
 
 
 def test_snapshot_excludes_event_available_at_origin() -> None:

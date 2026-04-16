@@ -38,6 +38,20 @@ def train_tabular_model(
         [float(targets.get((row.forecast_origin, row.admin1_code), False)) for row in feature_rows],
         dtype=np.float32,
     )
+    unique_classes = np.unique(y)
+    if len(unique_classes) == 1:
+        constant_probability = float(unique_classes[0])
+
+        def predict_constant(X: np.ndarray) -> np.ndarray:
+            return np.column_stack(
+                [
+                    np.full(X.shape[0], 1.0 - constant_probability, dtype=np.float32),
+                    np.full(X.shape[0], constant_probability, dtype=np.float32),
+                ]
+            )
+
+        return predict_constant
+
     scale_pos_weight = float(np.sum(y == 0)) / max(1.0, float(np.sum(y == 1)))
     model = xgb.XGBClassifier(
         n_estimators=n_estimators,

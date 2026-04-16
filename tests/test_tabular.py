@@ -81,6 +81,18 @@ def test_train_tabular_model_returns_callable() -> None:
     assert callable(model)
 
 
+def test_train_tabular_model_handles_single_class_smoke_windows() -> None:
+    universe = ["FR11", "FR22"]
+    feature_rows = _make_feature_rows(4, n_pos=4, universe=universe)
+    targets = {(row.forecast_origin, row.admin1_code): True for row in feature_rows}
+
+    model = train_tabular_model(feature_rows=feature_rows, targets=targets)
+    proba = model(build_feature_matrix(feature_rows)[0])
+
+    assert proba.shape == (4, 2)
+    assert np.allclose(proba[:, 1], 1.0)
+
+
 def test_predict_tabular_returns_one_row_per_admin1() -> None:
     universe = ["FR11", "FR22", "FR33"]
     n = 60
