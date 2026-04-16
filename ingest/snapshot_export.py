@@ -9,16 +9,22 @@ import json
 import sys
 from collections import Counter
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Literal, Sequence
 
 from evals.graph_artifact_contract import GRAPH_ARTIFACT_FORMAT, GraphArtifactV1
 from ingest.event_tape import EventTapeRecord, load_event_tape
+from ingest.io_utils import write_json_atomic
 
 
 UTC = dt.timezone.utc
 LABEL_GRACE_DAYS = 14
 WINDOW_DAYS = 7
 EXCLUDED_REGIONAL_ADMIN1_CODES = frozenset({"FR", "FR00", "FR_UNKNOWN"})
+SOURCE_LABELS = {
+    "gdelt_v2_events": "GDELT 2.0 Events",
+    "acled": "ACLED",
+}
+SourceIdentityMode = Literal["preserve", "collapse"]
 
 
 def _format_datetime_z(value: dt.datetime) -> str:
@@ -74,8 +80,34 @@ def _event_node_id(source_event_id: str) -> str:
     return f"event:{source_event_id}"
 
 
-def _node_provenance() -> dict[str, list[str]]:
-    return {"sources": ["gdelt_v2_events"]}
+def source_node_id(source_name: str) -> str:
+    return f"source:{source_name}"
+
+
+def node_provenance(source_name: str) -> dict[str, list[str]]:
+    return {"sources": [source_name]}
+
+
+def _multi_source_provenance(source_names: Sequence[str]) -> dict[str, list[str]]:
+    return {"sources": sorted(set(source_names))}
+
+
+def _filter_records_by_sources(
+    records: list[EventTapeRecord],
+    source_names: set[str] | None,
+) -> list[EventTapeRecord]:
+    if source_names is None:
+        return records
+    return [record for record in records if record.source_name in source_names]
+
+
+def _parse_source_names(value: str) -> set[str] | None:
+    if value.strip().lower() == "all":
+        return None
+    names = {item.strip() for item in value.split(",") if item.strip()}
+    if not names:
+        raise ValueError("--source-names must be 'all' or a comma-separated list")
+    return names
 
 
 def _best_location_labels(feature_events: list[EventTapeRecord]) -> dict[str, str]:
@@ -117,14 +149,22 @@ def build_snapshot_payload(
     *,
     records: list[EventTapeRecord],
     origin_date: dt.date,
+    source_names: set[str] | None = None,
+    source_identity_mode: SourceIdentityMode = "preserve",
 ) -> dict[str, Any]:
+    if source_identity_mode not in {"preserve", "collapse"}:
+        raise ValueError(f"unknown source identity mode: {source_identity_mode}")
     origin_dt = dt.datetime.combine(origin_date, dt.time(), tzinfo=UTC)
     origin_iso = _format_datetime_z(origin_dt)
     window_end = origin_date + dt.timedelta(days=WINDOW_DAYS)
     grace_cutoff = origin_dt + dt.timedelta(days=WINDOW_DAYS + LABEL_GRACE_DAYS)
     split = _split_for_origin(origin_date)
 
-    sorted_records = sorted(records, key=_record_sort_key)
+    selected_records = _filter_records_by_sources(records, source_names)
+    sorted_records = sorted(selected_records, key=_record_sort_key)
+    selected_source_names = sorted(
+        source_names if source_names is not None else {record.source_name for record in sorted_records}
+    )
     feature_events = [
         record
         for record in sorted_records
@@ -149,6 +189,8 @@ def build_snapshot_payload(
     ]
 
     target_counts = {admin1_code: 0 for admin1_code in scoring_universe}
+    feature_source_counts = Counter(record.source_name for record in feature_events)
+    label_source_counts = Counter(record.source_name for record in primary_candidates)
     excluded_primary_counts = Counter[str]()
     excluded_feature_counts = Counter(
         record.admin1_code
@@ -171,15 +213,36 @@ def build_snapshot_payload(
 
     late_counts = Counter(record.admin1_code for record in late_events)
 
-    nodes: list[dict[str, Any]] = [
-        {
-            "id": "source:gdelt_v2_events",
-            "type": "Source",
-            "label": "GDELT 2.0 Events",
-            "provenance": _node_provenance(),
-        }
-    ]
+    if source_identity_mode == "collapse":
+        source_for_reports = "source:events"
+        source_provenance = _multi_source_provenance(selected_source_names)
+        nodes: list[dict[str, Any]] = [
+            {
+                "id": source_for_reports,
+                "type": "Source",
+                "label": "Events",
+                "provenance": source_provenance,
+                "attributes": {"source_name": "events", "source_names": selected_source_names},
+            }
+        ]
+    else:
+        source_for_reports = ""
+        nodes = [
+            {
+                "id": source_node_id(source_name),
+                "type": "Source",
+                "label": SOURCE_LABELS.get(source_name, source_name),
+                "provenance": node_provenance(source_name),
+                "attributes": {"source_name": source_name},
+            }
+            for source_name in selected_source_names
+        ]
+
+    location_sources: dict[str, set[str]] = {}
+    for record in sorted_records:
+        location_sources.setdefault(record.admin1_code, set()).add(record.source_name)
     for admin1_code in location_universe:
+        location_source_names = sorted(location_sources.get(admin1_code) or selected_source_names)
         nodes.append(
             {
                 "id": _location_node_id(admin1_code),
@@ -187,25 +250,38 @@ def build_snapshot_payload(
                 "label": label_by_admin.get(admin1_code) or admin1_code,
                 "external_ids": {"gdelt_adm1": admin1_code},
                 "attributes": {"country_code": "FR", "admin1_code": admin1_code},
-                "provenance": _node_provenance(),
+                "provenance": _multi_source_provenance(location_source_names),
             }
         )
 
     actor_nodes: dict[str, dict[str, Any]] = {}
+    actor_node_sources: dict[str, set[str]] = {}
     event_nodes: list[dict[str, Any]] = []
     edges: list[dict[str, Any]] = []
     for record in feature_events:
         event_node_id = _event_node_id(record.source_event_id)
         event_time = {"start": record.event_date.isoformat(), "granularity": "day"}
+        if source_identity_mode == "collapse":
+            record_provenance = source_provenance
+            report_source_id = source_for_reports
+        else:
+            record_provenance = node_provenance(record.source_name)
+            report_source_id = source_node_id(record.source_name)
+        external_ids = {record.source_name: record.source_event_id}
+        if record.source_name == "gdelt_v2_events":
+            external_ids["gdelt"] = record.source_event_id
+        elif record.source_name == "acled":
+            external_ids["acled"] = record.source_event_id
         event_nodes.append(
             {
                 "id": event_node_id,
                 "type": "Event",
                 "label": f"France protest {record.event_date.isoformat()}",
-                "external_ids": {"gdelt": record.source_event_id},
+                "external_ids": external_ids,
                 "time": event_time,
-                "provenance": _node_provenance(),
+                "provenance": record_provenance,
                 "attributes": {
+                    "source_name": record.source_name,
                     "source_event_id": record.source_event_id,
                     "source_available_at": _format_datetime_z(record.source_available_at),
                     "event_class": record.event_class,
@@ -228,22 +304,29 @@ def build_snapshot_payload(
                 "target": _location_node_id(record.admin1_code),
                 "type": "occurs_in",
                 "time": event_time,
-                "provenance": _node_provenance(),
-                "attributes": {"source_event_id": record.source_event_id},
+                "provenance": record_provenance,
+                "attributes": {
+                    "source_name": record.source_name,
+                    "source_event_id": record.source_event_id,
+                },
             }
         )
         edges.append(
             {
-                "source": "source:gdelt_v2_events",
+                "source": report_source_id,
                 "target": event_node_id,
                 "type": "reports",
                 "time": event_time,
-                "provenance": _node_provenance(),
-                "attributes": {"source_event_id": record.source_event_id},
+                "provenance": record_provenance,
+                "attributes": {
+                    "source_name": record.source_name,
+                    "source_event_id": record.source_event_id,
+                },
             }
         )
         for actor_name, country_code, role in _actor_pairs(record):
             node_id = actor_id(actor_name, country_code)
+            actor_node_sources.setdefault(node_id, set()).add(record.source_name)
             actor_nodes.setdefault(
                 node_id,
                 {
@@ -251,17 +334,22 @@ def build_snapshot_payload(
                     "type": "Actor",
                     "label": actor_name,
                     "attributes": {"country_code": country_code},
-                    "provenance": _node_provenance(),
+                    "provenance": node_provenance(record.source_name),
                 },
             )
+            actor_nodes[node_id]["provenance"] = _multi_source_provenance(actor_node_sources[node_id])
             edges.append(
                 {
                     "source": node_id,
                     "target": event_node_id,
                     "type": "participates_in",
                     "time": event_time,
-                    "provenance": _node_provenance(),
-                    "attributes": {"source_event_id": record.source_event_id, "role": role},
+                    "provenance": record_provenance,
+                    "attributes": {
+                        "source_name": record.source_name,
+                        "source_event_id": record.source_event_id,
+                        "role": role,
+                    },
                 }
             )
 
@@ -342,7 +430,19 @@ def build_snapshot_payload(
                 "source": "all_admin1_codes_in_event_tape",
                 "admin1_count": len(location_universe),
             },
-            "source_name": "gdelt_v2_events",
+            "source_name": "gdelt_v2_events"
+            if selected_source_names == ["gdelt_v2_events"]
+            else "mixed",
+            "source_names": selected_source_names,
+            "source_identity_mode": source_identity_mode,
+            "feature_source_counts": {
+                source_name: feature_source_counts.get(source_name, 0)
+                for source_name in selected_source_names
+            },
+            "label_source_counts": {
+                source_name: label_source_counts.get(source_name, 0)
+                for source_name in selected_source_names
+            },
         },
     }
 
@@ -353,14 +453,25 @@ def export_weekly_snapshots(
     origin_start: dt.date,
     origin_end: dt.date,
     out_dir: Path,
+    source_names: set[str] | None = None,
+    source_identity_mode: SourceIdentityMode = "preserve",
+    snapshot_format: Literal["json", "json.gz"] = "json",
     progress: bool = False,
 ) -> list[Path]:
     records = load_event_tape(tape_path)
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
     origins = _weekly_origins(origin_start, origin_end)
+    if snapshot_format not in {"json", "json.gz"}:
+        raise ValueError(f"unknown snapshot format: {snapshot_format}")
+    extension = ".json.gz" if snapshot_format == "json.gz" else ".json"
     for index, origin_date in enumerate(origins, start=1):
-        payload = build_snapshot_payload(records=records, origin_date=origin_date)
+        payload = build_snapshot_payload(
+            records=records,
+            origin_date=origin_date,
+            source_names=source_names,
+            source_identity_mode=source_identity_mode,
+        )
         try:
             GraphArtifactV1.model_validate(payload)
         except Exception:
@@ -370,10 +481,8 @@ def export_weekly_snapshots(
                 encoding="utf-8",
             )
             raise
-        out_path = out_dir / f"as_of_{origin_date.isoformat()}.json"
-        temp_path = out_path.with_suffix(".json.tmp")
-        temp_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        temp_path.replace(out_path)
+        out_path = out_dir / f"as_of_{origin_date.isoformat()}{extension}"
+        write_json_atomic(out_path, payload)
         written.append(out_path)
         if progress:
             print(
@@ -396,6 +505,17 @@ def _build_parser() -> argparse.ArgumentParser:
     export.add_argument("--origin-start", default="2021-01-04")
     export.add_argument("--origin-end", default="2025-12-29")
     export.add_argument("--out", default="data/gdelt/snapshots/france_protest")
+    export.add_argument(
+        "--source-names",
+        default="all",
+        help="Comma-separated source names to include, or 'all'.",
+    )
+    export.add_argument(
+        "--source-identity-mode",
+        choices=["preserve", "collapse"],
+        default="preserve",
+    )
+    export.add_argument("--snapshot-format", choices=["json", "json.gz"], default="json")
     return parser
 
 
@@ -409,6 +529,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 origin_start=dt.date.fromisoformat(args.origin_start),
                 origin_end=dt.date.fromisoformat(args.origin_end),
                 out_dir=Path(args.out),
+                source_names=_parse_source_names(args.source_names),
+                source_identity_mode=args.source_identity_mode,
+                snapshot_format=args.snapshot_format,
                 progress=True,
             )
         except Exception as exc:

@@ -6,9 +6,11 @@ import argparse
 import datetime as dt
 import json
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
+from baselines.features import FeatureRow
 from baselines.metrics import brier_score, mean_absolute_error, recall_at_k, top_k_hit_rate
 from baselines.recurrence import (
     RECURRENCE_MODEL_NAMES,
@@ -16,6 +18,20 @@ from baselines.recurrence import (
     build_recurrence_forecasts_for_origin,
 )
 from ingest.event_tape import load_event_tape
+from ingest.io_utils import open_text_auto
+
+
+@dataclass(frozen=True)
+class OriginInputs:
+    origin: dt.date
+    snapshot: dict[str, Any]
+    feature_rows: list[FeatureRow]
+
+
+def _filter_records_by_sources(records: list[Any], source_names: set[str] | None) -> list[Any]:
+    if source_names is None:
+        return records
+    return [record for record in records if record.source_name in source_names]
 
 
 def weekly_origins(start: dt.date, end: dt.date) -> list[dt.date]:
@@ -40,6 +56,7 @@ def build_recurrence_backtest_rows(
     tape_path: Path,
     origin_start: dt.date,
     origin_end: dt.date,
+    source_names: set[str] | None = None,
 ) -> list[ForecastRow]:
     records = load_event_tape(tape_path)
     rows: list[ForecastRow] = []
@@ -48,6 +65,7 @@ def build_recurrence_backtest_rows(
             build_recurrence_forecasts_for_origin(
                 records=records,
                 forecast_origin=forecast_origin,
+                source_names=source_names,
             )
         )
     return rows
@@ -95,17 +113,19 @@ def run_recurrence_backtest(
     origin_start: dt.date,
     origin_end: dt.date,
     out_path: Path,
+    source_names: set[str] | None = None,
     progress: bool = False,
 ) -> dict[str, Any]:
     records = load_event_tape(tape_path)
     origins = weekly_origins(origin_start, origin_end)
     rows: list[ForecastRow] = []
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", encoding="utf-8") as handle:
+    with open_text_auto(out_path, "w") as handle:
         for index, forecast_origin in enumerate(origins, start=1):
             origin_rows = build_recurrence_forecasts_for_origin(
                 records=records,
                 forecast_origin=forecast_origin,
+                source_names=source_names,
             )
             rows.extend(origin_rows)
             for row in origin_rows:
@@ -135,6 +155,7 @@ def run_tabular_backtest(
     eval_origin_start: dt.date,
     eval_origin_end: dt.date,
     out_path: Path,
+    source_names: set[str] | None = None,
     progress: bool = False,
 ) -> dict[str, Any]:
     if train_origin_end >= eval_origin_start:
@@ -147,11 +168,16 @@ def run_tabular_backtest(
     from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
 
     records = load_event_tape(tape_path)
+    filtered_records = _filter_records_by_sources(records, source_names)
     # Derive scoring universe from all tape records (not just train-visible ones). France's
     # administrative regions are stable, so including codes that first appear post-cutoff
     # is a deliberate simplification that avoids per-origin universe re-computation.
     scoring_universe = sorted(
-        {r.admin1_code for r in records if r.admin1_code not in EXCLUDED_REGIONAL_ADMIN1_CODES}
+        {
+            r.admin1_code
+            for r in filtered_records
+            if r.admin1_code not in EXCLUDED_REGIONAL_ADMIN1_CODES
+        }
     )
 
     train_origins = weekly_origins(train_origin_start, train_origin_end)
@@ -167,9 +193,14 @@ def run_tabular_backtest(
             records=records,
             origin_date=origin,
             scoring_universe=scoring_universe,
+            source_names=source_names,
         )
         feature_rows_by_origin[origin] = rows
-        payload = build_snapshot_payload(records=records, origin_date=origin)
+        payload = build_snapshot_payload(
+            records=records,
+            origin_date=origin,
+            source_names=source_names,
+        )
         for row in payload["target_table"]:
             code = row["metadata"]["admin1_code"]
             if code in EXCLUDED_REGIONAL_ADMIN1_CODES:
@@ -198,7 +229,7 @@ def run_tabular_backtest(
 
     eval_rows: list[TabularForecastRow] = []
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", encoding="utf-8") as handle:
+    with open_text_auto(out_path, "w") as handle:
         for origin in eval_origins:
             origin_feature_rows = feature_rows_by_origin[origin]
             preds = predict_tabular(
@@ -240,6 +271,8 @@ def run_gnn_backtest(
     eval_origin_start: dt.date,
     eval_origin_end: dt.date,
     out_path: Path,
+    source_names: set[str] | None = None,
+    gnn_ablation: Any | None = None,
     epochs: int = 30,
     hidden_dim: int = 64,
     progress: bool = False,
@@ -253,11 +286,16 @@ def run_gnn_backtest(
     from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
 
     records = load_event_tape(tape_path)
+    filtered_records = _filter_records_by_sources(records, source_names)
     # Derive scoring universe from all tape records (not just train-visible ones). France's
     # administrative regions are stable, so including codes that first appear post-cutoff
     # is a deliberate simplification that avoids per-origin universe re-computation.
     scoring_universe = sorted(
-        {r.admin1_code for r in records if r.admin1_code not in EXCLUDED_REGIONAL_ADMIN1_CODES}
+        {
+            r.admin1_code
+            for r in filtered_records
+            if r.admin1_code not in EXCLUDED_REGIONAL_ADMIN1_CODES
+        }
     )
     train_origins = weekly_origins(train_origin_start, train_origin_end)
     eval_origins = weekly_origins(eval_origin_start, eval_origin_end)
@@ -265,11 +303,21 @@ def run_gnn_backtest(
     target_lookup: dict[tuple[dt.date, str], tuple[int, bool]] = {}
 
     def _load_snapshot(origin: dt.date) -> dict[str, Any]:
-        path = snapshots_dir / f"as_of_{origin.isoformat()}.json"
-        return json.loads(path.read_text(encoding="utf-8"))
+        for path in (
+            snapshots_dir / f"as_of_{origin.isoformat()}.json",
+            snapshots_dir / f"as_of_{origin.isoformat()}.json.gz",
+        ):
+            if path.exists():
+                with open_text_auto(path, "r") as handle:
+                    return json.load(handle)
+        raise FileNotFoundError(f"missing snapshot for origin {origin.isoformat()} under {snapshots_dir}")
 
     def _build_target_lookup_for_origin(origin: dt.date) -> None:
-        payload = build_snapshot_payload(records=records, origin_date=origin)
+        payload = build_snapshot_payload(
+            records=records,
+            origin_date=origin,
+            source_names=source_names,
+        )
         for row in payload["target_table"]:
             code = row["metadata"]["admin1_code"]
             if code in EXCLUDED_REGIONAL_ADMIN1_CODES:
@@ -285,9 +333,16 @@ def run_gnn_backtest(
     for idx, origin in enumerate(train_origins, start=1):
         snap = _load_snapshot(origin)
         feature_rows = extract_features_for_origin(
-            records=records, origin_date=origin, scoring_universe=scoring_universe
+            records=records,
+            origin_date=origin,
+            scoring_universe=scoring_universe,
+            source_names=source_names,
         )
-        graph = build_graph_from_snapshot(snapshot=snap, feature_rows=feature_rows)
+        graph = build_graph_from_snapshot(
+            snapshot=snap,
+            feature_rows=feature_rows,
+            ablation=gnn_ablation,
+        )
         train_graphs.append(graph)
         _build_target_lookup_for_origin(origin)
         if progress:
@@ -308,16 +363,27 @@ def run_gnn_backtest(
 
     eval_rows: list[GNNForecastRow] = []
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", encoding="utf-8") as handle:
+    with open_text_auto(out_path, "w") as handle:
         for idx, origin in enumerate(eval_origins, start=1):
             snap = _load_snapshot(origin)
             feature_rows = extract_features_for_origin(
-                records=records, origin_date=origin, scoring_universe=scoring_universe
+                records=records,
+                origin_date=origin,
+                scoring_universe=scoring_universe,
+                source_names=source_names,
             )
-            graph = build_graph_from_snapshot(snapshot=snap, feature_rows=feature_rows)
+            graph = build_graph_from_snapshot(
+                snapshot=snap,
+                feature_rows=feature_rows,
+                ablation=gnn_ablation,
+            )
             _build_target_lookup_for_origin(origin)
             preds = predict_gnn(
-                model=model, graph=graph, origin_date=origin, target_lookup=target_lookup
+                model=model,
+                graph=graph,
+                origin_date=origin,
+                target_lookup=target_lookup,
+                ablation=gnn_ablation,
             )
             for pred in preds:
                 handle.write(pred.model_dump_json() + "\n")
@@ -342,6 +408,102 @@ def run_gnn_backtest(
         "admin1_count": len(scoring_universe),
         "epochs": epochs,
         "hidden_dim": hidden_dim,
+        "brier": brier_score(eval_rows, model_name),
+        "mae": mean_absolute_error(eval_rows, model_name),
+        "top5_hit_rate": top_k_hit_rate(eval_rows, model_name, k=5),
+        "recall_at_5": recall_at_k(eval_rows, model_name, k=5),
+    }
+    audit_path = out_path.with_suffix(".audit.json")
+    audit_path.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return audit
+
+
+def run_gnn_backtest_from_payloads(
+    *,
+    train_inputs: list[OriginInputs],
+    eval_inputs: list[OriginInputs],
+    target_lookup: dict[tuple[dt.date, str], tuple[int, bool]],
+    out_path: Path,
+    epochs: int,
+    hidden_dim: int,
+    gnn_ablation: Any | None = None,
+    predictions_format: str = "jsonl.gz",
+    progress: bool = False,
+) -> dict[str, Any]:
+    from baselines.gnn import GNNForecastRow, build_graph_from_snapshot, predict_gnn, train_gnn
+
+    if not train_inputs:
+        raise ValueError("at least one train input is required")
+    if not eval_inputs:
+        raise ValueError("at least one eval input is required")
+    if predictions_format not in {"jsonl", "jsonl.gz"}:
+        raise ValueError(f"unknown predictions format: {predictions_format}")
+
+    train_graphs = []
+    for index, item in enumerate(train_inputs, start=1):
+        train_graphs.append(
+            build_graph_from_snapshot(
+                snapshot=item.snapshot,
+                feature_rows=item.feature_rows,
+                ablation=gnn_ablation,
+            )
+        )
+        if progress:
+            print(
+                f"[gnn] build train {index}/{len(train_inputs)} origin={item.origin.isoformat()}",
+                file=sys.stderr,
+                flush=True,
+            )
+
+    if progress:
+        print(
+            f"[gnn] training GNN epochs={epochs} hidden_dim={hidden_dim}...",
+            file=sys.stderr,
+            flush=True,
+        )
+    model = train_gnn(graphs=train_graphs, epochs=epochs, hidden_dim=hidden_dim)
+
+    eval_rows: list[GNNForecastRow] = []
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open_text_auto(out_path, "w") as handle:
+        for index, item in enumerate(eval_inputs, start=1):
+            graph = build_graph_from_snapshot(
+                snapshot=item.snapshot,
+                feature_rows=item.feature_rows,
+                ablation=gnn_ablation,
+            )
+            preds = predict_gnn(
+                model=model,
+                graph=graph,
+                origin_date=item.origin,
+                target_lookup=target_lookup,
+                ablation=gnn_ablation,
+            )
+            for pred in preds:
+                handle.write(pred.model_dump_json() + "\n")
+            eval_rows.extend(preds)
+            if progress:
+                print(
+                    f"[gnn] eval {index}/{len(eval_inputs)} origin={item.origin.isoformat()}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+        handle.flush()
+
+    model_name = "gnn_sage"
+    all_inputs = train_inputs + eval_inputs
+    audit: dict[str, Any] = {
+        "model_name": model_name,
+        "train_origin_start": min(item.origin for item in train_inputs).isoformat(),
+        "train_origin_end": max(item.origin for item in train_inputs).isoformat(),
+        "eval_origin_start": min(item.origin for item in eval_inputs).isoformat(),
+        "eval_origin_end": max(item.origin for item in eval_inputs).isoformat(),
+        "train_graph_count": len(train_graphs),
+        "eval_row_count": len(eval_rows),
+        "admin1_count": len({row.admin1_code for item in all_inputs for row in item.feature_rows}),
+        "epochs": epochs,
+        "hidden_dim": hidden_dim,
+        "predictions_format": predictions_format,
         "brier": brier_score(eval_rows, model_name),
         "mae": mean_absolute_error(eval_rows, model_name),
         "top5_hit_rate": top_k_hit_rate(eval_rows, model_name, k=5),
@@ -403,8 +565,14 @@ def run_gnn_ablation_backtest(
     target_lookup: dict[tuple[dt.date, str], tuple[int, bool]] = {}
 
     def _load_snapshot(origin: dt.date) -> dict[str, Any]:
-        path = snapshots_dir / f"as_of_{origin.isoformat()}.json"
-        return json.loads(path.read_text(encoding="utf-8"))
+        for path in (
+            snapshots_dir / f"as_of_{origin.isoformat()}.json",
+            snapshots_dir / f"as_of_{origin.isoformat()}.json.gz",
+        ):
+            if path.exists():
+                with open_text_auto(path, "r") as handle:
+                    return json.load(handle)
+        raise FileNotFoundError(f"missing snapshot for origin {origin.isoformat()} under {snapshots_dir}")
 
     def _build_target_lookup_for_origin(origin: dt.date) -> None:
         payload = build_snapshot_payload(records=records, origin_date=origin)
@@ -464,7 +632,7 @@ def run_gnn_ablation_backtest(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     all_eval_rows: list[GNNForecastRow] = []
     ablation_audits: list[dict[str, Any]] = []
-    with out_path.open("w", encoding="utf-8") as handle:
+    with open_text_auto(out_path, "w") as handle:
         for ablation_idx, ablation in enumerate(ablations, start=1):
             model_name = f"gnn_sage__{ablation.name}"
             if progress:
@@ -612,6 +780,55 @@ def _build_parser() -> argparse.ArgumentParser:
     gnn_ablations.add_argument("--epochs", type=int, default=30)
     gnn_ablations.add_argument("--hidden-dim", type=int, default=64)
     gnn_ablations.add_argument("--no-progress", dest="progress", action="store_false", default=True)
+    source_experiments = subparsers.add_parser("source-experiments")
+    source_experiments.add_argument(
+        "--tape",
+        default=None,
+        help="Legacy JSONL tape path. If omitted, the central warehouse is used.",
+    )
+    source_experiments.add_argument("--data-root", default=None)
+    source_experiments.add_argument("--warehouse-path", default=None)
+    source_experiments.add_argument(
+        "--snapshots-root",
+        default=None,
+    )
+    source_experiments.add_argument(
+        "--out-root",
+        default=None,
+    )
+    source_experiments.add_argument("--train-origin-start", default="2021-01-04")
+    source_experiments.add_argument("--train-origin-end", default="2024-12-30")
+    source_experiments.add_argument("--eval-origin-start", default="2025-01-06")
+    source_experiments.add_argument("--eval-origin-end", default="2025-12-29")
+    source_experiments.add_argument(
+        "--experiments",
+        nargs="+",
+        default=None,
+        help="Optional space- or comma-separated source experiment names. Defaults to all.",
+    )
+    source_experiments.add_argument("--epochs", type=int, default=30)
+    source_experiments.add_argument("--hidden-dim", type=int, default=64)
+    source_experiments.add_argument(
+        "--snapshot-mode",
+        choices=["in_memory", "in-memory", "materialize"],
+        default="in-memory",
+    )
+    source_experiments.add_argument(
+        "--snapshot-format",
+        choices=["json", "json.gz"],
+        default="json.gz",
+    )
+    source_experiments.add_argument(
+        "--predictions-format",
+        choices=["jsonl", "jsonl.gz"],
+        default="jsonl.gz",
+    )
+    source_experiments.add_argument(
+        "--no-progress",
+        dest="progress",
+        action="store_false",
+        default=True,
+    )
     return parser
 
 
@@ -677,6 +894,43 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ablation_names=_parse_gnn_ablation_names(args.ablations),
                 epochs=args.epochs,
                 hidden_dim=args.hidden_dim,
+                progress=args.progress,
+            )
+        except Exception as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
+    if args.command == "source-experiments":
+        from baselines.source_experiments import (
+            _parse_experiment_names,
+            run_source_layer_experiments,
+        )
+        from ingest.paths import resolve_data_root, runs_root
+
+        try:
+            data_root = resolve_data_root(args.data_root)
+            out_root = (
+                Path(args.out_root)
+                if args.out_root is not None
+                else runs_root(data_root) / "source_experiments"
+            )
+            data_root_arg = data_root if args.tape is None or args.data_root is not None else None
+            run_source_layer_experiments(
+                tape_path=Path(args.tape) if args.tape is not None else None,
+                warehouse_path=Path(args.warehouse_path) if args.warehouse_path is not None else None,
+                data_root=data_root_arg,
+                snapshots_root=Path(args.snapshots_root) if args.snapshots_root is not None else None,
+                out_root=out_root,
+                train_origin_start=dt.date.fromisoformat(args.train_origin_start),
+                train_origin_end=dt.date.fromisoformat(args.train_origin_end),
+                eval_origin_start=dt.date.fromisoformat(args.eval_origin_start),
+                eval_origin_end=dt.date.fromisoformat(args.eval_origin_end),
+                experiment_names=_parse_experiment_names(args.experiments),
+                epochs=args.epochs,
+                hidden_dim=args.hidden_dim,
+                snapshot_mode=args.snapshot_mode.replace("-", "_"),
+                snapshot_format=args.snapshot_format,
+                predictions_format=args.predictions_format,
                 progress=args.progress,
             )
         except Exception as exc:

@@ -135,6 +135,7 @@ def test_gdelt_raw_force_refetch_removes_stale_fragment(tmp_path: Path) -> None:
         source_end=source_at,
         out_dir=out_dir,
         workers=1,
+        raw_retention="full",
     )
     fragment = out_dir / "fragments" / "2021" / "01" / "01" / "20210101000000.jsonl"
     assert fragment.exists()
@@ -148,6 +149,7 @@ def test_gdelt_raw_force_refetch_removes_stale_fragment(tmp_path: Path) -> None:
         out_dir=out_dir,
         workers=1,
         force=True,
+        raw_retention="full",
     )
 
     assert metadata["kept_row_count"] == 0

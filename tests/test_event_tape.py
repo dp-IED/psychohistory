@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import datetime as dt
 import json
 from pathlib import Path
 
 import pytest
 
-from ingest.event_tape import EventTapeRecord, normalize_raw_row, write_event_tape
+from ingest.event_tape import EventTapeRecord, load_event_tape, normalize_raw_row, write_event_tape
 from ingest.gdelt_raw import GDELT_V2_EVENT_COLUMNS
 
 
@@ -72,6 +73,39 @@ def test_gdelt_row_normalization() -> None:
     assert record.admin1_code == "FR_UNKNOWN"
     assert record.num_sources is None
     assert record.actor2_name is None
+
+
+def test_event_tape_record_accepts_acled_source() -> None:
+    record = EventTapeRecord(
+        source_name="acled",
+        source_event_id="acled:FRA123",
+        event_date=dt.date(2021, 1, 5),
+        source_available_at=dt.datetime(2021, 1, 6, tzinfo=dt.timezone.utc),
+        retrieved_at=dt.datetime(2021, 1, 6, tzinfo=dt.timezone.utc),
+        country_code="FR",
+        admin1_code="FR11",
+        location_name="Ile-de-France",
+        latitude=48.8566,
+        longitude=2.3522,
+        event_class="protest",
+        event_code="Protests",
+        event_base_code="Protests",
+        event_root_code="Protests",
+        quad_class=None,
+        goldstein_scale=None,
+        num_mentions=None,
+        num_sources=None,
+        num_articles=None,
+        avg_tone=None,
+        actor1_name="Protesters",
+        actor1_country_code="FRA",
+        actor2_name=None,
+        actor2_country_code=None,
+        source_url=None,
+        raw={"event_id_cnty": "FRA123"},
+    )
+
+    assert record.source_name == "acled"
 
 
 def test_event_tape_deduplicates_by_source_event_id(tmp_path: Path) -> None:
@@ -171,3 +205,15 @@ def test_event_tape_allows_failed_fetch_when_partial_is_explicit(tmp_path: Path)
 
     assert audit["output_row_count"] == 1
     assert out_path.exists()
+
+
+def test_load_event_tape_reads_gzip(tmp_path: Path) -> None:
+    raw_dir = tmp_path / "raw"
+    out_path = tmp_path / "events.jsonl.gz"
+    _write_raw_fragment(raw_dir, [_raw_row()])
+
+    write_event_tape(raw_dir=raw_dir, out_path=out_path)
+
+    records = load_event_tape(out_path)
+    assert len(records) == 1
+    assert records[0].source_event_id == "gdelt:100"

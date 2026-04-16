@@ -45,6 +45,7 @@ def point_in_time_feature_events(
     records: Iterable[EventTapeRecord],
     *,
     forecast_origin: dt.date,
+    source_names: set[str] | None = None,
 ) -> list[EventTapeRecord]:
     """Return events visible strictly before the forecast origin."""
 
@@ -52,6 +53,7 @@ def point_in_time_feature_events(
     return [
         record
         for record in records
+        if (source_names is None or record.source_name in source_names)
         if record.source_available_at.astimezone(UTC) < origin_dt
         and record.event_date < forecast_origin
     ]
@@ -74,8 +76,13 @@ def _targets_from_snapshot(
     records: list[EventTapeRecord],
     *,
     forecast_origin: dt.date,
+    source_names: set[str] | None = None,
 ) -> dict[str, tuple[int, bool]]:
-    payload = build_snapshot_payload(records=records, origin_date=forecast_origin)
+    payload = build_snapshot_payload(
+        records=records,
+        origin_date=forecast_origin,
+        source_names=source_names,
+    )
     counts: dict[str, int] = {}
     occurrences: dict[str, bool] = {}
 
@@ -134,9 +141,18 @@ def build_recurrence_forecasts_for_origin(
     records: list[EventTapeRecord],
     forecast_origin: dt.date,
     model_names: Iterable[str] = RECURRENCE_MODEL_NAMES,
+    source_names: set[str] | None = None,
 ) -> list[ForecastRow]:
-    feature_events = point_in_time_feature_events(records, forecast_origin=forecast_origin)
-    targets = _targets_from_snapshot(records, forecast_origin=forecast_origin)
+    feature_events = point_in_time_feature_events(
+        records,
+        forecast_origin=forecast_origin,
+        source_names=source_names,
+    )
+    targets = _targets_from_snapshot(
+        records,
+        forecast_origin=forecast_origin,
+        source_names=source_names,
+    )
     predictions_by_model = _predicted_counts_by_model(
         feature_events,
         forecast_origin=forecast_origin,

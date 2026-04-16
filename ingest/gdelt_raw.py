@@ -17,7 +17,9 @@ import uuid
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterator, Sequence
+from typing import Any, Iterator, Literal, Sequence
+
+from ingest.io_utils import open_text_auto
 
 
 GDELT_V2_EVENT_COLUMNS = [
@@ -89,6 +91,7 @@ SOURCE_NAME = "gdelt_v2_events"
 DOMAIN = "france_protest"
 FRANCE_PROTEST_FILTERS = {"ActionGeo_CountryCode": "FR", "EventRootCode": "14"}
 UTC = dt.timezone.utc
+RawRetention = Literal["none", "compressed", "full"]
 
 
 @dataclass(frozen=True)
@@ -245,14 +248,15 @@ def _download_url(url: str, *, max_retries: int, retry_backoff_seconds: float) -
     raise last_error
 
 
-def _fragment_relative_path(entry: MasterfileEntry) -> Path:
+def _fragment_relative_path(entry: MasterfileEntry, *, raw_retention: RawRetention) -> Path:
     timestamp = entry.source_file_timestamp.astimezone(UTC)
+    suffix = ".jsonl.gz" if raw_retention == "compressed" else ".jsonl"
     return (
         Path("fragments")
         / f"{timestamp:%Y}"
         / f"{timestamp:%m}"
         / f"{timestamp:%d}"
-        / f"{timestamp:%Y%m%d%H%M%S}.jsonl"
+        / f"{timestamp:%Y%m%d%H%M%S}{suffix}"
     )
 
 
@@ -274,6 +278,7 @@ def _load_completed_manifest(
     out_dir: Path,
     *,
     fetch_config: dict[str, Any],
+    raw_retention: RawRetention,
 ) -> dict[str, dict[str, Any]]:
     manifest_path = out_dir / "fetch_manifest.jsonl"
     completed: dict[str, dict[str, Any]] = {}
@@ -286,6 +291,9 @@ def _load_completed_manifest(
         if row.get("status") not in {"ok", "skipped"}:
             continue
         if row.get("fetch_config") != fetch_config:
+            continue
+        previous_raw_retention = row.get("raw_retention") or "full"
+        if previous_raw_retention != raw_retention:
             continue
         fragment = row.get("fragment_path")
         fragment_exists = False
@@ -311,6 +319,7 @@ def _skipped_manifest_row(
     return {
         "run_id": run_id,
         "fetch_config": fetch_config,
+        "raw_retention": previous.get("raw_retention") or "full",
         "source_file_timestamp": format_datetime_z(entry.source_file_timestamp),
         "url": entry.url,
         "expected_size": entry.expected_size,
@@ -336,15 +345,17 @@ def _process_entry(
     fetch_config: dict[str, Any],
     max_retries: int,
     retry_backoff_seconds: float,
+    raw_retention: RawRetention,
 ) -> dict[str, Any]:
     retrieved_at = format_datetime_z(utc_now())
-    relative_path = _fragment_relative_path(entry)
+    relative_path = _fragment_relative_path(entry, raw_retention=raw_retention)
     absolute_path = out_dir / relative_path
     if absolute_path.exists():
         absolute_path.unlink()
     base_manifest = {
         "run_id": run_id,
         "fetch_config": fetch_config,
+        "raw_retention": raw_retention,
         "source_file_timestamp": format_datetime_z(entry.source_file_timestamp),
         "url": entry.url,
         "expected_size": entry.expected_size,
@@ -391,10 +402,12 @@ def _process_entry(
             if row_matches_france_protest(row, event_start=event_start, event_end=event_end)
         ]
         fragment_path: str | None = None
-        if kept_rows:
+        if kept_rows and raw_retention != "none":
             absolute_path.parent.mkdir(parents=True, exist_ok=True)
-            temp_path = absolute_path.with_suffix(".jsonl.tmp")
-            with temp_path.open("w", encoding="utf-8") as handle:
+            temp_path = absolute_path.with_name(f".{absolute_path.name}.tmp")
+            if raw_retention == "compressed":
+                temp_path = temp_path.with_suffix(f"{temp_path.suffix}.gz")
+            with open_text_auto(temp_path, "w") as handle:
                 for row in kept_rows:
                     handle.write(_json_dump_line(row))
             temp_path.replace(absolute_path)
@@ -430,6 +443,7 @@ def _process_entries_bounded(
     workers: int,
     max_retries: int,
     retry_backoff_seconds: float,
+    raw_retention: RawRetention,
 ) -> Iterator[dict[str, Any]]:
     max_workers = max(1, workers)
     entry_iter = iter(entries)
@@ -452,6 +466,7 @@ def _process_entries_bounded(
             fetch_config=fetch_config,
             max_retries=max_retries,
             retry_backoff_seconds=retry_backoff_seconds,
+            raw_retention=raw_retention,
         )
         pending[future] = entry
         return True
@@ -485,9 +500,12 @@ def fetch_france_protests(
     allow_partial: bool = False,
     max_retries: int = 3,
     retry_backoff_seconds: float = 2.0,
+    raw_retention: RawRetention = "none",
     progress: bool = False,
 ) -> dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
+    if raw_retention not in {"none", "compressed", "full"}:
+        raise ValueError(f"unknown raw retention: {raw_retention}")
     masterfile_text = _read_text_url(masterfilelist_url)
     entries = parse_masterfilelist(masterfile_text)
     if not entries:
@@ -509,7 +527,11 @@ def fetch_france_protests(
     completed = (
         {}
         if force
-        else _load_completed_manifest(out_dir, fetch_config=fetch_config)
+        else _load_completed_manifest(
+            out_dir,
+            fetch_config=fetch_config,
+            raw_retention=raw_retention,
+        )
     )
 
     to_fetch: list[MasterfileEntry] = []
@@ -567,6 +589,7 @@ def fetch_france_protests(
             workers=workers,
             max_retries=max_retries,
             retry_backoff_seconds=retry_backoff_seconds,
+            raw_retention=raw_retention,
         ):
             _write_manifest_row(handle, row)
             if row["status"] in {"ok", "skipped"}:
@@ -603,6 +626,7 @@ def fetch_france_protests(
         "completed_file_count": completed_count,
         "failed_file_count": failed_count,
         "allow_partial": allow_partial,
+        "raw_retention": raw_retention,
         "kept_row_count": kept_row_count,
     }
     (out_dir / "fetch_metadata.json").write_text(
@@ -629,6 +653,11 @@ def _build_parser() -> argparse.ArgumentParser:
     fetch.add_argument("--allow-partial", action="store_true")
     fetch.add_argument("--max-retries", type=int, default=3)
     fetch.add_argument("--retry-backoff-seconds", type=float, default=2.0)
+    fetch.add_argument(
+        "--raw-retention",
+        choices=["none", "compressed", "full"],
+        default="none",
+    )
     return parser
 
 
@@ -654,6 +683,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 allow_partial=args.allow_partial,
                 max_retries=args.max_retries,
                 retry_backoff_seconds=args.retry_backoff_seconds,
+                raw_retention=args.raw_retention,
                 progress=True,
             )
         except Exception as exc:

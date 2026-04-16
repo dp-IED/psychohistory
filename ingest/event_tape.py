@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import gzip
 import json
 import sys
 from pathlib import Path
@@ -11,6 +12,7 @@ from typing import Any, Literal, Sequence
 
 from pydantic import BaseModel
 
+from ingest.io_utils import open_text_auto
 from ingest.gdelt_raw import parse_datetime_utc, parse_sql_date
 
 
@@ -18,12 +20,12 @@ UTC = dt.timezone.utc
 
 
 class EventTapeRecord(BaseModel):
-    source_name: Literal["gdelt_v2_events"]
+    source_name: Literal["gdelt_v2_events", "acled"]
     source_event_id: str
     event_date: dt.date
     source_available_at: dt.datetime
     retrieved_at: dt.datetime
-    country_code: Literal["FR"]
+    country_code: str
     admin1_code: str
     location_name: str | None
     latitude: float | None
@@ -151,7 +153,8 @@ def _raw_fragment_paths(raw_dir: Path, *, allow_partial: bool = False) -> list[P
         return manifest_paths
     if (raw_dir / "fetch_manifest.jsonl").exists():
         return []
-    return sorted((raw_dir / "fragments").glob("**/*.jsonl"))
+    fragment_dir = raw_dir / "fragments"
+    return sorted([*fragment_dir.glob("**/*.jsonl"), *fragment_dir.glob("**/*.jsonl.gz")])
 
 
 def normalize_raw_row(
@@ -214,7 +217,7 @@ def _iter_raw_fragment_rows(
     if not fragment_paths and not allow_empty:
         raise ValueError(f"no raw GDELT fragments found under {raw_dir}")
     for path in fragment_paths:
-        with path.open("r", encoding="utf-8") as handle:
+        with open_text_auto(path, "r") as handle:
             for line in handle:
                 if not line.strip():
                     continue
@@ -240,6 +243,7 @@ def write_event_tape(
     out_path: Path,
     allow_empty: bool = False,
     allow_partial: bool = False,
+    compress: bool = False,
 ) -> dict[str, Any]:
     input_count, records, filtered_count, invalid_count = _iter_raw_fragment_rows(
         raw_dir,
@@ -263,7 +267,11 @@ def write_event_tape(
         raise ValueError("event tape is empty after normalization")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", encoding="utf-8") as handle:
+    if compress and out_path.suffix != ".gz":
+        output_handle = gzip.open(out_path, "wt", encoding="utf-8")
+    else:
+        output_handle = open_text_auto(out_path, "w")
+    with output_handle as handle:
         for record in output_records:
             handle.write(record.model_dump_json() + "\n")
 
@@ -300,7 +308,7 @@ def load_event_tape(
         if allow_missing:
             return records
         raise FileNotFoundError(f"missing event tape: {path}")
-    with path.open("r", encoding="utf-8") as handle:
+    with open_text_auto(path, "r") as handle:
         for line in handle:
             if line.strip():
                 records.append(EventTapeRecord.model_validate_json(line))
@@ -317,6 +325,7 @@ def _build_parser() -> argparse.ArgumentParser:
     normalize.add_argument("--out", default="data/gdelt/tape/france_protest/events.jsonl")
     normalize.add_argument("--allow-empty", action="store_true")
     normalize.add_argument("--allow-partial", action="store_true")
+    normalize.add_argument("--compress", action="store_true")
     return parser
 
 
@@ -330,6 +339,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 out_path=Path(args.out),
                 allow_empty=args.allow_empty,
                 allow_partial=args.allow_partial,
+                compress=args.compress,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)

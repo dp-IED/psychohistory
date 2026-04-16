@@ -16,6 +16,7 @@ def _record(
     event_date: str,
     source_available_at: str,
     admin1_code: str = "FR11",
+    source_name: str = "gdelt_v2_events",
     actor1_name: str | None = None,
     avg_tone: float | None = None,
     goldstein_scale: float | None = None,
@@ -23,7 +24,7 @@ def _record(
     num_articles: int | None = None,
 ) -> EventTapeRecord:
     return EventTapeRecord(
-        source_name="gdelt_v2_events",
+        source_name=source_name,
         source_event_id=source_event_id,
         event_date=dt.date.fromisoformat(event_date),
         source_available_at=dt.datetime.fromisoformat(
@@ -127,3 +128,80 @@ def test_build_feature_matrix_shape_and_order() -> None:
 
     assert X.shape == (2, len(FEATURE_NAMES))
     assert list(admin1_codes) == ["FR11", "FR22"]
+
+
+def test_extract_features_filters_to_gdelt_source() -> None:
+    origin = dt.date(2021, 1, 11)
+    records = [
+        _record(
+            "gdelt:vis",
+            event_date="2021-01-05",
+            source_available_at="2021-01-06T00:00:00Z",
+        ),
+        _record(
+            "acled:vis",
+            event_date="2021-01-06",
+            source_available_at="2021-01-07T00:00:00Z",
+            source_name="acled",
+        ),
+    ]
+
+    rows = extract_features_for_origin(
+        records=records,
+        origin_date=origin,
+        scoring_universe=["FR11"],
+        source_names={"gdelt_v2_events"},
+    )
+
+    assert rows[0].features["event_count_prev_1w"] == 1.0
+
+
+def test_extract_features_filters_to_acled_source() -> None:
+    origin = dt.date(2021, 1, 11)
+    records = [
+        _record(
+            "gdelt:vis",
+            event_date="2021-01-05",
+            source_available_at="2021-01-06T00:00:00Z",
+        ),
+        _record(
+            "acled:vis",
+            event_date="2021-01-06",
+            source_available_at="2021-01-07T00:00:00Z",
+            source_name="acled",
+        ),
+    ]
+
+    rows = extract_features_for_origin(
+        records=records,
+        origin_date=origin,
+        scoring_universe=["FR11"],
+        source_names={"acled"},
+    )
+
+    assert rows[0].features["event_count_prev_1w"] == 1.0
+
+
+def test_extract_features_uses_all_sources_by_default() -> None:
+    origin = dt.date(2021, 1, 11)
+    records = [
+        _record(
+            "gdelt:vis",
+            event_date="2021-01-05",
+            source_available_at="2021-01-06T00:00:00Z",
+        ),
+        _record(
+            "acled:vis",
+            event_date="2021-01-06",
+            source_available_at="2021-01-07T00:00:00Z",
+            source_name="acled",
+        ),
+    ]
+
+    rows = extract_features_for_origin(
+        records=records,
+        origin_date=origin,
+        scoring_universe=["FR11"],
+    )
+
+    assert rows[0].features["event_count_prev_1w"] == 2.0
