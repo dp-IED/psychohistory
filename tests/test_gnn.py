@@ -7,9 +7,11 @@ import torch
 
 from baselines.gnn import (
     GNNForecastRow,
+    GNNGraphAblation,
     HeteroGNNModel,
     build_graph_from_snapshot,
     predict_gnn,
+    resolve_gnn_graph_ablations,
     train_gnn,
 )
 from baselines.features import FEATURE_NAMES, FeatureRow
@@ -144,6 +146,38 @@ def test_build_graph_from_snapshot_returns_heterodata() -> None:
     assert ("event", "occurs_in", "location") in data.edge_types
 
 
+def test_build_graph_from_snapshot_applies_graph_ablations() -> None:
+    origin = dt.date(2021, 1, 11)
+    snap = _minimal_snapshot(origin)
+    feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+
+    no_location_features = build_graph_from_snapshot(
+        snapshot=snap,
+        feature_rows=feature_rows,
+        ablation=GNNGraphAblation(name="no_location_features", use_location_features=False),
+    )
+    no_event_features = build_graph_from_snapshot(
+        snapshot=snap,
+        feature_rows=feature_rows,
+        ablation=GNNGraphAblation(name="no_event_features", use_event_features=False),
+    )
+    no_event_edges = build_graph_from_snapshot(
+        snapshot=snap,
+        feature_rows=feature_rows,
+        ablation=GNNGraphAblation(name="no_event_edges", use_event_edges=False),
+    )
+
+    assert torch.count_nonzero(no_location_features["location"].x).item() == 0
+    assert torch.count_nonzero(no_event_features["event"].x).item() == 0
+    assert no_event_edges["event", "occurs_in", "location"].edge_index.shape == (2, 0)
+    assert no_event_edges.graph_ablation["name"] == "no_event_edges"
+
+
+def test_resolve_gnn_graph_ablations_rejects_unknown_names() -> None:
+    with pytest.raises(ValueError, match="unknown GNN ablation"):
+        resolve_gnn_graph_ablations(["not_real"])
+
+
 def test_gnn_model_forward_pass_returns_location_logits() -> None:
     origin = dt.date(2021, 1, 11)
     snap = _minimal_snapshot(origin, n_events=5)
@@ -247,6 +281,90 @@ def test_gnn_backtest_writes_output(tmp_path: Path) -> None:
     assert audit["eval_row_count"] > 0
     assert "brier" in audit
     assert "recall_at_5" in audit
+
+
+@pytest.mark.torch_train
+def test_gnn_ablation_backtest_writes_variant_audit(tmp_path: Path) -> None:
+    import json
+
+    snap_dir = tmp_path / "snapshots"
+    snap_dir.mkdir()
+    tape_path = tmp_path / "events.jsonl"
+    out_path = tmp_path / "gnn_ablation_predictions.jsonl"
+
+    from ingest.event_tape import EventTapeRecord
+
+    records = []
+    for week in range(12):
+        origin = dt.date(2021, 1, 4) + dt.timedelta(weeks=week)
+        records.append(
+            EventTapeRecord(
+                source_name="gdelt_v2_events",
+                source_event_id=f"gdelt:{week}",
+                event_date=origin - dt.timedelta(days=3),
+                source_available_at=dt.datetime.combine(
+                    origin - dt.timedelta(days=2), dt.time(), tzinfo=dt.timezone.utc
+                ),
+                retrieved_at=dt.datetime(2021, 1, 1, tzinfo=dt.timezone.utc),
+                country_code="FR",
+                admin1_code="FR11",
+                location_name=None,
+                latitude=None,
+                longitude=None,
+                event_class="protest",
+                event_code="141",
+                event_base_code="14",
+                event_root_code="14",
+                quad_class=3,
+                goldstein_scale=-6.5,
+                num_mentions=4,
+                num_sources=None,
+                num_articles=3,
+                avg_tone=-1.5,
+                actor1_name=None,
+                actor1_country_code=None,
+                actor2_name=None,
+                actor2_country_code=None,
+                source_url=None,
+                raw={},
+            )
+        )
+    tape_path.write_text("".join(r.model_dump_json() + "\n" for r in records), encoding="utf-8")
+
+    for week in range(12):
+        origin = dt.date(2021, 1, 4) + dt.timedelta(weeks=week)
+        snap = _minimal_snapshot(origin)
+        snap_path = snap_dir / f"as_of_{origin.isoformat()}.json"
+        snap_path.write_text(json.dumps(snap), encoding="utf-8")
+
+    from baselines.backtest import run_gnn_ablation_backtest
+
+    audit = run_gnn_ablation_backtest(
+        tape_path=tape_path,
+        snapshots_dir=snap_dir,
+        train_origin_start=dt.date(2021, 1, 4),
+        train_origin_end=dt.date(2021, 2, 22),
+        eval_origin_start=dt.date(2021, 3, 1),
+        eval_origin_end=dt.date(2021, 3, 22),
+        out_path=out_path,
+        ablation_names=["full_graph", "no_event_edges"],
+        epochs=2,
+        hidden_dim=16,
+    )
+
+    rows = [json.loads(line) for line in out_path.read_text(encoding="utf-8").splitlines()]
+    assert out_path.exists()
+    assert audit["ablation_count"] == 2
+    assert {entry["ablation"]["name"] for entry in audit["ablations"]} == {
+        "full_graph",
+        "no_event_edges",
+    }
+    assert all("delta_vs_full_graph" in entry for entry in audit["ablations"])
+    assert {row["model_name"] for row in rows} == {
+        "gnn_sage__full_graph",
+        "gnn_sage__no_event_edges",
+    }
+    assert rows[0]["metadata"]["ablation"]["name"] in {"full_graph", "no_event_edges"}
 
 
 @pytest.mark.torch_train

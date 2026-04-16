@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from dataclasses import dataclass
 from typing import Any
 
 import torch
@@ -18,6 +19,81 @@ from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES
 UTC = dt.timezone.utc
 EVENT_FEATURE_DIM = 4
 EVENT_FEATURE_KEYS = ["goldstein_scale", "avg_tone", "num_mentions", "num_articles"]
+
+
+@dataclass(frozen=True)
+class GNNGraphAblation:
+    name: str
+    use_location_features: bool = True
+    use_event_features: bool = True
+    use_event_edges: bool = True
+    description: str = ""
+
+    def metadata(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "use_location_features": self.use_location_features,
+            "use_event_features": self.use_event_features,
+            "use_event_edges": self.use_event_edges,
+            "description": self.description,
+        }
+
+
+FULL_GRAPH_ABLATION = GNNGraphAblation(
+    name="full_graph",
+    description="Location history features plus event attributes passed over occurs_in edges.",
+)
+
+GNN_GRAPH_ABLATIONS: tuple[GNNGraphAblation, ...] = (
+    FULL_GRAPH_ABLATION,
+    GNNGraphAblation(
+        name="location_features_only",
+        use_event_features=False,
+        use_event_edges=False,
+        description="Tabular location history features only; event nodes are disconnected.",
+    ),
+    GNNGraphAblation(
+        name="event_layer_only",
+        use_location_features=False,
+        description="Event attributes passed over occurs_in edges with location features zeroed.",
+    ),
+    GNNGraphAblation(
+        name="no_event_features",
+        use_event_features=False,
+        description="Location features plus event topology, with event attributes zeroed.",
+    ),
+    GNNGraphAblation(
+        name="no_event_edges",
+        use_event_edges=False,
+        description="Location features with event nodes present but disconnected.",
+    ),
+    GNNGraphAblation(
+        name="no_location_features",
+        use_location_features=False,
+        description="Event layer with all tabular location features zeroed.",
+    ),
+)
+GNN_GRAPH_ABLATION_BY_NAME = {ablation.name: ablation for ablation in GNN_GRAPH_ABLATIONS}
+
+
+def resolve_gnn_graph_ablations(names: list[str] | None = None) -> list[GNNGraphAblation]:
+    if names is None:
+        return list(GNN_GRAPH_ABLATIONS)
+
+    resolved: list[GNNGraphAblation] = []
+    seen: set[str] = set()
+    for name in names:
+        if name in seen:
+            raise ValueError(f"duplicate GNN ablation: {name}")
+        try:
+            resolved.append(GNN_GRAPH_ABLATION_BY_NAME[name])
+        except KeyError as exc:
+            available = ", ".join(sorted(GNN_GRAPH_ABLATION_BY_NAME))
+            raise ValueError(f"unknown GNN ablation '{name}'. Available: {available}") from exc
+        seen.add(name)
+    if not resolved:
+        raise ValueError("at least one GNN ablation is required")
+    return resolved
 
 
 class GNNForecastRow(BaseModel):
@@ -64,7 +140,9 @@ def build_graph_from_snapshot(
     *,
     snapshot: dict[str, Any],
     feature_rows: list[FeatureRow],
+    ablation: GNNGraphAblation | None = None,
 ) -> HeteroData:
+    ablation = ablation or FULL_GRAPH_ABLATION
     data = HeteroData()
 
     location_nodes = [n for n in snapshot["nodes"] if n["type"] == "Location"]
@@ -76,35 +154,38 @@ def build_graph_from_snapshot(
 
     feature_by_admin1 = {r.admin1_code: r.features for r in feature_rows}
     loc_x = torch.zeros((len(location_nodes), len(FEATURE_NAMES)), dtype=torch.float32)
-    for i, code in enumerate(loc_admin1):
-        if code in feature_by_admin1:
-            loc_x[i] = torch.tensor(
-                [feature_by_admin1[code][name] for name in FEATURE_NAMES],
-                dtype=torch.float32,
-            )
+    if ablation.use_location_features:
+        for i, code in enumerate(loc_admin1):
+            if code in feature_by_admin1:
+                loc_x[i] = torch.tensor(
+                    [feature_by_admin1[code][name] for name in FEATURE_NAMES],
+                    dtype=torch.float32,
+                )
     data["location"].x = loc_x
     data["location"].admin1_codes = loc_admin1
 
     event_nodes = [n for n in snapshot["nodes"] if n["type"] == "Event"]
     event_id_to_idx: dict[str, int] = {n["id"]: i for i, n in enumerate(event_nodes)}
     evt_x = torch.zeros((len(event_nodes), EVENT_FEATURE_DIM), dtype=torch.float32)
-    for i, node in enumerate(event_nodes):
-        attrs = node.get("attributes", {})
-        for j, key in enumerate(EVENT_FEATURE_KEYS):
-            val = attrs.get(key)
-            if val is not None:
-                evt_x[i, j] = float(val)
+    if ablation.use_event_features:
+        for i, node in enumerate(event_nodes):
+            attrs = node.get("attributes", {})
+            for j, key in enumerate(EVENT_FEATURE_KEYS):
+                val = attrs.get(key)
+                if val is not None:
+                    evt_x[i, j] = float(val)
     data["event"].x = evt_x
 
     occurs_in_src, occurs_in_dst = [], []
-    for edge in snapshot["edges"]:
-        if edge["type"] != "occurs_in":
-            continue
-        src_id = edge["source"]
-        dst_id = edge["target"]
-        if src_id in event_id_to_idx and dst_id in location_id_to_idx:
-            occurs_in_src.append(event_id_to_idx[src_id])
-            occurs_in_dst.append(location_id_to_idx[dst_id])
+    if ablation.use_event_edges:
+        for edge in snapshot["edges"]:
+            if edge["type"] != "occurs_in":
+                continue
+            src_id = edge["source"]
+            dst_id = edge["target"]
+            if src_id in event_id_to_idx and dst_id in location_id_to_idx:
+                occurs_in_src.append(event_id_to_idx[src_id])
+                occurs_in_dst.append(location_id_to_idx[dst_id])
 
     if occurs_in_src:
         data["event", "occurs_in", "location"].edge_index = torch.tensor(
@@ -137,6 +218,7 @@ def build_graph_from_snapshot(
     data["location"].target_counts = torch.tensor(
         [target_counts.get(code, 0) for code in loc_admin1], dtype=torch.long
     )
+    data.graph_ablation = ablation.metadata()
 
     return data
 
@@ -178,6 +260,8 @@ def predict_gnn(
     graph: HeteroData,
     origin_date: dt.date,
     target_lookup: dict[tuple[dt.date, str], tuple[int, bool]] | None = None,
+    model_name: str = "gnn_sage",
+    ablation: GNNGraphAblation | None = None,
 ) -> list[GNNForecastRow]:
     model.eval()
     with torch.no_grad():
@@ -194,11 +278,12 @@ def predict_gnn(
             GNNForecastRow(
                 forecast_origin=origin_date,
                 admin1_code=code,
-                model_name="gnn_sage",
+                model_name=model_name,
                 predicted_count=p,
                 predicted_occurrence_probability=p,
                 target_count_next_7d=target_count,
                 target_occurs_next_7d=target_occurs,
+                metadata={"ablation": ablation.metadata()} if ablation is not None else {},
             )
         )
     return rows

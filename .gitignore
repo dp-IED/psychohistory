@@ -10,6 +10,7 @@ __pycache__/
 proposal.json
 
 data/polymarket_resolved/**
+data/gdelt
 data/gdelt/**
 !data/polymarket_resolved/.gitkeep
 !data/gdelt/.gitkeep

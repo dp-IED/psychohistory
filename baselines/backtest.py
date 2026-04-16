@@ -352,6 +352,213 @@ def run_gnn_backtest(
     return audit
 
 
+def _parse_gnn_ablation_names(values: Sequence[str] | None) -> list[str] | None:
+    if values is None:
+        return None
+    names: list[str] = []
+    for value in values:
+        names.extend(name.strip() for name in value.split(",") if name.strip())
+    return names
+
+
+def run_gnn_ablation_backtest(
+    *,
+    tape_path: Path,
+    snapshots_dir: Path,
+    train_origin_start: dt.date,
+    train_origin_end: dt.date,
+    eval_origin_start: dt.date,
+    eval_origin_end: dt.date,
+    out_path: Path,
+    ablation_names: Sequence[str] | None = None,
+    epochs: int = 30,
+    hidden_dim: int = 64,
+    progress: bool = False,
+) -> dict[str, Any]:
+    if train_origin_end >= eval_origin_start:
+        raise ValueError(
+            f"train_origin_end ({train_origin_end}) must be before eval_origin_start ({eval_origin_start})"
+        )
+    from baselines.features import extract_features_for_origin
+    from baselines.gnn import (
+        GNNForecastRow,
+        build_graph_from_snapshot,
+        predict_gnn,
+        resolve_gnn_graph_ablations,
+        train_gnn,
+    )
+    from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
+
+    ablations = resolve_gnn_graph_ablations(
+        list(ablation_names) if ablation_names is not None else None
+    )
+
+    records = load_event_tape(tape_path)
+    scoring_universe = sorted(
+        {r.admin1_code for r in records if r.admin1_code not in EXCLUDED_REGIONAL_ADMIN1_CODES}
+    )
+    train_origins = weekly_origins(train_origin_start, train_origin_end)
+    eval_origins = weekly_origins(eval_origin_start, eval_origin_end)
+
+    target_lookup: dict[tuple[dt.date, str], tuple[int, bool]] = {}
+
+    def _load_snapshot(origin: dt.date) -> dict[str, Any]:
+        path = snapshots_dir / f"as_of_{origin.isoformat()}.json"
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def _build_target_lookup_for_origin(origin: dt.date) -> None:
+        payload = build_snapshot_payload(records=records, origin_date=origin)
+        for row in payload["target_table"]:
+            code = row["metadata"]["admin1_code"]
+            if code in EXCLUDED_REGIONAL_ADMIN1_CODES:
+                continue
+            if row["name"] == "target_count_next_7d":
+                existing = target_lookup.get((origin, code), (0, False))
+                target_lookup[(origin, code)] = (int(row["value"]), existing[1])
+            elif row["name"] == "target_occurs_next_7d":
+                existing = target_lookup.get((origin, code), (0, False))
+                target_lookup[(origin, code)] = (existing[0], bool(row["value"]))
+
+    train_inputs = []
+    for idx, origin in enumerate(train_origins, start=1):
+        train_inputs.append(
+            (
+                origin,
+                _load_snapshot(origin),
+                extract_features_for_origin(
+                    records=records,
+                    origin_date=origin,
+                    scoring_universe=scoring_universe,
+                ),
+            )
+        )
+        _build_target_lookup_for_origin(origin)
+        if progress:
+            print(
+                f"[gnn-ablation] load train {idx}/{len(train_origins)} origin={origin.isoformat()}",
+                file=sys.stderr,
+                flush=True,
+            )
+
+    eval_inputs = []
+    for idx, origin in enumerate(eval_origins, start=1):
+        eval_inputs.append(
+            (
+                origin,
+                _load_snapshot(origin),
+                extract_features_for_origin(
+                    records=records,
+                    origin_date=origin,
+                    scoring_universe=scoring_universe,
+                ),
+            )
+        )
+        _build_target_lookup_for_origin(origin)
+        if progress:
+            print(
+                f"[gnn-ablation] load eval {idx}/{len(eval_origins)} origin={origin.isoformat()}",
+                file=sys.stderr,
+                flush=True,
+            )
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    all_eval_rows: list[GNNForecastRow] = []
+    ablation_audits: list[dict[str, Any]] = []
+    with out_path.open("w", encoding="utf-8") as handle:
+        for ablation_idx, ablation in enumerate(ablations, start=1):
+            model_name = f"gnn_sage__{ablation.name}"
+            if progress:
+                print(
+                    (
+                        f"[gnn-ablation] train {ablation_idx}/{len(ablations)} "
+                        f"name={ablation.name} epochs={epochs} hidden_dim={hidden_dim}"
+                    ),
+                    file=sys.stderr,
+                    flush=True,
+                )
+            train_graphs = [
+                build_graph_from_snapshot(
+                    snapshot=snapshot,
+                    feature_rows=feature_rows,
+                    ablation=ablation,
+                )
+                for _, snapshot, feature_rows in train_inputs
+            ]
+            model = train_gnn(graphs=train_graphs, epochs=epochs, hidden_dim=hidden_dim)
+
+            eval_rows: list[GNNForecastRow] = []
+            for idx, (origin, snapshot, feature_rows) in enumerate(eval_inputs, start=1):
+                graph = build_graph_from_snapshot(
+                    snapshot=snapshot,
+                    feature_rows=feature_rows,
+                    ablation=ablation,
+                )
+                preds = predict_gnn(
+                    model=model,
+                    graph=graph,
+                    origin_date=origin,
+                    target_lookup=target_lookup,
+                    model_name=model_name,
+                    ablation=ablation,
+                )
+                for pred in preds:
+                    handle.write(pred.model_dump_json() + "\n")
+                eval_rows.extend(preds)
+                if progress:
+                    print(
+                        (
+                            f"[gnn-ablation] eval {idx}/{len(eval_inputs)} "
+                            f"name={ablation.name} origin={origin.isoformat()}"
+                        ),
+                        file=sys.stderr,
+                        flush=True,
+                    )
+            all_eval_rows.extend(eval_rows)
+            ablation_audits.append(
+                {
+                    "ablation": ablation.metadata(),
+                    "model_name": model_name,
+                    "train_graph_count": len(train_graphs),
+                    "eval_row_count": len(eval_rows),
+                    "brier": brier_score(eval_rows, model_name),
+                    "mae": mean_absolute_error(eval_rows, model_name),
+                    "top5_hit_rate": top_k_hit_rate(eval_rows, model_name, k=5),
+                    "recall_at_5": recall_at_k(eval_rows, model_name, k=5),
+                }
+            )
+        handle.flush()
+
+    full_graph_audit = next(
+        (entry for entry in ablation_audits if entry["ablation"]["name"] == "full_graph"),
+        None,
+    )
+    if full_graph_audit is not None:
+        for entry in ablation_audits:
+            entry["delta_vs_full_graph"] = {
+                "brier": entry["brier"] - full_graph_audit["brier"],
+                "mae": entry["mae"] - full_graph_audit["mae"],
+                "top5_hit_rate": entry["top5_hit_rate"] - full_graph_audit["top5_hit_rate"],
+                "recall_at_5": entry["recall_at_5"] - full_graph_audit["recall_at_5"],
+            }
+
+    audit: dict[str, Any] = {
+        "model_family": "gnn_sage",
+        "train_origin_start": train_origin_start.isoformat(),
+        "train_origin_end": train_origin_end.isoformat(),
+        "eval_origin_start": eval_origin_start.isoformat(),
+        "eval_origin_end": eval_origin_end.isoformat(),
+        "admin1_count": len(scoring_universe),
+        "epochs": epochs,
+        "hidden_dim": hidden_dim,
+        "ablation_count": len(ablations),
+        "eval_row_count": len(all_eval_rows),
+        "ablations": ablation_audits,
+    }
+    audit_path = out_path.with_suffix(".audit.json")
+    audit_path.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return audit
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -385,6 +592,26 @@ def _build_parser() -> argparse.ArgumentParser:
     gnn.add_argument("--epochs", type=int, default=30)
     gnn.add_argument("--hidden-dim", type=int, default=64)
     gnn.add_argument("--no-progress", dest="progress", action="store_false", default=True)
+    gnn_ablations = subparsers.add_parser("gnn-ablations")
+    gnn_ablations.add_argument("--tape", default="data/gdelt/tape/france_protest/events.jsonl")
+    gnn_ablations.add_argument("--snapshots-dir", default="data/gdelt/snapshots/france_protest")
+    gnn_ablations.add_argument("--train-origin-start", default="2021-01-04")
+    gnn_ablations.add_argument("--train-origin-end", default="2024-12-30")
+    gnn_ablations.add_argument("--eval-origin-start", default="2025-01-06")
+    gnn_ablations.add_argument("--eval-origin-end", default="2025-12-29")
+    gnn_ablations.add_argument(
+        "--out",
+        default="data/gdelt/baselines/france_protest/gnn_ablation_predictions.jsonl",
+    )
+    gnn_ablations.add_argument(
+        "--ablations",
+        nargs="+",
+        default=None,
+        help="Optional space- or comma-separated ablation names. Defaults to all configured ablations.",
+    )
+    gnn_ablations.add_argument("--epochs", type=int, default=30)
+    gnn_ablations.add_argument("--hidden-dim", type=int, default=64)
+    gnn_ablations.add_argument("--no-progress", dest="progress", action="store_false", default=True)
     return parser
 
 
@@ -429,6 +656,25 @@ def main(argv: Sequence[str] | None = None) -> int:
                 eval_origin_start=dt.date.fromisoformat(args.eval_origin_start),
                 eval_origin_end=dt.date.fromisoformat(args.eval_origin_end),
                 out_path=Path(args.out),
+                epochs=args.epochs,
+                hidden_dim=args.hidden_dim,
+                progress=args.progress,
+            )
+        except Exception as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
+    if args.command == "gnn-ablations":
+        try:
+            run_gnn_ablation_backtest(
+                tape_path=Path(args.tape),
+                snapshots_dir=Path(args.snapshots_dir),
+                train_origin_start=dt.date.fromisoformat(args.train_origin_start),
+                train_origin_end=dt.date.fromisoformat(args.train_origin_end),
+                eval_origin_start=dt.date.fromisoformat(args.eval_origin_start),
+                eval_origin_end=dt.date.fromisoformat(args.eval_origin_end),
+                out_path=Path(args.out),
+                ablation_names=_parse_gnn_ablation_names(args.ablations),
                 epochs=args.epochs,
                 hidden_dim=args.hidden_dim,
                 progress=args.progress,

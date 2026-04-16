@@ -97,7 +97,7 @@ def _dedupe_tie_key(record: EventTapeRecord) -> tuple[dt.datetime, str, str, str
     )
 
 
-def _manifest_fragment_paths(raw_dir: Path) -> list[Path]:
+def _manifest_fragment_paths(raw_dir: Path, *, allow_partial: bool = False) -> list[Path]:
     manifest_path = raw_dir / "fetch_manifest.jsonl"
     if not manifest_path.exists():
         return []
@@ -109,7 +109,11 @@ def _manifest_fragment_paths(raw_dir: Path) -> list[Path]:
     run_id = metadata.get("run_id")
     if not run_id:
         raise ValueError("fetch metadata is missing run_id; rerun the raw fetcher")
-    if int(metadata.get("failed_file_count") or 0) and not metadata.get("allow_partial"):
+    if (
+        int(metadata.get("failed_file_count") or 0)
+        and not metadata.get("allow_partial")
+        and not allow_partial
+    ):
         raise ValueError("raw fetch has failed files; rerun fetch or use --allow-partial")
 
     paths: list[Path] = []
@@ -139,10 +143,10 @@ def _manifest_fragment_paths(raw_dir: Path) -> list[Path]:
     return sorted(paths)
 
 
-def _raw_fragment_paths(raw_dir: Path) -> list[Path]:
+def _raw_fragment_paths(raw_dir: Path, *, allow_partial: bool = False) -> list[Path]:
     if not raw_dir.exists():
         raise FileNotFoundError(f"missing raw directory: {raw_dir}")
-    manifest_paths = _manifest_fragment_paths(raw_dir)
+    manifest_paths = _manifest_fragment_paths(raw_dir, allow_partial=allow_partial)
     if manifest_paths:
         return manifest_paths
     if (raw_dir / "fetch_manifest.jsonl").exists():
@@ -200,12 +204,13 @@ def _iter_raw_fragment_rows(
     raw_dir: Path,
     *,
     allow_empty: bool,
+    allow_partial: bool = False,
 ) -> tuple[int, list[EventTapeRecord], int, int]:
     input_count = 0
     filtered_count = 0
     invalid_count = 0
     records: list[EventTapeRecord] = []
-    fragment_paths = _raw_fragment_paths(raw_dir)
+    fragment_paths = _raw_fragment_paths(raw_dir, allow_partial=allow_partial)
     if not fragment_paths and not allow_empty:
         raise ValueError(f"no raw GDELT fragments found under {raw_dir}")
     for path in fragment_paths:
@@ -234,10 +239,12 @@ def write_event_tape(
     raw_dir: Path,
     out_path: Path,
     allow_empty: bool = False,
+    allow_partial: bool = False,
 ) -> dict[str, Any]:
     input_count, records, filtered_count, invalid_count = _iter_raw_fragment_rows(
         raw_dir,
         allow_empty=allow_empty,
+        allow_partial=allow_partial,
     )
 
     deduped: dict[str, EventTapeRecord] = {}
@@ -309,6 +316,7 @@ def _build_parser() -> argparse.ArgumentParser:
     normalize.add_argument("--raw", default="data/gdelt/raw/france_protest")
     normalize.add_argument("--out", default="data/gdelt/tape/france_protest/events.jsonl")
     normalize.add_argument("--allow-empty", action="store_true")
+    normalize.add_argument("--allow-partial", action="store_true")
     return parser
 
 
@@ -321,6 +329,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 raw_dir=Path(args.raw),
                 out_path=Path(args.out),
                 allow_empty=args.allow_empty,
+                allow_partial=args.allow_partial,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)

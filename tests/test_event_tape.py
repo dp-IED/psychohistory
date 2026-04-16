@@ -149,3 +149,25 @@ def test_event_tape_rejects_failed_fetch_without_allow_partial(tmp_path: Path) -
 
     with pytest.raises(ValueError, match="raw fetch has failed files"):
         write_event_tape(raw_dir=raw_dir, out_path=tmp_path / "events.jsonl")
+
+
+def test_event_tape_allows_failed_fetch_when_partial_is_explicit(tmp_path: Path) -> None:
+    raw_dir = tmp_path / "raw"
+    out_path = tmp_path / "events.jsonl"
+    fragment = "fragments/2021/01/05/20210105120000.jsonl"
+    _write_raw_fragment(raw_dir, [_raw_row()], relative_path=fragment)
+    (raw_dir / "fetch_metadata.json").write_text(
+        json.dumps({"run_id": "current-run", "failed_file_count": 1, "allow_partial": False})
+        + "\n",
+        encoding="utf-8",
+    )
+    (raw_dir / "fetch_manifest.jsonl").write_text(
+        json.dumps({"run_id": "current-run", "status": "ok", "fragment_path": fragment})
+        + "\n",
+        encoding="utf-8",
+    )
+
+    audit = write_event_tape(raw_dir=raw_dir, out_path=out_path, allow_partial=True)
+
+    assert audit["output_row_count"] == 1
+    assert out_path.exists()
