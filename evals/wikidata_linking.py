@@ -190,7 +190,14 @@ def search_wikidata_entity(
     *,
     timeout: float = 10.0,
     max_retries: int = 2,
+    country_code: str | None = None,
 ) -> dict[str, Any] | None:
+    """Search Wikidata for an entity label. Optional ``country_code`` narrows ambiguous names."""
+
+    query = label
+    if country_code:
+        query = f"{label} {country_code}"
+
     params = urlencode(
         {
             "action": "wbsearchentities",
@@ -199,7 +206,7 @@ def search_wikidata_entity(
             "uselang": "en",
             "type": "item",
             "limit": "1",
-            "search": label,
+            "search": query,
         }
     )
     request = Request(

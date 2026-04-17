@@ -859,6 +859,22 @@ def _build_parser() -> argparse.ArgumentParser:
         default=True,
         help="Skip XGBoost tabular training (GNN uses snapshots only; tabular is for comparison metrics).",
     )
+    source_experiments.add_argument(
+        "--grounding-cache",
+        default=None,
+        help="Optional path to a JSON cache file for Wikidata Actor/Location grounding (API search).",
+    )
+    source_experiments.add_argument(
+        "--grounding-request-delay",
+        type=float,
+        default=0.25,
+        help="Seconds to sleep after each Wikidata API cache miss (default: 0.25).",
+    )
+    source_experiments.add_argument(
+        "--no-grounding-log",
+        action="store_true",
+        help="Silence stderr lines from Wikidata grounding (snapshot lines still use --progress).",
+    )
     return parser
 
 
@@ -964,6 +980,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                 progress=not args.no_progress,
                 run_recurrence=args.run_recurrence,
                 run_tabular=args.run_tabular,
+                grounding_cache=(
+                    Path(args.grounding_cache).expanduser().resolve()
+                    if args.grounding_cache
+                    else None
+                ),
+                grounding_request_delay_s=args.grounding_request_delay,
+                grounding_log=not args.no_grounding_log,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)

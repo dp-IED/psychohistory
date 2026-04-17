@@ -73,3 +73,64 @@ def recall_at_k(rows: list[ForecastRow], model_name: str, k: int = 5) -> float:
     if total_positives == 0:
         return 0.0
     return captured / total_positives
+
+
+def positive_rate(rows: list[ForecastRow], model_name: str) -> float:
+    selected = _rows_for_model(rows, model_name)
+    positives = sum(1 for row in selected if row.target_occurs_next_7d)
+    return positives / len(selected)
+
+
+def balanced_accuracy(
+    rows: list[ForecastRow],
+    model_name: str,
+    *,
+    threshold: float = 0.5,
+) -> float:
+    """Mean of sensitivity (TPR) and specificity (TNR) at a probability threshold.
+
+    Returns 0.0 when every label is positive or every label is negative (degenerate).
+    """
+
+    selected = _rows_for_model(rows, model_name)
+    pos = [row for row in selected if row.target_occurs_next_7d]
+    neg = [row for row in selected if not row.target_occurs_next_7d]
+    if not pos or not neg:
+        return 0.0
+
+    tp = sum(
+        1
+        for row in pos
+        if row.predicted_occurrence_probability >= threshold
+    )
+    fn = len(pos) - tp
+    tn = sum(
+        1
+        for row in neg
+        if row.predicted_occurrence_probability < threshold
+    )
+    fp = len(neg) - tn
+    sensitivity = tp / (tp + fn)
+    specificity = tn / (tn + fp)
+    return (sensitivity + specificity) / 2.0
+
+
+def pr_auc(rows: list[ForecastRow], model_name: str) -> float:
+    """Average precision (area under the precision–recall curve) for binary labels."""
+
+    selected = _rows_for_model(rows, model_name)
+    n_pos = sum(1 for row in selected if row.target_occurs_next_7d)
+    if n_pos == 0:
+        return 0.0
+    sorted_rows = sorted(
+        selected,
+        key=lambda row: -row.predicted_occurrence_probability,
+    )
+    tp = 0
+    ap = 0.0
+    for i, row in enumerate(sorted_rows, start=1):
+        if row.target_occurs_next_7d:
+            tp += 1
+            precision_at_i = tp / i
+            ap += precision_at_i
+    return ap / n_pos

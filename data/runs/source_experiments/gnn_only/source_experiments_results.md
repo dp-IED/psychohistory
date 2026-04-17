@@ -73,3 +73,13 @@ Under `gnn_only/<experiment_name>/`:
 - `gnn_predictions.jsonl.gz.audit.json` — per-run GNN audit (if present)
 
 Recurrence/tabular prediction files were not written (`--no-recurrence`, `--no-tabular`).
+
+## Metric comparability (audit extensions)
+
+The `source-experiments` audit now includes **`positive_rate`**, **`pr_auc`** (average precision / PR-AUC), and **`balanced_accuracy`** (at probability threshold 0.5) per model, alongside Brier and MAE. Re-run the same command with a current `baselines` build to populate these keys in `source_experiments.audit.json`.
+
+**Brier skill score (reporting, not stored in audit):** \(\mathrm{BSS} = 1 - \mathrm{Brier} / (p(1-p))\) where \(p\) is **`positive_rate`** (same eval rows as Brier). This matches each experiment to its own prevalence-only baseline.
+
+**PR-AUC skill vs random:** compare **`pr_auc - positive_rate`**, since a random score has expected PR-AUC equal to the positive rate on the same rows.
+
+**Recall@5** remains a strong cross-experiment ranking diagnostic (origin-level top‑k), independent of global class balance.
