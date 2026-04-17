@@ -1,0 +1,16 @@
+"""Sanity checks for pinned train/holdout windows."""
+
+from __future__ import annotations
+
+from baselines.training_slice import (
+    FRANCE_SCAFFOLD_HOLDOUT_ORIGIN_END,
+    FRANCE_SCAFFOLD_HOLDOUT_ORIGIN_START,
+    FRANCE_SCAFFOLD_TRAIN_ORIGIN_END,
+    FRANCE_SCAFFOLD_TRAIN_ORIGIN_START,
+)
+
+
+def test_france_scaffold_holdout_follows_train() -> None:
+    assert FRANCE_SCAFFOLD_TRAIN_ORIGIN_START < FRANCE_SCAFFOLD_TRAIN_ORIGIN_END
+    assert FRANCE_SCAFFOLD_TRAIN_ORIGIN_END < FRANCE_SCAFFOLD_HOLDOUT_ORIGIN_START
+    assert FRANCE_SCAFFOLD_HOLDOUT_ORIGIN_START <= FRANCE_SCAFFOLD_HOLDOUT_ORIGIN_END

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime as dt
 from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
@@ -219,3 +220,29 @@ def normalize_graph_artifact(
         ],
         metadata=graph.get("metadata") if isinstance(graph.get("metadata"), dict) else {},
     )
+
+
+def assert_point_in_time_target_table(
+    artifact: GraphArtifactV1,
+    *,
+    forecast_origin: dt.date,
+) -> None:
+    """
+    Fail closed when a supervised target row claims the label was only observable **after**
+    ``forecast_origin`` (simulates delayed resolutions / retroactive labels leaking into PIT training).
+
+    Convention: ``ArtifactTargetRecord.metadata["observable_no_earlier_than"]`` is an ISO date
+    string for the earliest wall-clock time the label could be known. If set, it must be
+    ``<= forecast_origin`` for rows used as inputs at ``forecast_origin``.
+    """
+
+    origin_s = forecast_origin.isoformat()
+    for record in artifact.target_table:
+        when = record.metadata.get("observable_no_earlier_than")
+        if when is None:
+            continue
+        if str(when) > origin_s:
+            raise ValueError(
+                f"PIT violation: target {record.target_id!r} observable_no_earlier_than={when!r} "
+                f"is after forecast_origin {forecast_origin}"
+            )
