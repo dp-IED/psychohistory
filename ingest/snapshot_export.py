@@ -151,6 +151,9 @@ def build_snapshot_payload(
     origin_date: dt.date,
     source_names: set[str] | None = None,
     source_identity_mode: SourceIdentityMode = "preserve",
+    grounding_cache: Path | None = None,
+    grounding_request_delay_s: float = 0.25,
+    grounding_log: bool = True,
 ) -> dict[str, Any]:
     if source_identity_mode not in {"preserve", "collapse"}:
         raise ValueError(f"unknown source identity mode: {source_identity_mode}")
@@ -390,7 +393,7 @@ def build_snapshot_payload(
             }
         )
 
-    return {
+    payload = {
         "artifact_format": GRAPH_ARTIFACT_FORMAT,
         "probe_id": f"france_protest_as_of_{origin_date.isoformat()}",
         "schema_version": "0.2.0",
@@ -445,6 +448,27 @@ def build_snapshot_payload(
             },
         },
     }
+    if grounding_cache is not None:
+        from evals.wikidata_grounding import apply_wikidata_grounding
+
+        if grounding_log:
+            print(
+                (
+                    f"[snapshot] origin={origin_date.isoformat()} "
+                    f"nodes={len(nodes)} edges={len(edges)} "
+                    f"→ wikidata grounding"
+                ),
+                file=sys.stderr,
+                flush=True,
+            )
+        apply_wikidata_grounding(
+            payload,
+            cache_path=grounding_cache,
+            request_delay_s=grounding_request_delay_s,
+            log=grounding_log,
+            origin=origin_date.isoformat(),
+        )
+    return payload
 
 
 def export_weekly_snapshots(

@@ -86,6 +86,32 @@ def test_label_window_uses_event_date_not_availability_date() -> None:
     assert _target_value(payload, "FR11", "target_occurs_next_7d") is True
 
 
+def test_grounding_cache_runs_grounding_and_validates(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_apply(payload: dict, *, cache_path: Path, request_delay_s: float = 0.25, **kwargs: object) -> dict:
+        payload.setdefault("metadata", {})["wikidata_grounding"] = {
+            "resolved": 0,
+            "attempted": 1,
+            "skipped_existing_qid": 0,
+            "skipped_no_label": 0,
+            "api_calls": 0,
+        }
+        return payload
+
+    monkeypatch.setattr("evals.wikidata_grounding.apply_wikidata_grounding", fake_apply)
+    payload = build_snapshot_payload(
+        records=[
+            _record("gdelt:feature", event_date="2021-01-01", source_available_at="2021-01-02T00:00:00Z"),
+        ],
+        origin_date=dt.date(2021, 1, 4),
+        grounding_cache=tmp_path / "grounding.json",
+    )
+    GraphArtifactV1.model_validate(payload)
+    assert payload["metadata"]["wikidata_grounding"]["attempted"] == 1
+
+
 def test_label_window_counts_admin1_codes_without_prior_feature_events() -> None:
     payload = build_snapshot_payload(
         records=[

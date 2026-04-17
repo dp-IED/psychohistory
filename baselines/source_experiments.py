@@ -12,7 +12,15 @@ from typing import Any, Literal, Sequence
 
 from baselines.backtest import OriginInputs, build_audit, weekly_origins
 from baselines.features import extract_features_for_origin
-from baselines.metrics import brier_score, mean_absolute_error, recall_at_k, top_k_hit_rate
+from baselines.metrics import (
+    balanced_accuracy,
+    brier_score,
+    mean_absolute_error,
+    positive_rate,
+    pr_auc,
+    recall_at_k,
+    top_k_hit_rate,
+)
 from baselines.recurrence import ForecastRow, RECURRENCE_MODEL_NAMES
 from baselines.recurrence import build_recurrence_forecasts_for_origin
 from baselines.tabular import predict_tabular, train_tabular_model
@@ -129,8 +137,11 @@ def _metrics_for_model(rows: list[ForecastRow], model_name: str) -> dict[str, An
             "origin_count": 0,
             "admin1_count": 0,
             "positive_count": 0,
+            "positive_rate": 0.0,
             "brier": 0.0,
             "mae": 0.0,
+            "pr_auc": 0.0,
+            "balanced_accuracy": 0.0,
             "top5_hit_rate": 0.0,
             "recall_at_5": 0.0,
         }
@@ -139,8 +150,11 @@ def _metrics_for_model(rows: list[ForecastRow], model_name: str) -> dict[str, An
         "origin_count": len({row.forecast_origin for row in selected}),
         "admin1_count": len({row.admin1_code for row in selected}),
         "positive_count": sum(1 for row in selected if row.target_occurs_next_7d),
+        "positive_rate": positive_rate(rows, model_name),
         "brier": brier_score(rows, model_name),
         "mae": mean_absolute_error(rows, model_name),
+        "pr_auc": pr_auc(rows, model_name),
+        "balanced_accuracy": balanced_accuracy(rows, model_name),
         "top5_hit_rate": top_k_hit_rate(rows, model_name, k=5),
         "recall_at_5": recall_at_k(rows, model_name, k=5),
     }
@@ -159,6 +173,18 @@ def _payload_count_totals(payloads: list[dict[str, Any]], key: str) -> dict[str,
     totals: Counter[str] = Counter()
     for payload in payloads:
         totals.update(payload.get("metadata", {}).get(key, {}))
+    return dict(sorted(totals.items()))
+
+
+def _aggregate_wikidata_grounding(payloads: list[dict[str, Any]]) -> dict[str, int]:
+    totals: Counter[str] = Counter()
+    for payload in payloads:
+        block = payload.get("metadata", {}).get("wikidata_grounding")
+        if not isinstance(block, dict):
+            continue
+        for key, value in block.items():
+            if isinstance(value, int) and not isinstance(value, bool):
+                totals[key] += value
     return dict(sorted(totals.items()))
 
 
@@ -204,14 +230,30 @@ def _build_origin_inputs(
     source_identity_mode: SourceIdentityMode,
     progress_label: str,
     progress: bool,
+    grounding_cache: Path | None = None,
+    grounding_request_delay_s: float = 0.25,
+    grounding_log: bool = True,
 ) -> tuple[list[OriginInputs], dict[tuple[dt.date, str], tuple[int, bool]]]:
     inputs: list[OriginInputs] = []
     target_lookup: dict[tuple[dt.date, str], tuple[int, bool]] = {}
     for index, origin in enumerate(origins, start=1):
+        if progress:
+            print(
+                (
+                    f"[source-experiments] {progress_label} {index}/{len(origins)} "
+                    f"start origin={origin.isoformat()} "
+                    f"records={len(records)} grounding_cache={grounding_cache}"
+                ),
+                file=sys.stderr,
+                flush=True,
+            )
         snapshot = build_snapshot_payload(
             records=records,
             origin_date=origin,
             source_identity_mode=source_identity_mode,
+            grounding_cache=grounding_cache,
+            grounding_request_delay_s=grounding_request_delay_s,
+            grounding_log=grounding_log,
         )
         feature_rows = extract_features_for_origin(
             records=records,
@@ -363,6 +405,9 @@ def run_source_layer_experiments(
     progress: bool = False,
     run_recurrence: bool = True,
     run_tabular: bool = True,
+    grounding_cache: Path | None = None,
+    grounding_request_delay_s: float = 0.25,
+    grounding_log: bool = True,
 ) -> dict[str, Any]:
     from baselines.backtest import run_gnn_backtest_from_payloads
     from baselines.gnn import GNNGraphAblation
@@ -468,6 +513,9 @@ def run_source_layer_experiments(
             source_identity_mode=experiment.source_identity_mode,
             progress_label=f"{experiment.name} train payloads",
             progress=progress,
+            grounding_cache=grounding_cache,
+            grounding_request_delay_s=grounding_request_delay_s,
+            grounding_log=grounding_log,
         )
         eval_inputs, eval_targets = _build_origin_inputs(
             records=experiment_records,
@@ -476,6 +524,9 @@ def run_source_layer_experiments(
             source_identity_mode=experiment.source_identity_mode,
             progress_label=f"{experiment.name} eval payloads",
             progress=progress,
+            grounding_cache=grounding_cache,
+            grounding_request_delay_s=grounding_request_delay_s,
+            grounding_log=grounding_log,
         )
         target_lookup = {**train_targets, **eval_targets}
         snapshot_payloads = [item.snapshot for item in train_inputs + eval_inputs]
@@ -526,6 +577,16 @@ def run_source_layer_experiments(
                 use_event_features=False,
                 description="Source experiment GNN with event attributes zeroed.",
             )
+        if progress:
+            print(
+                (
+                    f"[source-experiments] {experiment.name} starting gnn_sage "
+                    f"train_origins={len(train_inputs)} eval_origins={len(eval_inputs)} "
+                    f"epochs={epochs} hidden_dim={hidden_dim} out={gnn_path}"
+                ),
+                file=sys.stderr,
+                flush=True,
+            )
         run_gnn_backtest_from_payloads(
             train_inputs=train_inputs,
             eval_inputs=eval_inputs,
@@ -572,6 +633,7 @@ def run_source_layer_experiments(
                 ),
                 "admin1_count": len(scoring_universe),
                 "materialized_snapshot_count": len(snapshot_paths),
+                "wikidata_grounding_total": _aggregate_wikidata_grounding(snapshot_payloads),
             },
         }
         audit["experiments"].append(experiment_audit)
