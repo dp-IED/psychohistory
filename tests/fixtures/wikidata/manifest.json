@@ -1,0 +1,12 @@
+[
+  {
+    "dump_id": "wd-mini-2021-01-01",
+    "dump_date": "2021-01-01",
+    "index_path": "wd-mini-2021-01-01.jsonl"
+  },
+  {
+    "dump_id": "wd-mini-2022-01-01",
+    "dump_date": "2022-01-01",
+    "index_path": "wd-mini-2022-01-01.jsonl"
+  }
+]
