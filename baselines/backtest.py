@@ -865,6 +865,19 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Optional path to a JSON cache file for Wikidata Actor/Location grounding (API search).",
     )
     source_experiments.add_argument(
+        "--grounding-dump-manifest",
+        default=None,
+        help=(
+            "Optional path to a Wikidata dump-slice manifest JSON. "
+            "For each origin date, the latest dump with dump_date <= origin is used."
+        ),
+    )
+    source_experiments.add_argument(
+        "--grounding-no-api-fallback",
+        action="store_true",
+        help="Disable live Wikidata API fallback when dump-slice lookup misses.",
+    )
+    source_experiments.add_argument(
         "--grounding-request-delay",
         type=float,
         default=0.25,
@@ -987,6 +1000,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 grounding_request_delay_s=args.grounding_request_delay,
                 grounding_log=not args.no_grounding_log,
+                grounding_dump_manifest=(
+                    Path(args.grounding_dump_manifest).expanduser().resolve()
+                    if args.grounding_dump_manifest
+                    else None
+                ),
+                grounding_api_fallback=not args.grounding_no_api_fallback,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)

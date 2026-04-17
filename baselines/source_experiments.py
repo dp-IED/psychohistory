@@ -233,6 +233,8 @@ def _build_origin_inputs(
     grounding_cache: Path | None = None,
     grounding_request_delay_s: float = 0.25,
     grounding_log: bool = True,
+    grounding_dump_manifest: Path | None = None,
+    grounding_api_fallback: bool = True,
 ) -> tuple[list[OriginInputs], dict[tuple[dt.date, str], tuple[int, bool]]]:
     inputs: list[OriginInputs] = []
     target_lookup: dict[tuple[dt.date, str], tuple[int, bool]] = {}
@@ -254,6 +256,8 @@ def _build_origin_inputs(
             grounding_cache=grounding_cache,
             grounding_request_delay_s=grounding_request_delay_s,
             grounding_log=grounding_log,
+            grounding_dump_manifest=grounding_dump_manifest,
+            grounding_api_fallback=grounding_api_fallback,
         )
         feature_rows = extract_features_for_origin(
             records=records,
@@ -408,6 +412,8 @@ def run_source_layer_experiments(
     grounding_cache: Path | None = None,
     grounding_request_delay_s: float = 0.25,
     grounding_log: bool = True,
+    grounding_dump_manifest: Path | None = None,
+    grounding_api_fallback: bool = True,
 ) -> dict[str, Any]:
     from baselines.backtest import run_gnn_backtest_from_payloads
     from baselines.gnn import GNNGraphAblation
@@ -516,6 +522,8 @@ def run_source_layer_experiments(
             grounding_cache=grounding_cache,
             grounding_request_delay_s=grounding_request_delay_s,
             grounding_log=grounding_log,
+            grounding_dump_manifest=grounding_dump_manifest,
+            grounding_api_fallback=grounding_api_fallback,
         )
         eval_inputs, eval_targets = _build_origin_inputs(
             records=experiment_records,
@@ -527,6 +535,8 @@ def run_source_layer_experiments(
             grounding_cache=grounding_cache,
             grounding_request_delay_s=grounding_request_delay_s,
             grounding_log=grounding_log,
+            grounding_dump_manifest=grounding_dump_manifest,
+            grounding_api_fallback=grounding_api_fallback,
         )
         target_lookup = {**train_targets, **eval_targets}
         snapshot_payloads = [item.snapshot for item in train_inputs + eval_inputs]
