@@ -91,7 +91,7 @@ LLM **interprets** and **packages**; **retrieval + graph/world-model outputs + c
 
 ### Stage 9 — Cross-domain stress
 
-One adjacent + one more distant domain; shared ontology **subset**; **per-domain** metrics.
+One adjacent + one more distant domain; shared ontology **subset**; **per-domain** metrics. **Earlier shadow work:** a geography such as **Iran** may begin as a **red-team / ingest–lens–transfer–reviewer** slice **after** the GRU ablation driver is stable on the primary scaffold—**not** as the main optimization benchmark (`next_steps.md` **§2.3**); that split avoids collapsing the program into one contested domain before metrics and contracts are frozen.
 
 ### Stage 10 — Product identity
 
@@ -166,4 +166,4 @@ Choose flagship emphasis (forecasting vs analyst copilot vs disagreement analyti
 
 ## Current summary
 
-The **France GNN benchmark** established that the graph approach **earns its keep** on a clean protest forecast task. **Forward work** prioritizes a **working training loop** on **event** snapshots (time-then-space WM v0, multi-step losses, ablations), then **market-informed training** with **adversarial PIT tests** and **coverage reporting**, then **lens** and **constrained Q&A**; the France pipeline remains a **useful smoke test** when core ingestion or backtests change, not a perpetual validation gate.
+The **France GNN benchmark** established that the graph approach **earns its keep** on a clean protest forecast task. **Forward work** prioritizes a **working training loop** on **event** snapshots (time-then-space WM v0, multi-step losses, ablations), then **market-informed training** with **adversarial PIT tests** and **coverage reporting**, then **lens** and **constrained Q&A**; the France pipeline remains a **useful smoke test** when core ingestion or backtests change, not a perpetual validation gate. **Iran** (or similar) is planned as a **parallel stress-test lane** after ablations are real—**France (or agreed scaffold) stays the regression-controlled harness** until labeled eval contracts justify headline claims (**`next_steps.md` §2.3**).
