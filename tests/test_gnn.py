@@ -6,6 +6,8 @@ import pytest
 import torch
 
 from baselines.gnn import (
+    ACTOR_FEATURE_DIM,
+    ACTOR_QID_HASH_DIM,
     GNNForecastRow,
     GNNGraphAblation,
     HeteroGNNModel,
@@ -131,6 +133,72 @@ def _minimal_feature_rows(origin_date: dt.date, universe: list[str]) -> list[Fea
     ]
 
 
+def _snapshot_with_actor_track(origin_date: dt.date) -> dict:
+    snap = _minimal_snapshot(origin_date, n_events=4)
+    actor_nodes = [
+        {
+            "id": "actor:students_fr",
+            "type": "Actor",
+            "label": "Students",
+            "external_ids": {"wikidata": "Q48282"},
+            "attributes": {"country_code": "FRA"},
+            "provenance": {"sources": ["gdelt_v2_events"]},
+        },
+        {
+            "id": "actor:student_union_fr",
+            "type": "Actor",
+            "label": "Student union",
+            "external_ids": {"wikidata": "Q48282"},
+            "attributes": {"country_code": "FRA"},
+            "provenance": {"sources": ["acled"]},
+        },
+        {
+            "id": "actor:police_fr",
+            "type": "Actor",
+            "label": "Police",
+            "attributes": {"country_code": "FRA"},
+            "provenance": {"sources": ["gdelt_v2_events"]},
+        },
+        {
+            "id": "actor:police_be",
+            "type": "Actor",
+            "label": "Police",
+            "attributes": {"country_code": "BEL"},
+            "provenance": {"sources": ["gdelt_v2_events"]},
+        },
+    ]
+    snap["nodes"].extend(actor_nodes)
+    snap["edges"].extend(
+        [
+            {
+                "source": "actor:students_fr",
+                "target": "event:gdelt:0",
+                "type": "participates_in",
+                "attributes": {"source_name": "gdelt_v2_events", "role": "actor1"},
+            },
+            {
+                "source": "actor:student_union_fr",
+                "target": "event:gdelt:1",
+                "type": "participates_in",
+                "attributes": {"source_name": "acled", "role": "actor2"},
+            },
+            {
+                "source": "actor:police_fr",
+                "target": "event:gdelt:2",
+                "type": "participates_in",
+                "attributes": {"source_name": "gdelt_v2_events", "role": "actor1"},
+            },
+            {
+                "source": "actor:police_be",
+                "target": "event:gdelt:3",
+                "type": "participates_in",
+                "attributes": {"source_name": "gdelt_v2_events", "role": "actor2"},
+            },
+        ]
+    )
+    return snap
+
+
 def test_build_graph_from_snapshot_returns_heterodata() -> None:
     from torch_geometric.data import HeteroData
 
@@ -144,6 +212,63 @@ def test_build_graph_from_snapshot_returns_heterodata() -> None:
     assert data["location"].x.shape[1] == len(FEATURE_NAMES)
     assert data["event"].x.shape[1] == 4
     assert ("event", "occurs_in", "location") in data.edge_types
+
+
+def test_build_graph_from_snapshot_emits_actor_tensor_and_participation_edges() -> None:
+    origin = dt.date(2021, 1, 11)
+    snap = _snapshot_with_actor_track(origin)
+    feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+
+    data = build_graph_from_snapshot(snapshot=snap, feature_rows=feature_rows)
+
+    assert data["actor"].x.shape == (3, ACTOR_FEATURE_DIM)
+    assert ("actor", "participates_in", "event") in data.edge_types
+    assert data["actor", "participates_in", "event"].edge_index.shape == (2, 4)
+    assert torch.count_nonzero(data["actor"].x[:, -ACTOR_QID_HASH_DIM:]).item() > 0
+    assert data.actor_diagnostics["actor_nodes_input"] == 4
+    assert data.actor_diagnostics["actor_nodes_output"] == 3
+
+
+def test_actor_qid_merge_does_not_merge_unresolved_homonym_labels() -> None:
+    origin = dt.date(2021, 1, 11)
+    snap = _snapshot_with_actor_track(origin)
+    feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+
+    data = build_graph_from_snapshot(snapshot=snap, feature_rows=feature_rows)
+
+    edge_index = data["actor", "participates_in", "event"].edge_index
+    assert edge_index[0, 0].item() == edge_index[0, 1].item()
+    assert edge_index[0, 2].item() != edge_index[0, 3].item()
+    assert data.actor_diagnostics["actor_nodes_collapsed_by_qid"] == 1
+    assert data.actor_diagnostics["unresolved_label_collision_count"] == 1
+
+
+def test_actor_graph_ablations_can_disable_or_zero_actor_features() -> None:
+    origin = dt.date(2021, 1, 11)
+    snap = _snapshot_with_actor_track(origin)
+    feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+
+    disabled = build_graph_from_snapshot(
+        snapshot=snap,
+        feature_rows=feature_rows,
+        ablation=GNNGraphAblation(
+            name="no_actor_track",
+            use_actor_nodes=False,
+            use_actor_edges=False,
+        ),
+    )
+    structure_only = build_graph_from_snapshot(
+        snapshot=snap,
+        feature_rows=feature_rows,
+        ablation=GNNGraphAblation(
+            name="actor_structure_only",
+            actor_feature_mode="zero",
+        ),
+    )
+
+    assert "actor" not in disabled.node_types
+    assert torch.count_nonzero(structure_only["actor"].x).item() == 0
+    assert structure_only["actor", "participates_in", "event"].edge_index.shape == (2, 4)
 
 
 def test_build_graph_from_snapshot_applies_graph_ablations() -> None:
@@ -193,6 +318,33 @@ def test_gnn_model_forward_pass_returns_location_logits() -> None:
 
     assert logits.shape == (2,)
     assert logits.dtype == torch.float32
+
+
+def test_gnn_model_actor_branch_receives_training_signal() -> None:
+    origin = dt.date(2021, 1, 11)
+    snap = _snapshot_with_actor_track(origin)
+    feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+    data = build_graph_from_snapshot(snapshot=snap, feature_rows=feature_rows)
+
+    model = HeteroGNNModel(
+        location_feature_dim=len(FEATURE_NAMES),
+        event_feature_dim=4,
+        actor_feature_dim=ACTOR_FEATURE_DIM,
+        hidden_dim=16,
+    )
+    for param in model.parameters():
+        torch.nn.init.constant_(param, 0.01)
+
+    logits = model(data)
+    mask = data["location"].mask
+    loss = torch.nn.functional.binary_cross_entropy_with_logits(
+        logits[mask], data["location"].y[mask]
+    )
+    loss.backward()
+
+    assert model.actor_proj is not None
+    assert model.actor_proj.weight.grad is not None
+    assert model.actor_proj.weight.grad.abs().sum().item() > 0
 
 
 @pytest.mark.torch_train

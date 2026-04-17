@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
+import math
 import os
 import sys
+from collections import Counter
 from dataclasses import dataclass
 from typing import Any
 
@@ -16,10 +19,16 @@ from torch_geometric.data import HeteroData
 from torch_geometric.nn import SAGEConv
 
 from baselines.features import FEATURE_NAMES, FeatureRow
+from evals.wikidata_linking import normalize_entity_label, wikidata_qid_for_node
 from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES
 
 UTC = dt.timezone.utc
 EVENT_FEATURE_DIM = 4
+ACTOR_SCALAR_FEATURE_DIM = 3
+ACTOR_QID_HASH_DIM = 8
+ACTOR_FEATURE_DIM = ACTOR_SCALAR_FEATURE_DIM + ACTOR_QID_HASH_DIM
+ACTOR_FEATURE_MODES = {"qid", "scalar", "zero"}
+ACTOR_MERGE_POLICIES = {"none", "qid"}
 
 
 def _configure_pytorch_threads() -> None:
@@ -62,6 +71,10 @@ class GNNGraphAblation:
     use_location_features: bool = True
     use_event_features: bool = True
     use_event_edges: bool = True
+    use_actor_nodes: bool = True
+    use_actor_edges: bool = True
+    actor_feature_mode: str = "qid"
+    actor_merge_policy: str = "qid"
     use_source_identity: bool = True
     allowed_source_names: tuple[str, ...] | None = None
     description: str = ""
@@ -72,6 +85,10 @@ class GNNGraphAblation:
             "use_location_features": self.use_location_features,
             "use_event_features": self.use_event_features,
             "use_event_edges": self.use_event_edges,
+            "use_actor_nodes": self.use_actor_nodes,
+            "use_actor_edges": self.use_actor_edges,
+            "actor_feature_mode": self.actor_feature_mode,
+            "actor_merge_policy": self.actor_merge_policy,
             "use_source_identity": self.use_source_identity,
             "allowed_source_names": list(self.allowed_source_names)
             if self.allowed_source_names is not None
@@ -82,7 +99,10 @@ class GNNGraphAblation:
 
 FULL_GRAPH_ABLATION = GNNGraphAblation(
     name="full_graph",
-    description="Location history features plus event attributes passed over occurs_in edges.",
+    description=(
+        "Location history features, event attributes, and actor identity features passed over "
+        "actor participates_in event and event occurs_in location edges."
+    ),
 )
 
 GNN_GRAPH_ABLATIONS: tuple[GNNGraphAblation, ...] = (
@@ -91,6 +111,8 @@ GNN_GRAPH_ABLATIONS: tuple[GNNGraphAblation, ...] = (
         name="location_features_only",
         use_event_features=False,
         use_event_edges=False,
+        use_actor_nodes=False,
+        use_actor_edges=False,
         description="Tabular location history features only; event nodes are disconnected.",
     ),
     GNNGraphAblation(
@@ -106,12 +128,30 @@ GNN_GRAPH_ABLATIONS: tuple[GNNGraphAblation, ...] = (
     GNNGraphAblation(
         name="no_event_edges",
         use_event_edges=False,
+        use_actor_nodes=False,
+        use_actor_edges=False,
         description="Location features with event nodes present but disconnected.",
     ),
     GNNGraphAblation(
         name="no_location_features",
         use_location_features=False,
         description="Event layer with all tabular location features zeroed.",
+    ),
+    GNNGraphAblation(
+        name="no_actor_track",
+        use_actor_nodes=False,
+        use_actor_edges=False,
+        description="Current event-location graph without Actor nodes or participates_in edges.",
+    ),
+    GNNGraphAblation(
+        name="actor_structure_only",
+        actor_feature_mode="zero",
+        description="Actor nodes and participates_in edges with zero actor features.",
+    ),
+    GNNGraphAblation(
+        name="actor_no_qid_merge",
+        actor_merge_policy="none",
+        description="Actor track without collapsing duplicate Actor nodes by Wikidata QID.",
     ),
 )
 GNN_GRAPH_ABLATION_BY_NAME = {ablation.name: ablation for ablation in GNN_GRAPH_ABLATIONS}
@@ -149,15 +189,30 @@ class GNNForecastRow(BaseModel):
 
 
 class HeteroGNNModel(nn.Module):
+    """Actor -> Event -> Location GraphSAGE model.
+
+    Expected tensors:
+    - data["actor"].x: [num_actors, ACTOR_FEATURE_DIM] when actor tracking is enabled.
+    - data["event"].x: [num_events, EVENT_FEATURE_DIM].
+    - data["location"].x: [num_locations, len(FEATURE_NAMES)].
+    """
+
     def __init__(
         self,
         location_feature_dim: int,
         event_feature_dim: int,
+        actor_feature_dim: int = 0,
         hidden_dim: int = 64,
     ) -> None:
         super().__init__()
         self.loc_proj = nn.Linear(location_feature_dim, hidden_dim)
         self.evt_proj = nn.Linear(event_feature_dim, hidden_dim)
+        self.actor_proj = (
+            nn.Linear(actor_feature_dim, hidden_dim) if actor_feature_dim > 0 else None
+        )
+        self.actor_to_event_conv = (
+            SAGEConv((hidden_dim, hidden_dim), hidden_dim) if actor_feature_dim > 0 else None
+        )
         self.conv = SAGEConv((hidden_dim, hidden_dim), hidden_dim)
         self.head = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim // 2),
@@ -169,12 +224,180 @@ class HeteroGNNModel(nn.Module):
         loc_x = F.relu(self.loc_proj(data["location"].x))
         evt_x = F.relu(self.evt_proj(data["event"].x))
 
+        if (
+            self.actor_proj is not None
+            and self.actor_to_event_conv is not None
+            and "actor" in data.node_types
+            and ("actor", "participates_in", "event") in data.edge_types
+        ):
+            actor_edge_index = data["actor", "participates_in", "event"].edge_index
+            actor_raw_x = data["actor"].x
+            if actor_raw_x.shape[0] > 0 and actor_edge_index.shape[1] > 0:
+                actor_x = F.relu(self.actor_proj(actor_raw_x))
+                actor_msg = self.actor_to_event_conv((actor_x, evt_x), actor_edge_index)
+                evt_x = F.relu(evt_x + actor_msg)
+
         if ("event", "occurs_in", "location") in data.edge_types:
             edge_index = data["event", "occurs_in", "location"].edge_index
             loc_x = F.relu(self.conv((evt_x, loc_x), edge_index))
 
         logits = self.head(loc_x).squeeze(-1)
         return logits
+
+
+def _validate_actor_ablation(ablation: GNNGraphAblation) -> None:
+    if ablation.actor_feature_mode not in ACTOR_FEATURE_MODES:
+        available = ", ".join(sorted(ACTOR_FEATURE_MODES))
+        raise ValueError(
+            f"unknown actor_feature_mode '{ablation.actor_feature_mode}'. Available: {available}"
+        )
+    if ablation.actor_merge_policy not in ACTOR_MERGE_POLICIES:
+        available = ", ".join(sorted(ACTOR_MERGE_POLICIES))
+        raise ValueError(
+            f"unknown actor_merge_policy '{ablation.actor_merge_policy}'. Available: {available}"
+        )
+
+
+def _qid_hash_features(qid: str) -> torch.Tensor:
+    values = []
+    for index in range(ACTOR_QID_HASH_DIM):
+        digest = hashlib.sha256(f"{qid}:{index}".encode("utf-8")).digest()
+        raw = int.from_bytes(digest[:4], byteorder="big", signed=False)
+        values.append((raw / 0xFFFFFFFF) * 2.0 - 1.0)
+    return torch.tensor(values, dtype=torch.float32)
+
+
+def _provenance_sources(node: dict[str, Any]) -> set[str]:
+    provenance = node.get("provenance")
+    if not isinstance(provenance, dict):
+        return set()
+    sources = provenance.get("sources")
+    if isinstance(sources, list):
+        return {source for source in sources if isinstance(source, str) and source}
+    if isinstance(sources, str) and sources:
+        return {sources}
+    return set()
+
+
+def _actor_merge_key(node: dict[str, Any], merge_policy: str) -> tuple[str, str | None]:
+    qid = wikidata_qid_for_node(node)
+    if merge_policy == "qid" and qid:
+        return f"qid:{qid}", qid
+    return f"id:{node['id']}", qid
+
+
+def _build_actor_tensors(
+    *,
+    snapshot: dict[str, Any],
+    event_id_to_idx: dict[str, int],
+    ablation: GNNGraphAblation,
+) -> tuple[torch.Tensor, list[str], torch.Tensor, dict[str, Any]]:
+    actor_node_by_id = {
+        node["id"]: node for node in snapshot["nodes"] if node.get("type") == "Actor"
+    }
+
+    raw_edges = []
+    referenced_actor_ids: set[str] = set()
+    for edge in snapshot["edges"]:
+        if edge.get("type") != "participates_in":
+            continue
+        actor_id = edge.get("source")
+        event_id = edge.get("target")
+        if actor_id in actor_node_by_id and event_id in event_id_to_idx:
+            raw_edges.append(edge)
+            referenced_actor_ids.add(actor_id)
+
+    group_by_key: dict[str, dict[str, Any]] = {}
+    actor_id_to_key: dict[str, str] = {}
+    for actor_id in sorted(referenced_actor_ids):
+        node = actor_node_by_id[actor_id]
+        key, qid = _actor_merge_key(node, ablation.actor_merge_policy)
+        actor_id_to_key[actor_id] = key
+        group = group_by_key.setdefault(
+            key,
+            {
+                "actor_ids": [],
+                "qid": qid,
+                "sources": set(),
+                "participation_count": 0,
+            },
+        )
+        group["actor_ids"].append(actor_id)
+        group["sources"].update(_provenance_sources(node))
+        if qid and group["qid"] is None:
+            group["qid"] = qid
+
+    for edge in raw_edges:
+        actor_id = edge["source"]
+        group = group_by_key[actor_id_to_key[actor_id]]
+        group["participation_count"] += 1
+        attrs = edge.get("attributes") or {}
+        source_name = attrs.get("source_name")
+        if isinstance(source_name, str) and source_name:
+            group["sources"].add(source_name)
+
+    actor_keys = sorted(group_by_key)
+    actor_key_to_idx = {key: index for index, key in enumerate(actor_keys)}
+    actor_x = torch.zeros((len(actor_keys), ACTOR_FEATURE_DIM), dtype=torch.float32)
+    if ablation.actor_feature_mode != "zero":
+        for index, key in enumerate(actor_keys):
+            group = group_by_key[key]
+            qid = group["qid"]
+            actor_x[index, 0] = math.log1p(float(group["participation_count"]))
+            actor_x[index, 1] = math.log1p(float(len(group["sources"])))
+            actor_x[index, 2] = 1.0 if qid else 0.0
+            if ablation.actor_feature_mode == "qid" and qid:
+                actor_x[index, ACTOR_SCALAR_FEATURE_DIM:] = _qid_hash_features(qid)
+
+    edge_src: list[int] = []
+    edge_dst: list[int] = []
+    if ablation.use_actor_edges:
+        for edge in raw_edges:
+            key = actor_id_to_key[edge["source"]]
+            edge_src.append(actor_key_to_idx[key])
+            edge_dst.append(event_id_to_idx[edge["target"]])
+
+    edge_index = (
+        torch.tensor([edge_src, edge_dst], dtype=torch.long)
+        if edge_src
+        else torch.zeros((2, 0), dtype=torch.long)
+    )
+
+    qid_group_sizes: Counter[str] = Counter()
+    unresolved_label_keys: Counter[str] = Counter()
+    for actor_id in referenced_actor_ids:
+        node = actor_node_by_id[actor_id]
+        qid = wikidata_qid_for_node(node)
+        if qid:
+            qid_group_sizes[qid] += 1
+        else:
+            label = node.get("label")
+            if isinstance(label, str) and label.strip():
+                unresolved_label_keys[normalize_entity_label(label)] += 1
+
+    diagnostics = {
+        "actor_nodes_input": len(referenced_actor_ids),
+        "actor_nodes_output": len(actor_keys),
+        "actors_with_qid": sum(
+            1
+            for actor_id in referenced_actor_ids
+            if wikidata_qid_for_node(actor_node_by_id[actor_id])
+        ),
+        "actor_nodes_collapsed_by_qid": sum(
+            max(0, size - 1) for size in qid_group_sizes.values()
+        )
+        if ablation.actor_merge_policy == "qid"
+        else 0,
+        "unresolved_nodes_merged_by_strict_key": 0,
+        "unresolved_label_collision_count": sum(
+            1 for size in unresolved_label_keys.values() if size > 1
+        ),
+        "actor_participates_in_edges": len(raw_edges),
+        "actor_feature_mode": ablation.actor_feature_mode,
+        "actor_merge_policy": ablation.actor_merge_policy,
+        "actor_qid_hash_dim": ACTOR_QID_HASH_DIM,
+    }
+    return actor_x, actor_keys, edge_index, diagnostics
 
 
 def build_graph_from_snapshot(
@@ -185,6 +408,7 @@ def build_graph_from_snapshot(
 ) -> HeteroData:
     _ensure_gnn_runtime_configured()
     ablation = ablation or FULL_GRAPH_ABLATION
+    _validate_actor_ablation(ablation)
     data = HeteroData()
 
     location_nodes = [n for n in snapshot["nodes"] if n["type"] == "Location"]
@@ -224,6 +448,30 @@ def build_graph_from_snapshot(
                 if val is not None:
                     evt_x[i, j] = float(val)
     data["event"].x = evt_x
+
+    if ablation.use_actor_nodes:
+        actor_x, actor_keys, participates_in_edge_index, actor_diagnostics = _build_actor_tensors(
+            snapshot=snapshot,
+            event_id_to_idx=event_id_to_idx,
+            ablation=ablation,
+        )
+        data["actor"].x = actor_x
+        data["actor"].actor_keys = actor_keys
+        data["actor", "participates_in", "event"].edge_index = participates_in_edge_index
+        data.actor_diagnostics = actor_diagnostics
+    else:
+        data.actor_diagnostics = {
+            "actor_nodes_input": 0,
+            "actor_nodes_output": 0,
+            "actors_with_qid": 0,
+            "actor_nodes_collapsed_by_qid": 0,
+            "unresolved_nodes_merged_by_strict_key": 0,
+            "unresolved_label_collision_count": 0,
+            "actor_participates_in_edges": 0,
+            "actor_feature_mode": ablation.actor_feature_mode,
+            "actor_merge_policy": ablation.actor_merge_policy,
+            "actor_qid_hash_dim": ACTOR_QID_HASH_DIM,
+        }
 
     occurs_in_src, occurs_in_dst = [], []
     if ablation.use_event_edges:
@@ -281,9 +529,13 @@ def train_gnn(
 ) -> HeteroGNNModel:
     location_feature_dim = graphs[0]["location"].x.shape[1]
     event_feature_dim = graphs[0]["event"].x.shape[1]
+    actor_feature_dim = (
+        graphs[0]["actor"].x.shape[1] if "actor" in graphs[0].node_types else 0
+    )
     model = HeteroGNNModel(
         location_feature_dim=location_feature_dim,
         event_feature_dim=event_feature_dim,
+        actor_feature_dim=actor_feature_dim,
         hidden_dim=hidden_dim,
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
