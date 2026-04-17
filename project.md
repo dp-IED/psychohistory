@@ -2,69 +2,64 @@
 
 ## Purpose
 
-Build a temporally clean forecasting system over real-world historical evidence:
-events, actors, locations, narratives, sources, and eventually market belief
-signals. The product is not limited to protest forecasting. France protest
-forecasting was the first controlled benchmark used to test whether the graph
-forecasting approach earns its complexity.
+Build a **temporally clean**, **graph-based forecasting system** whose primary technical bet is an **adaptive heterogeneous GNN** over a **single situation-graph schema**. The system should **predict and explain** under explicit information cutoffs: **ranked outcome hypotheses**, **probabilities**, and **grounded evidence**—not a generic chatbot.
 
-That first gate has been crossed: the heterogeneous GNN now beats recurrence and
-the tabular XGBoost baseline on the main calibration/error metrics for the 2025
-holdout, with ranking still needing deeper ablation and tuning. The project can
-now move from proving the method on one narrow event class to expanding the
-evidence graph.
+France protest forecasting on GDELT was the **first controlled benchmark**: the heterogeneous **GNN beat the main baselines** there, so we do **not** need to keep re-proving that choice before advancing. That pipeline stays useful as an **optional smoke test** when touching ingestion, snapshots, or the event backtest stack—not a **gate** on every markets or world-model milestone.
 
-## Current Scope
+---
 
-The active MVP is a graph forecasting engine whose first validated task is:
+## Goals (what “done” means)
 
-> Given information visible at date `t`, forecast event intensity for the next
-> 7 days by location and event class.
+1. **Replayable history:** For any date `t`, reconstruct inputs from evidence and markets **visible at or before `t`** (no leakage).
+2. **Material forecasting:** On sharp targets (events, resolutions, prices where defined), match or beat **strong baselines** with **calibrated** probabilities; show **when graph structure helps** vs tabular features from the same cutoff.
+3. **Market-informed training:** Use **Polymarket / Kalshi / peers** as **dense supervision** (resolutions, belief paths, cross-market structure) with **masking ablations** so the backbone is not only “price memorization.”
+4. **Deploy beyond listed markets:** Support questions **not** listed as contracts; markets are **optional context**, not a hard requirement at inference for every query.
+5. **Discovered structure (not baked history):** Prefer **learned** slow factors, **switching / mixture** dynamics, and **graph inference** that **earn their keep** on **held-out prediction** and **ablations**—not fixed priors on named historical events (see `roadmap.md` Stage 6).
+6. **Epistemological tier (interpretations):** **Ranked hypotheses + evidence + uncertainty**; improvement judged by **HITL**, rubrics, or proxy tasks—not fluency alone.
+7. **Constrained Q&A:** Natural language that **routes** to **retrieval + forecasts + cutoff**; the LLM does **not** forecast alone.
 
-The current graph vocabulary is intentionally small but now eligible for
-measured expansion:
+---
 
-- actors
-- locations
-- events
-- narratives
-- markets
-- sources
+## Product surface
 
-## Repository Shape
+- **Interactive Q&A** (psychohistory-style): hypotheses, probabilities, evidence, limits.
+- **Material + epistemological** outputs where scoped; epistemological claims require explicit evaluation discipline (`docs/reviewers-guide.md`).
 
-The repository now keeps the pieces needed for the temporal forecasting loop:
+---
 
-- `forecast_charter.md` defines the first target, success metrics, allowed
-  inputs, validation gate, and expansion rules.
-- `roadmap.md` defines the broader program roadmap after the France protest
-  benchmark.
-- `schemas/` contains the typed graph IR schema and loader.
-- `evals/graph_artifact_contract.py` validates versioned graph artifacts.
-- `evals/wikidata_linking.py` provides lightweight Wikidata grounding helpers.
-- `ingest/` builds point-in-time event tapes and graph snapshots.
-- `baselines/` contains recurrence, tabular, and GNN backtests.
-- `tests/` verifies schema, artifact, ingestion, and baseline contracts.
+## Current codebase (engineering reality)
 
-The previous autoresearch harness, broad historical probe pack, and schema
-search machinery were removed from the active project because they encouraged
-ontology expansion before the forecasting target and temporal replay substrate
-were proven.
+- **DuckDB warehouse** + JSONL compatibility; weekly **graph snapshots** as of `t`.
+- **Baselines:** recurrence, tabular (XGBoost), heterogeneous **GNN** (`baselines/`).
+- **Contracts:** `evals/graph_artifact_contract.py`, metrics in `baselines/metrics.py`.
+- **Grounding:** Wikidata / linking workstreams under `docs/wikidata/`.
 
-## Next Engineering Step
+**vs target architecture** (`docs/research/architecture.md`): **evidence, builder, and GNN encoder** are in code; a **named world-model module** and **query-lens module** are **not**—they are the main **research and execution-risk** pieces. **Ongoing:** **ACLED** and other sources, **reproducible audits**, **prediction-market ingestion** (schema TBD), **time-then-space WM v0** on event labels (train loop first), then market labels with **adversarial PIT harness** and **coverage** reporting.
 
-Freeze the France protest benchmark as the regression harness, then expand the
-graph one layer at a time:
+---
 
-1. add a unified comparison audit for recurrence, XGBoost, and GNN on the same
-   holdout windows;
-2. add GNN seed control and ablations so improvements are reproducible;
-3. ingest ACLED as a second event evidence layer;
-4. ground actors and locations through point-in-time Wikidata snapshots;
-5. add actor, source, and narrative nodes only when each addition improves
-   backtest metrics or explains a concrete failure mode.
+## Repository map
 
-The next product milestone is not "more protest forecasting." It is a broader,
-temporally clean graph forecaster that proves each added source and node type
-against the frozen benchmark before moving toward analog retrieval and analyst
-Q&A.
+| Path | Role |
+|------|------|
+| `forecast_charter.md` | Targets, metrics, inputs, non-goals |
+| `roadmap.md` | **Full** program stages, gates, **what to avoid** |
+| `next_steps.md` | **Actionable** near-term work order |
+| `docs/reviewers-guide.md` | How to review claims, discovery protocol, red flags |
+| `docs/research/architecture.md` | **Target** layered architecture (evidence → world model → heads); not code-bound |
+| `docs/research/research.md` | Deep-research handoff and conversation summary |
+| `docs/storage_architecture.md` | Shared warehouse, symlinks |
+| `docs/source_layer_experiments.md` | France harness source ablations |
+| `schemas/` | Typed graph IR |
+| `ingest/` | Tapes, warehouse, snapshot export |
+| `baselines/` | Backtests and models |
+| `tests/` | Contracts |
+
+---
+
+## Strategic themes (tie-breakers)
+
+- **Gradients before grand design:** a **thin, correct training loop** on pinned event snapshots beats a perfect spec that never runs; extend `baselines/` and tests until **WM v0** trains end-to-end, then add markets (`next_steps.md` §0–2).
+- **Measurement over ontology:** expand types only when a metric or failure mode demands it; **minus-variants** before new node types.
+- **Parallel tracks:** **WM v0 on events** does not wait for Polymarket; markets add **label contracts**, **masking**, and **coverage audits** once the loop is real. Rerun the **France** reference when shared code changes—do not collapse the program into a single protest demo metric.
+- **Discovery vs naming:** statistical structure first; **historical / expert naming** second, with independent checks.

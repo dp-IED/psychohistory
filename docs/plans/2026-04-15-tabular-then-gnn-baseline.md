@@ -3,7 +3,8 @@
 > Status: completed as the first validation benchmark. This document is retained
 > as implementation history, not as the current product scope. France protest
 > forecasting validated the method; it is now the regression benchmark for
-> broader graph forecasting work.
+> broader graph forecasting work. Current program: [`project.md`](../../project.md),
+> [`roadmap.md`](../../roadmap.md), [`next_steps.md`](../../next_steps.md).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

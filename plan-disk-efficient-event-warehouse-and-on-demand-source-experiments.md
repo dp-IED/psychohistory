@@ -1,5 +1,9 @@
 # Plan: Disk-Efficient Event Warehouse And On-Demand Source Experiments
 
+**Status (2026-04):** The **canonical DuckDB warehouse**, shared data root, and **in-memory default** for source experiments are implemented; operational commands and workspace setup are documented in [`docs/storage_architecture.md`](docs/storage_architecture.md). The remainder of this file is **design history and detailed checklist**—read the storage doc first for day-to-day use.
+
+---
+
 ## Summary
 
 Refactor the ingestion and experiment pipeline away from duplicated JSONL/raw/snapshot trees and toward a compact canonical event warehouse outside repo workspaces.

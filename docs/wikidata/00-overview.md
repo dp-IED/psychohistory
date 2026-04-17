@@ -1,5 +1,7 @@
 # Wikidata roadmap — overview
 
+Broader **product direction**, **full roadmap**, and **next steps** live in [`project.md`](../../project.md), [`roadmap.md`](../../roadmap.md), and [`next_steps.md`](../../next_steps.md). Review criteria: [`docs/reviewers-guide.md`](../reviewers-guide.md). This folder stays focused on **entity grounding and graph features** for the forecasting stack.
+
 This folder splits the Wikidata workstream into **independent plans**. Each plan is self-contained: goal, design, **ablation matrix**, risks, and dependencies. Implement and benchmark one track at a time; shared metrics keep results comparable to the France protest benchmark ([`docs/2026-04-16-france-gdelt-benchmark-note.md`](../2026-04-16-france-gdelt-benchmark-note.md)).
 
 ## Recommended order
@@ -28,9 +30,9 @@ Use the same task definition unless a plan explicitly scopes a smoke subset:
 
 | File | Topic |
 |------|--------|
-| [`01-point-in-time-grounding.md`](01-point-in-time-grounding.md) | Reproducible grounding: API vs dumps, cache policy, audit |
-| [`02-qid-input-features.md`](02-qid-input-features.md) | QID-derived vectors for the **existing** Location/Event GNN inputs |
-| [`03-actor-hetero-gnn.md`](03-actor-hetero-gnn.md) | Actor node type, edges, QID-based merge |
+| [`01-point-in-time-grounding-done.md`](01-point-in-time-grounding-done.md) | Reproducible grounding: API vs dumps, cache policy, audit |
+| [`02-qid-input-features-done.md`](02-qid-input-features-done.md) | QID-derived vectors for the **existing** Location/Event GNN inputs |
+| [`03-actor-hetero-gnn-done.md`](03-actor-hetero-gnn-done.md) | Actor node type, edges, QID-based merge |
 | [`04-wikidata-properties-hierarchy.md`](04-wikidata-properties-hierarchy.md) | Structured properties, hierarchy edges, leakage controls |
 | [`05-analog-retrieval-explainability.md`](05-analog-retrieval-explainability.md) | Subgraph retrieval, explanations; mostly non-training |
 

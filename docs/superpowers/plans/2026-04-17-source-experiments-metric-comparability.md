@@ -1,5 +1,7 @@
 # Source-Experiment Metric Comparability — Implementation Plan
 
+**Program context:** `project.md`, `docs/reviewers-guide.md` (France harness metrics must stay comparable as the regression suite evolves.)
+
 > **For agentic workers:** Use `superpowers:subagent-driven-development` or `superpowers:executing-plans` to implement task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make cross-experiment reporting fair when `positive_count` differs (e.g. 255 vs 485 on the same row count) by adding supplemental metrics and clear reporting—without changing label construction or the forecast task.
