@@ -11,7 +11,13 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Literal, Sequence
 
-from evals.graph_artifact_contract import GRAPH_ARTIFACT_FORMAT, GraphArtifactV1
+from baselines.forecast_scaffold_windows import (
+    WEEKLY_ORIGIN_DEVELOPMENT_END,
+    WEEKLY_ORIGIN_DEVELOPMENT_START,
+    WEEKLY_ORIGIN_HOLDOUT_END,
+    WEEKLY_ORIGIN_HOLDOUT_START,
+)
+from evals.graph_artifact_contract import GRAPH_ARTIFACT_FORMAT, GraphArtifactV1, validate_graph_artifact_point_in_time
 from ingest.event_tape import EventTapeRecord, load_event_tape
 from ingest.io_utils import write_json_atomic
 
@@ -59,9 +65,9 @@ def _weekly_origins(start: dt.date, end: dt.date) -> list[dt.date]:
 
 
 def _split_for_origin(origin_date: dt.date) -> str:
-    if dt.date(2021, 1, 4) <= origin_date <= dt.date(2024, 12, 30):
+    if WEEKLY_ORIGIN_DEVELOPMENT_START <= origin_date <= WEEKLY_ORIGIN_DEVELOPMENT_END:
         return "development"
-    if dt.date(2025, 1, 6) <= origin_date <= dt.date(2025, 12, 29):
+    if WEEKLY_ORIGIN_HOLDOUT_START <= origin_date <= WEEKLY_ORIGIN_HOLDOUT_END:
         return "holdout"
     raise ValueError(f"origin outside configured splits: {origin_date.isoformat()}")
 
@@ -497,7 +503,8 @@ def export_weekly_snapshots(
             source_identity_mode=source_identity_mode,
         )
         try:
-            GraphArtifactV1.model_validate(payload)
+            artifact = GraphArtifactV1.model_validate(payload)
+            validate_graph_artifact_point_in_time(artifact)
         except Exception:
             invalid_path = out_dir / f"as_of_{origin_date.isoformat()}.invalid.json"
             invalid_path.write_text(

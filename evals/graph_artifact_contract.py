@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, model_validator
 
 
 GRAPH_ARTIFACT_FORMAT = "graph_artifact_v1"
+UTC = dt.timezone.utc
 
 
 class ArtifactTimeSpan(BaseModel):
@@ -245,4 +246,80 @@ def assert_point_in_time_target_table(
             raise ValueError(
                 f"PIT violation: target {record.target_id!r} observable_no_earlier_than={when!r} "
                 f"is after forecast_origin {forecast_origin}"
+            )
+
+
+def _parse_metadata_forecast_origin(metadata: dict[str, Any]) -> dt.datetime | None:
+    raw = metadata.get("forecast_origin")
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    text = raw.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    parsed = dt.datetime.fromisoformat(text)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
+
+
+def _span_start_date(span: ArtifactTimeSpan) -> dt.date | None:
+    if not span.start:
+        return None
+    head = span.start.strip()[:10]
+    if len(head) != 10 or head[4] != "-" or head[7] != "-":
+        return None
+    try:
+        return dt.date.fromisoformat(head)
+    except ValueError:
+        return None
+
+
+def validate_graph_artifact_point_in_time(artifact: GraphArtifactV1) -> None:
+    """
+    When ``metadata["forecast_origin"]`` is set (ISO-8601, ``Z`` allowed), fail closed on
+    obvious point-in-time leaks in the **input graph**: label-window events, reports that
+    were not yet available at ``forecast_origin``, and target rows that declare a future
+    observability bound (see :func:`assert_point_in_time_target_table`).
+    """
+
+    origin_dt = _parse_metadata_forecast_origin(artifact.metadata)
+    if origin_dt is None:
+        return
+    origin_date = origin_dt.date()
+    assert_point_in_time_target_table(artifact, forecast_origin=origin_date)
+
+    for node in artifact.nodes:
+        if node.type != "Event":
+            continue
+        event_day = _span_start_date(node.time)
+        if event_day is not None and event_day >= origin_date:
+            raise ValueError(
+                f"PIT violation: Event {node.id!r} has time.start on or after forecast_origin "
+                f"date {origin_date.isoformat()} (label-window or future event in feature graph)"
+            )
+        raw_avail = node.attributes.get("source_available_at")
+        if isinstance(raw_avail, str) and raw_avail.strip():
+            text = raw_avail.strip()
+            if text.endswith("Z"):
+                text = text[:-1] + "+00:00"
+            avail = dt.datetime.fromisoformat(text)
+            if avail.tzinfo is None:
+                avail = avail.replace(tzinfo=UTC)
+            avail = avail.astimezone(UTC)
+            if avail >= origin_dt:
+                raise ValueError(
+                    f"PIT violation: Event {node.id!r} has source_available_at {raw_avail!r} "
+                    "on or after metadata.forecast_origin (post-t report availability leak)"
+                )
+
+    for edge in artifact.edges:
+        if edge.type not in {"occurs_in", "reports", "participates_in"}:
+            continue
+        edge_day = _span_start_date(edge.time)
+        if edge_day is None:
+            continue
+        if edge_day >= origin_date:
+            raise ValueError(
+                f"PIT violation: edge {edge.type!r} {edge.source!r}->{edge.target!r} has "
+                f"time.start on or after forecast_origin date {origin_date.isoformat()}"
             )

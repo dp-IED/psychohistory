@@ -24,7 +24,7 @@ from baselines.metrics import (
 from baselines.recurrence import ForecastRow, RECURRENCE_MODEL_NAMES
 from baselines.recurrence import build_recurrence_forecasts_for_origin
 from baselines.tabular import predict_tabular, train_tabular_model
-from evals.graph_artifact_contract import GraphArtifactV1
+from evals.graph_artifact_contract import GraphArtifactV1, validate_graph_artifact_point_in_time
 from ingest.event_tape import EventTapeRecord, load_event_tape
 from ingest.event_warehouse import query_records, source_counts
 from ingest.io_utils import open_text_auto, write_json_atomic
@@ -281,7 +281,8 @@ def _write_snapshot_payloads(
     written: list[Path] = []
     for item in inputs:
         try:
-            GraphArtifactV1.model_validate(item.snapshot)
+            artifact = GraphArtifactV1.model_validate(item.snapshot)
+            validate_graph_artifact_point_in_time(artifact)
         except Exception:
             invalid_path = out_dir / f"as_of_{item.origin.isoformat()}.invalid.json"
             write_json_atomic(invalid_path, item.snapshot)

@@ -6,6 +6,10 @@ from pathlib import Path
 
 import pytest
 
+from baselines.forecast_scaffold_windows import (
+    WEEKLY_ORIGIN_DEVELOPMENT_START,
+    WEEKLY_ORIGIN_HOLDOUT_START,
+)
 from evals.graph_artifact_contract import GraphArtifactV1
 from ingest.event_tape import EventTapeRecord
 from ingest.snapshot_export import build_snapshot_payload, export_weekly_snapshots
@@ -55,6 +59,14 @@ def _target_value(payload: dict, admin1_code: str, name: str) -> int | bool:
         if row["metadata"]["admin1_code"] == admin1_code and row["name"] == name:
             return row["value"]
     raise AssertionError(f"missing target {name} for {admin1_code}")
+
+
+def test_pinned_scaffold_windows_align_with_target_split_field() -> None:
+    rec = _record("gdelt:feature", event_date="2021-01-01", source_available_at="2021-01-02T00:00:00Z")
+    dev = build_snapshot_payload(records=[rec], origin_date=WEEKLY_ORIGIN_DEVELOPMENT_START)
+    hold = build_snapshot_payload(records=[rec], origin_date=WEEKLY_ORIGIN_HOLDOUT_START)
+    assert dev["target_table"][0]["split"] == "development"
+    assert hold["target_table"][0]["split"] == "holdout"
 
 
 def test_reconstruction_excludes_future_available_records() -> None:

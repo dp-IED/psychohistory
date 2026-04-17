@@ -1,8 +1,14 @@
-"""Per-origin per-admin1 feature extraction from the event tape."""
+"""Per-origin per-admin1 feature extraction from the event tape.
+
+Graph baselines (:mod:`baselines.gnn`) combine these tape-derived **location** vectors with
+heterogeneous node tensors; see ``NODE_FEATURE_CONTRACT`` for what exists at snapshot time
+``t`` versus what is absent or only in ``target_table``.
+"""
 
 from __future__ import annotations
 
 import datetime as dt
+from typing import Any
 
 import numpy as np
 
@@ -11,6 +17,48 @@ from ingest.event_tape import EventTapeRecord
 UTC = dt.timezone.utc
 WINDOW_DAYS = 7
 NATIONAL_CODES = frozenset({"FR", "FR00"})
+
+NODE_FEATURE_CONTRACT: dict[str, dict[str, Any]] = {
+    "Location": {
+        "present_at_snapshot_t": [
+            "vector FEATURE_NAMES from tape rows with event_date < t and source_available_at < t",
+            "admin1_code, country_code, optional gdelt_adm1 external id on the graph node",
+            "graph degree over occurs_in from Event nodes that passed the same PIT filters",
+        ],
+        "absent_or_unmodeled": [
+            "frozen text or embedding of place semantics (reserved; not in current baseline)",
+            "labels (next-7d counts / occurrence) — carried only in target_table, not as node attrs",
+        ],
+    },
+    "Event": {
+        "present_at_snapshot_t": [
+            "scalar attributes goldstein_scale, avg_tone, num_mentions, num_articles when present",
+            "event_date as time.start, source_available_at, source identity fields in attributes",
+        ],
+        "absent_or_unmodeled": [
+            "any post-t report fields not yet observable at metadata.forecast_origin",
+            "learned event embedding beyond the four numeric GDELT-style scalars",
+        ],
+    },
+    "Actor": {
+        "present_at_snapshot_t": [
+            "label string, country_code attribute when present",
+            "topology only via participates_in -> Event (no dedicated actor embedding tensor)",
+        ],
+        "absent_or_unmodeled": [
+            "Wikidata QID features or role embeddings (optional in other scaffolds)",
+        ],
+    },
+    "Source": {
+        "present_at_snapshot_t": [
+            "discrete source identity (one node per logical feed in preserve mode)",
+            "topology via reports -> Event",
+        ],
+        "absent_or_unmodeled": [
+            "reliability scores or corpus-wide embeddings",
+        ],
+    },
+}
 
 FEATURE_NAMES: list[str] = [
     "event_count_prev_1w",
