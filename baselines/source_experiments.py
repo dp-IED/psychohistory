@@ -405,6 +405,9 @@ def run_source_layer_experiments(
     progress: bool = False,
     run_recurrence: bool = True,
     run_tabular: bool = True,
+    gnn_qid_features: str = "off",
+    qid_dim: int = 0,
+    qid_bucket_count: int = 4096,
     grounding_cache: Path | None = None,
     grounding_request_delay_s: float = 0.25,
     grounding_log: bool = True,
@@ -467,6 +470,11 @@ def run_source_layer_experiments(
         "snapshot_mode": snapshot_mode,
         "snapshot_format": snapshot_format,
         "predictions_format": predictions_format,
+        "qid_features": {
+            "mode": gnn_qid_features.strip().casefold(),
+            "dim": 0 if gnn_qid_features.strip().casefold() == "off" else qid_dim,
+            "bucket_count": qid_bucket_count,
+        },
         "experiments": [],
     }
 
@@ -593,6 +601,9 @@ def run_source_layer_experiments(
             target_lookup=target_lookup,
             out_path=gnn_path,
             gnn_ablation=gnn_ablation,
+            gnn_qid_features=gnn_qid_features,
+            qid_dim=qid_dim,
+            qid_bucket_count=qid_bucket_count,
             epochs=epochs,
             hidden_dim=hidden_dim,
             predictions_format=predictions_format,
