@@ -80,7 +80,7 @@ Hold **grounding cache fixed** (G1 from plan 01) so differences are from **featu
 1. In `build_graph_from_snapshot`, read `external_ids.wikidata` from Location nodes (and optionally Event).
 2. Add `qid_dim` to `HeteroGNNModel` constructor; `loc_proj` becomes `Linear(location_dim + qid_dim, hidden)`.
 3. CLI flag: `--gnn-qid-features {off,hash,learned}` and `--qid-dim`.
-4. Tests: unit tests for hash stability; small graph with fake QIDs.
+4. Tests: unit tests for hash stability; small graph with real Wikidata QIDs.
 
 ---
 

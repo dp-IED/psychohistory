@@ -13,6 +13,7 @@ from baselines.gnn import (
     HeteroGNNModel,
     build_graph_from_snapshot,
     predict_gnn,
+    qid_hash_vector,
     resolve_gnn_graph_ablations,
     train_gnn,
 )
@@ -197,6 +198,86 @@ def _snapshot_with_actor_track(origin_date: dt.date) -> dict:
         ]
     )
     return snap
+
+
+def _snapshot_with_location_qids(origin_date: dt.date) -> dict:
+    snapshot = _minimal_snapshot(origin_date)
+    qids_by_admin1 = {
+        "FR11": "Q13917",  # Ile-de-France
+        "FR22": "Q18677875",  # Hauts-de-France
+    }
+    for node in snapshot["nodes"]:
+        if node["type"] == "Location":
+            admin1_code = node["attributes"]["admin1_code"]
+            node["external_ids"]["wikidata"] = qids_by_admin1[admin1_code]
+    return snapshot
+
+
+def test_qid_hash_vector_is_stable_for_real_wikidata_qids() -> None:
+    ile_de_france = qid_hash_vector("Q13917", 8)
+
+    assert ile_de_france.shape == (8,)
+    assert torch.equal(ile_de_france, qid_hash_vector("Q13917", 8))
+    assert not torch.equal(ile_de_france, qid_hash_vector("Q18677875", 8))
+
+
+def test_build_graph_appends_location_qid_hash_features_from_external_ids() -> None:
+    origin = dt.date(2021, 1, 11)
+    snap = _snapshot_with_location_qids(origin)
+    feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+
+    data = build_graph_from_snapshot(
+        snapshot=snap,
+        feature_rows=feature_rows,
+        qid_feature_mode="hash",
+        qid_dim=8,
+    )
+
+    assert data["location"].x.shape == (2, len(FEATURE_NAMES) + 8)
+    assert torch.equal(data["location"].x[0, len(FEATURE_NAMES):], qid_hash_vector("Q13917", 8))
+    assert torch.equal(data["location"].x[1, len(FEATURE_NAMES):], qid_hash_vector("Q18677875", 8))
+    assert data.qid_features == {"mode": "hash", "dim": 8, "bucket_count": 4096}
+
+
+def test_build_graph_uses_zero_hash_features_when_location_qid_is_missing() -> None:
+    origin = dt.date(2021, 1, 11)
+    snap = _minimal_snapshot(origin)
+    feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+
+    data = build_graph_from_snapshot(
+        snapshot=snap,
+        feature_rows=feature_rows,
+        qid_feature_mode="hash",
+        qid_dim=8,
+    )
+
+    assert torch.count_nonzero(data["location"].x[:, len(FEATURE_NAMES):]).item() == 0
+
+
+def test_learned_qid_embedding_forward_pass_uses_location_buckets() -> None:
+    origin = dt.date(2021, 1, 11)
+    snap = _snapshot_with_location_qids(origin)
+    feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+    data = build_graph_from_snapshot(
+        snapshot=snap,
+        feature_rows=feature_rows,
+        qid_feature_mode="learned",
+        qid_dim=4,
+    )
+
+    model = HeteroGNNModel(
+        location_feature_dim=len(FEATURE_NAMES),
+        event_feature_dim=4,
+        hidden_dim=16,
+        qid_dim=4,
+        qid_bucket_count=4096,
+    )
+    logits = model(data)
+
+    assert logits.shape == (2,)
+    assert data["location"].qid_bucket.shape == (2,)
+    assert data["location"].qid_bucket[0].item() != 0
+    assert data["location"].qid_bucket[0].item() != data["location"].qid_bucket[1].item()
 
 
 def test_build_graph_from_snapshot_returns_heterodata() -> None:
@@ -444,7 +525,7 @@ def test_gnn_backtest_from_payloads_writes_gzip_output(tmp_path: Path) -> None:
     target_lookup = {}
     for week in range(6):
         origin = dt.date(2021, 1, 4) + dt.timedelta(weeks=week)
-        snapshot = _minimal_snapshot(origin)
+        snapshot = _snapshot_with_location_qids(origin)
         feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
         item = OriginInputs(origin=origin, snapshot=snapshot, feature_rows=feature_rows)
         for row in snapshot["target_table"]:
@@ -467,10 +548,13 @@ def test_gnn_backtest_from_payloads_writes_gzip_output(tmp_path: Path) -> None:
         out_path=out_path,
         epochs=1,
         hidden_dim=16,
+        gnn_qid_features="hash",
+        qid_dim=4,
     )
 
     assert out_path.exists()
     assert audit["eval_row_count"] > 0
+    assert audit["qid_features"] == {"mode": "hash", "dim": 4, "bucket_count": 4096}
 
 
 @pytest.mark.torch_train

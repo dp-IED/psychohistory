@@ -28,6 +28,15 @@ class OriginInputs:
     feature_rows: list[FeatureRow]
 
 
+def _qid_feature_audit(mode: str, dim: int, bucket_count: int) -> dict[str, Any]:
+    normalized_mode = mode.strip().casefold()
+    return {
+        "mode": normalized_mode,
+        "dim": 0 if normalized_mode == "off" else dim,
+        "bucket_count": bucket_count,
+    }
+
+
 def _filter_records_by_sources(records: list[Any], source_names: set[str] | None) -> list[Any]:
     if source_names is None:
         return records
@@ -275,6 +284,9 @@ def run_gnn_backtest(
     gnn_ablation: Any | None = None,
     epochs: int = 30,
     hidden_dim: int = 64,
+    gnn_qid_features: str = "off",
+    qid_dim: int = 0,
+    qid_bucket_count: int = 4096,
     progress: bool = False,
 ) -> dict[str, Any]:
     if train_origin_end >= eval_origin_start:
@@ -354,6 +366,9 @@ def run_gnn_backtest(
             snapshot=snap,
             feature_rows=feature_rows,
             ablation=gnn_ablation,
+            qid_feature_mode=gnn_qid_features,
+            qid_dim=qid_dim,
+            qid_bucket_count=qid_bucket_count,
         )
         train_graphs.append(graph)
         _build_target_lookup_for_origin(origin)
@@ -365,7 +380,14 @@ def run_gnn_backtest(
             flush=True,
         )
 
-    model = train_gnn(graphs=train_graphs, epochs=epochs, hidden_dim=hidden_dim)
+    model = train_gnn(
+        graphs=train_graphs,
+        epochs=epochs,
+        hidden_dim=hidden_dim,
+        qid_feature_mode=gnn_qid_features,
+        qid_dim=qid_dim,
+        qid_bucket_count=qid_bucket_count,
+    )
 
     eval_rows: list[GNNForecastRow] = []
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -388,6 +410,9 @@ def run_gnn_backtest(
                 snapshot=snap,
                 feature_rows=feature_rows,
                 ablation=gnn_ablation,
+                qid_feature_mode=gnn_qid_features,
+                qid_dim=qid_dim,
+                qid_bucket_count=qid_bucket_count,
             )
             _build_target_lookup_for_origin(origin)
             preds = predict_gnn(
@@ -414,6 +439,7 @@ def run_gnn_backtest(
         "admin1_count": len(scoring_universe),
         "epochs": epochs,
         "hidden_dim": hidden_dim,
+        "qid_features": _qid_feature_audit(gnn_qid_features, qid_dim, qid_bucket_count),
         "brier": brier_score(eval_rows, model_name),
         "mae": mean_absolute_error(eval_rows, model_name),
         "top5_hit_rate": top_k_hit_rate(eval_rows, model_name, k=5),
@@ -433,6 +459,9 @@ def run_gnn_backtest_from_payloads(
     epochs: int,
     hidden_dim: int,
     gnn_ablation: Any | None = None,
+    gnn_qid_features: str = "off",
+    qid_dim: int = 0,
+    qid_bucket_count: int = 4096,
     predictions_format: str = "jsonl.gz",
     progress: bool = False,
 ) -> dict[str, Any]:
@@ -464,6 +493,9 @@ def run_gnn_backtest_from_payloads(
                 snapshot=item.snapshot,
                 feature_rows=item.feature_rows,
                 ablation=gnn_ablation,
+                qid_feature_mode=gnn_qid_features,
+                qid_dim=qid_dim,
+                qid_bucket_count=qid_bucket_count,
             )
         )
 
@@ -473,7 +505,14 @@ def run_gnn_backtest_from_payloads(
             file=sys.stderr,
             flush=True,
         )
-    model = train_gnn(graphs=train_graphs, epochs=epochs, hidden_dim=hidden_dim)
+    model = train_gnn(
+        graphs=train_graphs,
+        epochs=epochs,
+        hidden_dim=hidden_dim,
+        qid_feature_mode=gnn_qid_features,
+        qid_dim=qid_dim,
+        qid_bucket_count=qid_bucket_count,
+    )
 
     eval_rows: list[GNNForecastRow] = []
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -489,6 +528,9 @@ def run_gnn_backtest_from_payloads(
                 snapshot=item.snapshot,
                 feature_rows=item.feature_rows,
                 ablation=gnn_ablation,
+                qid_feature_mode=gnn_qid_features,
+                qid_dim=qid_dim,
+                qid_bucket_count=qid_bucket_count,
             )
             preds = predict_gnn(
                 model=model,
@@ -515,6 +557,7 @@ def run_gnn_backtest_from_payloads(
         "admin1_count": len({row.admin1_code for item in all_inputs for row in item.feature_rows}),
         "epochs": epochs,
         "hidden_dim": hidden_dim,
+        "qid_features": _qid_feature_audit(gnn_qid_features, qid_dim, qid_bucket_count),
         "predictions_format": predictions_format,
         "brier": brier_score(eval_rows, model_name),
         "mae": mean_absolute_error(eval_rows, model_name),
@@ -547,6 +590,9 @@ def run_gnn_ablation_backtest(
     ablation_names: Sequence[str] | None = None,
     epochs: int = 30,
     hidden_dim: int = 64,
+    gnn_qid_features: str = "off",
+    qid_dim: int = 0,
+    qid_bucket_count: int = 4096,
     progress: bool = False,
 ) -> dict[str, Any]:
     if train_origin_end >= eval_origin_start:
@@ -661,10 +707,20 @@ def run_gnn_ablation_backtest(
                     snapshot=snapshot,
                     feature_rows=feature_rows,
                     ablation=ablation,
+                    qid_feature_mode=gnn_qid_features,
+                    qid_dim=qid_dim,
+                    qid_bucket_count=qid_bucket_count,
                 )
                 for _, snapshot, feature_rows in train_inputs
             ]
-            model = train_gnn(graphs=train_graphs, epochs=epochs, hidden_dim=hidden_dim)
+            model = train_gnn(
+                graphs=train_graphs,
+                epochs=epochs,
+                hidden_dim=hidden_dim,
+                qid_feature_mode=gnn_qid_features,
+                qid_dim=qid_dim,
+                qid_bucket_count=qid_bucket_count,
+            )
 
             eval_rows: list[GNNForecastRow] = []
             for idx, (origin, snapshot, feature_rows) in enumerate(eval_inputs, start=1):
@@ -672,6 +728,9 @@ def run_gnn_ablation_backtest(
                     snapshot=snapshot,
                     feature_rows=feature_rows,
                     ablation=ablation,
+                    qid_feature_mode=gnn_qid_features,
+                    qid_dim=qid_dim,
+                    qid_bucket_count=qid_bucket_count,
                 )
                 preds = predict_gnn(
                     model=model,
@@ -700,6 +759,11 @@ def run_gnn_ablation_backtest(
                     "model_name": model_name,
                     "train_graph_count": len(train_graphs),
                     "eval_row_count": len(eval_rows),
+                    "qid_features": _qid_feature_audit(
+                        gnn_qid_features,
+                        qid_dim,
+                        qid_bucket_count,
+                    ),
                     "brier": brier_score(eval_rows, model_name),
                     "mae": mean_absolute_error(eval_rows, model_name),
                     "top5_hit_rate": top_k_hit_rate(eval_rows, model_name, k=5),
@@ -730,6 +794,7 @@ def run_gnn_ablation_backtest(
         "admin1_count": len(scoring_universe),
         "epochs": epochs,
         "hidden_dim": hidden_dim,
+        "qid_features": _qid_feature_audit(gnn_qid_features, qid_dim, qid_bucket_count),
         "ablation_count": len(ablations),
         "eval_row_count": len(all_eval_rows),
         "ablations": ablation_audits,
@@ -771,6 +836,14 @@ def _build_parser() -> argparse.ArgumentParser:
     gnn.add_argument("--out", default="data/gdelt/baselines/france_protest/gnn_predictions.jsonl")
     gnn.add_argument("--epochs", type=int, default=30)
     gnn.add_argument("--hidden-dim", type=int, default=64)
+    gnn.add_argument(
+        "--gnn-qid-features",
+        choices=["off", "hash", "learned"],
+        default="off",
+        help="Location Wikidata QID feature mode.",
+    )
+    gnn.add_argument("--qid-dim", type=int, default=32)
+    gnn.add_argument("--qid-bucket-count", type=int, default=4096)
     gnn.add_argument("--no-progress", dest="progress", action="store_false", default=True)
     gnn_ablations = subparsers.add_parser("gnn-ablations")
     gnn_ablations.add_argument("--tape", default="data/gdelt/tape/france_protest/events.jsonl")
@@ -791,6 +864,14 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     gnn_ablations.add_argument("--epochs", type=int, default=30)
     gnn_ablations.add_argument("--hidden-dim", type=int, default=64)
+    gnn_ablations.add_argument(
+        "--gnn-qid-features",
+        choices=["off", "hash", "learned"],
+        default="off",
+        help="Location Wikidata QID feature mode.",
+    )
+    gnn_ablations.add_argument("--qid-dim", type=int, default=32)
+    gnn_ablations.add_argument("--qid-bucket-count", type=int, default=4096)
     gnn_ablations.add_argument("--no-progress", dest="progress", action="store_false", default=True)
     source_experiments = subparsers.add_parser("source-experiments")
     source_experiments.add_argument(
@@ -820,6 +901,14 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     source_experiments.add_argument("--epochs", type=int, default=30)
     source_experiments.add_argument("--hidden-dim", type=int, default=64)
+    source_experiments.add_argument(
+        "--gnn-qid-features",
+        choices=["off", "hash", "learned"],
+        default="off",
+        help="Location Wikidata QID feature mode for GNN runs.",
+    )
+    source_experiments.add_argument("--qid-dim", type=int, default=32)
+    source_experiments.add_argument("--qid-bucket-count", type=int, default=4096)
     source_experiments.add_argument(
         "--snapshot-mode",
         choices=["in_memory", "in-memory", "materialize"],
@@ -863,6 +952,19 @@ def _build_parser() -> argparse.ArgumentParser:
         "--grounding-cache",
         default=None,
         help="Optional path to a JSON cache file for Wikidata Actor/Location grounding (API search).",
+    )
+    source_experiments.add_argument(
+        "--grounding-dump-manifest",
+        default=None,
+        help=(
+            "Optional path to a Wikidata dump-slice manifest JSON. "
+            "For each origin date, the latest dump with dump_date <= origin is used."
+        ),
+    )
+    source_experiments.add_argument(
+        "--grounding-no-api-fallback",
+        action="store_true",
+        help="Disable live Wikidata API fallback when dump-slice lookup misses.",
     )
     source_experiments.add_argument(
         "--grounding-request-delay",
@@ -921,6 +1023,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 out_path=Path(args.out),
                 epochs=args.epochs,
                 hidden_dim=args.hidden_dim,
+                gnn_qid_features=args.gnn_qid_features,
+                qid_dim=args.qid_dim,
+                qid_bucket_count=args.qid_bucket_count,
                 progress=args.progress,
             )
         except Exception as exc:
@@ -940,6 +1045,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ablation_names=_parse_gnn_ablation_names(args.ablations),
                 epochs=args.epochs,
                 hidden_dim=args.hidden_dim,
+                gnn_qid_features=args.gnn_qid_features,
+                qid_dim=args.qid_dim,
+                qid_bucket_count=args.qid_bucket_count,
                 progress=args.progress,
             )
         except Exception as exc:
@@ -974,6 +1082,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 experiment_names=_parse_experiment_names(args.experiments),
                 epochs=args.epochs,
                 hidden_dim=args.hidden_dim,
+                gnn_qid_features=args.gnn_qid_features,
+                qid_dim=args.qid_dim,
+                qid_bucket_count=args.qid_bucket_count,
                 snapshot_mode=args.snapshot_mode.replace("-", "_"),
                 snapshot_format=args.snapshot_format,
                 predictions_format=args.predictions_format,
@@ -987,6 +1098,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 grounding_request_delay_s=args.grounding_request_delay,
                 grounding_log=not args.no_grounding_log,
+                grounding_dump_manifest=(
+                    Path(args.grounding_dump_manifest).expanduser().resolve()
+                    if args.grounding_dump_manifest
+                    else None
+                ),
+                grounding_api_fallback=not args.grounding_no_api_fallback,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)
