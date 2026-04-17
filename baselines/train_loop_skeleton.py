@@ -2,6 +2,10 @@
 Minimal linear training loop on tape-derived features (`next_steps.md` §2.2 step D).
 
 Validates optimizer, loss, device, and batching before WM / GNN complexity. Not the production model.
+
+Holdout **Brier** (``brier_score``) is computed only on rows where ``target_occurs_next_7d`` is present
+(masked ``Location`` rows), matching :func:`baselines.gnn.build_graph_from_snapshot`—not over the full
+scoring universe. Compare tabular/GNN Brier on the same basis when interpreting numbers.
 """
 
 from __future__ import annotations
@@ -9,6 +13,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -115,20 +120,23 @@ def collect_samples_for_origins(
             source_names=source_names,
         )
         target_occurs: dict[str, bool] = {}
-        target_counts: dict[str, int] = {}
         for row in payload["target_table"]:
             code = row["metadata"]["admin1_code"]
             if code in excluded_admin1:
                 continue
-            if row["name"] == "target_count_next_7d":
-                target_counts[code] = int(row["value"])
-            elif row["name"] == "target_occurs_next_7d":
+            if row["name"] == "target_occurs_next_7d":
                 target_occurs[code] = bool(row["value"])
 
         for fr in feature_rows:
             code = fr.admin1_code
             if code in excluded_admin1:
                 continue
+            missing = [name for name in feature_names if name not in fr.features]
+            if missing:
+                raise ValueError(
+                    "feature_names contains keys not present on FeatureRow: "
+                    f"{missing[:5]}{'...' if len(missing) > 5 else ''}"
+                )
             xs.append([float(fr.features[name]) for name in feature_names])
             row_origins.append(origin)
             row_codes.append(code)
@@ -187,7 +195,8 @@ def _train_one_epoch(
             "[train_loop_skeleton] warning: no training batches with masked labels this epoch.",
             file=sys.stderr,
         )
-    return total_loss / max(n_batches, 1)
+        return float("nan")
+    return total_loss / n_batches
 
 
 def _forecast_rows_from_samples(
@@ -265,6 +274,10 @@ def run_linear_skeleton_cli(
     feature_names: list[str],
     excluded_admin1: set[str],
 ) -> dict[str, Any]:
+    if epochs < 1:
+        raise ValueError(f"epochs must be >= 1, got {epochs}")
+    if batch_size < 1:
+        raise ValueError(f"batch_size must be >= 1, got {batch_size}")
     assert_mondays(
         train_origin_start,
         train_origin_end,
@@ -351,16 +364,22 @@ def run_linear_skeleton_cli(
             model_name=LINEAR_SKELETON_MODEL_NAME,
             target_lookup=target_lookup,
         )
+        holdout_n = len(holdout_rows)
         if holdout_rows:
             last_holdout_brier = brier_score(holdout_rows, LINEAR_SKELETON_MODEL_NAME)
         else:
             last_holdout_brier = float("nan")
+
+        def _json_float(x: float) -> float | None:
+            return None if isinstance(x, float) and math.isnan(x) else x
+
         print(
             json.dumps(
                 {
                     "epoch": epoch,
-                    "train_loss": last_train_loss,
-                    "holdout_brier": last_holdout_brier,
+                    "train_loss": _json_float(last_train_loss),
+                    "holdout_brier": _json_float(last_holdout_brier),
+                    "holdout_brier_row_count": holdout_n,
                 }
             ),
             flush=True,
@@ -378,9 +397,9 @@ def run_linear_skeleton_cli(
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Linear occurrence baseline training skeleton.")
     parser.add_argument("--tape", type=Path, required=True, help="Path to event tape JSONL.")
-    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--epochs", type=int, default=5, help="Must be >= 1.")
     parser.add_argument("--lr", type=float, default=1e-2)
-    parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--batch-size", type=int, default=64, help="Must be >= 1.")
     parser.add_argument("--device", default="cpu", help="cpu or cuda")
     parser.add_argument("--train-origin-start", default=FRANCE_SCAFFOLD_TRAIN_ORIGIN_START.isoformat())
     parser.add_argument("--train-origin-end", default=FRANCE_SCAFFOLD_TRAIN_ORIGIN_END.isoformat())

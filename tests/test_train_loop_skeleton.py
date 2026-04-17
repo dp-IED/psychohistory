@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from pathlib import Path
 
 import pytest
 import torch
@@ -12,6 +13,7 @@ from baselines.train_loop_skeleton import (
     LinearOccurrenceModel,
     assert_mondays,
     collect_samples_for_origins,
+    run_linear_skeleton_cli,
 )
 from ingest.event_tape import EventTapeRecord
 
@@ -22,7 +24,7 @@ def test_assert_mondays_rejects_non_monday() -> None:
         assert_mondays(tuesday)
 
 
-def test_linear_occurrence_one_step_reduces_loss_synthetic() -> None:
+def test_linear_occurrence_one_optimizer_step_finite_loss_synthetic() -> None:
     torch.manual_seed(0)
     n, f = 32, 8
     x = torch.randn(n, f)
@@ -96,3 +98,59 @@ def test_collect_samples_aligns_with_monday_origin() -> None:
     assert len(samples) >= 1
     assert samples.x.shape[1] == 2
     assert samples.y.shape[0] == samples.x.shape[0]
+
+
+def test_collect_samples_rejects_unknown_feature_name() -> None:
+    origin = dt.date(2024, 1, 1)
+    early = dt.datetime(2023, 1, 1, tzinfo=dt.timezone.utc)
+    records = [
+        _minimal_record(event_date=dt.date(2023, 6, 1), source_at=early, admin1="FR11"),
+    ]
+    with pytest.raises(ValueError, match="feature_names"):
+        collect_samples_for_origins(
+            records=records,
+            origins=[origin],
+            scoring_universe=["FR11"],
+            source_names=None,
+            feature_names=["not_a_real_feature_column"],
+            excluded_admin1=set(),
+        )
+
+
+def test_run_linear_rejects_overlapping_train_holdout(tmp_path) -> None:
+    """Validation runs before loading tape — empty path is never read."""
+    tape = tmp_path / "unused.jsonl"
+    tape.write_text("")
+    with pytest.raises(ValueError, match="train_origin_end"):
+        run_linear_skeleton_cli(
+            tape_path=tape,
+            train_origin_start=dt.date(2020, 1, 6),
+            train_origin_end=dt.date(2023, 1, 2),
+            holdout_origin_start=dt.date(2023, 1, 2),
+            holdout_origin_end=dt.date(2023, 12, 25),
+            epochs=1,
+            lr=1e-2,
+            batch_size=8,
+            device=torch.device("cpu"),
+            source_names=None,
+            feature_names=["event_count_prev_1w"],
+            excluded_admin1=set(),
+        )
+
+
+def test_run_linear_rejects_invalid_epochs() -> None:
+    with pytest.raises(ValueError, match="epochs"):
+        run_linear_skeleton_cli(
+            tape_path=Path("/nonexistent/only/epochs/matter.jsonl"),
+            train_origin_start=dt.date(2020, 1, 6),
+            train_origin_end=dt.date(2020, 1, 27),
+            holdout_origin_start=dt.date(2021, 1, 4),
+            holdout_origin_end=dt.date(2021, 1, 11),
+            epochs=0,
+            lr=1e-2,
+            batch_size=8,
+            device=torch.device("cpu"),
+            source_names=None,
+            feature_names=["event_count_prev_1w"],
+            excluded_admin1=set(),
+        )
