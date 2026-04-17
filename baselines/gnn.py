@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
+import math
 import os
 import sys
 from dataclasses import dataclass
@@ -16,10 +18,13 @@ from torch_geometric.data import HeteroData
 from torch_geometric.nn import SAGEConv
 
 from baselines.features import FEATURE_NAMES, FeatureRow
+from evals.wikidata_linking import qid_from_value, wikidata_qid_for_node
 from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES
 
 UTC = dt.timezone.utc
 EVENT_FEATURE_DIM = 4
+DEFAULT_QID_BUCKET_COUNT = 4096
+QID_FEATURE_MODES = frozenset({"off", "hash", "learned"})
 
 
 def _configure_pytorch_threads() -> None:
@@ -54,6 +59,57 @@ def _ensure_gnn_runtime_configured() -> None:
 
 
 EVENT_FEATURE_KEYS = ["goldstein_scale", "avg_tone", "num_mentions", "num_articles"]
+
+
+def _validate_qid_feature_config(
+    *,
+    qid_feature_mode: str,
+    qid_dim: int,
+    qid_bucket_count: int,
+) -> tuple[str, int, int]:
+    mode = qid_feature_mode.strip().casefold()
+    if mode not in QID_FEATURE_MODES:
+        available = ", ".join(sorted(QID_FEATURE_MODES))
+        raise ValueError(f"unknown QID feature mode '{qid_feature_mode}'. Available: {available}")
+    if qid_dim < 0:
+        raise ValueError("qid_dim must be non-negative")
+    if qid_bucket_count <= 0:
+        raise ValueError("qid_bucket_count must be positive")
+    if mode == "off":
+        return mode, 0, qid_bucket_count
+    if qid_dim <= 0:
+        raise ValueError(f"qid_dim must be positive when QID features are {mode!r}")
+    return mode, qid_dim, qid_bucket_count
+
+
+def _stable_uint64(value: str) -> int:
+    digest = hashlib.blake2b(value.encode("utf-8"), digest_size=8).digest()
+    return int.from_bytes(digest, byteorder="big", signed=False)
+
+
+def _qid_bucket(qid: str | None, bucket_count: int) -> int:
+    if not qid:
+        return 0
+    return (_stable_uint64(qid) % bucket_count) + 1
+
+
+def qid_hash_vector(qid: str | None, dim: int) -> torch.Tensor:
+    """Return a deterministic signed hash vector for a Wikidata QID."""
+
+    if dim < 0:
+        raise ValueError("dim must be non-negative")
+    if dim == 0:
+        return torch.zeros(0, dtype=torch.float32)
+    normalized_qid = qid_from_value(qid)
+    if normalized_qid is None:
+        return torch.zeros(dim, dtype=torch.float32)
+
+    scale = 1.0 / math.sqrt(float(dim))
+    values = []
+    for index in range(dim):
+        hashed = _stable_uint64(f"{normalized_qid}:{index}")
+        values.append(scale if hashed & 1 else -scale)
+    return torch.tensor(values, dtype=torch.float32)
 
 
 @dataclass(frozen=True)
@@ -154,9 +210,22 @@ class HeteroGNNModel(nn.Module):
         location_feature_dim: int,
         event_feature_dim: int,
         hidden_dim: int = 64,
+        qid_dim: int = 0,
+        qid_bucket_count: int = DEFAULT_QID_BUCKET_COUNT,
     ) -> None:
         super().__init__()
-        self.loc_proj = nn.Linear(location_feature_dim, hidden_dim)
+        if qid_dim < 0:
+            raise ValueError("qid_dim must be non-negative")
+        if qid_dim > 0 and qid_bucket_count <= 0:
+            raise ValueError("qid_bucket_count must be positive when qid_dim is enabled")
+        self.qid_dim = qid_dim
+        self.qid_bucket_count = qid_bucket_count
+        self.loc_qid_embedding = (
+            nn.Embedding(qid_bucket_count + 1, qid_dim, padding_idx=0)
+            if qid_dim > 0
+            else None
+        )
+        self.loc_proj = nn.Linear(location_feature_dim + qid_dim, hidden_dim)
         self.evt_proj = nn.Linear(event_feature_dim, hidden_dim)
         self.conv = SAGEConv((hidden_dim, hidden_dim), hidden_dim)
         self.head = nn.Sequential(
@@ -166,7 +235,20 @@ class HeteroGNNModel(nn.Module):
         )
 
     def forward(self, data: HeteroData) -> torch.Tensor:
-        loc_x = F.relu(self.loc_proj(data["location"].x))
+        loc_input = data["location"].x
+        if self.loc_qid_embedding is not None:
+            qid_bucket = getattr(data["location"], "qid_bucket", None)
+            if qid_bucket is None:
+                qid_bucket = torch.zeros(
+                    loc_input.shape[0],
+                    dtype=torch.long,
+                    device=loc_input.device,
+                )
+            else:
+                qid_bucket = qid_bucket.to(device=loc_input.device, dtype=torch.long)
+            loc_input = torch.cat([loc_input, self.loc_qid_embedding(qid_bucket)], dim=1)
+
+        loc_x = F.relu(self.loc_proj(loc_input))
         evt_x = F.relu(self.evt_proj(data["event"].x))
 
         if ("event", "occurs_in", "location") in data.edge_types:
@@ -182,17 +264,27 @@ def build_graph_from_snapshot(
     snapshot: dict[str, Any],
     feature_rows: list[FeatureRow],
     ablation: GNNGraphAblation | None = None,
+    qid_feature_mode: str = "off",
+    qid_dim: int = 0,
+    qid_bucket_count: int = DEFAULT_QID_BUCKET_COUNT,
 ) -> HeteroData:
     _ensure_gnn_runtime_configured()
     ablation = ablation or FULL_GRAPH_ABLATION
+    qid_feature_mode, qid_dim, qid_bucket_count = _validate_qid_feature_config(
+        qid_feature_mode=qid_feature_mode,
+        qid_dim=qid_dim,
+        qid_bucket_count=qid_bucket_count,
+    )
     data = HeteroData()
 
     location_nodes = [n for n in snapshot["nodes"] if n["type"] == "Location"]
     location_id_to_idx: dict[str, int] = {}
     loc_admin1: list[str] = []
+    loc_qids: list[str | None] = []
     for i, node in enumerate(location_nodes):
         location_id_to_idx[node["id"]] = i
         loc_admin1.append(node["attributes"]["admin1_code"])
+        loc_qids.append(wikidata_qid_for_node(node))
 
     feature_by_admin1 = {r.admin1_code: r.features for r in feature_rows}
     loc_x = torch.zeros((len(location_nodes), len(FEATURE_NAMES)), dtype=torch.float32)
@@ -203,8 +295,19 @@ def build_graph_from_snapshot(
                     [feature_by_admin1[code][name] for name in FEATURE_NAMES],
                     dtype=torch.float32,
                 )
+    if qid_feature_mode == "hash":
+        loc_qid_x = torch.zeros((len(location_nodes), qid_dim), dtype=torch.float32)
+        for i, qid in enumerate(loc_qids):
+            loc_qid_x[i] = qid_hash_vector(qid, qid_dim)
+        loc_x = torch.cat([loc_x, loc_qid_x], dim=1)
+    elif qid_feature_mode == "learned":
+        data["location"].qid_bucket = torch.tensor(
+            [_qid_bucket(qid, qid_bucket_count) for qid in loc_qids],
+            dtype=torch.long,
+        )
     data["location"].x = loc_x
     data["location"].admin1_codes = loc_admin1
+    data["location"].wikidata_qids = loc_qids
 
     event_nodes = [n for n in snapshot["nodes"] if n["type"] == "Event"]
     if ablation.allowed_source_names is not None:
@@ -268,6 +371,11 @@ def build_graph_from_snapshot(
         [target_counts.get(code, 0) for code in loc_admin1], dtype=torch.long
     )
     data.graph_ablation = ablation.metadata()
+    data.qid_features = {
+        "mode": qid_feature_mode,
+        "dim": qid_dim,
+        "bucket_count": qid_bucket_count,
+    }
 
     return data
 
@@ -278,13 +386,23 @@ def train_gnn(
     epochs: int = 30,
     lr: float = 5e-3,
     hidden_dim: int = 64,
+    qid_feature_mode: str = "off",
+    qid_dim: int = 0,
+    qid_bucket_count: int = DEFAULT_QID_BUCKET_COUNT,
 ) -> HeteroGNNModel:
+    qid_feature_mode, qid_dim, qid_bucket_count = _validate_qid_feature_config(
+        qid_feature_mode=qid_feature_mode,
+        qid_dim=qid_dim,
+        qid_bucket_count=qid_bucket_count,
+    )
     location_feature_dim = graphs[0]["location"].x.shape[1]
     event_feature_dim = graphs[0]["event"].x.shape[1]
     model = HeteroGNNModel(
         location_feature_dim=location_feature_dim,
         event_feature_dim=event_feature_dim,
         hidden_dim=hidden_dim,
+        qid_dim=qid_dim if qid_feature_mode == "learned" else 0,
+        qid_bucket_count=qid_bucket_count,
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     model.train()
@@ -323,6 +441,12 @@ def predict_gnn(
             continue
         p = float(probs[i])
         target_count, target_occurs = (target_lookup or {}).get((origin_date, code), (0, False))
+        metadata: dict[str, Any] = {}
+        if ablation is not None:
+            metadata["ablation"] = ablation.metadata()
+        qid_features = getattr(graph, "qid_features", None)
+        if qid_features is not None:
+            metadata["qid_features"] = qid_features
         rows.append(
             GNNForecastRow(
                 forecast_origin=origin_date,
@@ -332,7 +456,7 @@ def predict_gnn(
                 predicted_occurrence_probability=p,
                 target_count_next_7d=target_count,
                 target_occurs_next_7d=target_occurs,
-                metadata={"ablation": ablation.metadata()} if ablation is not None else {},
+                metadata=metadata,
             )
         )
     return rows
