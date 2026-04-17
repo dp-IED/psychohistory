@@ -25,8 +25,9 @@ from baselines.recurrence import ForecastRow, RECURRENCE_MODEL_NAMES
 from baselines.recurrence import build_recurrence_forecasts_for_origin
 from baselines.tabular import predict_tabular, train_tabular_model
 from evals.graph_artifact_contract import GraphArtifactV1
-from ingest.event_tape import EventTapeRecord, load_event_tape
-from ingest.event_warehouse import query_records, source_counts
+from ingest.event_records import load_event_records
+from ingest.event_tape import EventTapeRecord
+from ingest.event_warehouse import source_counts
 from ingest.io_utils import open_text_auto, write_json_atomic
 from ingest.paths import resolve_data_root, warehouse_path as default_warehouse_path
 from ingest.snapshot_export import (
@@ -443,13 +444,15 @@ def run_source_layer_experiments(
             )
         available_counts = source_counts(resolved_warehouse_path)
         available_sources = set(available_counts)
-        records = query_records(
-            db_path=resolved_warehouse_path,
+        records = load_event_records(
+            tape_path=None,
+            warehouse_db_path=warehouse_path,
+            data_root=data_root,
             source_names=requested_sources,
         )
         data_context = f"warehouse={resolved_warehouse_path}"
     else:
-        records = load_event_tape(tape_path)
+        records = load_event_records(tape_path=tape_path)
         available_sources = {record.source_name for record in records}
         data_context = f"tape={tape_path}"
 

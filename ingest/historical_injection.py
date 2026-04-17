@@ -12,7 +12,10 @@ from typing import Any, Literal, Sequence
 
 from pydantic import BaseModel
 
+from ingest.event_records import load_event_records
 from ingest.event_tape import EventTapeRecord, load_event_tape
+from ingest.event_warehouse import query_records
+from ingest.paths import resolve_data_root, warehouse_path as warehouse_db_path
 from ingest.gdelt_raw import parse_datetime_utc
 
 
@@ -58,8 +61,24 @@ def _canonical_records_sha256(records: list[EventTapeRecord]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def build_batches(*, tape_path: Path, out_path: Path) -> list[HistoricalInjectionBatch]:
-    records = load_event_tape(tape_path)
+def build_batches(
+    *,
+    tape_path: Path | None = None,
+    warehouse_path: Path | None = None,
+    data_root: Path | None = None,
+    out_path: Path,
+) -> list[HistoricalInjectionBatch]:
+    records = load_event_records(
+        tape_path=tape_path,
+        warehouse_db_path=warehouse_path,
+        data_root=data_root,
+    )
+    resolved_db = (
+        Path(warehouse_path).expanduser().resolve()
+        if warehouse_path is not None
+        else warehouse_db_path(resolve_data_root(data_root))
+    )
+    resolved_input = str(tape_path) if tape_path is not None else str(resolved_db)
     grouped: dict[dt.datetime, list[EventTapeRecord]] = {}
     for record in records:
         start = source_week_start(record.source_available_at)
@@ -77,7 +96,7 @@ def build_batches(*, tape_path: Path, out_path: Path) -> list[HistoricalInjectio
                 source_available_start=start,
                 source_available_end=end,
                 record_count=len(batch_records),
-                input_path=str(tape_path),
+                input_path=resolved_input,
                 content_sha256=_canonical_records_sha256(batch_records),
             )
         )
@@ -109,6 +128,13 @@ def load_batches(
     return batches
 
 
+def _load_records_for_batch_input(path_str: str) -> list[EventTapeRecord]:
+    path = Path(path_str)
+    if path.suffix.lower() == ".duckdb":
+        return query_records(db_path=path)
+    return load_event_tape(path)
+
+
 def replay_records_for_cutoff(
     *,
     batches_path: Path,
@@ -125,7 +151,7 @@ def replay_records_for_cutoff(
     seen_ids: set[str] = set()
     for batch in selected_batches:
         if batch.input_path not in records_by_path:
-            records_by_path[batch.input_path] = load_event_tape(Path(batch.input_path))
+            records_by_path[batch.input_path] = _load_records_for_batch_input(batch.input_path)
         records = records_by_path[batch.input_path]
         start = batch.source_available_start.astimezone(UTC)
         end = batch.source_available_end.astimezone(UTC)
@@ -142,7 +168,24 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     build = subparsers.add_parser("build-batches")
-    build.add_argument("--tape", default="data/gdelt/tape/france_protest/events.jsonl")
+    build.add_argument(
+        "--tape",
+        default=None,
+        help=(
+            "JSONL event tape. If omitted, load from the DuckDB warehouse "
+            "at <data-root>/warehouse/events.duckdb (see PSYCHOHISTORY_DATA_ROOT)."
+        ),
+    )
+    build.add_argument(
+        "--data-root",
+        default=None,
+        help="Root directory for data/ layout; sets warehouse path when --tape is omitted.",
+    )
+    build.add_argument(
+        "--warehouse-path",
+        default=None,
+        help="Path to events.duckdb (overrides --data-root when --tape is omitted).",
+    )
     build.add_argument("--out", default="data/gdelt/injection/france_protest/batches.jsonl")
     return parser
 
@@ -152,7 +195,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "build-batches":
         try:
-            build_batches(tape_path=Path(args.tape), out_path=Path(args.out))
+            build_batches(
+                tape_path=Path(args.tape) if args.tape else None,
+                warehouse_path=Path(args.warehouse_path) if args.warehouse_path else None,
+                data_root=Path(args.data_root) if args.data_root else None,
+                out_path=Path(args.out),
+            )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1

@@ -12,7 +12,8 @@ from pathlib import Path
 from typing import Any, Literal, Sequence
 
 from evals.graph_artifact_contract import GRAPH_ARTIFACT_FORMAT, GraphArtifactV1
-from ingest.event_tape import EventTapeRecord, load_event_tape
+from ingest.event_records import load_event_records
+from ingest.event_tape import EventTapeRecord
 from ingest.io_utils import write_json_atomic
 
 
@@ -473,7 +474,9 @@ def build_snapshot_payload(
 
 def export_weekly_snapshots(
     *,
-    tape_path: Path,
+    tape_path: Path | None = None,
+    warehouse_path: Path | None = None,
+    data_root: Path | None = None,
     origin_start: dt.date,
     origin_end: dt.date,
     out_dir: Path,
@@ -482,7 +485,11 @@ def export_weekly_snapshots(
     snapshot_format: Literal["json", "json.gz"] = "json",
     progress: bool = False,
 ) -> list[Path]:
-    records = load_event_tape(tape_path)
+    records = load_event_records(
+        tape_path=tape_path,
+        warehouse_db_path=warehouse_path,
+        data_root=data_root,
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
     origins = _weekly_origins(origin_start, origin_end)
@@ -525,7 +532,24 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     export = subparsers.add_parser("export-weekly")
-    export.add_argument("--tape", default="data/gdelt/tape/france_protest/events.jsonl")
+    export.add_argument(
+        "--tape",
+        default=None,
+        help=(
+            "JSONL event tape. If omitted, load from the DuckDB warehouse "
+            "at <data-root>/warehouse/events.duckdb (see PSYCHOHISTORY_DATA_ROOT)."
+        ),
+    )
+    export.add_argument(
+        "--data-root",
+        default=None,
+        help="Root directory for data/ layout; sets warehouse path when --tape is omitted.",
+    )
+    export.add_argument(
+        "--warehouse-path",
+        default=None,
+        help="Path to events.duckdb (overrides --data-root when --tape is omitted).",
+    )
     export.add_argument("--origin-start", default="2021-01-04")
     export.add_argument("--origin-end", default="2025-12-29")
     export.add_argument("--out", default="data/gdelt/snapshots/france_protest")
@@ -549,7 +573,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "export-weekly":
         try:
             export_weekly_snapshots(
-                tape_path=Path(args.tape),
+                tape_path=Path(args.tape) if args.tape else None,
+                warehouse_path=Path(args.warehouse_path) if args.warehouse_path else None,
+                data_root=Path(args.data_root) if args.data_root else None,
                 origin_start=dt.date.fromisoformat(args.origin_start),
                 origin_end=dt.date.fromisoformat(args.origin_end),
                 out_dir=Path(args.out),

@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
+from ingest.event_records import load_event_records
 from ingest.event_tape import EventTapeRecord, load_event_tape
 from ingest.event_warehouse import (
     export_tape,
@@ -131,3 +132,24 @@ def test_source_counts_and_audit(tmp_path: Path) -> None:
     assert source_counts(db_path) == {"acled": 1, "gdelt_v2_events": 1}
     assert audit["total_event_count"] == 2
     assert audit["admin1_count"] == 1
+
+
+def test_load_event_records_reads_warehouse(tmp_path: Path) -> None:
+    db_path = tmp_path / "events.duckdb"
+    upsert_records(db_path=db_path, records=[_record("gdelt_v2_events", "gdelt:1")])
+
+    records = load_event_records(tape_path=None, warehouse_db_path=db_path)
+
+    assert [r.source_event_id for r in records] == ["gdelt:1"]
+
+
+def test_load_event_records_prefers_tape_over_warehouse(tmp_path: Path) -> None:
+    tape_path = tmp_path / "events.jsonl"
+    db_path = tmp_path / "events.duckdb"
+    _write_tape(tape_path, [_record("gdelt_v2_events", "from_tape")])
+    upsert_records(db_path=db_path, records=[_record("acled", "from_db")])
+
+    records = load_event_records(tape_path=tape_path, warehouse_db_path=db_path)
+
+    assert len(records) == 1
+    assert records[0].source_event_id == "from_tape"

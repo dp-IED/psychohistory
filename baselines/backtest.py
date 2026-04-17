@@ -17,7 +17,7 @@ from baselines.recurrence import (
     ForecastRow,
     build_recurrence_forecasts_for_origin,
 )
-from ingest.event_tape import load_event_tape
+from ingest.event_records import load_event_records
 from ingest.io_utils import open_text_auto
 
 
@@ -53,12 +53,18 @@ def weekly_origins(start: dt.date, end: dt.date) -> list[dt.date]:
 
 def build_recurrence_backtest_rows(
     *,
-    tape_path: Path,
+    tape_path: Path | None = None,
+    warehouse_path: Path | None = None,
+    data_root: Path | None = None,
     origin_start: dt.date,
     origin_end: dt.date,
     source_names: set[str] | None = None,
 ) -> list[ForecastRow]:
-    records = load_event_tape(tape_path)
+    records = load_event_records(
+        tape_path=tape_path,
+        warehouse_db_path=warehouse_path,
+        data_root=data_root,
+    )
     rows: list[ForecastRow] = []
     for forecast_origin in weekly_origins(origin_start, origin_end):
         rows.extend(
@@ -109,14 +115,20 @@ def build_audit(
 
 def run_recurrence_backtest(
     *,
-    tape_path: Path,
+    tape_path: Path | None = None,
+    warehouse_path: Path | None = None,
+    data_root: Path | None = None,
     origin_start: dt.date,
     origin_end: dt.date,
     out_path: Path,
     source_names: set[str] | None = None,
     progress: bool = False,
 ) -> dict[str, Any]:
-    records = load_event_tape(tape_path)
+    records = load_event_records(
+        tape_path=tape_path,
+        warehouse_db_path=warehouse_path,
+        data_root=data_root,
+    )
     origins = weekly_origins(origin_start, origin_end)
     rows: list[ForecastRow] = []
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -149,7 +161,9 @@ def run_recurrence_backtest(
 
 def run_tabular_backtest(
     *,
-    tape_path: Path,
+    tape_path: Path | None = None,
+    warehouse_path: Path | None = None,
+    data_root: Path | None = None,
     train_origin_start: dt.date,
     train_origin_end: dt.date,
     eval_origin_start: dt.date,
@@ -167,7 +181,11 @@ def run_tabular_backtest(
     from baselines.tabular import TabularForecastRow, predict_tabular, train_tabular_model
     from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
 
-    records = load_event_tape(tape_path)
+    records = load_event_records(
+        tape_path=tape_path,
+        warehouse_db_path=warehouse_path,
+        data_root=data_root,
+    )
     filtered_records = _filter_records_by_sources(records, source_names)
     # Derive scoring universe from all tape records (not just train-visible ones). France's
     # administrative regions are stable, so including codes that first appear post-cutoff
@@ -264,7 +282,9 @@ def run_tabular_backtest(
 
 def run_gnn_backtest(
     *,
-    tape_path: Path,
+    tape_path: Path | None = None,
+    warehouse_path: Path | None = None,
+    data_root: Path | None = None,
     snapshots_dir: Path,
     train_origin_start: dt.date,
     train_origin_end: dt.date,
@@ -291,7 +311,11 @@ def run_gnn_backtest(
     from baselines.gnn import GNNForecastRow, build_graph_from_snapshot, predict_gnn, train_gnn
     from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
 
-    records = load_event_tape(tape_path)
+    records = load_event_records(
+        tape_path=tape_path,
+        warehouse_db_path=warehouse_path,
+        data_root=data_root,
+    )
     filtered_records = _filter_records_by_sources(records, source_names)
     # Derive scoring universe from all tape records (not just train-visible ones). France's
     # administrative regions are stable, so including codes that first appear post-cutoff
@@ -535,9 +559,39 @@ def _parse_gnn_ablation_names(values: Sequence[str] | None) -> list[str] | None:
     return names
 
 
+def _add_event_source_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--tape",
+        default=None,
+        help=(
+            "JSONL event tape. If omitted, load events from the DuckDB warehouse "
+            "at <data-root>/warehouse/events.duckdb (see PSYCHOHISTORY_DATA_ROOT)."
+        ),
+    )
+    parser.add_argument(
+        "--data-root",
+        default=None,
+        help="Root directory for data/ layout; sets warehouse path when --tape is omitted.",
+    )
+    parser.add_argument(
+        "--warehouse-path",
+        default=None,
+        help="Path to events.duckdb (overrides --data-root when --tape is omitted).",
+    )
+
+
+def _event_source_cli_paths(args: Any) -> tuple[Path | None, Path | None, Path | None]:
+    tape = Path(args.tape) if args.tape else None
+    warehouse = Path(args.warehouse_path) if args.warehouse_path else None
+    root = Path(args.data_root) if args.data_root else None
+    return tape, warehouse, root
+
+
 def run_gnn_ablation_backtest(
     *,
-    tape_path: Path,
+    tape_path: Path | None = None,
+    warehouse_path: Path | None = None,
+    data_root: Path | None = None,
     snapshots_dir: Path,
     train_origin_start: dt.date,
     train_origin_end: dt.date,
@@ -567,7 +621,11 @@ def run_gnn_ablation_backtest(
         list(ablation_names) if ablation_names is not None else None
     )
 
-    records = load_event_tape(tape_path)
+    records = load_event_records(
+        tape_path=tape_path,
+        warehouse_db_path=warehouse_path,
+        data_root=data_root,
+    )
     scoring_universe = sorted(
         {r.admin1_code for r in records if r.admin1_code not in EXCLUDED_REGIONAL_ADMIN1_CODES}
     )
@@ -743,7 +801,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     recurrence = subparsers.add_parser("recurrence")
-    recurrence.add_argument("--tape", default="data/gdelt/tape/france_protest/events.jsonl")
+    _add_event_source_args(recurrence)
     recurrence.add_argument("--origin-start", default="2021-01-04")
     recurrence.add_argument("--origin-end", default="2025-12-29")
     recurrence.add_argument(
@@ -751,7 +809,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default="data/gdelt/baselines/france_protest/recurrence_predictions.jsonl",
     )
     tabular = subparsers.add_parser("tabular")
-    tabular.add_argument("--tape", default="data/gdelt/tape/france_protest/events.jsonl")
+    _add_event_source_args(tabular)
     tabular.add_argument("--train-origin-start", default="2021-01-04")
     tabular.add_argument("--train-origin-end", default="2024-12-30")
     tabular.add_argument("--eval-origin-start", default="2025-01-06")
@@ -762,7 +820,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     tabular.add_argument("--no-progress", dest="progress", action="store_false", default=True)
     gnn = subparsers.add_parser("gnn")
-    gnn.add_argument("--tape", default="data/gdelt/tape/france_protest/events.jsonl")
+    _add_event_source_args(gnn)
     gnn.add_argument("--snapshots-dir", default="data/gdelt/snapshots/france_protest")
     gnn.add_argument("--train-origin-start", default="2021-01-04")
     gnn.add_argument("--train-origin-end", default="2024-12-30")
@@ -773,7 +831,7 @@ def _build_parser() -> argparse.ArgumentParser:
     gnn.add_argument("--hidden-dim", type=int, default=64)
     gnn.add_argument("--no-progress", dest="progress", action="store_false", default=True)
     gnn_ablations = subparsers.add_parser("gnn-ablations")
-    gnn_ablations.add_argument("--tape", default="data/gdelt/tape/france_protest/events.jsonl")
+    _add_event_source_args(gnn_ablations)
     gnn_ablations.add_argument("--snapshots-dir", default="data/gdelt/snapshots/france_protest")
     gnn_ablations.add_argument("--train-origin-start", default="2021-01-04")
     gnn_ablations.add_argument("--train-origin-end", default="2024-12-30")
@@ -883,8 +941,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "recurrence":
         try:
+            tape_path, warehouse_path, data_root = _event_source_cli_paths(args)
             run_recurrence_backtest(
-                tape_path=Path(args.tape),
+                tape_path=tape_path,
+                warehouse_path=warehouse_path,
+                data_root=data_root,
                 origin_start=dt.date.fromisoformat(args.origin_start),
                 origin_end=dt.date.fromisoformat(args.origin_end),
                 out_path=Path(args.out),
@@ -896,8 +957,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "tabular":
         try:
+            tape_path, warehouse_path, data_root = _event_source_cli_paths(args)
             run_tabular_backtest(
-                tape_path=Path(args.tape),
+                tape_path=tape_path,
+                warehouse_path=warehouse_path,
+                data_root=data_root,
                 train_origin_start=dt.date.fromisoformat(args.train_origin_start),
                 train_origin_end=dt.date.fromisoformat(args.train_origin_end),
                 eval_origin_start=dt.date.fromisoformat(args.eval_origin_start),
@@ -911,8 +975,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "gnn":
         try:
+            tape_path, warehouse_path, data_root = _event_source_cli_paths(args)
             run_gnn_backtest(
-                tape_path=Path(args.tape),
+                tape_path=tape_path,
+                warehouse_path=warehouse_path,
+                data_root=data_root,
                 snapshots_dir=Path(args.snapshots_dir),
                 train_origin_start=dt.date.fromisoformat(args.train_origin_start),
                 train_origin_end=dt.date.fromisoformat(args.train_origin_end),
@@ -929,8 +996,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "gnn-ablations":
         try:
+            tape_path, warehouse_path, data_root = _event_source_cli_paths(args)
             run_gnn_ablation_backtest(
-                tape_path=Path(args.tape),
+                tape_path=tape_path,
+                warehouse_path=warehouse_path,
+                data_root=data_root,
                 snapshots_dir=Path(args.snapshots_dir),
                 train_origin_start=dt.date.fromisoformat(args.train_origin_start),
                 train_origin_end=dt.date.fromisoformat(args.train_origin_end),
