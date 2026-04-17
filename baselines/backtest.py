@@ -281,6 +281,12 @@ def run_gnn_backtest(
         raise ValueError(
             f"train_origin_end ({train_origin_end}) must be before eval_origin_start ({eval_origin_start})"
         )
+    if progress:
+        print(
+            "[gnn] importing PyTorch (first use this run)...",
+            file=sys.stderr,
+            flush=True,
+        )
     from baselines.features import extract_features_for_origin
     from baselines.gnn import GNNForecastRow, build_graph_from_snapshot, predict_gnn, train_gnn
     from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
@@ -331,6 +337,12 @@ def run_gnn_backtest(
 
     train_graphs = []
     for idx, origin in enumerate(train_origins, start=1):
+        if progress:
+            print(
+                f"[gnn] load train {idx}/{len(train_origins)} origin={origin.isoformat()}",
+                file=sys.stderr,
+                flush=True,
+            )
         snap = _load_snapshot(origin)
         feature_rows = extract_features_for_origin(
             records=records,
@@ -345,12 +357,6 @@ def run_gnn_backtest(
         )
         train_graphs.append(graph)
         _build_target_lookup_for_origin(origin)
-        if progress:
-            print(
-                f"[gnn] load train {idx}/{len(train_origins)} origin={origin.isoformat()}",
-                file=sys.stderr,
-                flush=True,
-            )
 
     if progress:
         print(
@@ -365,6 +371,12 @@ def run_gnn_backtest(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open_text_auto(out_path, "w") as handle:
         for idx, origin in enumerate(eval_origins, start=1):
+            if progress:
+                print(
+                    f"[gnn] eval {idx}/{len(eval_origins)} origin={origin.isoformat()}",
+                    file=sys.stderr,
+                    flush=True,
+                )
             snap = _load_snapshot(origin)
             feature_rows = extract_features_for_origin(
                 records=records,
@@ -388,12 +400,6 @@ def run_gnn_backtest(
             for pred in preds:
                 handle.write(pred.model_dump_json() + "\n")
             eval_rows.extend(preds)
-            if progress:
-                print(
-                    f"[gnn] eval {idx}/{len(eval_origins)} origin={origin.isoformat()}",
-                    file=sys.stderr,
-                    flush=True,
-                )
         handle.flush()
 
     model_name = "gnn_sage"
@@ -430,6 +436,12 @@ def run_gnn_backtest_from_payloads(
     predictions_format: str = "jsonl.gz",
     progress: bool = False,
 ) -> dict[str, Any]:
+    if progress:
+        print(
+            "[gnn] importing PyTorch (first use this run)...",
+            file=sys.stderr,
+            flush=True,
+        )
     from baselines.gnn import GNNForecastRow, build_graph_from_snapshot, predict_gnn, train_gnn
 
     if not train_inputs:
@@ -441,6 +453,12 @@ def run_gnn_backtest_from_payloads(
 
     train_graphs = []
     for index, item in enumerate(train_inputs, start=1):
+        if progress:
+            print(
+                f"[gnn] build train {index}/{len(train_inputs)} origin={item.origin.isoformat()}",
+                file=sys.stderr,
+                flush=True,
+            )
         train_graphs.append(
             build_graph_from_snapshot(
                 snapshot=item.snapshot,
@@ -448,12 +466,6 @@ def run_gnn_backtest_from_payloads(
                 ablation=gnn_ablation,
             )
         )
-        if progress:
-            print(
-                f"[gnn] build train {index}/{len(train_inputs)} origin={item.origin.isoformat()}",
-                file=sys.stderr,
-                flush=True,
-            )
 
     if progress:
         print(
@@ -467,6 +479,12 @@ def run_gnn_backtest_from_payloads(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open_text_auto(out_path, "w") as handle:
         for index, item in enumerate(eval_inputs, start=1):
+            if progress:
+                print(
+                    f"[gnn] eval {index}/{len(eval_inputs)} origin={item.origin.isoformat()}",
+                    file=sys.stderr,
+                    flush=True,
+                )
             graph = build_graph_from_snapshot(
                 snapshot=item.snapshot,
                 feature_rows=item.feature_rows,
@@ -482,12 +500,6 @@ def run_gnn_backtest_from_payloads(
             for pred in preds:
                 handle.write(pred.model_dump_json() + "\n")
             eval_rows.extend(preds)
-            if progress:
-                print(
-                    f"[gnn] eval {index}/{len(eval_inputs)} origin={item.origin.isoformat()}",
-                    file=sys.stderr,
-                    flush=True,
-                )
         handle.flush()
 
     model_name = "gnn_sage"
@@ -824,10 +836,28 @@ def _build_parser() -> argparse.ArgumentParser:
         default="jsonl.gz",
     )
     source_experiments.add_argument(
+        "--progress",
+        action="store_true",
+        help="Print per-origin progress to stderr (default: on).",
+    )
+    source_experiments.add_argument(
         "--no-progress",
-        dest="progress",
+        action="store_true",
+        help="Silence per-origin progress.",
+    )
+    source_experiments.add_argument(
+        "--no-recurrence",
+        dest="run_recurrence",
         action="store_false",
         default=True,
+        help="Skip recurrence baselines (GNN does not use them; they are for comparison metrics).",
+    )
+    source_experiments.add_argument(
+        "--no-tabular",
+        dest="run_tabular",
+        action="store_false",
+        default=True,
+        help="Skip XGBoost tabular training (GNN uses snapshots only; tabular is for comparison metrics).",
     )
     return parser
 
@@ -931,7 +961,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 snapshot_mode=args.snapshot_mode.replace("-", "_"),
                 snapshot_format=args.snapshot_format,
                 predictions_format=args.predictions_format,
-                progress=args.progress,
+                progress=not args.no_progress,
+                run_recurrence=args.run_recurrence,
+                run_tabular=args.run_tabular,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)

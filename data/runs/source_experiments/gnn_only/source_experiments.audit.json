@@ -1,0 +1,392 @@
+{
+  "data_context": "warehouse=/Users/darenpalmer/conductor/workspaces/psychohistory-v2/chennai/data/warehouse/events.duckdb",
+  "eval_origin_end": "2025-12-29",
+  "eval_origin_start": "2025-01-06",
+  "experiments": [
+    {
+      "data_audit": {
+        "admin1_count": 22,
+        "event_count": 51101,
+        "feature_source_counts_total": {
+          "gdelt_v2_events": 9541459
+        },
+        "label_source_counts_total": {
+          "gdelt_v2_events": 30189
+        },
+        "materialized_snapshot_count": 0
+      },
+      "description": "GDELT event tape and GDELT source identity only.",
+      "models": {
+        "gnn_sage": {
+          "admin1_count": 22,
+          "brier": 0.1692866984188729,
+          "mae": 0.5784094145663576,
+          "origin_count": 52,
+          "positive_count": 255,
+          "recall_at_5": 0.3254901960784314,
+          "row_count": 1144,
+          "top5_hit_rate": 0.8076923076923077
+        },
+        "previous_week_count": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "trailing_12_week_mean": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "trailing_4_week_mean": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "xgboost_tabular": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        }
+      },
+      "name": "gdelt_only",
+      "recurrence_skipped": true,
+      "source_identity_mode": "preserve",
+      "source_names": [
+        "gdelt_v2_events"
+      ],
+      "tabular_skipped": true,
+      "use_event_features": true
+    },
+    {
+      "data_audit": {
+        "admin1_count": 22,
+        "event_count": 36679,
+        "feature_source_counts_total": {
+          "acled": 6200371
+        },
+        "label_source_counts_total": {
+          "acled": 31514
+        },
+        "materialized_snapshot_count": 0
+      },
+      "description": "ACLED event tape and ACLED source identity only.",
+      "models": {
+        "gnn_sage": {
+          "admin1_count": 22,
+          "brier": 0.610024394413918,
+          "mae": 2.1704821412067314,
+          "origin_count": 52,
+          "positive_count": 308,
+          "recall_at_5": 0.2435064935064935,
+          "row_count": 1144,
+          "top5_hit_rate": 0.28846153846153844
+        },
+        "previous_week_count": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "trailing_12_week_mean": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "trailing_4_week_mean": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "xgboost_tabular": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        }
+      },
+      "name": "acled_only",
+      "recurrence_skipped": true,
+      "source_identity_mode": "preserve",
+      "source_names": [
+        "acled"
+      ],
+      "tabular_skipped": true,
+      "use_event_features": true
+    },
+    {
+      "data_audit": {
+        "admin1_count": 22,
+        "event_count": 87780,
+        "feature_source_counts_total": {
+          "acled": 6200371,
+          "gdelt_v2_events": 9541459
+        },
+        "label_source_counts_total": {
+          "acled": 31514,
+          "gdelt_v2_events": 30189
+        },
+        "materialized_snapshot_count": 0
+      },
+      "description": "Combined GDELT and ACLED evidence with source identity preserved.",
+      "models": {
+        "gnn_sage": {
+          "admin1_count": 22,
+          "brier": 0.3963481309620751,
+          "mae": 2.311521827757775,
+          "origin_count": 52,
+          "positive_count": 485,
+          "recall_at_5": 0.24948453608247423,
+          "row_count": 1144,
+          "top5_hit_rate": 0.7692307692307693
+        },
+        "previous_week_count": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "trailing_12_week_mean": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "trailing_4_week_mean": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "xgboost_tabular": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        }
+      },
+      "name": "gdelt_plus_acled",
+      "recurrence_skipped": true,
+      "source_identity_mode": "preserve",
+      "source_names": [
+        "acled",
+        "gdelt_v2_events"
+      ],
+      "tabular_skipped": true,
+      "use_event_features": true
+    },
+    {
+      "data_audit": {
+        "admin1_count": 22,
+        "event_count": 87780,
+        "feature_source_counts_total": {
+          "acled": 6200371,
+          "gdelt_v2_events": 9541459
+        },
+        "label_source_counts_total": {
+          "acled": 31514,
+          "gdelt_v2_events": 30189
+        },
+        "materialized_snapshot_count": 0
+      },
+      "description": "Combined evidence with source nodes collapsed.",
+      "models": {
+        "gnn_sage": {
+          "admin1_count": 22,
+          "brier": 0.41129624183434016,
+          "mae": 2.315927505597368,
+          "origin_count": 52,
+          "positive_count": 485,
+          "recall_at_5": 0.24948453608247423,
+          "row_count": 1144,
+          "top5_hit_rate": 0.7692307692307693
+        },
+        "previous_week_count": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "trailing_12_week_mean": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "trailing_4_week_mean": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "xgboost_tabular": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        }
+      },
+      "name": "gdelt_plus_acled_no_source_identity",
+      "recurrence_skipped": true,
+      "source_identity_mode": "collapse",
+      "source_names": [
+        "acled",
+        "gdelt_v2_events"
+      ],
+      "tabular_skipped": true,
+      "use_event_features": true
+    },
+    {
+      "data_audit": {
+        "admin1_count": 22,
+        "event_count": 87780,
+        "feature_source_counts_total": {
+          "acled": 6200371,
+          "gdelt_v2_events": 9541459
+        },
+        "label_source_counts_total": {
+          "acled": 31514,
+          "gdelt_v2_events": 30189
+        },
+        "materialized_snapshot_count": 0
+      },
+      "description": "Combined evidence with event attribute vectors zeroed.",
+      "models": {
+        "gnn_sage": {
+          "admin1_count": 22,
+          "brier": 0.46736743946978526,
+          "mae": 2.347869824487846,
+          "origin_count": 52,
+          "positive_count": 485,
+          "recall_at_5": 0.2288659793814433,
+          "row_count": 1144,
+          "top5_hit_rate": 0.7307692307692307
+        },
+        "previous_week_count": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "trailing_12_week_mean": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "trailing_4_week_mean": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        },
+        "xgboost_tabular": {
+          "admin1_count": 0,
+          "brier": 0.0,
+          "mae": 0.0,
+          "origin_count": 0,
+          "positive_count": 0,
+          "recall_at_5": 0.0,
+          "row_count": 0,
+          "top5_hit_rate": 0.0
+        }
+      },
+      "name": "gdelt_plus_acled_no_event_attributes",
+      "recurrence_skipped": true,
+      "source_identity_mode": "preserve",
+      "source_names": [
+        "acled",
+        "gdelt_v2_events"
+      ],
+      "tabular_skipped": true,
+      "use_event_features": false
+    }
+  ],
+  "model_family": "source_layer_experiments",
+  "predictions_format": "jsonl.gz",
+  "snapshot_format": "json.gz",
+  "snapshot_mode": "in_memory",
+  "train_origin_end": "2024-12-30",
+  "train_origin_start": "2021-01-04"
+}

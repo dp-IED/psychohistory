@@ -62,6 +62,8 @@ def train_tabular_model(
         eval_metric="logloss",
         random_state=random_state,
         verbosity=0,
+        n_jobs=-1,
+        tree_method="hist",
     )
     model.fit(X, y)
     return model.predict_proba

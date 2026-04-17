@@ -1,0 +1,17 @@
+{
+  "admin1_count": 22,
+  "brier": 0.610024394413918,
+  "epochs": 30,
+  "eval_origin_end": "2025-12-29",
+  "eval_origin_start": "2025-01-06",
+  "eval_row_count": 1144,
+  "hidden_dim": 64,
+  "mae": 2.1704821412067314,
+  "model_name": "gnn_sage",
+  "predictions_format": "jsonl.gz",
+  "recall_at_5": 0.2435064935064935,
+  "top5_hit_rate": 0.28846153846153844,
+  "train_graph_count": 209,
+  "train_origin_end": "2024-12-30",
+  "train_origin_start": "2021-01-04"
+}

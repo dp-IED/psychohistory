@@ -1,0 +1,31 @@
+{
+  "admin1_count": 22,
+  "mean_absolute_error_by_model": {
+    "previous_week_count": 0.722027972027972,
+    "trailing_12_week_mean": 0.690413752913753,
+    "trailing_4_week_mean": 0.7073863636363636
+  },
+  "mean_brier_by_model": {
+    "previous_week_count": 0.3041958041958042,
+    "trailing_12_week_mean": 0.2715071386946387,
+    "trailing_4_week_mean": 0.297694493006993
+  },
+  "model_names": [
+    "previous_week_count",
+    "trailing_4_week_mean",
+    "trailing_12_week_mean"
+  ],
+  "origin_end": "2025-12-29",
+  "origin_start": "2025-01-06",
+  "recall_at_5_by_model": {
+    "previous_week_count": 0.29411764705882354,
+    "trailing_12_week_mean": 0.3058823529411765,
+    "trailing_4_week_mean": 0.2784313725490196
+  },
+  "row_count": 3432,
+  "top5_hit_rate_by_model": {
+    "previous_week_count": 0.7307692307692307,
+    "trailing_12_week_mean": 0.7884615384615384,
+    "trailing_4_week_mean": 0.6730769230769231
+  }
+}
