@@ -12,6 +12,9 @@ The preferred input is the central DuckDB warehouse. Legacy mixed JSONL tapes
 still work with `--tape`, but they are compatibility artifacts, not the primary
 store.
 
+Before running in a new git workspace, set up the shared warehouse symlink once
+using the `Workspace Setup (Symlink)` section in `docs/storage_architecture.md`.
+
 ## Credentials
 
 Do not store ACLED credentials in this repository or in any git workspace. Use a
