@@ -361,6 +361,8 @@ def run_source_layer_experiments(
     snapshot_format: Literal["json", "json.gz"] = "json.gz",
     predictions_format: Literal["jsonl", "jsonl.gz"] = "jsonl.gz",
     progress: bool = False,
+    run_recurrence: bool = True,
+    run_tabular: bool = True,
 ) -> dict[str, Any]:
     from baselines.backtest import run_gnn_backtest_from_payloads
     from baselines.gnn import GNNGraphAblation
@@ -486,31 +488,35 @@ def run_source_layer_experiments(
                 snapshot_format=snapshot_format,
             )
 
-        recurrence_path = _prediction_path(
-            experiment_out_dir,
-            "recurrence_predictions",
-            predictions_format,
-        )
-        _run_recurrence_from_records(
-            records=experiment_records,
-            origin_start=eval_origin_start,
-            origin_end=eval_origin_end,
-            out_path=recurrence_path,
-            progress=progress,
-        )
+        recurrence_path: Path | None = None
+        if run_recurrence:
+            recurrence_path = _prediction_path(
+                experiment_out_dir,
+                "recurrence_predictions",
+                predictions_format,
+            )
+            _run_recurrence_from_records(
+                records=experiment_records,
+                origin_start=eval_origin_start,
+                origin_end=eval_origin_end,
+                out_path=recurrence_path,
+                progress=progress,
+            )
 
-        tabular_path = _prediction_path(
-            experiment_out_dir,
-            "tabular_predictions",
-            predictions_format,
-        )
-        _run_tabular_from_inputs(
-            train_inputs=train_inputs,
-            eval_inputs=eval_inputs,
-            target_lookup=target_lookup,
-            out_path=tabular_path,
-            progress=progress,
-        )
+        tabular_path: Path | None = None
+        if run_tabular:
+            tabular_path = _prediction_path(
+                experiment_out_dir,
+                "tabular_predictions",
+                predictions_format,
+            )
+            _run_tabular_from_inputs(
+                train_inputs=train_inputs,
+                eval_inputs=eval_inputs,
+                target_lookup=target_lookup,
+                out_path=tabular_path,
+                progress=progress,
+            )
 
         gnn_path = _prediction_path(experiment_out_dir, "gnn_predictions", predictions_format)
         gnn_ablation = None
@@ -532,8 +538,10 @@ def run_source_layer_experiments(
             progress=progress,
         )
 
-        recurrence_rows = _load_forecast_rows(recurrence_path)
-        tabular_rows = _load_forecast_rows(tabular_path)
+        recurrence_rows = (
+            _load_forecast_rows(recurrence_path) if recurrence_path is not None else []
+        )
+        tabular_rows = _load_forecast_rows(tabular_path) if tabular_path is not None else []
         gnn_rows = _load_forecast_rows(gnn_path)
 
         experiment_audit = {
@@ -542,6 +550,8 @@ def run_source_layer_experiments(
             "source_names": sorted(experiment.source_names),
             "source_identity_mode": experiment.source_identity_mode,
             "use_event_features": experiment.use_event_features,
+            "recurrence_skipped": not run_recurrence,
+            "tabular_skipped": not run_tabular,
             "models": {
                 **{
                     model_name: _metrics_for_model(recurrence_rows, model_name)

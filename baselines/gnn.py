@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import datetime as dt
+import os
+import sys
 from dataclasses import dataclass
 from typing import Any
 
@@ -18,6 +20,39 @@ from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES
 
 UTC = dt.timezone.utc
 EVENT_FEATURE_DIM = 4
+
+
+def _configure_pytorch_threads() -> None:
+    """Avoid OpenMP/BLAS oversubscription; some macOS PyTorch wheels segfault otherwise."""
+    if os.environ.get("PSYCHOHISTORY_TORCH_CONFIGURE", "1") == "0":
+        return
+    if sys.platform != "darwin":
+        return
+    raw = os.environ.get("PYTORCH_NUM_THREADS") or os.environ.get("OMP_NUM_THREADS")
+    if raw is not None:
+        try:
+            torch.set_num_threads(max(1, int(raw)))
+        except (TypeError, ValueError):
+            torch.set_num_threads(1)
+    else:
+        torch.set_num_threads(1)
+    try:
+        torch.set_num_interop_threads(1)
+    except RuntimeError:
+        pass
+
+
+_gnn_runtime_configured = False
+
+
+def _ensure_gnn_runtime_configured() -> None:
+    global _gnn_runtime_configured
+    if _gnn_runtime_configured:
+        return
+    _configure_pytorch_threads()
+    _gnn_runtime_configured = True
+
+
 EVENT_FEATURE_KEYS = ["goldstein_scale", "avg_tone", "num_mentions", "num_articles"]
 
 
@@ -148,6 +183,7 @@ def build_graph_from_snapshot(
     feature_rows: list[FeatureRow],
     ablation: GNNGraphAblation | None = None,
 ) -> HeteroData:
+    _ensure_gnn_runtime_configured()
     ablation = ablation or FULL_GRAPH_ABLATION
     data = HeteroData()
 

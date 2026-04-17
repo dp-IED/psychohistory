@@ -12,6 +12,26 @@ Override the root with `PSYCHOHISTORY_DATA_ROOT` or per command with
 but they are not the primary store. Avoid keeping large raw folders, mixed tapes,
 weekly snapshots, or experiment outputs under repo-local `data/**`.
 
+## Workspace Setup (Symlink)
+
+Run this once per git workspace so all worktrees share the same warehouse file:
+
+```bash
+mkdir -p /Users/darenpalmer/conductor/shared-data/psychohistory-v2/warehouse
+
+# If this workspace already has a local DB, move it to shared storage.
+if [ -f data/warehouse/events.duckdb ] && [ ! -L data/warehouse/events.duckdb ]; then
+  mv data/warehouse/events.duckdb \
+    /Users/darenpalmer/conductor/shared-data/psychohistory-v2/warehouse/events.duckdb
+fi
+
+# Point the workspace to the shared DB.
+ln -sfn /Users/darenpalmer/conductor/shared-data/psychohistory-v2/warehouse/events.duckdb \
+  data/warehouse/events.duckdb
+```
+
+This keeps the warehouse accessible across future workspaces without refetching.
+
 ## Initialize
 
 ```bash

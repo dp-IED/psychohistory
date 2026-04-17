@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from baselines.recurrence import ForecastRow
 from baselines.source_experiments import (
     SOURCE_EXPERIMENTS,
     resolve_source_experiments,
@@ -132,6 +133,120 @@ def test_source_experiment_runner_writes_audit_and_predictions(tmp_path: Path) -
     assert (out_root / "gdelt_plus_acled" / "tabular_predictions.jsonl.gz").exists()
     assert (out_root / "gdelt_plus_acled" / "gnn_predictions.jsonl.gz").exists()
     assert not snapshots_root.exists()
+
+
+def test_source_experiment_runner_skip_tabular_omits_xgboost_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_gnn(
+        *,
+        out_path: Path,
+        train_inputs: list,
+        eval_inputs: list,
+        **kwargs: object,
+    ) -> dict[str, object]:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        origin = eval_inputs[0].origin
+        row = ForecastRow(
+            forecast_origin=origin,
+            admin1_code="FR11",
+            model_name="gnn_sage",
+            predicted_count=0.0,
+            predicted_occurrence_probability=0.5,
+            target_count_next_7d=0,
+            target_occurs_next_7d=False,
+        )
+        with open_text_auto(out_path, "w") as handle:
+            handle.write(row.model_dump_json() + "\n")
+        return {"model_name": "gnn_sage", "eval_row_count": 1}
+
+    def tabular_should_not_run(**kwargs: object) -> None:
+        raise AssertionError("XGBoost tabular path should be skipped when run_tabular=False")
+
+    monkeypatch.setattr("baselines.backtest.run_gnn_backtest_from_payloads", fake_gnn)
+    monkeypatch.setattr("baselines.source_experiments._run_tabular_from_inputs", tabular_should_not_run)
+
+    tape_path = tmp_path / "events.jsonl"
+    out_root = tmp_path / "out"
+    _write_tape(tape_path, _mixed_records())
+
+    audit = run_source_layer_experiments(
+        tape_path=tape_path,
+        out_root=out_root,
+        train_origin_start=dt.date(2021, 1, 4),
+        train_origin_end=dt.date(2021, 2, 22),
+        eval_origin_start=dt.date(2021, 3, 1),
+        eval_origin_end=dt.date(2021, 3, 15),
+        experiment_names=["gdelt_plus_acled"],
+        epochs=1,
+        hidden_dim=8,
+        run_tabular=False,
+    )
+
+    assert audit["experiments"][0]["tabular_skipped"] is True
+    assert audit["experiments"][0]["models"]["gnn_sage"]["row_count"] > 0
+    assert not (out_root / "gdelt_plus_acled" / "tabular_predictions.jsonl.gz").exists()
+    assert (out_root / "gdelt_plus_acled" / "gnn_predictions.jsonl.gz").exists()
+
+
+def test_source_experiment_runner_skip_recurrence_omits_recurrence_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_gnn(
+        *,
+        out_path: Path,
+        train_inputs: list,
+        eval_inputs: list,
+        **kwargs: object,
+    ) -> dict[str, object]:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        origin = eval_inputs[0].origin
+        row = ForecastRow(
+            forecast_origin=origin,
+            admin1_code="FR11",
+            model_name="gnn_sage",
+            predicted_count=0.0,
+            predicted_occurrence_probability=0.5,
+            target_count_next_7d=0,
+            target_occurs_next_7d=False,
+        )
+        with open_text_auto(out_path, "w") as handle:
+            handle.write(row.model_dump_json() + "\n")
+        return {"model_name": "gnn_sage", "eval_row_count": 1}
+
+    def recurrence_should_not_run(**kwargs: object) -> None:
+        raise AssertionError("recurrence should be skipped when run_recurrence=False")
+
+    monkeypatch.setattr("baselines.backtest.run_gnn_backtest_from_payloads", fake_gnn)
+    monkeypatch.setattr(
+        "baselines.source_experiments._run_recurrence_from_records",
+        recurrence_should_not_run,
+    )
+
+    tape_path = tmp_path / "events.jsonl"
+    out_root = tmp_path / "out"
+    _write_tape(tape_path, _mixed_records())
+
+    audit = run_source_layer_experiments(
+        tape_path=tape_path,
+        out_root=out_root,
+        train_origin_start=dt.date(2021, 1, 4),
+        train_origin_end=dt.date(2021, 2, 22),
+        eval_origin_start=dt.date(2021, 3, 1),
+        eval_origin_end=dt.date(2021, 3, 15),
+        experiment_names=["gdelt_plus_acled"],
+        epochs=1,
+        hidden_dim=8,
+        run_recurrence=False,
+        run_tabular=False,
+    )
+
+    assert audit["experiments"][0]["recurrence_skipped"] is True
+    assert audit["experiments"][0]["models"]["gnn_sage"]["row_count"] > 0
+    assert not (out_root / "gdelt_plus_acled" / "recurrence_predictions.jsonl.gz").exists()
+    assert (out_root / "gdelt_plus_acled" / "gnn_predictions.jsonl.gz").exists()
 
 
 @pytest.mark.torch_train
