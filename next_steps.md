@@ -60,7 +60,7 @@ Only **blocking** data steps; then **model**. Target: **something trained end-to
 
 | Step | Deliverable |
 |------|-------------|
-| **D** | **Training loop skeleton** (e.g. `train.py` or module under `baselines/`): loader over \((S_t, \text{label}_{t+k})\), loss (Brier / BCE as appropriate), optimizer, **dummy linear** baseline. Surfaces batching, device, gradient bugs **before** model complexity. |
+| **D** | **Training loop skeleton** — implemented as [`baselines/train_loop_skeleton.py`](baselines/train_loop_skeleton.py) (`python -m baselines.train_loop_skeleton --tape …`): tape → features → snapshot targets, linear head, BCE, optional holdout **Brier** per epoch. Surfaces batching, device, gradient bugs **before** model complexity. |
 | **E** | **WM v0:** prepend per-node **GRU** over last \(k\) weekly snapshots to existing [`baselines/gnn.py`](baselines/gnn.py) hetero GNN; **time step then message passing** in a way that supports **separate** ablations. Train end-to-end on **event** targets. |
 | **F** | **Multi-step losses:** secondary terms for \(t{+}2\), \(t{+}4\) (or charter horizons) from shared \(z_t\). |
 | **G** | **First ablation matrix:** GRU-only (no MP) vs GNN-only (no GRU) vs GRU+GNN—evidence that **composition earns its keep**. |
