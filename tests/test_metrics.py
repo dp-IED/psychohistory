@@ -4,7 +4,13 @@ import datetime as dt
 
 import pytest
 
-from baselines.metrics import balanced_accuracy, positive_rate, pr_auc
+from baselines.metrics import (
+    balanced_accuracy,
+    brier_score,
+    positive_rate,
+    pr_auc,
+    wm_holdout_metrics_dict,
+)
 from baselines.recurrence import ForecastRow
 
 
@@ -71,6 +77,15 @@ def test_pr_auc_perfect_ranking() -> None:
 def test_pr_auc_no_positives() -> None:
     rows = [_row(target=False, prob=0.5)]
     assert pr_auc(rows, "m") == 0.0
+
+
+def test_wm_holdout_metrics_bundle_matches_brier() -> None:
+    rows = [
+        _row(target=True, prob=0.9),
+        _row(target=False, prob=0.1),
+    ]
+    hm = wm_holdout_metrics_dict(rows, "m")
+    assert hm["brier"] == pytest.approx(brier_score(rows, "m"))
 
 
 def test_pr_auc_constant_scores_bounded() -> None:

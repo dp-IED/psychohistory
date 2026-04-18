@@ -22,6 +22,21 @@ The heterogeneous **GNN** beat recurrence and **XGBoost** on main **calibration 
 
 ---
 
+## WM skeleton: multi-horizon label contract (Step F auxiliary heads)
+
+Primary head **`target_occurs_next_7d`** matches `ingest/snapshot_export.build_snapshot_payload`: at least one qualifying protest-class event in **[`forecast_origin`, `forecast_origin` + 7 days)**, with the same `LABEL_GRACE_DAYS` reporting cutoff and point-in-time feature visibility before `forecast_origin`.
+
+Auxiliary occurrence heads share the **same (forecast_origin, admin1) rows** as the 7d head (masking follows the 7d target row). They use **disjoint** forward windows so week-1 signal is not duplicated:
+
+- **Week 2 (days 7–14):** any qualifying event with `event_date ∈ [origin + 7d, origin + 14d)`.
+- **Week 4 (days 21–28):** any qualifying event with `event_date ∈ [origin + 21d, origin + 28d)`.
+
+For a window ending on calendar date `w_end`, an event counts toward that window’s label only if `source_available_at ≤ datetime(w_end) + LABEL_GRACE_DAYS` (UTC), mirroring the 7d label’s late-reporting rule. No post-cutoff evidence may enter any head.
+
+Code: `baselines/train_loop_skeleton.occurs_protest_in_forward_window` and `OccurrenceGRUMultiHeadModel` (GNN multi-head is not implemented here).
+
+---
+
 ## Training curriculum: prediction markets
 
 **Polymarket** (optional **Kalshi**, peers) are **training data**:

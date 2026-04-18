@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import datetime as dt
+import math
 from pathlib import Path
 
 import torch
 
 from baselines.features import FEATURE_NAMES
 from baselines.gnn import build_graph_from_snapshot
-from baselines.wm_ablation_run import run_wm_ablation_cli
+from baselines.wm_ablation_run import run_wm_ablation_cli, wm_ablation_aggregate
 from baselines.wm_ablation_train import build_loc_temporal_for_graph
 from ingest.event_tape import EventTapeRecord
 from ingest.event_warehouse import upsert_records
@@ -100,3 +101,37 @@ def test_run_wm_ablation_smoke_warehouse(tmp_path: Path) -> None:
         assert "best_holdout_brier" in row
         assert "best_epoch" in row
         assert "early_stop_patience" in row
+        hm = row["holdout_metrics"]
+        assert set(hm.keys()) >= {
+            "brier",
+            "log_loss",
+            "pr_auc",
+            "balanced_accuracy",
+            "label_prevalence",
+            "mean_prediction",
+            "brier_skill_score",
+        }
+        for k, v in hm.items():
+            assert isinstance(k, str)
+            assert isinstance(v, float)
+            assert math.isnan(v) or math.isfinite(v)
+        hmid = row["holdout_mask_identity"]
+        assert "keys_sha256" in hmid and "scored_row_count" in hmid
+        assert row.get("collapse_detected") is not None
+
+
+def test_wm_ablation_aggregate_collapses() -> None:
+    runs = [
+        [
+            {"variant": "gnn", "best_holdout_brier": 0.2, "collapse_detected": True},
+            {"variant": "linear", "best_holdout_brier": 0.25, "collapse_detected": False},
+        ],
+        [
+            {"variant": "gnn", "best_holdout_brier": 0.22, "collapse_detected": False},
+            {"variant": "linear", "best_holdout_brier": 0.24, "collapse_detected": False},
+        ],
+    ]
+    agg = wm_ablation_aggregate(runs, seeds=[0, 1])
+    assert agg["event"] == "wm_ablation_aggregate"
+    assert agg["by_variant"]["gnn"]["collapse_count"] == 1
+    assert agg["by_variant"]["linear"]["collapse_count"] == 0

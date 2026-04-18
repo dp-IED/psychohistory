@@ -1,4 +1,9 @@
-"""GNN / GRU+GNN training with skeleton-style masked BCE, holdout Brier, and early stopping."""
+"""GNN / GRU+GNN training with skeleton-style masked BCE, holdout Brier, and early stopping.
+
+**Evaluation parity** (fixed): same train/holdout dates, same masked location rows, same checkpoint
+rule (best holdout Brier), same ``holdout_metrics`` / ``holdout_mask_identity`` contract as the
+skeleton. **Optimization** (may vary): ``lr``, patience, etc.—tune without changing what is scored.
+"""
 
 from __future__ import annotations
 
@@ -9,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.data import HeteroData
 from tqdm import tqdm
@@ -23,7 +29,11 @@ from baselines.gnn import (
     predict_gnn,
 )
 from baselines.location_weekly_history import collect_location_weekly_history
-from baselines.metrics import brier_score
+from baselines.metrics import (
+    brier_score,
+    holdout_mask_identity,
+    wm_holdout_metrics_dict,
+)
 from baselines.train_loop_skeleton import (
     _ensure_skeleton_torch_runtime_configured,
     _holdout_masked_targets,
@@ -39,6 +49,13 @@ from ingest.paths import resolve_data_root, warehouse_path as default_warehouse_
 from ingest.snapshot_export import build_snapshot_payload
 
 GNN_WM_MODEL_NAME = "gnn_sage"
+
+# Collapse detection (wm ablation interpretability): tune in one place.
+_COLLAPSE_SATURATION_EPS = 0.02
+_LOSS_SPIKE_RATIO = 10.0
+_GRAD_NORM_CEILING = 1e6
+# Sustained non-finite / huge gradients: more than this many consecutive bad batches.
+_SUSTAINED_BAD_BATCHES = 2
 
 
 def _filter_records_by_sources(
@@ -98,6 +115,7 @@ def run_wm_gnn_training(
     use_loc_temporal: bool = False,
     history_weeks: int = 8,
     progress: bool = False,
+    log_grad_norm: bool = False,
 ) -> dict[str, Any]:
     _ensure_skeleton_torch_runtime_configured()
     if epochs < 1:
@@ -314,10 +332,17 @@ def run_wm_gnn_training(
     ).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    def _train_one_epoch() -> float:
+    def _train_one_epoch() -> tuple[float, float | None, bool, str | None]:
+        """Returns mean loss, mean grad norm (or None), grad_pathology flag, pathology reason."""
+
         model.train()
         total_loss = 0.0
         n_batches = 0
+        grad_norm_sum = 0.0
+        n_grad = 0
+        bad_streak = 0
+        pathology = False
+        pathology_reason: str | None = None
         order = list(range(len(train_graphs)))
         for start in range(0, len(order), batch_size):
             chunk = order[start : start + batch_size]
@@ -363,12 +388,30 @@ def run_wm_gnn_training(
                 continue
             loss = acc_loss / float(n_sub)
             loss.backward()
+            gn_t = nn.utils.clip_grad_norm_(model.parameters(), max_norm=float("inf"))
+            gn = float(gn_t.detach().item()) if bool(torch.isfinite(gn_t).item()) else float("nan")
+            if log_grad_norm and math.isfinite(gn):
+                grad_norm_sum += gn
+                n_grad += 1
+            batch_bad = (not math.isfinite(gn)) or gn > _GRAD_NORM_CEILING
+            if batch_bad:
+                bad_streak += 1
+                if bad_streak >= _SUSTAINED_BAD_BATCHES and not pathology:
+                    pathology = True
+                    pathology_reason = "sustained_bad_gradient_norm"
+            else:
+                bad_streak = 0
             optimizer.step()
             total_loss += float(loss.item())
             n_batches += 1
         if n_batches == 0:
-            return float("nan")
-        return total_loss / n_batches
+            return float("nan"), None, False, None
+        mean_gn: float | None
+        if log_grad_norm and n_grad > 0:
+            mean_gn = grad_norm_sum / float(n_grad)
+        else:
+            mean_gn = None
+        return total_loss / n_batches, mean_gn, pathology, pathology_reason
 
     def _holdout_rows() -> list[GNNForecastRow]:
         model.eval()
@@ -405,6 +448,7 @@ def run_wm_gnn_training(
         return rows
 
     last_train_loss = float("nan")
+    last_mean_grad_norm: float | None = None
     last_holdout_brier = float("nan")
     best_holdout_brier = float("inf")
     best_epoch = 0
@@ -412,6 +456,9 @@ def run_wm_gnn_training(
     epochs_no_improve = 0
     epochs_run = 0
     early_stopped = False
+    train_loss_ema: float | None = None
+    _ema_alpha = 0.25
+    collapse_events: list[dict[str, Any]] = []
 
     for epoch in range(1, epochs + 1):
         if progress:
@@ -420,7 +467,7 @@ def run_wm_gnn_training(
                 file=sys.stderr,
                 flush=True,
             )
-        last_train_loss = _train_one_epoch()
+        last_train_loss, last_mean_grad_norm, grad_path, grad_path_reason = _train_one_epoch()
         holdout_rows = _holdout_rows()
         holdout_n = len(holdout_rows)
         if holdout_rows:
@@ -449,12 +496,49 @@ def run_wm_gnn_training(
                 else f"{holdout_pos_rate:.6f}"
             )
             mp = "nan" if isinstance(mean_pred_p, float) and math.isnan(mean_pred_p) else f"{mean_pred_p:.6f}"
+            gn_s = (
+                f"{last_mean_grad_norm:.6f}"
+                if last_mean_grad_norm is not None and math.isfinite(last_mean_grad_norm)
+                else "na"
+            )
             print(
                 f"[wm_ablation_train] epoch {epoch}/{epochs} done train_loss={tl} "
                 f"holdout_brier={hb} holdout_rows={holdout_n} "
-                f"holdout_prev={hpr} mean_pred_p={mp}",
+                f"holdout_prev={hpr} mean_pred_p={mp} mean_grad_norm={gn_s}",
                 file=sys.stderr,
                 flush=True,
+            )
+        reasons: list[str] = []
+        if holdout_n > 0 and isinstance(mean_pred_p, float) and math.isfinite(mean_pred_p):
+            if mean_pred_p < _COLLAPSE_SATURATION_EPS or mean_pred_p > 1.0 - _COLLAPSE_SATURATION_EPS:
+                reasons.append("mean_holdout_prediction_saturated")
+        if (
+            train_loss_ema is not None
+            and math.isfinite(last_train_loss)
+            and last_train_loss > _LOSS_SPIKE_RATIO * max(train_loss_ema, 1e-8)
+        ):
+            reasons.append("train_loss_spike_vs_ema")
+        if grad_path:
+            reasons.append(grad_path_reason or "gradient_pathology")
+        if reasons:
+            collapse_events.append(
+                {
+                    "epoch": epoch,
+                    "reasons": reasons,
+                    "mean_pred_holdout": mean_pred_p,
+                    "train_loss": last_train_loss,
+                }
+            )
+            print(
+                f"[wm_ablation_train] collapse_warning epoch={epoch} reasons={reasons}",
+                file=sys.stderr,
+                flush=True,
+            )
+        if math.isfinite(last_train_loss):
+            train_loss_ema = (
+                last_train_loss
+                if train_loss_ema is None
+                else _ema_alpha * last_train_loss + (1.0 - _ema_alpha) * train_loss_ema
             )
         if not math.isnan(last_holdout_brier) and last_holdout_brier < best_holdout_brier - 1e-12:
             best_holdout_brier = last_holdout_brier
@@ -492,6 +576,10 @@ def run_wm_gnn_training(
                 flush=True,
             )
 
+    final_holdout_rows = _holdout_rows()
+    hm = wm_holdout_metrics_dict(final_holdout_rows, GNN_WM_MODEL_NAME)
+    hmi = holdout_mask_identity(final_holdout_rows)
+
     return {
         "epochs": epochs_run,
         "epochs_requested": epochs,
@@ -506,4 +594,9 @@ def run_wm_gnn_training(
         "baselines": baselines_block,
         "use_loc_temporal": use_loc_temporal,
         "history_weeks": history_weeks,
+        "holdout_metrics": hm,
+        "holdout_mask_identity": hmi,
+        "collapse_events": collapse_events,
+        "collapse_detected": bool(collapse_events),
+        "log_grad_norm": log_grad_norm,
     }

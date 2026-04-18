@@ -33,7 +33,11 @@ from baselines.location_weekly_history import (
     LocationWeeklyHistorySamples,
     collect_location_weekly_history,
 )
-from baselines.metrics import brier_score
+from baselines.metrics import (
+    brier_score,
+    holdout_mask_identity,
+    wm_holdout_metrics_dict,
+)
 from baselines.recurrence import ForecastRow
 from baselines.training_slice import (
     FRANCE_SCAFFOLD_HOLDOUT_ORIGIN_END,
@@ -43,10 +47,23 @@ from baselines.training_slice import (
 )
 from ingest.event_records import load_event_records
 from ingest.event_tape import EventTapeRecord
-from ingest.snapshot_export import EXCLUDED_REGIONAL_ADMIN1_CODES, build_snapshot_payload
+from ingest.snapshot_export import (
+    EXCLUDED_REGIONAL_ADMIN1_CODES,
+    LABEL_GRACE_DAYS,
+    build_snapshot_payload,
+)
 
 LINEAR_SKELETON_MODEL_NAME = "linear_skeleton"
 GRU_SKELETON_MODEL_NAME = "gru_skeleton"
+GRU_MULTI_SKELETON_MODEL_NAME = "gru_skeleton_multi"
+
+UTC = dt.timezone.utc
+# Forward windows [origin+start, origin+end) for auxiliary heads (days). See forecast_charter.md §WM horizons.
+_MULTI_W2_START_DAYS = 7
+_MULTI_W2_END_DAYS = 14
+_MULTI_W4_START_DAYS = 21
+_MULTI_W4_END_DAYS = 28
+_AUX_LOSS_WEIGHT = 0.5
 
 LINEAR_SKELETON_DEFAULTS: dict[str, Any] = {
     "lr": 1e-2,
@@ -145,9 +162,44 @@ class LocationSamples:
     mask: torch.Tensor
     origins: tuple[dt.date, ...]
     admin1_codes: tuple[str, ...]
+    y_week2: torch.Tensor | None = None
+    y_week4: torch.Tensor | None = None
 
     def __len__(self) -> int:
         return int(self.x.shape[0])
+
+
+def occurs_protest_in_forward_window(
+    records: list[EventTapeRecord],
+    *,
+    forecast_origin: dt.date,
+    admin1_code: str,
+    start_offset_days: int,
+    end_offset_days: int,
+    source_names: set[str] | None,
+    excluded_admin1: set[str],
+) -> bool:
+    """At least one qualifying protest-class event in [origin+start, origin+end), PIT label contract."""
+
+    if admin1_code in excluded_admin1:
+        return False
+    filtered = _filter_records_by_sources(records, source_names)
+    sorted_records = sorted(
+        filtered,
+        key=lambda r: (r.source_available_at, r.event_date, r.source_event_id),
+    )
+    w_start = forecast_origin + dt.timedelta(days=start_offset_days)
+    w_end = forecast_origin + dt.timedelta(days=end_offset_days)
+    w_end_dt = dt.datetime.combine(w_end, dt.time.min, tzinfo=UTC)
+    grace_cutoff = w_end_dt + dt.timedelta(days=LABEL_GRACE_DAYS)
+    for record in sorted_records:
+        if record.admin1_code != admin1_code:
+            continue
+        if not (w_start <= record.event_date < w_end):
+            continue
+        if record.source_available_at.astimezone(UTC) <= grace_cutoff:
+            return True
+    return False
 
 
 def collect_samples_for_origins(
@@ -160,6 +212,7 @@ def collect_samples_for_origins(
     excluded_admin1: set[str],
     progress: bool = False,
     progress_label: str = "collect_samples",
+    multi_horizon: bool = False,
 ) -> LocationSamples:
     """
     Build supervised rows from ``extract_features_for_origin`` + ``build_snapshot_payload`` targets.
@@ -172,6 +225,8 @@ def collect_samples_for_origins(
 
     xs: list[list[float]] = []
     ys: list[float] = []
+    ys_w2: list[float] = []
+    ys_w4: list[float] = []
     masks: list[bool] = []
     row_origins: list[dt.date] = []
     row_codes: list[str] = []
@@ -221,19 +276,53 @@ def collect_samples_for_origins(
             if code in target_occurs:
                 ys.append(float(target_occurs[code]))
                 masks.append(True)
+                if multi_horizon:
+                    ys_w2.append(
+                        float(
+                            occurs_protest_in_forward_window(
+                                records,
+                                forecast_origin=origin,
+                                admin1_code=code,
+                                start_offset_days=_MULTI_W2_START_DAYS,
+                                end_offset_days=_MULTI_W2_END_DAYS,
+                                source_names=source_names,
+                                excluded_admin1=excluded_admin1,
+                            )
+                        )
+                    )
+                    ys_w4.append(
+                        float(
+                            occurs_protest_in_forward_window(
+                                records,
+                                forecast_origin=origin,
+                                admin1_code=code,
+                                start_offset_days=_MULTI_W4_START_DAYS,
+                                end_offset_days=_MULTI_W4_END_DAYS,
+                                source_names=source_names,
+                                excluded_admin1=excluded_admin1,
+                            )
+                        )
+                    )
             else:
                 ys.append(0.0)
                 masks.append(False)
+                if multi_horizon:
+                    ys_w2.append(0.0)
+                    ys_w4.append(0.0)
 
     x_t = torch.tensor(xs, dtype=torch.float32)
     y_t = torch.tensor(ys, dtype=torch.float32)
     m_t = torch.tensor(masks, dtype=torch.bool)
+    y2_t = torch.tensor(ys_w2, dtype=torch.float32) if multi_horizon else None
+    y4_t = torch.tensor(ys_w4, dtype=torch.float32) if multi_horizon else None
     return LocationSamples(
         x=x_t,
         y=y_t,
         mask=m_t,
         origins=tuple(row_origins),
         admin1_codes=tuple(row_codes),
+        y_week2=y2_t,
+        y_week4=y4_t,
     )
 
 
@@ -270,6 +359,42 @@ class OccurrenceGRUModel(nn.Module):
             h_last = h_n[-1]
             logits[idx] = self.head(h_last).squeeze(-1)
         return logits
+
+
+class OccurrenceGRUMultiHeadModel(nn.Module):
+    """Shared GRU trunk; three logits for 7d, week-2, and week-4 forward windows (see forecast_charter.md)."""
+
+    def __init__(self, feature_dim: int, hidden_dim: int = 64, num_layers: int = 1) -> None:
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.gru = nn.GRU(feature_dim, hidden_dim, num_layers=num_layers, batch_first=True)
+        self.head7 = nn.Linear(hidden_dim, 1)
+        self.head_w2 = nn.Linear(hidden_dim, 1)
+        self.head_w4 = nn.Linear(hidden_dim, 1)
+
+    def forward(
+        self, x_seq: torch.Tensor, time_mask: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        b, _, _ = x_seq.shape
+        device = x_seq.device
+        xr = torch.flip(x_seq, dims=(1,))
+        mr = torch.flip(time_mask, dims=(1,))
+        lengths = mr.long().sum(dim=1)
+        ok = lengths > 0
+        logits7 = torch.zeros(b, device=device, dtype=x_seq.dtype)
+        logits_w2 = torch.zeros(b, device=device, dtype=x_seq.dtype)
+        logits_w4 = torch.zeros(b, device=device, dtype=x_seq.dtype)
+        if bool(ok.any().item()):
+            idx = torch.where(ok)[0]
+            x_sub = xr[ok]
+            lens = lengths[ok].detach().cpu()
+            packed = pack_padded_sequence(x_sub, lens, batch_first=True, enforce_sorted=False)
+            _, h_n = self.gru(packed)
+            h_last = h_n[-1]
+            logits7[idx] = self.head7(h_last).squeeze(-1)
+            logits_w2[idx] = self.head_w2(h_last).squeeze(-1)
+            logits_w4[idx] = self.head_w4(h_last).squeeze(-1)
+        return logits7, logits_w2, logits_w4
 
 
 def _train_one_epoch(
@@ -323,6 +448,45 @@ def _train_one_epoch_gru(
         optimizer.zero_grad()
         logits = model(x_seq, tmask)
         loss = F.binary_cross_entropy_with_logits(logits[mb], yb[mb])
+        loss.backward()
+        optimizer.step()
+        total_loss += float(loss.item())
+        n_batches += 1
+    if n_batches == 0:
+        print(
+            "[train_loop_skeleton] warning: no training batches with masked labels this epoch.",
+            file=sys.stderr,
+            flush=True,
+        )
+        return float("nan")
+    return total_loss / n_batches
+
+
+def _train_one_epoch_gru_multi(
+    model: OccurrenceGRUMultiHeadModel,
+    loader: DataLoader,
+    optimizer: torch.optim.Optimizer,
+    device: torch.device,
+) -> float:
+    model.train()
+    total_loss = 0.0
+    n_batches = 0
+    for x_seq, tmask, yb, y2, y4, mb in loader:
+        x_seq = x_seq.to(device)
+        tmask = tmask.to(device)
+        yb = yb.to(device)
+        y2 = y2.to(device)
+        y4 = y4.to(device)
+        mb = mb.to(device)
+        if mb.sum() == 0:
+            continue
+        optimizer.zero_grad()
+        l7, l2, l4 = model(x_seq, tmask)
+        loss = F.binary_cross_entropy_with_logits(l7[mb], yb[mb])
+        loss = loss + _AUX_LOSS_WEIGHT * (
+            F.binary_cross_entropy_with_logits(l2[mb], y2[mb])
+            + F.binary_cross_entropy_with_logits(l4[mb], y4[mb])
+        )
         loss.backward()
         optimizer.step()
         total_loss += float(loss.item())
@@ -403,6 +567,73 @@ def _forecast_rows_from_gru_samples(
     return rows
 
 
+def _forecast_rows_from_gru_multi_samples(
+    model: OccurrenceGRUMultiHeadModel,
+    hist: LocationWeeklyHistorySamples,
+    *,
+    device: torch.device,
+    model_name: str,
+    target_lookup: dict[tuple[dt.date, str], tuple[int, bool]],
+) -> list[ForecastRow]:
+    """Primary 7d head only; same ``ForecastRow`` contract as single-head GRU."""
+
+    model.eval()
+    rows: list[ForecastRow] = []
+    with torch.no_grad():
+        l7, _, _ = model(hist.x_seq.to(device), hist.time_mask.to(device))
+        probs = torch.sigmoid(l7).cpu().numpy()
+    for i in range(len(hist.origins)):
+        if not hist.mask[i].item():
+            continue
+        origin = hist.origins[i]
+        code = hist.admin1_codes[i]
+        tc, to = target_lookup.get((origin, code), (0, False))
+        rows.append(
+            ForecastRow(
+                forecast_origin=origin,
+                admin1_code=code,
+                model_name=model_name,
+                predicted_count=float(probs[i]),
+                predicted_occurrence_probability=float(probs[i]),
+                target_count_next_7d=int(tc),
+                target_occurs_next_7d=bool(to),
+            )
+        )
+    return rows
+
+
+def _aux_horizon_metrics_gru_multi(
+    model: OccurrenceGRUMultiHeadModel,
+    hist: LocationWeeklyHistorySamples,
+    device: torch.device,
+) -> dict[str, float]:
+    assert hist.y_week2 is not None and hist.y_week4 is not None
+    model.eval()
+    mb = hist.mask
+    with torch.no_grad():
+        _, l2, l4 = model(hist.x_seq.to(device), hist.time_mask.to(device))
+        p2 = torch.sigmoid(l2[mb])
+        p4 = torch.sigmoid(l4[mb])
+        y2 = hist.y_week2[mb].to(device)
+        y4 = hist.y_week4[mb].to(device)
+    eps = 1e-12
+
+    def _bl(p: torch.Tensor, y: torch.Tensor) -> tuple[float, float]:
+        b = float(torch.mean((p - y) ** 2).item())
+        pc = p.clamp(eps, 1.0 - eps)
+        ll = float(torch.mean(-(y * torch.log(pc) + (1.0 - y) * torch.log(1.0 - pc))).item())
+        return b, ll
+
+    b2, ll2 = _bl(p2, y2)
+    b4, ll4 = _bl(p4, y4)
+    return {
+        "brier_week2_7_14d": b2,
+        "brier_week4_21_28d": b4,
+        "log_loss_week2_7_14d": ll2,
+        "log_loss_week4_21_28d": ll4,
+    }
+
+
 def build_target_lookup_for_origins(
     *,
     records: list[EventTapeRecord],
@@ -458,12 +689,12 @@ def run_linear_skeleton_cli(
     excluded_admin1: set[str],
     progress: bool = False,
     early_stop_patience: int = 1,
-    variant: Literal["linear", "gru"] = "linear",
+    variant: Literal["linear", "gru", "gru_multi"] = "linear",
     history_weeks: int = 8,
     emit_stdout_json: bool = True,
 ) -> dict[str, Any]:
     _ensure_skeleton_torch_runtime_configured()
-    if variant not in {"linear", "gru"}:
+    if variant not in {"linear", "gru", "gru_multi"}:
         raise ValueError(f"unknown variant: {variant!r}")
     if history_weeks < 1:
         raise ValueError(f"history_weeks must be >= 1, got {history_weeks}")
@@ -517,6 +748,7 @@ def run_linear_skeleton_cli(
             file=sys.stderr,
         )
 
+    _multi = variant == "gru_multi"
     train_samples = collect_samples_for_origins(
         records=filtered,
         origins=train_origins,
@@ -526,6 +758,7 @@ def run_linear_skeleton_cli(
         excluded_admin1=excluded_admin1,
         progress=progress,
         progress_label="train_samples",
+        multi_horizon=_multi,
     )
     holdout_samples = collect_samples_for_origins(
         records=filtered,
@@ -536,6 +769,7 @@ def run_linear_skeleton_cli(
         excluded_admin1=excluded_admin1,
         progress=progress,
         progress_label="holdout_samples",
+        multi_horizon=_multi,
     )
 
     n_train = len(train_samples)
@@ -566,7 +800,7 @@ def run_linear_skeleton_cli(
     dim = len(feature_names)
     hist_train: LocationWeeklyHistorySamples | None = None
     hist_hold: LocationWeeklyHistorySamples | None = None
-    if variant == "gru":
+    if variant in ("gru", "gru_multi"):
         if progress:
             tqdm.write(
                 "[train_loop_skeleton] GRU: building past-only weekly tensors "
@@ -581,6 +815,10 @@ def run_linear_skeleton_cli(
             file=sys.stderr,
             disable=not progress,
         ) as gru_hist_pbar:
+            y2_tr = train_samples.y_week2 if variant == "gru_multi" else None
+            y4_tr = train_samples.y_week4 if variant == "gru_multi" else None
+            y2_ho = holdout_samples.y_week2 if variant == "gru_multi" else None
+            y4_ho = holdout_samples.y_week4 if variant == "gru_multi" else None
             hist_train = collect_location_weekly_history(
                 records=filtered,
                 origins=train_samples.origins,
@@ -594,6 +832,8 @@ def run_linear_skeleton_cli(
                 history_weeks=history_weeks,
                 progress=progress,
                 progress_label="train_loc_hist",
+                y_week2=y2_tr,
+                y_week4=y4_tr,
             )
             if progress:
                 gru_hist_pbar.set_postfix_str("train done")
@@ -611,18 +851,33 @@ def run_linear_skeleton_cli(
                 history_weeks=history_weeks,
                 progress=progress,
                 progress_label="holdout_loc_hist",
+                y_week2=y2_ho,
+                y_week4=y4_ho,
             )
             if progress:
                 gru_hist_pbar.set_postfix_str("holdout done")
             gru_hist_pbar.update(1)
-        model: nn.Module = OccurrenceGRUModel(dim).to(device)
-        ds = TensorDataset(
-            hist_train.x_seq,
-            hist_train.time_mask,
-            hist_train.y,
-            hist_train.mask,
-        )
-        model_name_for_brier = GRU_SKELETON_MODEL_NAME
+        if variant == "gru_multi":
+            assert hist_train.y_week2 is not None and hist_train.y_week4 is not None
+            model = OccurrenceGRUMultiHeadModel(dim).to(device)
+            ds = TensorDataset(
+                hist_train.x_seq,
+                hist_train.time_mask,
+                hist_train.y,
+                hist_train.y_week2,
+                hist_train.y_week4,
+                hist_train.mask,
+            )
+            model_name_for_brier = GRU_MULTI_SKELETON_MODEL_NAME
+        else:
+            model = OccurrenceGRUModel(dim).to(device)
+            ds = TensorDataset(
+                hist_train.x_seq,
+                hist_train.time_mask,
+                hist_train.y,
+                hist_train.mask,
+            )
+            model_name_for_brier = GRU_SKELETON_MODEL_NAME
     else:
         model = LinearOccurrenceModel(dim).to(device)
         ds = TensorDataset(train_samples.x, train_samples.y, train_samples.mask)
@@ -715,6 +970,21 @@ def run_linear_skeleton_cli(
             holdout_rows = _forecast_rows_from_samples(
                 model,  # type: ignore[arg-type]
                 holdout_samples,
+                device=device,
+                model_name=model_name_for_brier,
+                target_lookup=target_lookup,
+            )
+        elif variant == "gru_multi":
+            last_train_loss = _train_one_epoch_gru_multi(
+                model,  # type: ignore[arg-type]
+                loader,
+                optimizer,
+                device,
+            )
+            assert hist_hold is not None
+            holdout_rows = _forecast_rows_from_gru_multi_samples(
+                model,  # type: ignore[arg-type]
+                hist_hold,
                 device=device,
                 model_name=model_name_for_brier,
                 target_lookup=target_lookup,
@@ -822,6 +1092,46 @@ def run_linear_skeleton_cli(
                 flush=True,
             )
 
+    if variant == "linear":
+        final_holdout_rows = _forecast_rows_from_samples(
+            model,  # type: ignore[arg-type]
+            holdout_samples,
+            device=device,
+            model_name=model_name_for_brier,
+            target_lookup=target_lookup,
+        )
+    elif variant == "gru_multi":
+        assert hist_hold is not None
+        final_holdout_rows = _forecast_rows_from_gru_multi_samples(
+            model,  # type: ignore[arg-type]
+            hist_hold,
+            device=device,
+            model_name=model_name_for_brier,
+            target_lookup=target_lookup,
+        )
+    else:
+        assert hist_hold is not None
+        final_holdout_rows = _forecast_rows_from_gru_samples(
+            model,  # type: ignore[arg-type]
+            hist_hold,
+            device=device,
+            model_name=model_name_for_brier,
+            target_lookup=target_lookup,
+        )
+    holdout_metrics: dict[str, float] = wm_holdout_metrics_dict(
+        final_holdout_rows,
+        model_name_for_brier,
+    )
+    hmi = holdout_mask_identity(final_holdout_rows)
+    aux_horizons: dict[str, float] | None = None
+    if variant == "gru_multi":
+        assert hist_hold is not None
+        aux_horizons = _aux_horizon_metrics_gru_multi(
+            model,  # type: ignore[arg-type]
+            hist_hold,
+            device,
+        )
+
     summary: dict[str, Any] = {
         "event": "run_summary",
         "epochs_requested": epochs,
@@ -835,11 +1145,15 @@ def run_linear_skeleton_cli(
         "last_holdout_brier": _json_safe(last_holdout_brier),
         "train_rows": n_train,
         "holdout_rows": len(holdout_samples),
+        "holdout_metrics": {k: _json_safe(v) for k, v in holdout_metrics.items()},
+        "holdout_mask_identity": hmi,
     }
+    if aux_horizons is not None:
+        summary["holdout_metrics_aux_horizons"] = {k: _json_safe(v) for k, v in aux_horizons.items()}
     if emit_stdout_json:
         print(json.dumps(summary), flush=True)
 
-    return {
+    out_ret: dict[str, Any] = {
         "variant": variant,
         "epochs": epochs_run,
         "epochs_requested": epochs,
@@ -853,7 +1167,13 @@ def run_linear_skeleton_cli(
         "holdout_rows": len(holdout_samples),
         "baselines": baselines_block,
         "history_weeks": history_weeks,
+        "holdout_metrics": holdout_metrics,
+        "holdout_mask_identity": hmi,
     }
+    if aux_horizons is not None:
+        out_ret["holdout_metrics_aux_horizons"] = aux_horizons
+    out_ret["collapse_detected"] = False
+    return out_ret
 
 
 def main(argv: list[str] | None = None) -> None:

@@ -36,6 +36,8 @@ class LocationWeeklyHistorySamples:
     mask: torch.Tensor
     origins: tuple[dt.date, ...]
     admin1_codes: tuple[str, ...]
+    y_week2: torch.Tensor | None = None
+    y_week4: torch.Tensor | None = None
 
     def __len__(self) -> int:
         return int(self.x_seq.shape[0])
@@ -55,6 +57,8 @@ def collect_location_weekly_history(
     history_weeks: int,
     progress: bool = False,
     progress_label: str = "loc_weekly_history",
+    y_week2: torch.Tensor | None = None,
+    y_week4: torch.Tensor | None = None,
 ) -> LocationWeeklyHistorySamples:
     if history_weeks < 1:
         raise ValueError(f"history_weeks must be >= 1, got {history_weeks}")
@@ -62,6 +66,10 @@ def collect_location_weekly_history(
         raise ValueError("origins and admin1_codes length mismatch")
     if y.shape[0] != len(origins) or mask.shape[0] != len(origins):
         raise ValueError("y/mask length mismatch with origins")
+    if y_week2 is not None and y_week2.shape[0] != len(origins):
+        raise ValueError("y_week2 length mismatch with origins")
+    if y_week4 is not None and y_week4.shape[0] != len(origins):
+        raise ValueError("y_week4 length mismatch with origins")
 
     filtered = _filter_records_by_sources(records, source_names)
     if filtered:
@@ -149,4 +157,6 @@ def collect_location_weekly_history(
         mask=mask.detach().clone(),
         origins=origins,
         admin1_codes=admin1_codes,
+        y_week2=y_week2.detach().clone() if y_week2 is not None else None,
+        y_week4=y_week4.detach().clone() if y_week4 is not None else None,
     )
