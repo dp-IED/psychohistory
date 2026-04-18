@@ -155,6 +155,8 @@ def build_snapshot_payload(
     grounding_cache: Path | None = None,
     grounding_request_delay_s: float = 0.25,
     grounding_log: bool = True,
+    grounding_dump_manifest: Path | None = None,
+    grounding_api_fallback: bool = True,
 ) -> dict[str, Any]:
     if source_identity_mode not in {"preserve", "collapse"}:
         raise ValueError(f"unknown source identity mode: {source_identity_mode}")
@@ -487,6 +489,8 @@ def build_snapshot_payload(
             request_delay_s=grounding_request_delay_s,
             log=grounding_log,
             origin=origin_date.isoformat(),
+            dump_manifest_path=grounding_dump_manifest,
+            api_fallback=grounding_api_fallback,
         )
     return payload
 
