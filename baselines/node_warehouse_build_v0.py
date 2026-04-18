@@ -5,8 +5,9 @@ events satisfy ``event_date <= as_of`` and
 ``event_date >= as_of - timedelta(days=window_days - 1)``. That is exactly
 ``window_days`` calendar days ending on ``as_of``.
 
-**128-dimensional layout** (built deterministically, then each full row is L2-normalized;
-if the L2 norm is 0, the row stays all zeros):
+**128-dimensional layout** (built deterministically, then each full row is L2-normalized).
+Rows whose **pre-normalisation** L2 norm is below ``1e-6`` are **rejected** at build time
+(rather than written as zeros that could become NaNs in other pipelines):
 
 1. **Dims 0–63**: Take ``event_root_code`` stripped; pad or truncate to **two**
    characters (pad the second with ASCII space if length is 1; empty becomes two
@@ -52,6 +53,9 @@ from schemas.graph_builder_warehouse import (
 
 NODE_WAREHOUSE_RECIPE_ID_V0 = "gdelt_cameo_hist_actor1_admin1_v0"
 NODE_VECTOR_DIM: int = NODE_WAREHOUSE_EMBEDDING_DIM_V1
+# Reject near-zero feature rows before L2 normalisation so we never write NaNs from 0/0
+# or propagate silent zeros into ANN (downstream cosine/dot assumes finite directions).
+_PRE_L2_NORM_EPS = 1e-6
 
 
 def _stable_actor_slot(actor1_name: str | None) -> int:
@@ -157,6 +161,17 @@ def build_france_node_matrix_v0(
                 admin1_code=admin1,
             )
         )
+
+    if feats.shape[0] > 0:
+        pre_norms = np.linalg.norm(feats, axis=1)
+        if bool(np.any(pre_norms < _PRE_L2_NORM_EPS)):
+            bad_idx = int(np.flatnonzero(pre_norms < _PRE_L2_NORM_EPS)[0])
+            bad_id = rows_meta[bad_idx].node_id
+            raise ValueError(
+                "node warehouse v0: row L2 norm below "
+                f"{_PRE_L2_NORM_EPS:g} before normalisation (would corrupt ANN); "
+                f"first offending node_id={bad_id!r}",
+            )
 
     matrix = _l2_normalize_rows(feats.astype(np.float32))
     return matrix, rows_meta

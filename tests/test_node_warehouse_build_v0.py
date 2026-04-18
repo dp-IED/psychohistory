@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 import zlib
-from datetime import date
+from datetime import date, timedelta
 from itertools import product
 
 import numpy as np
@@ -123,3 +123,84 @@ def test_build_france_node_matrix_v0_rejects_bad_window() -> None:
     rec = _fra_record(source_event_id="e0", event_date=date(2026, 4, 10), actor1_name="x")
     with pytest.raises(ValueError):
         build_france_node_matrix_v0([rec], as_of=date(2026, 4, 18), window_days=0)
+
+
+def _log_count_term(matrix: np.ndarray) -> float:
+    assert matrix.shape[0] >= 1
+    return float(matrix[0, 104])
+
+
+def test_pit_window_excludes_day_before_start_even_with_anchor() -> None:
+    """Window end inclusive on ``as_of``; start = as_of - (window_days-1). Day before start is out."""
+    as_of = date(2026, 4, 18)
+    window_days = 7
+    start = date(2026, 4, 12)
+    assert as_of - timedelta(days=window_days - 1) == start
+    name = "anchor_actor"
+    anchor_only = [
+        _fra_record(source_event_id="a1", event_date=as_of, actor1_name=name),
+    ]
+    with_noise_before = anchor_only + [
+        _fra_record(
+            source_event_id="early",
+            event_date=start - timedelta(days=1),
+            actor1_name=name,
+        ),
+    ]
+    m0, _ = build_france_node_matrix_v0(anchor_only, as_of=as_of, window_days=window_days)
+    m1, _ = build_france_node_matrix_v0(with_noise_before, as_of=as_of, window_days=window_days)
+    assert m0.shape == (1, 128) and m1.shape == (1, 128)
+    assert _log_count_term(m0) == _log_count_term(m1)
+
+
+def test_pit_window_includes_start_day() -> None:
+    as_of = date(2026, 4, 18)
+    window_days = 7
+    start = date(2026, 4, 12)
+    name = "anchor_actor"
+    anchor_only = [
+        _fra_record(source_event_id="a1", event_date=as_of, actor1_name=name),
+    ]
+    with_start_day = anchor_only + [
+        _fra_record(source_event_id="on_start", event_date=start, actor1_name=name),
+    ]
+    m0, _ = build_france_node_matrix_v0(anchor_only, as_of=as_of, window_days=window_days)
+    m1, _ = build_france_node_matrix_v0(with_start_day, as_of=as_of, window_days=window_days)
+    assert _log_count_term(m1) > _log_count_term(m0)
+
+
+def test_pit_window_excludes_after_as_of() -> None:
+    as_of = date(2026, 4, 18)
+    window_days = 7
+    name = "anchor_actor"
+    anchor_only = [
+        _fra_record(source_event_id="a1", event_date=as_of, actor1_name=name),
+    ]
+    with_future = anchor_only + [
+        _fra_record(
+            source_event_id="future",
+            event_date=as_of + timedelta(days=1),
+            actor1_name=name,
+        ),
+    ]
+    m0, _ = build_france_node_matrix_v0(anchor_only, as_of=as_of, window_days=window_days)
+    m1, _ = build_france_node_matrix_v0(with_future, as_of=as_of, window_days=window_days)
+    assert _log_count_term(m0) == _log_count_term(m1)
+
+
+def test_pit_window_includes_as_of_day() -> None:
+    as_of = date(2026, 4, 18)
+    window_days = 7
+    name = "anchor_actor"
+    only_as_of = [
+        _fra_record(source_event_id="a1", event_date=as_of, actor1_name=name),
+    ]
+    m0, _ = build_france_node_matrix_v0(only_as_of, as_of=as_of, window_days=window_days)
+    assert m0.shape == (1, 128)
+    assert _log_count_term(m0) > 0.0
+
+
+def test_mmap_write_rejects_zero_row_matrix(tmp_path) -> None:
+    z = np.zeros((1, 128), dtype=np.float32)
+    with pytest.raises(ValueError, match=r"mmap write"):
+        write_float32_matrix(tmp_path / "zero.f32", z)

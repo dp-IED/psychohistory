@@ -11,11 +11,22 @@ from schemas.graph_builder_warehouse import NodeWarehouseManifest
 
 
 def write_float32_matrix(path: Path, matrix: np.ndarray) -> None:
-    """Write a contiguous ``(N, 128)`` float32 matrix to ``path`` (raw bytes)."""
+    """Write a contiguous ``(N, 128)`` float32 matrix to ``path`` (raw bytes).
+
+    Rejects degenerate rows (near-zero L2 norm) so NaNs/Infs from bad upstream
+    normalisation cannot enter the mmap and silently corrupt ANN search.
+    """
     assert matrix.ndim == 2
     arr = np.asarray(matrix, dtype=np.float32, order="C")
     assert arr.dtype == np.float32
     assert arr.shape[1] == 128
+    if arr.shape[0] > 0:
+        row_norms = np.linalg.norm(arr, axis=1)
+        if not bool(np.all(np.isfinite(row_norms))) or float(np.min(row_norms)) < 1e-6:
+            raise ValueError(
+                "mmap write: every row must have finite L2 norm >= 1e-6 "
+                "(reject zero-norm / NaN rows before they corrupt the ANN index)",
+            )
     path.parent.mkdir(parents=True, exist_ok=True)
     arr.tofile(path)
 
