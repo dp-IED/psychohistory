@@ -31,6 +31,7 @@ The program thesis (relational encoder + latent dynamics + optional market super
 
 - Blocking WM work on Polymarket ingestion; **event resolution** is the first label source for WM v0.
 - Re-proving France on every unrelated change; France = **smoke** when shared ingestion/snapshot/backtest changes.
+- Using **Iran** (or similar contested, sparse domains) as the **primary** optimization benchmark or headline eval **before** stable baselines, held-out contracts, and ablations are frozen on the **France** (or agreed) scaffold—Iran is a **shadow / red-team** lane until a labeled eval contract exists (**§2.3**).
 - Productized constrained Q&A at scale before retrieval + forecast pieces exist.
 
 ### 1.3 Success criteria (gates)
@@ -58,13 +59,38 @@ Only **blocking** data steps; then **model**. Target: **something trained end-to
 
 ### 2.2 Model training (order)
 
+Sequence: **D → E → F → G**, then **I** (Iran shadow slice—**§2.3**), then **H** (Polymarket).
+
 | Step | Deliverable |
 |------|-------------|
 | **D** | **Training loop skeleton** (e.g. `train.py` or module under `baselines/`): loader over \((S_t, \text{label}_{t+k})\), loss (Brier / BCE as appropriate), optimizer, **dummy linear** baseline. Surfaces batching, device, gradient bugs **before** model complexity. |
 | **E** | **WM v0:** prepend per-node **GRU** over last \(k\) weekly snapshots to existing [`baselines/gnn.py`](baselines/gnn.py) hetero GNN; **time step then message passing** in a way that supports **separate** ablations. Train end-to-end on **event** targets. |
 | **F** | **Multi-step losses:** secondary terms for \(t{+}2\), \(t{+}4\) (or charter horizons) from shared \(z_t\). |
 | **G** | **First ablation matrix:** GRU-only (no MP) vs GNN-only (no GRU) vs GRU+GNN—evidence that **composition earns its keep**. |
+| **I** | **Iran stress-test lane (shadow / red-team):** after **G** is green, stand up a parallel **Iran** dev slice per **§2.3**. Does **not** replace Step **E** or France as the regression-controlled training harness; no headline forecasting claims without a labeled eval contract. |
 | **H** | **Then Polymarket:** ingest + resolution labels as **Phase M** below; label contracts and masking—not parallel “build the world” from scratch. |
+
+### 2.3 Iran stress-test lane (parallel; after **G**)
+
+**Positioning:** Iran is a strong **product-style scenario** (sparse timestamped evidence, multi-domain reasoning, explicit uncertainty, epistemological tier—competing interpretations, evidence pointers, limits under cutoff discipline). It is a **poor primary development benchmark right now** because it stacks confounds (ingest gaps, ontology pressure, sparse labels, entity ambiguity, multi-community timelines, politically contested interpretation) and invites **compelling narratives without enough labeled outcomes** to validate cleanly. **Do not** replace Step **E** with Iran.
+
+**Split:**
+
+| Track | Role |
+|-------|------|
+| **France** | Model-development **control**: cleaner metrics, ablations, and regression on the pinned scaffold (Steps **D–G**). |
+| **Iran** | **System stress test**: failure modes—missing or contradictory sources, sparse temporal history, domain transfer, interpretive uncertainty, and reviewer inspection of ranked hypotheses + cited evidence + explicit limits. |
+
+**Explicit non-goals for the Iran slice:** no new ontology unless a **documented** failure mode demands it; no **regime-naming** claims as model outputs; no **headline forecasting** claims without a **labeled eval contract** aligned to `forecast_charter.md` / `evals/`.
+
+**Immediate audits (what to run, not what to optimize):**
+
+1. **Ingest audit:** Layers 0/1 represent evidence cleanly under frozen cutoffs.  
+2. **Lens audit:** Military, political, material, and epistemic subquestions can be scoped without silently dropping evidence.  
+3. **Transfer audit:** Models trained on existing scaffolds show **calibrated** uncertainty rather than overconfident behavior on sparse, out-of-scaffold geography.  
+4. **Reviewer workflow:** Humans can inspect ranked hypotheses, pointers to evidence, and stated limits in a domain where ambiguity is real (`docs/research/research.md`, epistemological tier).
+
+**Summary:** **Yes, use Iran—as a shadow evaluation / red-team slice, not the main benchmark that drives model iteration until** baselines, held-out evaluation, and ablations are stable on the primary harness.
 
 ---
 
@@ -119,6 +145,7 @@ Only **blocking** data steps; then **model**. Target: **something trained end-to
 | I1 | Runbooks: commands, data pins, seeds. |
 | I2 | France harness smoke when `ingest` / `snapshot_export` / `backtest` change. |
 | I3 | Cross-track: WM + market exogenous vs WM-only on agreed slice. |
+| I4 | **Iran shadow slice** (after step **G** in §2): run the **§2.3** audits (ingest, lens, transfer, reviewer workflow)—**not** a primary metric gate or replacement for the France scaffold. |
 
 ---
 
@@ -157,7 +184,8 @@ Only **blocking** data steps; then **model**. Target: **something trained end-to
 - **Gradients-first:** prefer extending `schemas/`, `ingest/`, `baselines/`, `evals/`, `tests/` over spec-only work.  
 - Any material claim: **metrics**, **slices**, **seeds**, **ablation** or **mask**.  
 - **Markets:** adversarial tape tests **before** trusting production labels; **coverage** documented.  
-- France smoke when shared snapshot/backtest contracts change—not a gate on WM v0.
+- France smoke when shared snapshot/backtest contracts change—not a gate on WM v0.  
+- **Iran** only as **§2.3** shadow / red-team after **G**; keep France (or agreed scaffold) as the ablation-controlled harness until eval contracts support stronger claims.
 
 ---
 

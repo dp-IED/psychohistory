@@ -167,7 +167,9 @@ def build_snapshot_payload(
     selected_records = _filter_records_by_sources(records, source_names)
     sorted_records = sorted(selected_records, key=_record_sort_key)
     selected_source_names = sorted(
-        source_names if source_names is not None else {record.source_name for record in sorted_records}
+        source_names
+        if source_names is not None
+        else {record.source_name for record in sorted_records}
     )
     feature_events = [
         record
@@ -226,7 +228,10 @@ def build_snapshot_payload(
                 "type": "Source",
                 "label": "Events",
                 "provenance": source_provenance,
-                "attributes": {"source_name": "events", "source_names": selected_source_names},
+                "attributes": {
+                    "source_name": "events",
+                    "source_names": selected_source_names,
+                },
             }
         ]
     else:
@@ -246,7 +251,9 @@ def build_snapshot_payload(
     for record in sorted_records:
         location_sources.setdefault(record.admin1_code, set()).add(record.source_name)
     for admin1_code in location_universe:
-        location_source_names = sorted(location_sources.get(admin1_code) or selected_source_names)
+        location_source_names = sorted(
+            location_sources.get(admin1_code) or selected_source_names
+        )
         nodes.append(
             {
                 "id": _location_node_id(admin1_code),
@@ -287,7 +294,9 @@ def build_snapshot_payload(
                 "attributes": {
                     "source_name": record.source_name,
                     "source_event_id": record.source_event_id,
-                    "source_available_at": _format_datetime_z(record.source_available_at),
+                    "source_available_at": _format_datetime_z(
+                        record.source_available_at
+                    ),
                     "event_class": record.event_class,
                     "event_code": record.event_code,
                     "event_base_code": record.event_base_code,
@@ -341,7 +350,9 @@ def build_snapshot_payload(
                     "provenance": node_provenance(record.source_name),
                 },
             )
-            actor_nodes[node_id]["provenance"] = _multi_source_provenance(actor_node_sources[node_id])
+            actor_nodes[node_id]["provenance"] = _multi_source_provenance(
+                actor_node_sources[node_id]
+            )
             edges.append(
                 {
                     "source": node_id,
@@ -416,12 +427,20 @@ def build_snapshot_payload(
             "label_audit": {
                 "unscored_admin1_event_count": unscored_count,
                 "unscored_admin1_codes": sorted(unscored_codes),
-                "excluded_regional_admin1_event_count": sum(excluded_primary_counts.values()),
-                "excluded_regional_admin1_counts": dict(sorted(excluded_primary_counts.items())),
+                "excluded_regional_admin1_event_count": sum(
+                    excluded_primary_counts.values()
+                ),
+                "excluded_regional_admin1_counts": dict(
+                    sorted(excluded_primary_counts.items())
+                ),
             },
             "feature_audit": {
-                "excluded_regional_admin1_event_count": sum(excluded_feature_counts.values()),
-                "excluded_regional_admin1_counts": dict(sorted(excluded_feature_counts.items())),
+                "excluded_regional_admin1_event_count": sum(
+                    excluded_feature_counts.values()
+                ),
+                "excluded_regional_admin1_counts": dict(
+                    sorted(excluded_feature_counts.items())
+                ),
             },
             "scoring_universe": {
                 "country_code": "FR",
@@ -431,7 +450,7 @@ def build_snapshot_payload(
                 "excluded_admin1_codes": sorted(EXCLUDED_REGIONAL_ADMIN1_CODES),
             },
             "graph_location_universe": {
-                "source": "all_admin1_codes_in_event_tape",
+                "source": "all_admin1_codes_in_events",
                 "admin1_count": len(location_universe),
             },
             "source_name": "gdelt_v2_events"
@@ -474,7 +493,6 @@ def build_snapshot_payload(
 
 def export_weekly_snapshots(
     *,
-    tape_path: Path | None = None,
     warehouse_path: Path | None = None,
     data_root: Path | None = None,
     origin_start: dt.date,
@@ -486,7 +504,6 @@ def export_weekly_snapshots(
     progress: bool = False,
 ) -> list[Path]:
     records = load_event_records(
-        tape_path=tape_path,
         warehouse_db_path=warehouse_path,
         data_root=data_root,
     )
@@ -533,22 +550,14 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
     export = subparsers.add_parser("export-weekly")
     export.add_argument(
-        "--tape",
-        default=None,
-        help=(
-            "JSONL event tape. If omitted, load from the DuckDB warehouse "
-            "at <data-root>/warehouse/events.duckdb (see PSYCHOHISTORY_DATA_ROOT)."
-        ),
-    )
-    export.add_argument(
         "--data-root",
         default=None,
-        help="Root directory for data/ layout; sets warehouse path when --tape is omitted.",
+        help="Root directory for data/ layout; default warehouse is <data-root>/warehouse/events.duckdb.",
     )
     export.add_argument(
         "--warehouse-path",
         default=None,
-        help="Path to events.duckdb (overrides --data-root when --tape is omitted).",
+        help="Path to events.duckdb (overrides the default derived from --data-root).",
     )
     export.add_argument("--origin-start", default="2021-01-04")
     export.add_argument("--origin-end", default="2025-12-29")
@@ -563,7 +572,9 @@ def _build_parser() -> argparse.ArgumentParser:
         choices=["preserve", "collapse"],
         default="preserve",
     )
-    export.add_argument("--snapshot-format", choices=["json", "json.gz"], default="json")
+    export.add_argument(
+        "--snapshot-format", choices=["json", "json.gz"], default="json"
+    )
     return parser
 
 
@@ -573,8 +584,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "export-weekly":
         try:
             export_weekly_snapshots(
-                tape_path=Path(args.tape) if args.tape else None,
-                warehouse_path=Path(args.warehouse_path) if args.warehouse_path else None,
+                warehouse_path=Path(args.warehouse_path)
+                if args.warehouse_path
+                else None,
                 data_root=Path(args.data_root) if args.data_root else None,
                 origin_start=dt.date.fromisoformat(args.origin_start),
                 origin_end=dt.date.fromisoformat(args.origin_end),

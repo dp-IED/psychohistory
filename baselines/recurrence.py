@@ -1,4 +1,4 @@
-"""Recurrence baselines over the point-in-time event tape."""
+"""Recurrence baselines over point-in-time normalized event records."""
 
 from __future__ import annotations
 

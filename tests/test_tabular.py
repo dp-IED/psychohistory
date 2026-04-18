@@ -15,6 +15,7 @@ from baselines.tabular import (
     train_tabular_model,
 )
 from ingest.event_tape import EventTapeRecord
+from ingest.event_warehouse import init_warehouse, upsert_records
 
 
 def _record(
@@ -135,7 +136,6 @@ def test_tabular_forecast_row_serializes_to_json() -> None:
 
 
 def test_tabular_backtest_writes_output(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
     out_path = tmp_path / "tabular_predictions.jsonl"
 
     records = []
@@ -177,13 +177,12 @@ def test_tabular_backtest_writes_output(tmp_path: Path) -> None:
             )
         )
 
-    tape_path.parent.mkdir(parents=True, exist_ok=True)
-    tape_path.write_text(
-        "".join(r.model_dump_json() + "\n" for r in records), encoding="utf-8"
-    )
+    db = tmp_path / "warehouse" / "events.duckdb"
+    init_warehouse(db)
+    upsert_records(db_path=db, records=records)
 
     audit = run_tabular_backtest(
-        tape_path=tape_path,
+        warehouse_path=db,
         train_origin_start=dt.date(2021, 1, 4),
         train_origin_end=dt.date(2021, 4, 26),
         eval_origin_start=dt.date(2021, 5, 3),

@@ -5,7 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from ingest.event_tape import EventTapeRecord, load_event_tape
+from ingest.event_tape import EventTapeRecord
+from ingest.event_warehouse import init_warehouse, upsert_records
 from ingest.historical_injection import build_batches, replay_records_for_cutoff
 
 
@@ -40,23 +41,24 @@ def _record(source_event_id: str, available_at: str) -> EventTapeRecord:
     )
 
 
-def _write_tape(path: Path, records: list[EventTapeRecord]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("".join(record.model_dump_json() + "\n" for record in records), encoding="utf-8")
+def _warehouse(tmp_path: Path, records: list[EventTapeRecord]) -> Path:
+    db_path = tmp_path / "warehouse" / "events.duckdb"
+    init_warehouse(db_path)
+    upsert_records(db_path=db_path, records=records)
+    return db_path
 
 
 def test_injection_batches_are_monotonic(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
     out_path = tmp_path / "batches.jsonl"
-    _write_tape(
-        tape_path,
+    db = _warehouse(
+        tmp_path,
         [
             _record("gdelt:1", "2021-01-04T01:00:00Z"),
             _record("gdelt:2", "2021-01-11T00:00:00Z"),
         ],
     )
 
-    batches = build_batches(tape_path=tape_path, out_path=out_path)
+    batches = build_batches(warehouse_path=db, out_path=out_path)
 
     starts = [batch.source_available_start for batch in batches]
     assert starts == sorted(starts)
@@ -68,29 +70,27 @@ def test_injection_batches_are_monotonic(tmp_path: Path) -> None:
 
 
 def test_injection_replay_cutoff_equals_direct_filter(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
     out_path = tmp_path / "batches.jsonl"
     records = [
         _record("gdelt:1", "2021-01-04T01:00:00Z"),
         _record("gdelt:2", "2021-01-06T08:00:00Z"),
         _record("gdelt:3", "2021-01-06T20:00:00Z"),
     ]
-    _write_tape(tape_path, records)
-    build_batches(tape_path=tape_path, out_path=out_path)
+    db = _warehouse(tmp_path, records)
+    build_batches(warehouse_path=db, out_path=out_path)
     cutoff = dt.datetime(2021, 1, 6, 12, tzinfo=dt.timezone.utc)
 
     replayed = replay_records_for_cutoff(batches_path=out_path, cutoff=cutoff)
-    direct = [
-        record
-        for record in load_event_tape(tape_path)
-        if record.source_available_at < cutoff
-    ]
+    direct = [record for record in records if record.source_available_at < cutoff]
 
     assert [record.source_event_id for record in replayed] == [
         record.source_event_id for record in direct
     ]
 
 
-def test_injection_missing_tape_fails(tmp_path: Path) -> None:
-    with pytest.raises(FileNotFoundError, match="missing event tape"):
-        build_batches(tape_path=tmp_path / "missing.jsonl", out_path=tmp_path / "batches.jsonl")
+def test_injection_missing_warehouse_fails(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="missing event warehouse"):
+        build_batches(
+            warehouse_path=tmp_path / "missing" / "events.duckdb",
+            out_path=tmp_path / "batches.jsonl",
+        )

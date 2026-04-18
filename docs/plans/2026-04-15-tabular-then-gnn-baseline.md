@@ -19,9 +19,11 @@
 ## Data Shape Reference
 
 Event node attributes available per feature event (from `data/gdelt/snapshots/france_protest/as_of_*.json`):
+
 - `admin1_code`, `event_code`, `event_base_code`, `avg_tone`, `goldstein_scale`, `num_mentions`, `num_sources`, `num_articles`, `source_available_at`
 
 Baseline `ForecastRow` shape (from `baselines/recurrence.py`):
+
 ```python
 forecast_origin: dt.date
 admin1_code: str
@@ -40,23 +42,24 @@ Development split: 2021-01-04 to 2024-12-30. Holdout: 2025-01-06 to 2025-12-29.
 
 ## File Map
 
-| File | Action | Responsibility |
-|------|--------|----------------|
-| `baselines/features.py` | **Create** | Extract per-origin/admin1 feature vectors from event tape |
-| `baselines/tabular.py` | **Create** | XGBoost rolling-origin training, prediction, serialization |
-| `baselines/gnn.py` | **Create** | PyG GNN model definition and training loop |
-| `baselines/backtest.py` | **Modify** | Add `tabular` and `gnn` subcommands alongside `recurrence` |
-| `baselines/metrics.py` | **Modify** | Add `recall_at_k` metric |
-| `tests/test_features.py` | **Create** | Unit tests for feature extraction |
-| `tests/test_tabular.py` | **Create** | Unit tests for tabular model training and prediction |
-| `tests/test_gnn.py` | **Create** | Unit tests for GNN forward pass and training step |
-| `tests/test_baselines.py` | **Modify** | Add `recall_at_k` metric test |
+| File                      | Action     | Responsibility                                             |
+| ------------------------- | ---------- | ---------------------------------------------------------- |
+| `baselines/features.py`   | **Create** | Extract per-origin/admin1 feature vectors from event tape  |
+| `baselines/tabular.py`    | **Create** | XGBoost rolling-origin training, prediction, serialization |
+| `baselines/gnn.py`        | **Create** | PyG GNN model definition and training loop                 |
+| `baselines/backtest.py`   | **Modify** | Add `tabular` and `gnn` subcommands alongside `recurrence` |
+| `baselines/metrics.py`    | **Modify** | Add `recall_at_k` metric                                   |
+| `tests/test_features.py`  | **Create** | Unit tests for feature extraction                          |
+| `tests/test_tabular.py`   | **Create** | Unit tests for tabular model training and prediction       |
+| `tests/test_gnn.py`       | **Create** | Unit tests for GNN forward pass and training step          |
+| `tests/test_baselines.py` | **Modify** | Add `recall_at_k` metric test                              |
 
 ---
 
 ## Task 1: `recall_at_k` metric
 
 **Files:**
+
 - Modify: `baselines/metrics.py`
 - Modify: `tests/test_baselines.py`
 
@@ -160,26 +163,27 @@ git commit -m "feat: add recall_at_k metric and include in backtest audit"
 ## Task 2: Feature extraction (`baselines/features.py`)
 
 **Files:**
+
 - Create: `baselines/features.py`
 - Create: `tests/test_features.py`
 
 The feature set per (origin, admin1_code) covers:
 
-| Feature | Description |
-|---------|-------------|
-| `event_count_prev_1w` | Events in prior 7 days visible at origin |
-| `event_count_prev_4w` | Events in prior 4 weeks visible at origin |
-| `event_count_prev_12w` | Events in prior 12 weeks visible at origin |
-| `rate_change_1w_vs_4w` | `prev_1w / (prev_4w / 4)` — momentum signal, 0 if denominator 0 |
-| `mean_goldstein_prev_4w` | Mean Goldstein scale of events in prior 4 weeks, 0 if none |
-| `mean_avg_tone_prev_4w` | Mean avg_tone of events in prior 4 weeks, 0 if none |
-| `mean_num_mentions_prev_4w` | Mean num_mentions in prior 4 weeks, 0 if none |
-| `mean_num_articles_prev_4w` | Mean num_articles in prior 4 weeks, 0 if none |
-| `distinct_actor_count_prev_4w` | Count of distinct actor1_name values in prior 4 weeks |
-| `national_event_count_prev_1w` | All FR+FR00 events in prior 7 days (national pressure signal) |
-| `national_event_count_prev_4w` | All FR+FR00 events in prior 4 weeks |
-| `weeks_since_last_event` | Number of full weeks since most recent prior event, capped at 52 |
-| `admin1_code_idx` | Integer index of admin1_code in sorted scoring universe (for GNN lookup) |
+| Feature                        | Description                                                              |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `event_count_prev_1w`          | Events in prior 7 days visible at origin                                 |
+| `event_count_prev_4w`          | Events in prior 4 weeks visible at origin                                |
+| `event_count_prev_12w`         | Events in prior 12 weeks visible at origin                               |
+| `rate_change_1w_vs_4w`         | `prev_1w / (prev_4w / 4)` — momentum signal, 0 if denominator 0          |
+| `mean_goldstein_prev_4w`       | Mean Goldstein scale of events in prior 4 weeks, 0 if none               |
+| `mean_avg_tone_prev_4w`        | Mean avg_tone of events in prior 4 weeks, 0 if none                      |
+| `mean_num_mentions_prev_4w`    | Mean num_mentions in prior 4 weeks, 0 if none                            |
+| `mean_num_articles_prev_4w`    | Mean num_articles in prior 4 weeks, 0 if none                            |
+| `distinct_actor_count_prev_4w` | Count of distinct actor1_name values in prior 4 weeks                    |
+| `national_event_count_prev_1w` | All FR+FR00 events in prior 7 days (national pressure signal)            |
+| `national_event_count_prev_4w` | All FR+FR00 events in prior 4 weeks                                      |
+| `weeks_since_last_event`       | Number of full weeks since most recent prior event, capped at 52         |
+| `admin1_code_idx`              | Integer index of admin1_code in sorted scoring universe (for GNN lookup) |
 
 - [ ] **Step 1: Write failing tests**
 
@@ -486,6 +490,7 @@ git commit -m "feat: add per-origin admin1 feature extraction"
 ## Task 3: XGBoost tabular baseline (`baselines/tabular.py`)
 
 **Files:**
+
 - Create: `baselines/tabular.py`
 - Create: `tests/test_tabular.py`
 
@@ -735,9 +740,11 @@ git commit -m "feat: add XGBoost tabular baseline"
 ## Task 4: Tabular backtest subcommand
 
 **Files:**
+
 - Modify: `baselines/backtest.py`
 
 The tabular backtest:
+
 1. Loads the full event tape.
 2. Iterates over all weekly origins in the development split and builds feature rows + target lookup.
 3. Trains one XGBoost model on the development split.
@@ -826,6 +833,7 @@ Expected: `ImportError: cannot import name 'run_tabular_backtest'`
 - [ ] **Step 3: Implement `run_tabular_backtest` in `baselines/backtest.py`**
 
 Add imports at top:
+
 ```python
 from baselines.features import extract_features_for_origin
 from baselines.tabular import TabularForecastRow, predict_tabular, train_tabular_model
@@ -975,6 +983,7 @@ git commit -m "feat: add tabular backtest subcommand"
 ## Task 5: GNN model and training loop (`baselines/gnn.py`)
 
 **Files:**
+
 - Create: `baselines/gnn.py`
 - Create: `tests/test_gnn.py`
 
@@ -983,6 +992,7 @@ The GNN uses a two-layer heterogeneous message-passing network over the event→
 Training: batched over all development-split weekly snapshots. One graph per origin. Location nodes whose `admin1_code` is in the scoring universe are the prediction targets.
 
 Architecture:
+
 - `HeteroGNNModel`: `torch.nn.Module` with one `SAGEConv` layer per edge type, followed by a 2-layer MLP head per location node.
 - `build_graph_from_snapshot`: converts a loaded snapshot JSON into a `torch_geometric.data.HeteroData`.
 - `train_gnn`: trains for N epochs over development graphs, returns trained model.
@@ -1430,6 +1440,7 @@ git commit -m "feat: add heterogeneous GNN model and training loop"
 ## Task 6: GNN backtest subcommand
 
 **Files:**
+
 - Modify: `baselines/backtest.py`
 
 The GNN backtest loads weekly snapshots from `data/gdelt/snapshots/france_protest/` directly (already on disk) alongside feature rows from the tape. It trains on development-split graphs and evaluates on holdout graphs.

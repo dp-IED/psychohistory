@@ -13,6 +13,7 @@ dependencies = [
   "pydantic>=2.5",
   "xgboost>=2.0",
   "duckdb>=1.0",
+  "tqdm>=4.66",
 ]
 
 [project.optional-dependencies]
@@ -24,7 +25,8 @@ include = ["evals*", "schemas*", "ingest*", "baselines*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-q -m 'not torch_train'"
+addopts = "-q -m 'not torch_train and not warehouse'"
 markers = [
   "torch_train: GNN training tests that require an isolated process (run with: pytest -m torch_train tests/test_gnn.py)",
+  "warehouse: DuckDB warehouse integration (opt-in: pytest -m warehouse)",
 ]

@@ -12,6 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from pydantic import BaseModel, Field
+from torch.nn.utils.rnn import pack_padded_sequence
 from torch_geometric.data import HeteroData
 from torch_geometric.nn import SAGEConv
 
@@ -156,8 +157,11 @@ class HeteroGNNModel(nn.Module):
         hidden_dim: int = 64,
     ) -> None:
         super().__init__()
+        self.hidden_dim = hidden_dim
         self.loc_proj = nn.Linear(location_feature_dim, hidden_dim)
         self.evt_proj = nn.Linear(event_feature_dim, hidden_dim)
+        self.loc_hist_gru = nn.GRU(location_feature_dim, hidden_dim, batch_first=True)
+        self.loc_hist_proj = nn.Linear(hidden_dim, hidden_dim)
         self.conv = SAGEConv((hidden_dim, hidden_dim), hidden_dim)
         self.head = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim // 2),
@@ -165,8 +169,40 @@ class HeteroGNNModel(nn.Module):
             nn.Linear(hidden_dim // 2, 1),
         )
 
-    def forward(self, data: HeteroData) -> torch.Tensor:
-        loc_x = F.relu(self.loc_proj(data["location"].x))
+    def _encode_location_temporal(
+        self,
+        loc_temporal: torch.Tensor,
+        loc_time_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        b, _, _ = loc_temporal.shape
+        device = loc_temporal.device
+        xr = torch.flip(loc_temporal, dims=(1,))
+        mr = torch.flip(loc_time_mask, dims=(1,))
+        lengths = mr.long().sum(dim=1)
+        out = torch.zeros(b, self.hidden_dim, device=device, dtype=loc_temporal.dtype)
+        ok = lengths > 0
+        if bool(ok.any().item()):
+            idx = torch.where(ok)[0]
+            x_sub = xr[ok]
+            lens = lengths[ok].detach().cpu()
+            packed = pack_padded_sequence(x_sub, lens, batch_first=True, enforce_sorted=False)
+            _, h_n = self.loc_hist_gru(packed)
+            out[idx] = h_n[-1]
+        return out
+
+    def forward(
+        self,
+        data: HeteroData,
+        loc_temporal: torch.Tensor | None = None,
+        loc_time_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        if loc_temporal is None:
+            loc_x = F.relu(self.loc_proj(data["location"].x))
+        else:
+            if loc_time_mask is None:
+                raise ValueError("loc_time_mask is required when loc_temporal is set")
+            loc_h = self._encode_location_temporal(loc_temporal, loc_time_mask)
+            loc_x = F.relu(self.loc_hist_proj(loc_h))
         evt_x = F.relu(self.evt_proj(data["event"].x))
 
         if ("event", "occurs_in", "location") in data.edge_types:
@@ -311,10 +347,12 @@ def predict_gnn(
     target_lookup: dict[tuple[dt.date, str], tuple[int, bool]] | None = None,
     model_name: str = "gnn_sage",
     ablation: GNNGraphAblation | None = None,
+    loc_temporal: torch.Tensor | None = None,
+    loc_time_mask: torch.Tensor | None = None,
 ) -> list[GNNForecastRow]:
     model.eval()
     with torch.no_grad():
-        logits = model(graph)
+        logits = model(graph, loc_temporal, loc_time_mask)
         probs = torch.sigmoid(logits).cpu().numpy()
 
     rows: list[GNNForecastRow] = []

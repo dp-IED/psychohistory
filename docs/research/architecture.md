@@ -6,15 +6,15 @@ This document describes the **intended** system—not a snapshot of the current 
 
 ### Implementation status (codebase vs target)
 
-| Layer | Role | In repo today (approx.) |
-|-------|------|-------------------------|
-| 0 — Evidence | Warehouse, tapes | **Yes** — DuckDB, JSONL ingest. |
-| 1 — Builder | \(S_t\) from \(E_{\le t}\) | **Yes** — `ingest/snapshot_export` and related. |
-| 2 — Query lens | \(S_t^{(q)}\) | **Mostly not** — contract is documented; benchmarks do not yet implement a general lens module. |
-| 3 — Encoder | \(h_t\) | **Yes** — `baselines/gnn.py` (hetero GNN). |
-| 4 — World model | \(z_t\), multi-step dynamics | **Not** as a separate, named WM module; recurrent **time-then-space** v0 is a **planned** extension of the GNN path (`next_steps.md`). |
-| 5 — Heads | Material / market / epistemological | **Partial** — event forecasting backtests and baselines; market heads TBD. |
-| 6 — Q&A façade | Routing + packaging | **Not** — LLM-as-router is roadmap Stage 8. |
+| Layer           | Role                                | In repo today (approx.)                                                                                                                |
+| --------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 — Evidence    | Warehouse, tapes                    | **Yes** — DuckDB, JSONL ingest.                                                                                                        |
+| 1 — Builder     | \(S*t\) from \(E*{\le t}\)          | **Yes** — `ingest/snapshot_export` and related.                                                                                        |
+| 2 — Query lens  | \(S_t^{(q)}\)                       | **Mostly not** — contract is documented; benchmarks do not yet implement a general lens module.                                        |
+| 3 — Encoder     | \(h_t\)                             | **Yes** — `baselines/gnn.py` (hetero GNN).                                                                                             |
+| 4 — World model | \(z_t\), multi-step dynamics        | **Not** as a separate, named WM module; recurrent **time-then-space** v0 is a **planned** extension of the GNN path (`next_steps.md`). |
+| 5 — Heads       | Material / market / epistemological | **Partial** — event forecasting backtests and baselines; market heads TBD.                                                             |
+| 6 — Q&A façade  | Routing + packaging                 | **Not** — LLM-as-router is roadmap Stage 8.                                                                                            |
 
 **Execution risk:** the **full stack** is a research target; the **highest-risk gaps** are **Layer 4** (explicit WM + ablatable temporal core) and **Layer 2** (lens with audit logs). **Training loops should attach to real snapshots first** and grow the stack around working gradients (`next_steps.md` §0–2).
 
@@ -44,7 +44,7 @@ This document describes the **intended** system—not a snapshot of the current 
 
 ## Layer 1 — Canonical situation assembly (builder)
 
-**Role:** Map evidence \(E_{\le t}\) to a structured situation \(S_t\): typed nodes and edges (or hyperedges), text spans, market objects, explicit unknowns.
+**Role:** Map evidence \(E\_{\le t}\) to a structured situation \(S_t\): typed nodes and edges (or hyperedges), text spans, market objects, explicit unknowns.
 
 **Subcomponents:**
 
@@ -62,7 +62,7 @@ This document describes the **intended** system—not a snapshot of the current 
 
 **Role:** From `(question q, situation S_t)` produce a **working situation** \(S_t^{(q)}\): anchored subgraph, budgeted expansion, and/or attention masks over nodes and relation types.
 
-**Contract:** \(S_t^{(q)} = \mathrm{Lens}(q, S_t)\) must be **derivable from** \(S_t\) without adding factual assertions that are not already supported by \(E_{\le t}\).
+**Contract:** \(S*t^{(q)} = \mathrm{Lens}(q, S_t)\) must be **derivable from** \(S_t\) without adding factual assertions that are not already supported by \(E*{\le t}\).
 
 This is where analysis is **tuned to the question** without rewriting history. **NL-guided probes** (rephrased questions, emphasis, scope) still instantiate \(\mathrm{Lens}(q, S_t)\) under the same contract; see below.
 
@@ -87,8 +87,8 @@ This is where analysis is **tuned to the question** without rewriting history. *
 **Suggested structure:**
 
 - **State:** continuous \(z_t\) plus optional **mixture** over \(K\) world experts \(\pi_t \in \Delta^K\).
-- **Transition:** \(z_{t+1} = f_\theta(z_t, \text{exogenous}_t)\) with only **past or concurrent** exogenous inputs (no future labels).
-- **Observation / emission:** distributions over **observable channels** (events, market paths, text-derived statistics) from \(z_t\) and optional rollouts \(z_{t:t+H}\).
+- **Transition:** \(z*{t+1} = f*\theta(z_t, \text{exogenous}\_t)\) with only **past or concurrent** exogenous inputs (no future labels).
+- **Observation / emission:** distributions over **observable channels** (events, market paths, text-derived statistics) from \(z*t\) and optional rollouts \(z*{t:t+H}\).
 
 **Training:** multi-horizon predictive losses; self-supervision where labels are thin; **market channel masking** when evaluating transfer to non-market queries.
 
@@ -128,12 +128,12 @@ Typical heads:
 
 **Requirements:**
 
-- **Compile, don’t inject:** NL is parsed into **allowed operations**: alternate queries \(q\), lens parameters (subgraph scope, masks, budgeted expansion), and—where explicitly supported—**counterfactual or hypothetical** branches that are **labeled as such** and do not silently rewrite \(E_{\le t}\) into new “facts.”
+- **Compile, don’t inject:** NL is parsed into **allowed operations**: alternate queries \(q\), lens parameters (subgraph scope, masks, budgeted expansion), and—where explicitly supported—**counterfactual or hypothetical** branches that are **labeled as such** and do not silently rewrite \(E\_{\le t}\) into new “facts.”
 - **Auditability:** Each probe has a **trace** (which lens masks moved, which nodes entered scope, which head fired). Compare runs by **diff** on structured outputs and on the trace—not on prose alone.
-- **Counterfactuals vs standard forecasts:** If the user or agent asks “what if X,” the system must distinguish **(a)** standard prediction at \(t\) under \(E_{\le t}\) from **(b)** exploratory branches that relax or substitute assumptions under an explicit contract—so reviewers never confuse hypothetical runs with PIT-grounded forecasts.
+- **Counterfactuals vs standard forecasts:** If the user or agent asks “what if X,” the system must distinguish **(a)** standard prediction at \(t\) under \(E\_{\le t}\) from **(b)** exploratory branches that relax or substitute assumptions under an explicit contract—so reviewers never confuse hypothetical runs with PIT-grounded forecasts.
 - **Agent loops:** Search uses the same compilation boundary; add **budgets** (max probes, cost limits) and, where claims are made, **stability** checks so optimization does not overfit spurious wording.
 
-This section does not change Layer 4’s transition \(z_{t+1} = f_\theta(z_t, \text{exogenous}_t)\); it specifies how **human and agent intent** enter the stack **above** evidence, through **\(q\)** and **lens**, and optionally through **declared** hypothetical channels—not as unstructured text smuggled into \(S_t\).
+This section does not change Layer 4’s transition \(z*{t+1} = f*\theta(z_t, \text{exogenous}\_t)\); it specifies how **human and agent intent** enter the stack **above** evidence, through **\(q\)** and **lens**, and optionally through **declared** hypothetical channels—not as unstructured text smuggled into \(S_t\).
 
 ---
 
@@ -157,14 +157,14 @@ flowchart TB
 
 ## Optional reuse of this repository
 
-| Existing component | Plugs in as |
-|--------------------|-------------|
-| Warehouse / tapes | Evidence store adapter |
-| Snapshot export | `Build` implementation |
-| Recurrence / XGBoost | Baseline plugins |
-| Heterogeneous GNN | Encoder v1 |
+| Existing component                 | Plugs in as                                    |
+| ---------------------------------- | ---------------------------------------------- |
+| Warehouse / tapes                  | Evidence store adapter                         |
+| Snapshot export                    | `Build` implementation                         |
+| Recurrence / XGBoost               | Baseline plugins                               |
+| Heterogeneous GNN                  | Encoder v1                                     |
 | `evals/graph_artifact_contract.py` | Serialization contract for \(S_t\) (or subset) |
-| France protest pipeline | One material evaluation track |
+| France protest pipeline            | One material evaluation track                  |
 
 ---
 

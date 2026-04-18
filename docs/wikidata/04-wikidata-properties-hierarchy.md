@@ -21,7 +21,7 @@ Examples (illustrative; PIDs must be validated for France admin regions):
 - Add edges **Location → Location** (e.g. `admin1` **part of** `admin0`) from Wikidata.
 - **Use:** second-hop message passing or auxiliary loss.
 
-**Challenge:** Must align with **scoring universe** (admin1 codes); avoid nodes outside the tape.
+**Challenge:** Must align with **scoring universe** (admin1 codes); avoid nodes outside the loaded event records.
 
 ### 3. Relation to events
 

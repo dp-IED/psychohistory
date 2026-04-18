@@ -1,4 +1,4 @@
-"""Build weekly historical injection manifests over the event tape."""
+"""Build weekly historical injection manifests over warehouse-backed event streams."""
 
 from __future__ import annotations
 
@@ -63,13 +63,11 @@ def _canonical_records_sha256(records: list[EventTapeRecord]) -> str:
 
 def build_batches(
     *,
-    tape_path: Path | None = None,
     warehouse_path: Path | None = None,
     data_root: Path | None = None,
     out_path: Path,
 ) -> list[HistoricalInjectionBatch]:
     records = load_event_records(
-        tape_path=tape_path,
         warehouse_db_path=warehouse_path,
         data_root=data_root,
     )
@@ -78,7 +76,7 @@ def build_batches(
         if warehouse_path is not None
         else warehouse_db_path(resolve_data_root(data_root))
     )
-    resolved_input = str(tape_path) if tape_path is not None else str(resolved_db)
+    resolved_input = str(resolved_db)
     grouped: dict[dt.datetime, list[EventTapeRecord]] = {}
     for record in records:
         start = source_week_start(record.source_available_at)
@@ -140,7 +138,11 @@ def replay_records_for_cutoff(
     batches_path: Path,
     cutoff: dt.datetime | str,
 ) -> list[EventTapeRecord]:
-    cutoff_dt = parse_datetime_utc(cutoff) if isinstance(cutoff, str) else cutoff.astimezone(UTC)
+    cutoff_dt = (
+        parse_datetime_utc(cutoff)
+        if isinstance(cutoff, str)
+        else cutoff.astimezone(UTC)
+    )
     selected_batches = [
         batch
         for batch in load_batches(batches_path)
@@ -151,7 +153,9 @@ def replay_records_for_cutoff(
     seen_ids: set[str] = set()
     for batch in selected_batches:
         if batch.input_path not in records_by_path:
-            records_by_path[batch.input_path] = _load_records_for_batch_input(batch.input_path)
+            records_by_path[batch.input_path] = _load_records_for_batch_input(
+                batch.input_path
+            )
         records = records_by_path[batch.input_path]
         start = batch.source_available_start.astimezone(UTC)
         end = batch.source_available_end.astimezone(UTC)
@@ -169,24 +173,18 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
     build = subparsers.add_parser("build-batches")
     build.add_argument(
-        "--tape",
-        default=None,
-        help=(
-            "JSONL event tape. If omitted, load from the DuckDB warehouse "
-            "at <data-root>/warehouse/events.duckdb (see PSYCHOHISTORY_DATA_ROOT)."
-        ),
-    )
-    build.add_argument(
         "--data-root",
         default=None,
-        help="Root directory for data/ layout; sets warehouse path when --tape is omitted.",
+        help="Root directory for data/ layout; default warehouse is <data-root>/warehouse/events.duckdb.",
     )
     build.add_argument(
         "--warehouse-path",
         default=None,
-        help="Path to events.duckdb (overrides --data-root when --tape is omitted).",
+        help="Path to events.duckdb (overrides the default derived from --data-root).",
     )
-    build.add_argument("--out", default="data/gdelt/injection/france_protest/batches.jsonl")
+    build.add_argument(
+        "--out", default="data/gdelt/injection/france_protest/batches.jsonl"
+    )
     return parser
 
 
@@ -196,8 +194,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "build-batches":
         try:
             build_batches(
-                tape_path=Path(args.tape) if args.tape else None,
-                warehouse_path=Path(args.warehouse_path) if args.warehouse_path else None,
+                warehouse_path=Path(args.warehouse_path)
+                if args.warehouse_path
+                else None,
                 data_root=Path(args.data_root) if args.data_root else None,
                 out_path=Path(args.out),
             )
