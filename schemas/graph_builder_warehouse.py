@@ -42,6 +42,22 @@ class NodeWarehouseManifest(BaseModel):
     """Versioned index for a float32 embedding matrix and optional row metadata."""
 
     manifest_version: str
+    embedding_version: str = Field(
+        min_length=1,
+        description=(
+            "Non-empty version string coupling mmap rows with ANN index and recipe rebuilds "
+            "(embedding build / index alignment)."
+        ),
+    )
+    recipe_id: str = Field(
+        default="gdelt_cameo_hist_actor1_admin1_v0",
+        description="Locked histogram / warehouse recipe identifier for this manifest.",
+    )
+    window_days: int = Field(
+        default=30,
+        ge=1,
+        description="Backward point-in-time window length in days for histogram-derived features.",
+    )
     embedding_dim: int = Field(default=NODE_WAREHOUSE_EMBEDDING_DIM_V1, ge=1)
     mmap_path: str
     row_count: int = Field(ge=0)
@@ -59,9 +75,9 @@ class NodeWarehouseManifest(BaseModel):
     @model_validator(mode="after")
     def _rows_len_matches_row_count_when_present(self) -> NodeWarehouseManifest:
         rows = self.rows
-        if rows is not None and len(rows) > 0 and len(rows) != self.row_count:
+        if rows is not None and len(rows) != self.row_count:
             raise ValueError(
-                f"rows length ({len(rows)}) must equal row_count ({self.row_count}) when rows is non-empty",
+                f"rows length ({len(rows)}) must equal row_count ({self.row_count}) when rows is provided",
             )
         return self
 

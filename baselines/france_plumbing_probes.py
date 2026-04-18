@@ -1,10 +1,16 @@
 """France harness v0: hand-authored probe seeds + templated expansion (no LLM).
 
 Probe rows align with ``schemas.graph_builder_probe.ProbeRecord`` for graph-builder plumbing tests.
+
+When ``generation_meta.assumption_gate_coverage`` is absent, validators that fall back to
+``assumption_emphasis`` treat that path as **deprecated-on-arrival**: it exists only for
+legacy rows. New pipeline code must populate ``generation_meta`` (including gate coverage)
+on every emitted row.
 """
 
 from __future__ import annotations
 
+import warnings
 from datetime import date
 from itertools import product
 from typing import Sequence
@@ -367,7 +373,9 @@ FRANCE_BASE_PROBE_DEFS: tuple[ProbeRecord, ...] = (
 
 
 def _entity_hints_for_expanded_row(expansion_index: int) -> list[str]:
-    return list(FRANCE_BASE_PROBE_DEFS[expansion_index % 20].q_struct.actor_state.entity_hints)
+    return list(
+        FRANCE_BASE_PROBE_DEFS[expansion_index % len(FRANCE_BASE_PROBE_DEFS)].q_struct.actor_state.entity_hints,
+    )
 
 
 def _expanded_probe(slot_row: tuple[str, str, str, int, str], expansion_index: int) -> ProbeRecord:
@@ -410,24 +418,43 @@ def validate_france_plumbing_gate_annotations(probes: Sequence[ProbeRecord]) -> 
 
     Call this when ingesting France plumbing JSONL or before Stage 1 so coverage
     can be verified from metadata alone without re-deriving from free text.
+
+    Raises a single ``ValueError`` listing every ``probe_id`` with missing coverage so
+    batch audits do not require hunting row-by-row.
     """
-    for p in probes:
-        if p.generation_meta.assumption_gate_coverage is None:
-            raise ValueError(
-                f"probe_id={p.probe_id!r}: France plumbing requires "
-                "generation_meta.assumption_gate_coverage for gate starvation audits",
-            )
+    missing_ids = [
+        p.probe_id for p in probes if p.generation_meta.assumption_gate_coverage is None
+    ]
+    if missing_ids:
+        listed = ", ".join(missing_ids)
+        raise ValueError(
+            "France plumbing requires generation_meta.assumption_gate_coverage for gate "
+            f"starvation audits; missing on probe_id(s): {listed}",
+        )
 
 
 def validate_gate_coverage(probes: Sequence[ProbeRecord], *, training_context_id: str) -> None:
     """Ensure each ``AssumptionEmphasis`` appears at least once (soft-gate batch coverage).
 
     Counts use ``generation_meta.assumption_gate_coverage`` when present so audits
-    and Stage-1 wiring can rely on metadata alone; ``assumption_emphasis`` is used
-    only as a fallback for older rows.
+    and Stage-1 wiring can rely on metadata alone. When that field is ``None``,
+    this function falls back to ``assumption_emphasis`` — that fallback is
+    **deprecated-on-arrival** (legacy rows only); new pipeline code must populate
+    ``generation_meta.assumption_gate_coverage`` on every row. A single ``DeprecationWarning``
+    is emitted per call when any input row is missing gate coverage metadata (with a count),
+    not per row, to avoid log spam.
     """
     if not training_context_id.strip():
         raise ValueError("training_context_id must be a non-empty string")
+    missing_meta_rows = sum(1 for p in probes if p.generation_meta.assumption_gate_coverage is None)
+    if missing_meta_rows:
+        warnings.warn(
+            f"{missing_meta_rows} probe row(s) lack generation_meta.assumption_gate_coverage; "
+            "falling back to assumption_emphasis is deprecated-on-arrival (legacy rows only); "
+            "new pipeline must populate meta.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
     counts: dict[AssumptionEmphasis, int] = {g: 0 for g in AssumptionEmphasis}
     for p in probes:
         gate = p.generation_meta.assumption_gate_coverage
