@@ -13,7 +13,7 @@ from ingest.acled_tape import (
 )
 from ingest.event_tape import EventTapeRecord
 from ingest.event_warehouse import query_records
-from ingest.tape_merge import merge_event_tapes
+from ingest.event_jsonl_merge import merge_event_jsonl
 
 
 def _acled_row(**overrides: object) -> dict[str, object]:
@@ -215,7 +215,7 @@ def test_acled_raw_fetch_normalizes_to_warehouse_without_fragments(tmp_path: Pat
     assert "token" not in manifest_text
 
 
-def test_merge_event_tapes_writes_source_counts(tmp_path: Path) -> None:
+def test_merge_event_jsonl_writes_source_counts(tmp_path: Path) -> None:
     gdelt = EventTapeRecord(
         source_name="gdelt_v2_events",
         source_event_id="gdelt:1",
@@ -252,7 +252,7 @@ def test_merge_event_tapes_writes_source_counts(tmp_path: Path) -> None:
     gdelt_path.write_text(gdelt.model_dump_json() + "\n", encoding="utf-8")
     acled_path.write_text(acled.model_dump_json() + "\n", encoding="utf-8")
 
-    audit = merge_event_tapes(tape_paths=[gdelt_path, acled_path], out_path=out_path)
+    audit = merge_event_jsonl(jsonl_paths=[gdelt_path, acled_path], out_path=out_path)
 
     assert audit["source_counts"] == {"acled": 1, "gdelt_v2_events": 1}
     assert len(out_path.read_text(encoding="utf-8").splitlines()) == 2

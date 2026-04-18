@@ -8,6 +8,7 @@ import pytest
 
 from evals.graph_artifact_contract import GraphArtifactV1
 from ingest.event_tape import EventTapeRecord
+from ingest.event_warehouse import init_warehouse, upsert_records
 from ingest.snapshot_export import build_snapshot_payload, export_weekly_snapshots
 
 
@@ -197,7 +198,6 @@ def test_late_labels_go_to_audit() -> None:
 
 
 def test_snapshot_validates_graph_artifact_contract(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
     out_dir = tmp_path / "snapshots"
     record = _record(
         "gdelt:feature",
@@ -205,10 +205,12 @@ def test_snapshot_validates_graph_artifact_contract(tmp_path: Path) -> None:
         source_available_at="2021-01-02T00:00:00Z",
         actor1_name="Students",
     )
-    tape_path.write_text(record.model_dump_json() + "\n", encoding="utf-8")
+    db = tmp_path / "warehouse" / "events.duckdb"
+    init_warehouse(db)
+    upsert_records(db_path=db, records=[record])
 
     written = export_weekly_snapshots(
-        tape_path=tape_path,
+        warehouse_path=db,
         origin_start=dt.date(2021, 1, 4),
         origin_end=dt.date(2021, 1, 4),
         out_dir=out_dir,
@@ -337,10 +339,10 @@ def test_snapshot_excludes_event_available_at_origin() -> None:
     assert [node for node in payload["nodes"] if node["type"] == "Event"] == []
 
 
-def test_snapshot_export_missing_tape_fails(tmp_path: Path) -> None:
-    with pytest.raises(FileNotFoundError, match="missing event tape"):
+def test_snapshot_export_missing_warehouse_fails(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="missing event warehouse"):
         export_weekly_snapshots(
-            tape_path=tmp_path / "missing.jsonl",
+            warehouse_path=tmp_path / "missing" / "events.duckdb",
             origin_start=dt.date(2021, 1, 4),
             origin_end=dt.date(2021, 1, 4),
             out_dir=tmp_path / "snapshots",
@@ -348,16 +350,18 @@ def test_snapshot_export_missing_tape_fails(tmp_path: Path) -> None:
 
 
 def test_snapshot_export_rejects_non_monday_origins(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
-    tape_path.write_text(
-        _record("gdelt:feature", event_date="2021-01-01", source_available_at="2021-01-02T00:00:00Z").model_dump_json()
-        + "\n",
-        encoding="utf-8",
+    db = tmp_path / "warehouse" / "events.duckdb"
+    init_warehouse(db)
+    upsert_records(
+        db_path=db,
+        records=[
+            _record("gdelt:feature", event_date="2021-01-01", source_available_at="2021-01-02T00:00:00Z"),
+        ],
     )
 
     with pytest.raises(ValueError, match="origin_start must be a Monday"):
         export_weekly_snapshots(
-            tape_path=tape_path,
+            warehouse_path=db,
             origin_start=dt.date(2021, 1, 5),
             origin_end=dt.date(2021, 1, 11),
             out_dir=tmp_path / "snapshots",

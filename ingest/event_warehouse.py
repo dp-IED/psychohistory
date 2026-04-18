@@ -1,4 +1,4 @@
-"""DuckDB-backed canonical warehouse for normalized event tape records."""
+"""DuckDB-backed canonical warehouse for normalized event records."""
 
 from __future__ import annotations
 
@@ -172,19 +172,19 @@ def upsert_records(
     }
 
 
-def import_tape(
+def import_jsonl(
     *,
     db_path: Path,
-    tape_path: Path,
+    jsonl_path: Path,
     source_names: set[str] | None = None,
 ) -> dict[str, Any]:
-    records = load_event_tape(tape_path)
+    records = load_event_tape(jsonl_path)
     if source_names is not None:
         records = [record for record in records if record.source_name in source_names]
     result = upsert_records(db_path=db_path, records=records)
     return {
         **result,
-        "input_path": str(tape_path),
+        "input_path": str(jsonl_path),
         "source_names": sorted(source_names) if source_names is not None else None,
     }
 
@@ -289,7 +289,7 @@ def warehouse_audit(db_path: Path) -> dict[str, Any]:
     }
 
 
-def export_tape(
+def export_jsonl(
     *,
     db_path: Path,
     out_path: Path,
@@ -335,13 +335,13 @@ def _build_parser() -> argparse.ArgumentParser:
     init.add_argument("--data-root", default=None)
     init.add_argument("--warehouse-path", default=None)
 
-    import_cmd = subparsers.add_parser("import-tape")
+    import_cmd = subparsers.add_parser("import-jsonl")
     import_cmd.add_argument("--input", required=True)
     import_cmd.add_argument("--source-names", default=None)
     import_cmd.add_argument("--data-root", default=None)
     import_cmd.add_argument("--warehouse-path", default=None)
 
-    export_cmd = subparsers.add_parser("export-tape")
+    export_cmd = subparsers.add_parser("export-jsonl")
     export_cmd.add_argument("--source-names", default="all")
     export_cmd.add_argument("--out", required=True)
     export_cmd.add_argument("--data-root", default=None)
@@ -364,16 +364,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             init_warehouse(db_path)
             print(json.dumps({"warehouse_path": str(db_path)}, sort_keys=True))
             return 0
-        if args.command == "import-tape":
-            result = import_tape(
+        if args.command == "import-jsonl":
+            result = import_jsonl(
                 db_path=db_path,
-                tape_path=Path(args.input),
+                jsonl_path=Path(args.input),
                 source_names=_parse_source_names(args.source_names),
             )
             print(json.dumps(result, indent=2, sort_keys=True))
             return 0
-        if args.command == "export-tape":
-            result = export_tape(
+        if args.command == "export-jsonl":
+            result = export_jsonl(
                 db_path=db_path,
                 out_path=Path(args.out),
                 source_names=_parse_source_names(args.source_names),

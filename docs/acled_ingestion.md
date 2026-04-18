@@ -64,9 +64,9 @@ Use `--raw-retention compressed` to retain `fragments/page_*.jsonl.gz`, or
 `--raw-retention full` for plain JSONL fragments. These modes are for debugging
 or reproducibility; do not keep large raw folders in repo worktrees.
 
-## Legacy Tape Normalization
+## JSONL normalization (import path)
 
-JSONL tapes remain available for compatibility:
+JSONL exports remain available for compatibility:
 
 ```bash
 python -m ingest.acled_tape normalize-france-protests \
@@ -76,11 +76,12 @@ python -m ingest.acled_tape normalize-france-protests \
   --availability-lag-days 7
 ```
 
-Treat those tapes as import/export artifacts. Prefer importing them into the
+Treat those files as import/export artifacts. Prefer importing them into the
 warehouse:
 
 ```bash
-python -m ingest.event_warehouse import-tape \
+python -m ingest.event_warehouse import-jsonl \
+  --data-root "${PSYCHOHISTORY_DATA_ROOT:-/Users/darenpalmer/conductor/shared-data/psychohistory-v2}" \
   --input data/acled/tape/france_protest/events.jsonl
 ```
 

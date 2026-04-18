@@ -2,6 +2,8 @@
 
 Date: 2026-04-16
 
+This note **freezes** the France protest benchmark for regression testing. For **program direction**, **full roadmap**, **next steps**, and review criteria, see [`project.md`](../project.md), [`roadmap.md`](../roadmap.md), [`next_steps.md`](../next_steps.md), and [`reviewers-guide.md`](reviewers-guide.md).
+
 ## Scope
 
 This note freezes the current France protest benchmark before moving to a

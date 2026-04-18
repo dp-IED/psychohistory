@@ -1,5 +1,7 @@
 # Wikidata roadmap — overview
 
+Broader **product direction**, **full roadmap**, and **next steps** live in [`project.md`](../../project.md), [`roadmap.md`](../../roadmap.md), and [`next_steps.md`](../../next_steps.md). Review criteria: [`docs/reviewers-guide.md`](../reviewers-guide.md). This folder stays focused on **entity grounding and graph features** for the forecasting stack.
+
 This folder splits the Wikidata workstream into **independent plans**. Each plan is self-contained: goal, design, **ablation matrix**, risks, and dependencies. Implement and benchmark one track at a time; shared metrics keep results comparable to the France protest benchmark ([`docs/2026-04-16-france-gdelt-benchmark-note.md`](../2026-04-16-france-gdelt-benchmark-note.md)).
 
 ## Recommended order

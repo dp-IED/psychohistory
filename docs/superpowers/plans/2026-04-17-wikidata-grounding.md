@@ -11,6 +11,7 @@
 ---
 
 **Date:** 2026-04-17  
+**Program context:** `project.md`, `roadmap.md`, `docs/reviewers-guide.md`  
 **Roadmap:** Stage 4 — expand graph forecaster; see `docs/2026-04-16-france-gdelt-benchmark-note.md` step 4, `forecast_charter.md`.
 
 ## File Map

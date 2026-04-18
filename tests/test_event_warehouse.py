@@ -3,10 +3,11 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
+from ingest.event_records import load_event_records
 from ingest.event_tape import EventTapeRecord, load_event_tape
 from ingest.event_warehouse import (
-    export_tape,
-    import_tape,
+    export_jsonl,
+    import_jsonl,
     init_warehouse,
     query_records,
     source_counts,
@@ -98,17 +99,17 @@ def test_query_records_filters_source_and_availability(tmp_path: Path) -> None:
     assert [record.source_event_id for record in visible] == ["gdelt:1"]
 
 
-def test_import_and_export_tape_gzip(tmp_path: Path) -> None:
+def test_import_and_export_jsonl_gzip(tmp_path: Path) -> None:
     db_path = tmp_path / "events.duckdb"
-    tape_path = tmp_path / "events.jsonl"
+    jsonl_path = tmp_path / "events.jsonl"
     out_path = tmp_path / "exported.jsonl.gz"
     _write_tape(
-        tape_path,
+        jsonl_path,
         [_record("gdelt_v2_events", "gdelt:1"), _record("acled", "acled:FRA1")],
     )
 
-    import_result = import_tape(db_path=db_path, tape_path=tape_path)
-    export_result = export_tape(db_path=db_path, out_path=out_path, source_names={"acled"})
+    import_result = import_jsonl(db_path=db_path, jsonl_path=jsonl_path)
+    export_result = export_jsonl(db_path=db_path, out_path=out_path, source_names={"acled"})
     exported = load_event_tape(out_path)
 
     assert import_result["upserted_count"] == 2
@@ -131,3 +132,12 @@ def test_source_counts_and_audit(tmp_path: Path) -> None:
     assert source_counts(db_path) == {"acled": 1, "gdelt_v2_events": 1}
     assert audit["total_event_count"] == 2
     assert audit["admin1_count"] == 1
+
+
+def test_load_event_records_reads_warehouse(tmp_path: Path) -> None:
+    db_path = tmp_path / "events.duckdb"
+    upsert_records(db_path=db_path, records=[_record("gdelt_v2_events", "gdelt:1")])
+
+    records = load_event_records(warehouse_db_path=db_path)
+
+    assert [r.source_event_id for r in records] == ["gdelt:1"]

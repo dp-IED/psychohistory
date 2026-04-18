@@ -1,5 +1,9 @@
 # Plan: Disk-Efficient Event Warehouse And On-Demand Source Experiments
 
+**Status (2026-04):** The **canonical DuckDB warehouse**, shared data root, and **in-memory default** for source experiments are implemented; operational commands and workspace setup are documented in [`docs/storage_architecture.md`](docs/storage_architecture.md). The remainder of this file is **design history and detailed checklist**—read the storage doc first for day-to-day use.
+
+---
+
 ## Summary
 
 Refactor the ingestion and experiment pipeline away from duplicated JSONL/raw/snapshot trees and toward a compact canonical event warehouse outside repo workspaces.
@@ -317,6 +321,7 @@ Add optional flags:
 ```
 
 When `--normalize-to-warehouse` is set:
+
 - Convert fetched rows to `EventTapeRecord` in memory page-by-page.
 - Upsert into warehouse.
 - Do not require raw fragments.
@@ -340,6 +345,7 @@ python -m ingest.acled_raw fetch-france-protests \
 Update `ingest/gdelt_raw.py` similarly, but do not require full direct-to-warehouse streaming in the first implementation if too invasive.
 
 Minimum GDELT support:
+
 - Add `--raw-retention full|compressed|none`.
 - For `none`, write only manifest/metadata and do not write raw fragments.
 - Leave current `ingest.event_tape normalize-france-protests` path for existing raw folders.
@@ -394,6 +400,7 @@ Keep `--tape` for backward compatibility.
 Update `baselines/source_experiments.py`.
 
 Current behavior:
+
 - Builds and writes weekly snapshots under `snapshots_root / experiment.name`.
 - GNN backtest reads snapshots from disk.
 
@@ -450,6 +457,7 @@ def open_text_auto(path: Path, mode: str):
 ```
 
 Use it for:
+
 - prediction JSONL
 - audit JSON if `.gz`
 - event tape gzip
@@ -496,10 +504,18 @@ Report output:
   "data_root": "...",
   "total_bytes": 123,
   "paths": [
-    {"path": "warehouse/events.duckdb", "bytes": 123, "category": "warehouse"},
-    {"path": "raw/gdelt", "bytes": 123, "category": "raw"},
-    {"path": "runs/source_experiments_smoke", "bytes": 123, "category": "run"},
-    {"path": "snapshots", "bytes": 123, "category": "snapshots"}
+    {
+      "path": "warehouse/events.duckdb",
+      "bytes": 123,
+      "category": "warehouse"
+    },
+    { "path": "raw/gdelt", "bytes": 123, "category": "raw" },
+    {
+      "path": "runs/source_experiments_smoke",
+      "bytes": 123,
+      "category": "run"
+    },
+    { "path": "snapshots", "bytes": 123, "category": "snapshots" }
   ]
 }
 ```
@@ -530,6 +546,7 @@ Include:
     --input /Users/darenpalmer/conductor/shared-data/psychohistory-v2/gdelt/tape/france_protest/events.jsonl
   ```
 - How to fetch ACLED directly into warehouse:
+
   ```bash
   source ~/.config/psychohistory/acled.env
 
@@ -543,6 +560,7 @@ Include:
     --availability-policy event_date_lag \
     --availability-lag-days 7
   ```
+
 - How to run source experiments from warehouse:
   ```bash
   python -m baselines.backtest source-experiments \
@@ -575,16 +593,19 @@ Update `docs/source_layer_experiments.md` to make `--tape` legacy and `--data-ro
 ### Step 1: Add IO Utilities
 
 Files:
+
 - `ingest/io_utils.py`
 - tests in `tests/test_io_utils.py`
 
 Implement:
+
 - `open_text_auto`
 - `write_json_atomic`
 - `write_jsonl_records`
 - gzip handling based on suffix
 
 Acceptance:
+
 - Can read/write `.jsonl`.
 - Can read/write `.jsonl.gz`.
 - Existing JSONL tests continue to pass.
@@ -592,10 +613,12 @@ Acceptance:
 ### Step 2: Add Data Root Helper
 
 Files:
+
 - `ingest/paths.py`
 - tests in `tests/test_paths.py`
 
 Acceptance:
+
 - CLI value wins.
 - Env var wins over default.
 - Default is `/Users/darenpalmer/conductor/shared-data/psychohistory-v2`.
@@ -603,10 +626,12 @@ Acceptance:
 ### Step 3: Add Warehouse Module
 
 Files:
+
 - `ingest/event_warehouse.py`
 - tests in `tests/test_event_warehouse.py`
 
 Tests:
+
 1. `init_warehouse` creates DB and table.
 2. `upsert_records` inserts records.
 3. Duplicate `(source_name, source_event_id)` upserts do not duplicate rows.
@@ -619,10 +644,12 @@ Tests:
 ### Step 4: Upgrade Event Tape Gzip Compatibility
 
 Files:
+
 - `ingest/event_tape.py`
 - tests in `tests/test_event_tape.py`
 
 Acceptance:
+
 - Existing tests pass.
 - New test verifies `load_event_tape` reads `.jsonl.gz`.
 
@@ -638,6 +665,7 @@ python -m ingest.event_warehouse import-tape \
 ```
 
 Acceptance:
+
 - Warehouse audit reports `gdelt_v2_events: 51101` when run against the current shared GDELT tape.
 
 This can be an optional manual verification, not a unit test relying on local data.
@@ -645,12 +673,14 @@ This can be an optional manual verification, not a unit test relying on local da
 ### Step 6: Add ACLED Direct-To-Warehouse
 
 Files:
+
 - `ingest/acled_raw.py`
 - `ingest/acled_tape.py`
 - `ingest/event_warehouse.py`
 - tests in `tests/test_acled_ingest.py`
 
 Changes:
+
 - Add `--raw-retention`.
 - Add `--normalize-to-warehouse`.
 - Add `--data-root`.
@@ -658,6 +688,7 @@ Changes:
 - When `--normalize-to-warehouse` is set, normalize rows page-by-page and upsert records into DuckDB.
 
 Acceptance:
+
 - Unit test monkeypatches ACLED fetch pages and confirms:
   - no raw fragments written for `--raw-retention none`
   - warehouse receives normalized ACLED rows
@@ -667,11 +698,13 @@ Acceptance:
 ### Step 7: Refactor Source Experiments To Use Warehouse
 
 Files:
+
 - `baselines/source_experiments.py`
 - `baselines/backtest.py`
 - tests in `tests/test_source_experiments.py`
 
 Implementation:
+
 - Add `--data-root`, `--warehouse-path`, `--snapshot-mode`, `--predictions-format`.
 - If warehouse mode is active, query all needed records once per experiment:
   - Source filter from experiment spec.
@@ -686,6 +719,7 @@ Implementation:
 - Write prediction JSONL gzip by default.
 
 Acceptance:
+
 - Existing tape-based tests still pass.
 - New test runs source experiments from a temporary DuckDB warehouse.
 - New test asserts no snapshot files are written in `snapshot_mode="in_memory"`.
@@ -694,16 +728,19 @@ Acceptance:
 ### Step 8: Add In-Memory GNN Runner
 
 Files:
+
 - `baselines/backtest.py` or new `baselines/gnn_backtest.py`
 - tests in `tests/test_gnn.py` and `tests/test_source_experiments.py`
 
 Implementation:
+
 - Add `run_gnn_backtest_from_payloads`.
 - Reuse `build_graph_from_snapshot`.
 - Preserve metrics shape.
 - Support `gnn_ablation`.
 
 Acceptance:
+
 - Existing disk-snapshot GNN tests pass.
 - New in-memory GNN test passes.
 - Source experiment tests use in-memory snapshots by default.
@@ -711,10 +748,12 @@ Acceptance:
 ### Step 9: Add Data GC
 
 Files:
+
 - `ingest/data_gc.py`
 - tests in `tests/test_data_gc.py`
 
 Acceptance:
+
 - `report` computes sizes for temp tree.
 - `prune --dry-run` deletes nothing.
 - `prune --raw` deletes only raw directories.
@@ -724,11 +763,13 @@ Acceptance:
 ### Step 10: Documentation
 
 Files:
+
 - `docs/storage_architecture.md`
 - `docs/acled_ingestion.md`
 - `docs/source_layer_experiments.md`
 
 Acceptance:
+
 - Docs show warehouse-first flow.
 - Docs warn against storing large generated artifacts in repo worktrees.
 - Docs clearly label JSONL mixed tapes as legacy/compatibility.
@@ -793,6 +834,7 @@ source experiment 'acled_only' requested missing sources ['acled']; available=['
 ### Empty Raw Retention
 
 For `--raw-retention none`, manifests must still contain enough information to audit:
+
 - run ID
 - endpoint path
 - page
@@ -821,6 +863,7 @@ Audit must include:
 ### Existing JSONL Compatibility
 
 Do not remove:
+
 - `load_event_tape`
 - `tape_merge`
 - tape-based `source-experiments --tape`
@@ -830,6 +873,7 @@ Warehouse mode is preferred, not mandatory.
 ### No Snapshot Materialization
 
 When `snapshot_mode="in_memory"`:
+
 - Do not create `snapshots_root`.
 - Combined audit should still include:
   - source counts
@@ -840,6 +884,7 @@ When `snapshot_mode="in_memory"`:
 ### Materialized Snapshots
 
 When `snapshot_mode="materialize"`:
+
 - Write snapshots only under the requested run directory.
 - Default format: `.json.gz`.
 - Never write source experiment snapshots under repo `data/` unless explicitly requested.

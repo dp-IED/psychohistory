@@ -1,4 +1,4 @@
-"""Source-layer experiment orchestration for mixed event tapes."""
+"""Source-layer experiment orchestration over the DuckDB event warehouse."""
 
 from __future__ import annotations
 
@@ -25,8 +25,9 @@ from baselines.recurrence import ForecastRow, RECURRENCE_MODEL_NAMES
 from baselines.recurrence import build_recurrence_forecasts_for_origin
 from baselines.tabular import predict_tabular, train_tabular_model
 from evals.graph_artifact_contract import GraphArtifactV1
-from ingest.event_tape import EventTapeRecord, load_event_tape
-from ingest.event_warehouse import query_records, source_counts
+from ingest.event_records import load_event_records
+from ingest.event_tape import EventTapeRecord
+from ingest.event_warehouse import source_counts
 from ingest.io_utils import open_text_auto, write_json_atomic
 from ingest.paths import resolve_data_root, warehouse_path as default_warehouse_path
 from ingest.snapshot_export import (
@@ -49,12 +50,12 @@ SOURCE_EXPERIMENTS: tuple[SourceExperiment, ...] = (
     SourceExperiment(
         name="gdelt_only",
         source_names={"gdelt_v2_events"},
-        description="GDELT event tape and GDELT source identity only.",
+        description="GDELT events and GDELT source identity only.",
     ),
     SourceExperiment(
         name="acled_only",
         source_names={"acled"},
-        description="ACLED event tape and ACLED source identity only.",
+        description="ACLED events and ACLED source identity only.",
     ),
     SourceExperiment(
         name="gdelt_plus_acled",
@@ -391,7 +392,6 @@ def _parse_experiment_names(values: Sequence[str] | None) -> list[str] | None:
 
 def run_source_layer_experiments(
     *,
-    tape_path: Path | None = None,
     warehouse_path: Path | None = None,
     data_root: Path | None = None,
     snapshots_root: Path | None = None,
@@ -437,30 +437,25 @@ def run_source_layer_experiments(
     experiments = resolve_source_experiments(experiment_names)
     requested_sources = set().union(*(experiment.source_names for experiment in experiments))
 
-    data_context: str
-    if warehouse_path is not None or data_root is not None or tape_path is None:
-        resolved_data_root = resolve_data_root(data_root)
-        resolved_warehouse_path = (
-            Path(warehouse_path).expanduser().resolve()
-            if warehouse_path is not None
-            else default_warehouse_path(resolved_data_root)
+    resolved_data_root = resolve_data_root(data_root)
+    resolved_warehouse_path = (
+        Path(warehouse_path).expanduser().resolve()
+        if warehouse_path is not None
+        else default_warehouse_path(resolved_data_root)
+    )
+    if not resolved_warehouse_path.exists():
+        raise FileNotFoundError(
+            "missing event warehouse: "
+            f"{resolved_warehouse_path}; run python -m ingest.event_warehouse init and import data first"
         )
-        if not resolved_warehouse_path.exists():
-            raise FileNotFoundError(
-                "missing event warehouse: "
-                f"{resolved_warehouse_path}; run python -m ingest.event_warehouse init and import data first"
-            )
-        available_counts = source_counts(resolved_warehouse_path)
-        available_sources = set(available_counts)
-        records = query_records(
-            db_path=resolved_warehouse_path,
-            source_names=requested_sources,
-        )
-        data_context = f"warehouse={resolved_warehouse_path}"
-    else:
-        records = load_event_tape(tape_path)
-        available_sources = {record.source_name for record in records}
-        data_context = f"tape={tape_path}"
+    available_counts = source_counts(resolved_warehouse_path)
+    available_sources = set(available_counts)
+    records = load_event_records(
+        warehouse_db_path=warehouse_path,
+        data_root=data_root,
+        source_names=requested_sources,
+    )
+    data_context = f"warehouse={resolved_warehouse_path}"
 
     out_root.mkdir(parents=True, exist_ok=True)
     if snapshot_mode == "materialize":

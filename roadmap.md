@@ -1,469 +1,169 @@
-Good. Then treat this as a **program roadmap**, not an engineering scaffold.
+# Program roadmap
 
-The right way to do this is to de-risk in this order:
+Single source of truth for **stages**, **decision gates**, **goals**, and **what to avoid**. **`project.md`** summarizes purpose; **`next_steps.md`** lists immediate execution order; **`forecast_charter.md`** locks eval contracts; **`docs/reviewers-guide.md`** defines review and discovery rigor.
 
-1. **Can you define a forecastable ontology?**
-2. **Can you build a temporally clean graph from real sources?**
-3. **Can simple baselines forecast anything useful?**
-4. **Does a graph model add signal beyond recurrence?**
-5. **Can the system explain forecasts with historical analogs?**
-6. **Can it generalize across domains?**
+### Execution reality
 
-That sequence matters because the data layer and evaluation layer decide whether
-the rest is science or just an impressive demo. The France protest benchmark has
-now served its purpose as the first validation domain: the temporal tape,
-snapshot exporter, recurrence baselines, XGBoost baseline, and heterogeneous GNN
-all run on the same historical replay setup, and the GNN improves the main
-calibration/error metrics on the holdout period.
+The **target** layered architecture (`docs/research/architecture.md`) is **intellectually coherent** but **ambitious** relative to current code: the **world model** (Stage 6) and **query lens** (precursor to Stage 8) are **not yet first-class modules**, while the **GNN backbone** (Stage 4) is validated. **Forward progress** should prioritize a **thin, correct training loop on existing event snapshots** (multi-step losses, ablatable time-then-space stack) **before** treating Polymarket ingestion as the main thread—markets then become **label contracts + coverage** on top of a **running** optimizer. **Do not** let open-ended charter or PIT documentation expand to fill the schedule **without** parallel training work (`next_steps.md` §0–2).
 
-The roadmap therefore moves from "prove a GNN is worth trying" to "expand the
-graph while preserving the benchmark discipline." France protest forecasting is
-the regression benchmark, not the final product definition.
+---
 
-Wikidata remains a viable backbone for canonical entities and relationships, with multiple access methods and weekly dumps; ACLED exposes a documented API; Polymarket currently documents market data and WebSocket access; and GDELT still provides its event/GKG streams and documentation. X/Twitter may later provide narrative, attention, or realtime discussion signals, but it is not part of the first event-source tape or baseline benchmark. That means your proposed stack is implementable now, at least for an MVP built around those sources. ([Wikidata][1])
+## North star
 
-## Stage 0 — Frame the problem like a forecasting program, not a philosophy project
+A system that:
 
-Timebox this stage tightly. The output is not code. The output is a **forecast charter**.
+1. **Forecasts** and **ranks** outcomes from **situation graphs** + time-varying evidence under **frozen cutoffs**.
+2. **Trains** partly on **prediction markets** and other dense signals, but can **answer questions nothing lists as a contract**.
+3. **Discovers** (or approximates) **slow-moving structure** via **neural estimators + multi-step losses + ablations**, instead of hard-coding named historical narratives as model priors.
+4. **Explains** through **retrieved graph evidence** and **explicit uncertainty**, with **HITL** for the epistemological tier.
 
-You decide three things:
+---
 
-- the first domain
-- the first forecast primitive
-- the first evaluation horizon
+## Principles (non-negotiable)
 
-For the first domain, I would use **geopolitical contention / protests / conflict escalation**, because ACLED, ICEWS, GDELT, and Wikidata line up naturally there. ACLED is particularly well-suited because it is explicitly structured around political violence, protest, actors, and locations through its API-accessible event data. ([ACLED][2])
+| # | Principle |
+|---|------------|
+| P1 | **Forecastable ontology** — types must be applicable to real evidence by two annotators. |
+| P2 | **Temporal cleanliness** — no post-`t` facts in inputs. |
+| P3 | **Baselines first** — recurrence + tabular stay in every comparable audit. |
+| P4 | **Graph earns complexity** — ablations, seeds, documented minus-variants. |
+| P5 | **Markets supervise, don’t define the product** — masking / non-market queries matter. |
+| P6 | **Discovery protocol** — named regimes and social-science labels require **post-hoc alignment** or probes, not baked-in switches, unless ablated as **optional** covariates. |
+| P7 | **Q&A is constrained** — LLM routes/summarizes; structured stack does forecasting and evidence. |
 
-For the first forecast primitive, choose only one:
+---
 
-- next event edge
-- next-week event intensity
-- next-week directional probability shift in a market
-- future-answer QA
+## Stages
 
-The cleanest starting point is:
+### Stage 0 — Charter
 
-**“Given date t, what actor–relation–target events are most likely in the next 7 days in region R?”**
+**Output:** `forecast_charter.md` (targets, horizons, metrics, non-goals).  
+**Status:** baseline charter exists; revise as new tasks (markets, latents) land.
 
-Your success criterion here should be brutally narrow: better calibration and ranking than naive recurrence.
+### Stage 1 — Small ontology, operationalized
 
-The deliverable at the end of Stage 0 is a one-page spec with:
+Core classes: **actors, ideas/narratives, events, markets** (+ **locations**). “Ideas” attach only to **observable** evidence.  
+**Gate:** sample hand-mapping with acceptable inter-annotator agreement.
 
-- target variable
-- forecast horizon
-- unit of prediction
-- sources allowed at inference time
-- metrics
-- non-goals
+### Stage 2 — Time-travel-safe replay
 
-Do not proceed before this is frozen.
+Immutable substrate: graph + tapes + (when in scope) **market state** visible by day `t`. Wikidata = identity layer; GDELT/ACLED = event layers; markets = **belief paths**, not world ground truth.  
+**Gate:** arbitrary historical dates — **zero leakage** audit.
 
-## Stage 1 — Build the temporal ontology and make it boring
+### Stage 3 — Non-neural baselines
 
-This stage is where most ambitious projects overreach. Your ontology should feel disappointingly small at first.
+Recurrence, seasonal patterns, tabular models on graph-derived features.  
+**Status:** France harness established; **re-run** when task or graph changes.
 
-You need four classes only:
+### Stage 4 — Heterogeneous GNN (backbone)
 
-- actors
-- ideas / narratives
-- events
-- markets
+Typed relations, temporal context, sparse regimes. **Status:** validated on the **France protest** benchmark vs baselines—treating further protest-only reruns as **optional** maintenance, not a prerequisite for Stages 5–6. **Requirements when extending the graph:** seeds, ablations for new node/edge types; **second event source** (e.g. ACLED) when multi-source evidence is in scope (`docs/source_layer_experiments.md`).  
+**Gate:** new structure improves metrics **or** transfer **or** explains a **documented** failure mode.
 
-And maybe one auxiliary class:
+### Stage 5 — Prediction-market training track
 
-- locations
+Ingest **Polymarket** (optional **Kalshi**, etc.): resolutions, price paths, metadata, cross-market links. Define **label contracts** (resolution vs short-horizon dynamics) so heads do not leak; short-horizon targets must be predictable from **state at $t$** only. Train with **frozen cutoffs**; run **market-feature masking** ablations and compare to a **no-market** training run to test generalization vs. contract-structure overfitting.  
+**PIT de-risking:** resolution timestamps are **operationally messy** (delays, retroactive corrections)—run an **adversarial harness on synthetic tapes** before trusting production labels. **Coverage audit:** report which **domains or geographies lack any listed market** so evals do not **silently** assume supervision where none exists (listed markets are a **biased** sample of “interesting” questions).  
+**Gate:** beats documented baselines on agreed slices; **masked** runs still usable for non-market eval.  
+**Research note:** [`docs/research/outputs/perplexity.md`](docs/research/outputs/perplexity.md) §4.
 
-The real task is not philosophical correctness. It is **operationalization**.
+### Stage 6 — Learned slow structure & hypotheses (research)
 
-An “idea” only exists if it can be attached to observable evidence such as:
+**Intent:** latent **slow** factors + **switching / mixture** dynamics (world-model style) + optional **adaptive / latent graph** components—trained with **multi-step predictive losses**, self-supervision where useful, **sparsity / diversity** regularizers.  
+**Implementation hints (not mandatory vendors):** **time-then-space** fusion (temporal GRU/SSM per node, then MP), exogenous heads for markets; **stochastic** structure losses where adjacency is learned (Manenti et al.); **GTGIB**-style bottlenecks for noisy temporal graphs; **query lens** with scored retrieval + **mask audit log** (GNN-RAG–style) and optional iterative expansion (RoE-style).  
+**Rules:**
 
-- repeated topic clusters
-- slogan/phrase clusters
-- article embedding clusters
-- persistent co-movement with actor behavior
-- market belief movement around the same issue
+- **Do not** bake specific historical events (e.g. calendar shocks) as **fixed** train-time priors in the core model if the claim is “discovered structure”; use them only as **ablation covariates** or **post-hoc alignment**.
+- **Do** report **stability** across seeds/splits and **ablations** (remove module → performance drops). **France harness:** run as **smoke** only if the WM code path still touches shared snapshot/backtest code—not as proof the WM is “good.”
 
-A “trend” only exists if you can define its state over time:
+**Gate:** held-out prediction gain **and** identifiable failure modes; expert naming optional and **separate**.  
+**Research synthesis:** [`docs/research/outputs/perplexity.md`](docs/research/outputs/perplexity.md).
 
-- rising
-- decaying
-- stable
-- fragmenting
-- spreading geographically
+### Stage 7 — Analog retrieval
 
-Your ontology is ready when two different people can code the same raw evidence into roughly the same internal structure.
+Similar neighborhoods, trajectories, belief patterns — **before** open-ended user phrasing drives the core.  
+**Gate:** human agreement that analogs are **plausibly comparable** above chance on a sample.
 
-The gate for finishing this stage is simple:
+### Stage 8 — Constrained interactive Q&A
 
-- 100 sampled events from at least 2 sources
-- hand-mapped into your ontology
-- acceptable inter-annotator consistency on types and relations
+LLM **interprets** and **packages**; **retrieval + graph/world-model outputs + cutoff** ground answers. Faithfulness / historical QA audits on held-out questions.  
+**Gate:** no systematic hallucinated evidence chains.
 
-If that fails, your ontology is too abstract.
+### Stage 9 — Cross-domain stress
 
-## Stage 2 — Build a historical world model that is temporally clean
+One adjacent + one more distant domain; shared ontology **subset**; **per-domain** metrics. **Earlier shadow work:** a geography such as **Iran** may begin as a **red-team / ingest–lens–transfer–reviewer** slice **after** the GRU ablation driver is stable on the primary scaffold—**not** as the main optimization benchmark (`next_steps.md` **§2.3**); that split avoids collapsing the program into one contested domain before metrics and contracts are frozen.
 
-This is the first truly hard stage.
+### Stage 10 — Product identity
 
-You are not “collecting data.” You are building an **immutable historical simulation substrate**. Every later forecast must be reconstructible as of date `t` with only information available at `t`.
+Choose flagship emphasis (forecasting vs analyst copilot vs disagreement analytics vs early warning) **after** evidence.
 
-Use the sources in separated roles.
+---
 
-Wikidata should serve as the **canonical identity layer**, because it supports multiple access methods and downloadable dumps, which is what you need for controlled snapshots and canonical entity resolution. ([Wikidata][1])
-
-ACLED, ICEWS, and GDELT should serve as the **event evidence layers**. GDELT’s event and GKG feeds are still documented as frequent, rolling updates, which makes them useful for live-ish event flow and narrative extraction; ACLED provides a cleaner, analyst-grade event layer for conflict and protest settings. ([GDELT Project][3])
-
-Polymarket should be treated as a **belief layer**, not ground truth. Its current documentation confirms structured market/event concepts and API access patterns, including streaming interfaces. ([Polymarket Documentation][4])
-
-Your goal here is to produce, for any historical day:
-
-- graph snapshot as of that day
-- event tape visible by that day
-- market state visible by that day
-- narrative states inferred only from prior windows
-
-The critical output of Stage 2 is not a model. It is a **time-travel-safe replay engine**.
-
-The gate:
-
-- select 5 arbitrary historical dates
-- reconstruct the graph visible on each date
-- prove that no later facts leaked in
-
-If you cannot do that, stop everything else.
-
-## Stage 3 — Establish non-neural baselines before trusting a GNN
-
-This stage is non-negotiable, and the first version is now in place.
-
-A lot of temporal KG work looks strong until you compare it to recurrence-heavy baselines. A 2024 IJCAI paper found that a simple recurrence-based baseline ranked first or third on three of five temporal KG benchmarks, which is exactly why you need this stage before you trust any graph model gains. ([Wikidata][1])
-
-So your first forecasting stack should be intentionally plain:
-
-- recurrence counts
-- recent-window frequency
-- seasonal frequency
-- actor-pair memory
-- Hawkes-style self-excitation
-- tabular boosted trees using graph-derived features
-
-Feature families should include:
-
-- recent event counts
-- rate of change
-- relation entropy
-- neighborhood churn
-- coalition turnover
-- location spillover
-- narrative pressure
-- divergence from market belief where applicable
-
-You want to answer one question:
-**Is there any real predictive structure in the data after temporal hygiene is enforced?**
-
-The initial France protest gate:
-
-- rolling backtests over multiple years
-- Brier score and calibration materially better than naive baseline
-- at least one prediction slice where simple engineered features work
-
-Status: passed for the first benchmark. Recurrence and XGBoost provide usable
-comparison points, and the tabular model improves over recurrence on the 2025
-holdout. Keep this stage alive as a regression suite whenever a new source,
-entity type, or target is added.
-
-## Stage 4 — Expand the dynamic graph forecaster
-
-The first graph model is now trained. The result supports the central modeling
-bet: graph message passing can improve the main forecast quality metrics beyond
-recurrence and tabular engineered features on the controlled benchmark.
-
-Use the graph model for what it is good at:
-
-- typed relational structure
-- temporal dependency
-- neighborhood context
-- generalization across sparse actor combinations
-
-Do not ask it to infer everything.
-
-Architecturally, the next version should combine:
-
-- temporal event encoder
-- heterogeneous graph structure
-- autoregressive or continuous-time update mechanism
-- optional narrative-state side channel
-
-This is where you now test the stronger version of the project hypothesis:
-
-**Which additional graph sources and relations improve forecasts beyond the
-validated event-location GNN?**
-
-The evaluation should be adversarial. Slice performance by:
-
-- frequent vs rare actors
-- stable vs regime-shift periods
-- conflict vs cooperation
-- local vs cross-border spillovers
-
-You are done with Stage 4 only if the expanded graph model delivers one of two things:
-
-- better overall predictive performance
-- same predictive performance, but much better transfer in sparse / hard regimes
-
-If it does neither, then the graph is not yet earning its complexity.
-
-Immediate Stage 4 work:
-
-- freeze the France protest benchmark as the regression harness
-- add deterministic GNN seeds and multi-seed audits
-- add ablations for location-only, event-edge, actor-edge, source-edge, and
-  narrative features
-- add ACLED as a second event evidence layer
-- add point-in-time Wikidata grounding for actors and locations
-- promote only the node and edge types that survive backtest comparison
-
-## Stage 5 — Add the “lame de fond” layer as explicit latent macro-dynamics
-
-This is where your idea becomes distinctive.
-
-But it must be done after you already have a working forecast engine.
-
-At this stage, create a layer for macro-forces such as:
-
-- elite fragmentation
-- repression cycle
-- protest contagion
-- ideological radicalization
-- geopolitical alignment shift
-- inflation/grievance pressure
-
-Do not inject these as hand-wavy priors. Infer them from evidence.
-
-A good implementation pattern is:
-
-- discover candidate latent states from text/topic/event co-movement
-- test whether they improve forecast performance
-- test whether they improve analog retrieval
-- keep only the states that are measurable and forecast-relevant
-
-The output should be something like:
-
-- a small set of macro-state variables per region or actor-cluster
-- transition probabilities over time
-- interpretable links to observed events and narratives
-
-The gate is not elegance. The gate is utility:
-
-- does adding latent macro-states improve calibration, analog quality, or early-warning lead time?
-
-If not, the macro-layer stays out.
-
-## Stage 6 — Build analog retrieval before open-ended Q&A
-
-Before you let an LLM answer anything, the system needs a way to retrieve:
-
-- similar graph neighborhoods
-- similar event trajectories
-- similar market divergences
-- similar narrative configurations
-
-This matters because the final product should not merely say:
-“Escalation risk is 0.68.”
-
-It should say:
-“Escalation risk is 0.68 because the current pattern resembles episodes A, B, and C, where these precursor relations appeared in similar order.”
-
-The analog retrieval engine should work on:
-
-- local subgraph topology
-- event-sequence similarity
-- narrative-state similarity
-- market disagreement patterns
-
-The gate:
-
-- analysts can inspect a forecast and agree that the retrieved historical analogs are genuinely comparable more often than chance
-
-This is the first point where the system starts to feel like an analyst machine rather than a classifier.
-
-## Stage 7 — Add the Q&A layer as a constrained forecasting interface
-
-Now you can add natural-language interaction.
-
-The LLM should not forecast directly. It should only:
-
-- interpret the question
-- call the structured forecast and retrieval stack
-- synthesize a grounded answer
-- state uncertainty and disagreement
-
-This produces two classes of QA:
-
-First, **forecast QA**:
-
-- What is likely to happen next in country X?
-- Who is most likely to initiate hostile action toward Y in the next week?
-- What is the probability unrest intensifies in capital Z?
-
-Second, **causal-analytic QA**:
-
-- Which ideas or narratives are most associated with the current escalation?
-- Which past episodes most resemble this configuration?
-- What changed over the last 14 days?
-
-The rule is strict: every answer must be reducible to
-
-- retrieved graph evidence
-- forecast model outputs
-- retrieved analogs
-- cited source traces
-
-No free-form punditry.
-
-The gate:
-
-- answer faithfulness audits
-- answer correctness on held-out historical questions
-- no systematic hallucinated evidence chains
-
-## Stage 8 — Integrate markets as a disagreement and calibration instrument
-
-Polymarket should not be the center of the system at first. It becomes extremely valuable later.
-
-Once the base forecaster works, use market data in three ways.
-
-First, as a feature:
-
-- current implied probability
-- recent move
-- velocity
-- spread/liquidity proxies where available
-
-Second, as an evaluation target:
-
-- does your model beat the market on some class of questions?
-
-Third, as a disagreement detector:
-
-- where does model probability materially diverge from market probability?
-
-That third use case is especially strong. Often the most interesting output is not the raw forecast but:
-
-- “the model is more bearish than the market because it sees structural precursor patterns that the crowd may be underweighting”
-
-Polymarket’s current docs support both market/event structure and API access patterns for that layer. ([Polymarket Documentation][4])
-
-The gate:
-
-- clear evaluation of whether market features improve calibration
-- at least a few historically interesting disagreement case studies
-
-## Stage 9 — Stress-test across one related and one unrelated domain
-
-Only after the expanded graph works in the first benchmark should you test your
-"deep currents" thesis across domains.
-
-A good second domain should first be adjacent, then unrelated.
-
-Adjacent examples:
-
-- protests in another country
-- conflict escalation in ACLED
-- election-related unrest
-
-Unrelated examples:
-
-- labor unrest
-- public-health panic dynamics
-- sanctions and trade retaliation
-- technology/narrative adoption contests
-
-The point is not scale. The point is abstraction:
-
-- do the same latent dynamics, graph motifs, and forecasting interfaces transfer?
-
-Your thesis becomes much stronger if the same architecture works in two structurally similar but substantively different domains.
-
-The gate:
-
-- one domain-local retraining
-- one shared ontology subset
-- evidence that at least part of the framework transfers
-
-## Stage 10 — Decide what this project actually is
-
-At that point you will know whether you are building:
-
-- a forecasting engine
-- an analyst copilot
-- a market-disagreement engine
-- an early-warning system
-- a historical analog machine
-
-It may be all of them eventually, but not as a first product identity.
-
-That decision should happen after evidence, not before.
-
-## Suggested timing and milestone logic
-
-I would sequence the program like this:
-
-**Completed:** freeze forecast charter, build the replayable France protest
-event tape, export weekly snapshots, run recurrence/XGBoost/GNN backtests.
-
-**Next:** freeze comparison audits, add GNN reproducibility, run ablations, and
-ingest a second event source.
-
-**After that:** add point-in-time Wikidata grounding, actor/source/narrative
-node types, and historical analog retrieval.
-
-**Later:** constrained Q&A, market integration, disagreement analytics, and
-second-domain transfer.
-
-The important thing is not the calendar duration. It is that each stage has a hard go/no-go test.
-
-## The decision gates that matter most
-
-There are only five that really matter:
-
-**Gate 1:** Can you reconstruct the world as of historical date `t` without leakage?
-
-**Gate 2:** Can simple baselines beat naive recurrence strongly enough to justify the task?
-
-**Gate 3:** Does the graph model add predictive value or transfer robustness?
-
-**Gate 4:** Can you retrieve historical analogs that humans find genuinely informative?
-
-**Gate 5:** Can the Q&A layer stay grounded and temporally faithful?
-
-If you pass those five, the project is real.
+## Decision gates
+
+| ID | Question |
+|----|----------|
+| G1 | World reconstructible as of `t` without leakage? |
+| G2 | Do baselines justify the task for material targets? |
+| G3 | Does the graph beat tabular features **from the same cutoff**? |
+| G4 | With markets: does **masking** still yield a usable model for non-market queries (when claimed)? |
+| G5 | For “discovered” structure: **ablations** and **held-out** time/regions support the claim? |
+| G6 | Analog retrieval useful to humans (when in scope)? |
+| G7 | Q&A grounded and temporally faithful? |
+| G8 | Epistemological tier: **HITL** or proxy evaluation in place? |
+
+---
+
+## Goals (by layer)
+
+| Layer | Goal |
+|-------|------|
+| **Engineering** | Green France harness; reproducible audits; warehouse path documented. |
+| **Material forecasting** | Calibration + ranking on agreed slices; ablations published. |
+| **Markets** | Ingestion + baselines + masking story; no single “beat close” vanity metric without context. |
+| **Discovery** | Slow / switching latents or graph inference justified by prediction + ablations. |
+| **Product** | Ranked hypotheses + evidence + cutoff; no solo-LLM forecasting. |
+
+---
 
 ## What to avoid
 
-Avoid building a giant universal ontology first.
+### Architecture and research
 
-Avoid letting “ideas” and “trends” remain metaphorical.
+- **Baking named history** (specific shocks, national narratives) as **immutable priors** in the core discovery model—then claiming the model “found” them. Prefer **learned** switches + **optional** covariate ablations.
+- **Two opaque neural stages** (graph builder + forecaster) both trained **only** on one downstream loss **without** auxiliary objectives, masking, or staged training—credit assignment becomes unreviewable.
+- **Universal ontology** before measurement or inter-annotator checks.
+- **Ideas/trends** with no path to observables in the graph or text channels.
 
-Avoid measuring success with only ranking metrics and no calibration.
+### Evaluation
 
-Avoid using the LLM as the forecaster.
+- **Ranking-only** success without calibration where probabilities are claimed.
+- **One global metric** across domains or eras when heterogeneity is expected.
+- **Epistemological** claims validated by **fluency** only.
+- **LLM as sole forecaster** or **evidence author** without structured retrieval and cutoff.
 
-Avoid mixing canonical entity truth with historically visible truth.
+### Data and ethics
 
-Avoid moving to a second domain before the first one has a live decision workflow.
+- Mixing **Wikidata / canonical truth** with **historically visible** evidence without an explicit rule.
+- **Single national timeline** for all actors/communities when the product implies diversity of experience.
+- **Stereotype-prone** group labels as primitives without mechanism-level care and bias review.
 
-## My blunt recommendation
+### Process
 
-Your implementation roadmap should be centered on one sentence:
+- Expanding `schemas/` or node types **without** a minus-variant or measurement plan.
+- Skipping **reproducibility** (seeds, audit hashes) on GNN experiments that drive decisions.
 
-**Now that a temporally clean heterogeneous graph has beaten the main baselines
-on the first benchmark, expand sources and node types under ablation, then prove
-that the model can explain forecasts with valid historical analogs.**
+---
 
-Everything else is expansion.
+## References (external)
 
-[1]: https://www.wikidata.org/wiki/Wikidata%3AData_access?utm_source=chatgpt.com "Wikidata:Data access"
-[2]: https://acleddata.com/acled-api-documentation?utm_source=chatgpt.com "API documentation"
-[3]: https://www.gdeltproject.org/data.html?utm_source=chatgpt.com "Data: Querying, Analyzing and Downloading"
-[4]: https://docs.polymarket.com/concepts/markets-events?utm_source=chatgpt.com "Markets & Events"
+- [Wikidata data access](https://www.wikidata.org/wiki/Wikidata%3AData_access)
+- [ACLED API](https://acleddata.com/acled-api-documentation)
+- [GDELT data](https://www.gdeltproject.org/data.html)
+- [Polymarket docs](https://docs.polymarket.com/concepts/markets-events)
+
+---
+
+## Current summary
+
+The **France GNN benchmark** established that the graph approach **earns its keep** on a clean protest forecast task. **Forward work** prioritizes a **working training loop** on **event** snapshots (time-then-space WM v0, multi-step losses, ablations), then **market-informed training** with **adversarial PIT tests** and **coverage reporting**, then **lens** and **constrained Q&A**; the France pipeline remains a **useful smoke test** when core ingestion or backtests change, not a perpetual validation gate. **Iran** (or similar) is planned as a **parallel stress-test lane** after ablations are real—**France (or agreed scaffold) stays the regression-controlled harness** until labeled eval contracts justify headline claims (**`next_steps.md` §2.3**).

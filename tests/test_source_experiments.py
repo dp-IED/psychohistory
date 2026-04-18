@@ -13,7 +13,7 @@ from baselines.source_experiments import (
     run_source_layer_experiments,
 )
 from ingest.event_tape import EventTapeRecord
-from ingest.event_warehouse import upsert_records
+from ingest.event_warehouse import init_warehouse, upsert_records
 from ingest.io_utils import open_text_auto
 
 
@@ -58,9 +58,11 @@ def _record(
     )
 
 
-def _write_tape(path: Path, records: list[EventTapeRecord]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("".join(record.model_dump_json() + "\n" for record in records), encoding="utf-8")
+def _warehouse_with_records(tmp_path: Path, records: list[EventTapeRecord]) -> Path:
+    db_path = tmp_path / "warehouse" / "events.duckdb"
+    init_warehouse(db_path)
+    upsert_records(db_path=db_path, records=records)
+    return db_path
 
 
 def _mixed_records() -> list[EventTapeRecord]:
@@ -108,13 +110,12 @@ def test_resolve_source_experiments_defaults_and_rejects_bad_names() -> None:
 
 @pytest.mark.torch_train
 def test_source_experiment_runner_writes_audit_and_predictions(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
     snapshots_root = tmp_path / "snapshots"
     out_root = tmp_path / "out"
-    _write_tape(tape_path, _mixed_records())
+    wh = _warehouse_with_records(tmp_path, _mixed_records())
 
     audit = run_source_layer_experiments(
-        tape_path=tape_path,
+        warehouse_path=wh,
         snapshots_root=snapshots_root,
         out_root=out_root,
         train_origin_start=dt.date(2021, 1, 4),
@@ -167,12 +168,11 @@ def test_source_experiment_runner_skip_tabular_omits_xgboost_file(
     monkeypatch.setattr("baselines.backtest.run_gnn_backtest_from_payloads", fake_gnn)
     monkeypatch.setattr("baselines.source_experiments._run_tabular_from_inputs", tabular_should_not_run)
 
-    tape_path = tmp_path / "events.jsonl"
     out_root = tmp_path / "out"
-    _write_tape(tape_path, _mixed_records())
+    wh = _warehouse_with_records(tmp_path, _mixed_records())
 
     audit = run_source_layer_experiments(
-        tape_path=tape_path,
+        warehouse_path=wh,
         out_root=out_root,
         train_origin_start=dt.date(2021, 1, 4),
         train_origin_end=dt.date(2021, 2, 22),
@@ -229,12 +229,11 @@ def test_source_experiment_runner_skip_recurrence_omits_recurrence_file(
         recurrence_should_not_run,
     )
 
-    tape_path = tmp_path / "events.jsonl"
     out_root = tmp_path / "out"
-    _write_tape(tape_path, _mixed_records())
+    wh = _warehouse_with_records(tmp_path, _mixed_records())
 
     audit = run_source_layer_experiments(
-        tape_path=tape_path,
+        warehouse_path=wh,
         out_root=out_root,
         train_origin_start=dt.date(2021, 1, 4),
         train_origin_end=dt.date(2021, 2, 22),
@@ -255,11 +254,10 @@ def test_source_experiment_runner_skip_recurrence_omits_recurrence_file(
 
 @pytest.mark.torch_train
 def test_source_experiment_runner_uses_collapsed_source_snapshots(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
-    _write_tape(tape_path, _mixed_records())
+    wh = _warehouse_with_records(tmp_path, _mixed_records())
 
     run_source_layer_experiments(
-        tape_path=tape_path,
+        warehouse_path=wh,
         snapshots_root=tmp_path / "snapshots",
         out_root=tmp_path / "out",
         train_origin_start=dt.date(2021, 1, 4),
@@ -287,12 +285,11 @@ def test_source_experiment_runner_uses_collapsed_source_snapshots(tmp_path: Path
 
 @pytest.mark.torch_train
 def test_source_experiment_runner_zeroes_event_features_for_gnn(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
     out_root = tmp_path / "out"
-    _write_tape(tape_path, _mixed_records())
+    wh = _warehouse_with_records(tmp_path, _mixed_records())
 
     run_source_layer_experiments(
-        tape_path=tape_path,
+        warehouse_path=wh,
         snapshots_root=tmp_path / "snapshots",
         out_root=out_root,
         train_origin_start=dt.date(2021, 1, 4),
@@ -313,12 +310,14 @@ def test_source_experiment_runner_zeroes_event_features_for_gnn(tmp_path: Path) 
 
 
 def test_source_experiment_runner_fails_when_requested_source_is_missing(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
-    _write_tape(tape_path, [record for record in _mixed_records() if record.source_name == "gdelt_v2_events"])
+    wh = _warehouse_with_records(
+        tmp_path,
+        [record for record in _mixed_records() if record.source_name == "gdelt_v2_events"],
+    )
 
     with pytest.raises(ValueError, match="requested missing sources"):
         run_source_layer_experiments(
-            tape_path=tape_path,
+            warehouse_path=wh,
             snapshots_root=tmp_path / "snapshots",
             out_root=tmp_path / "out",
             train_origin_start=dt.date(2021, 1, 4),
@@ -335,6 +334,7 @@ def test_source_experiment_runner_fails_when_requested_source_is_missing(tmp_pat
 def test_source_experiment_runner_reads_from_warehouse(tmp_path: Path) -> None:
     db_path = tmp_path / "warehouse" / "events.duckdb"
     out_root = tmp_path / "out"
+    init_warehouse(db_path)
     upsert_records(db_path=db_path, records=_mixed_records())
 
     audit = run_source_layer_experiments(
@@ -355,12 +355,11 @@ def test_source_experiment_runner_reads_from_warehouse(tmp_path: Path) -> None:
 
 @pytest.mark.torch_train
 def test_source_experiment_materializes_snapshots_as_gzip(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
     snapshots_root = tmp_path / "snapshots"
-    _write_tape(tape_path, _mixed_records())
+    wh = _warehouse_with_records(tmp_path, _mixed_records())
 
     run_source_layer_experiments(
-        tape_path=tape_path,
+        warehouse_path=wh,
         snapshots_root=snapshots_root,
         out_root=tmp_path / "out",
         train_origin_start=dt.date(2021, 1, 4),
@@ -418,12 +417,11 @@ def test_source_experiment_wikidata_grounding_total_in_audit(
 
     monkeypatch.setattr("baselines.backtest.run_gnn_backtest_from_payloads", fake_gnn)
 
-    tape_path = tmp_path / "events.jsonl"
     out_root = tmp_path / "out"
-    _write_tape(tape_path, _mixed_records())
+    wh = _warehouse_with_records(tmp_path, _mixed_records())
 
     audit = run_source_layer_experiments(
-        tape_path=tape_path,
+        warehouse_path=wh,
         out_root=out_root,
         train_origin_start=dt.date(2021, 1, 4),
         train_origin_end=dt.date(2021, 2, 22),

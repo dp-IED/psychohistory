@@ -1,4 +1,4 @@
-"""Merge normalized event tapes into a mixed-source tape."""
+"""Merge multiple normalized event JSONL streams into one deduplicated JSONL file."""
 
 from __future__ import annotations
 
@@ -27,21 +27,21 @@ def _record_sort_key(record: EventTapeRecord) -> tuple[dt.datetime, dt.date, str
     )
 
 
-def merge_event_tapes(
+def merge_event_jsonl(
     *,
-    tape_paths: Sequence[Path],
+    jsonl_paths: Sequence[Path],
     out_path: Path,
     allow_empty: bool = False,
 ) -> dict[str, Any]:
-    if not tape_paths:
-        raise ValueError("at least one input tape is required")
+    if not jsonl_paths:
+        raise ValueError("at least one input JSONL path is required")
 
     records: list[EventTapeRecord] = []
     input_counts: dict[str, int] = {}
-    for path in tape_paths:
-        tape_records = load_event_tape(path, allow_empty=allow_empty)
-        input_counts[str(path)] = len(tape_records)
-        records.extend(tape_records)
+    for path in jsonl_paths:
+        path_records = load_event_tape(path, allow_empty=allow_empty)
+        input_counts[str(path)] = len(path_records)
+        records.extend(path_records)
 
     deduped: dict[tuple[str, str], EventTapeRecord] = {}
     duplicate_count = 0
@@ -54,7 +54,7 @@ def merge_event_tapes(
 
     output_records = sorted(deduped.values(), key=_record_sort_key)
     if not output_records and not allow_empty:
-        raise ValueError("merged event tape is empty")
+        raise ValueError("merged event JSONL is empty")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open_text_auto(out_path, "w") as handle:
@@ -65,7 +65,7 @@ def merge_event_tapes(
     source_times = [record.source_available_at.astimezone(UTC) for record in output_records]
     source_counts = Counter(record.source_name for record in output_records)
     audit = {
-        "input_paths": [str(path) for path in tape_paths],
+        "input_paths": [str(path) for path in jsonl_paths],
         "input_counts": input_counts,
         "output_path": str(out_path),
         "output_row_count": len(output_records),
@@ -91,7 +91,12 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     merge = subparsers.add_parser("merge")
-    merge.add_argument("--input", action="append", required=True, help="Input event tape path.")
+    merge.add_argument(
+        "--input",
+        action="append",
+        required=True,
+        help="Input normalized events JSONL path.",
+    )
     merge.add_argument("--out", required=True)
     merge.add_argument("--allow-empty", action="store_true")
     return parser
@@ -102,8 +107,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "merge":
         try:
-            merge_event_tapes(
-                tape_paths=[Path(value) for value in args.input],
+            merge_event_jsonl(
+                jsonl_paths=[Path(value) for value in args.input],
                 out_path=Path(args.out),
                 allow_empty=args.allow_empty,
             )

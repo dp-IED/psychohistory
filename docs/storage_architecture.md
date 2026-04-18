@@ -1,5 +1,7 @@
 # Storage Architecture
 
+This document describes **where data lives** and how workspaces share it. Program goals, **roadmap**, and **what to avoid** are in [`project.md`](../project.md), [`roadmap.md`](../roadmap.md), and [`reviewers-guide.md`](reviewers-guide.md).
+
 Persistent event data lives in one DuckDB warehouse outside repo worktrees by
 default:
 

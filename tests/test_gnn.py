@@ -448,10 +448,10 @@ def test_gnn_backtest_writes_output(tmp_path: Path) -> None:
 
     snap_dir = tmp_path / "snapshots"
     snap_dir.mkdir()
-    tape_path = tmp_path / "events.jsonl"
     out_path = tmp_path / "gnn_predictions.jsonl"
 
     from ingest.event_tape import EventTapeRecord
+    from ingest.event_warehouse import init_warehouse, upsert_records
 
     records = []
     for week in range(12):
@@ -488,7 +488,9 @@ def test_gnn_backtest_writes_output(tmp_path: Path) -> None:
                 raw={},
             )
         )
-    tape_path.write_text("".join(r.model_dump_json() + "\n" for r in records), encoding="utf-8")
+    db = tmp_path / "warehouse" / "events.duckdb"
+    init_warehouse(db)
+    upsert_records(db_path=db, records=records)
 
     for week in range(12):
         origin = dt.date(2021, 1, 4) + dt.timedelta(weeks=week)
@@ -499,7 +501,7 @@ def test_gnn_backtest_writes_output(tmp_path: Path) -> None:
     from baselines.backtest import run_gnn_backtest
 
     audit = run_gnn_backtest(
-        tape_path=tape_path,
+        warehouse_path=db,
         snapshots_dir=snap_dir,
         train_origin_start=dt.date(2021, 1, 4),
         train_origin_end=dt.date(2021, 2, 22),
@@ -563,10 +565,10 @@ def test_gnn_ablation_backtest_writes_variant_audit(tmp_path: Path) -> None:
 
     snap_dir = tmp_path / "snapshots"
     snap_dir.mkdir()
-    tape_path = tmp_path / "events.jsonl"
     out_path = tmp_path / "gnn_ablation_predictions.jsonl"
 
     from ingest.event_tape import EventTapeRecord
+    from ingest.event_warehouse import init_warehouse, upsert_records
 
     records = []
     for week in range(12):
@@ -603,7 +605,9 @@ def test_gnn_ablation_backtest_writes_variant_audit(tmp_path: Path) -> None:
                 raw={},
             )
         )
-    tape_path.write_text("".join(r.model_dump_json() + "\n" for r in records), encoding="utf-8")
+    db = tmp_path / "warehouse" / "events.duckdb"
+    init_warehouse(db)
+    upsert_records(db_path=db, records=records)
 
     for week in range(12):
         origin = dt.date(2021, 1, 4) + dt.timedelta(weeks=week)
@@ -614,7 +618,7 @@ def test_gnn_ablation_backtest_writes_variant_audit(tmp_path: Path) -> None:
     from baselines.backtest import run_gnn_ablation_backtest
 
     audit = run_gnn_ablation_backtest(
-        tape_path=tape_path,
+        warehouse_path=db,
         snapshots_dir=snap_dir,
         train_origin_start=dt.date(2021, 1, 4),
         train_origin_end=dt.date(2021, 2, 22),

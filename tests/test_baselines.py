@@ -10,6 +10,7 @@ from baselines.backtest import run_recurrence_backtest
 from baselines.metrics import brier_score, mean_absolute_error, recall_at_k, top_k_hit_rate
 from baselines.recurrence import ForecastRow, build_recurrence_forecasts_for_origin
 from ingest.event_tape import EventTapeRecord
+from ingest.event_warehouse import init_warehouse, upsert_records
 from ingest.snapshot_export import build_snapshot_payload
 
 
@@ -48,11 +49,6 @@ def _record(
         source_url=None,
         raw={},
     )
-
-
-def _write_tape(path: Path, records: list[EventTapeRecord]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("".join(record.model_dump_json() + "\n" for record in records), encoding="utf-8")
 
 
 def _snapshot_targets(records: list[EventTapeRecord], origin: dt.date) -> dict[str, tuple[int, bool]]:
@@ -160,18 +156,19 @@ def test_recall_at_k_captures_fraction_of_positives() -> None:
 
 
 def test_recurrence_backtest_writes_jsonl_and_audit(tmp_path: Path) -> None:
-    tape_path = tmp_path / "events.jsonl"
     out_path = tmp_path / "baselines" / "recurrence_predictions.jsonl"
-    _write_tape(
-        tape_path,
-        [
+    db = tmp_path / "warehouse" / "events.duckdb"
+    init_warehouse(db)
+    upsert_records(
+        db_path=db,
+        records=[
             _record("gdelt:feature", event_date="2021-01-05", source_available_at="2021-01-06T00:00:00Z"),
             _record("gdelt:target", event_date="2021-01-12", source_available_at="2021-01-13T00:00:00Z"),
         ],
     )
 
     audit = run_recurrence_backtest(
-        tape_path=tape_path,
+        warehouse_path=db,
         origin_start=dt.date(2021, 1, 11),
         origin_end=dt.date(2021, 1, 11),
         out_path=out_path,

@@ -1,8 +1,8 @@
 # GDELT Ingestion Operations
 
-This path ingests raw GDELT 2.0 event exports for the France protest benchmark and turns them into a point-in-time event tape. The raw fragments are intentionally kept before normalization so each downstream graph snapshot or baseline row can be audited back to the source export file, retrieval time, and filter configuration.
+This path ingests raw GDELT 2.0 event exports for the France protest benchmark and turns them into point-in-time normalized event records. Normalization still writes JSONL for auditing and interchange; downstream snapshots and baselines read the DuckDB warehouse (`--data-root` / `--warehouse-path`). The raw fragments are intentionally kept before normalization so each downstream graph snapshot or baseline row can be audited back to the source export file, retrieval time, and filter configuration.
 
-The first supported domain is narrow: France protest events from GDELT event rows where `ActionGeo_CountryCode == "FR"` and `EventRootCode == "14"`. The prediction unit is the country-qualified GDELT action geocode, using `FR` plus `ActionGeo_ADM1Code`; this keeps the evaluation grid stable even when a location has no prior events before a forecast origin. X/Twitter may later provide narrative or attention signals, but it is deferred and is not part of this event-source tape or baseline benchmark.
+The first supported domain is narrow: France protest events from GDELT event rows where `ActionGeo_CountryCode == "FR"` and `EventRootCode == "14"`. The prediction unit is the country-qualified GDELT action geocode, using `FR` plus `ActionGeo_ADM1Code`; this keeps the evaluation grid stable even when a location has no prior events before a forecast origin. X/Twitter may later provide narrative or attention signals, but it is deferred and is not part of this event-source benchmark.
 
 ## Time Fields
 
@@ -14,9 +14,11 @@ The first supported domain is narrow: France protest events from GDELT event row
 
 ## Smoke Run
 
-Use this tiny live run to validate network access, raw filtering, event-tape normalization, batch construction, and graph snapshot export.
+Use this tiny live run to validate network access, raw filtering, JSONL normalization, warehouse import, batch construction, and graph snapshot export.
 
 ```bash
+export DATA_ROOT="${PSYCHOHISTORY_DATA_ROOT:-/Users/darenpalmer/conductor/shared-data/psychohistory-v2}"
+
 python -m ingest.gdelt_raw fetch-france-protests \
   --event-start 2023-03-20 \
   --event-end 2023-04-03 \
@@ -29,12 +31,18 @@ python -m ingest.event_tape normalize-france-protests \
   --raw data/gdelt/raw/france_protest_smoke \
   --out data/gdelt/tape/france_protest_smoke/events.jsonl
 
+python -m ingest.event_warehouse init --data-root "$DATA_ROOT"
+
+python -m ingest.event_warehouse import-jsonl \
+  --data-root "$DATA_ROOT" \
+  --input data/gdelt/tape/france_protest_smoke/events.jsonl
+
 python -m ingest.historical_injection build-batches \
-  --tape data/gdelt/tape/france_protest_smoke/events.jsonl \
+  --data-root "$DATA_ROOT" \
   --out data/gdelt/injection/france_protest_smoke/batches.jsonl
 
 python -m ingest.snapshot_export export-weekly \
-  --tape data/gdelt/tape/france_protest_smoke/events.jsonl \
+  --data-root "$DATA_ROOT" \
   --origin-start 2023-03-27 \
   --origin-end 2023-03-27 \
   --out data/gdelt/snapshots/france_protest_smoke
@@ -56,7 +64,7 @@ If GDELT lists historical exports that now return 404, the fetcher records those
 
 ## Full Historical Fetch
 
-This is expensive because it scans years of 15-minute GDELT export files. Run it only when you are ready to build the full benchmark tape.
+This is expensive because it scans years of 15-minute GDELT export files. Run it only when you are ready to build the full benchmark JSONL export and load it into the warehouse.
 
 ```bash
 python -m ingest.gdelt_raw fetch-france-protests \
@@ -68,25 +76,33 @@ python -m ingest.gdelt_raw fetch-france-protests \
   --workers 8
 ```
 
-After the fetch, run the same normalization, injection, snapshot, and baseline commands against the non-smoke paths.
+After the fetch, run normalization, import into the warehouse, then injection, snapshots, and baselines against the non-smoke paths.
 
 ```bash
+export DATA_ROOT="${PSYCHOHISTORY_DATA_ROOT:-/Users/darenpalmer/conductor/shared-data/psychohistory-v2}"
+
 python -m ingest.event_tape normalize-france-protests \
   --raw data/gdelt/raw/france_protest \
   --out data/gdelt/tape/france_protest/events.jsonl
 
+python -m ingest.event_warehouse init --data-root "$DATA_ROOT"
+
+python -m ingest.event_warehouse import-jsonl \
+  --data-root "$DATA_ROOT" \
+  --input data/gdelt/tape/france_protest/events.jsonl
+
 python -m ingest.historical_injection build-batches \
-  --tape data/gdelt/tape/france_protest/events.jsonl \
+  --data-root "$DATA_ROOT" \
   --out data/gdelt/injection/france_protest/batches.jsonl
 
 python -m ingest.snapshot_export export-weekly \
-  --tape data/gdelt/tape/france_protest/events.jsonl \
+  --data-root "$DATA_ROOT" \
   --origin-start 2021-01-04 \
   --origin-end 2025-12-29 \
   --out data/gdelt/snapshots/france_protest
 
 python -m baselines.backtest recurrence \
-  --tape data/gdelt/tape/france_protest/events.jsonl \
+  --data-root "$DATA_ROOT" \
   --origin-start 2021-01-04 \
   --origin-end 2025-12-29 \
   --out data/gdelt/baselines/france_protest/recurrence_predictions.jsonl
@@ -102,7 +118,7 @@ data/gdelt/raw/france_protest*/fetch_manifest.jsonl
 data/gdelt/raw/france_protest*/fragments/**.jsonl
 ```
 
-Normalized event tape:
+Normalized JSONL staging (import into the warehouse before snapshots/baselines):
 
 ```text
 data/gdelt/tape/france_protest*/events.jsonl

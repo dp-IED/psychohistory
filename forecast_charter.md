@@ -1,100 +1,108 @@
 # Forecast Charter
 
-## Product Direction
+Evaluation contract and **non-goals**. **`roadmap.md`** is the full program; **`project.md`** states purpose and goals.
 
-Build a temporally clean forecasting system that can model geopolitical,
-economic, social, and narrative dynamics as graph-structured evidence over time.
-The first validation benchmark used geopolitical contention, specifically
-France protest events, because it provided a narrow event class with measurable
-targets, source timestamps, locations, and enough recurrence structure to test
-whether a GNN adds value.
+---
 
-That benchmark is not the product boundary. It is the proof point that the
-temporal graph approach is worth expanding.
+## Product direction
 
-## Validated First Target
+Represent geopolitical, economic, social, and narrative dynamics as **evidence on a graph over time**, with **interactive Q&A** that returns **ranked hypotheses**, **probabilities**, and **evidence** under an explicit **information cutoff**.
 
-The first forecast primitive was:
+The **France protest** benchmark **validated** the pipeline and showed the GNN beats the main baselines there—it is a **reference eval**, not the product ceiling. **Ongoing France reruns are optional** (e.g. when ingestion or backtests change), not a requirement before work on markets or world-model tracks.
 
-> Given information visible at date `t`, forecast event intensity for the next
-> 7 days by location and event class.
+**Discovery claim:** slow-moving structure (regimes, coalitions, framings) should be **learned** where possible—**multi-step prediction**, **switching / mixture** models, **self-supervision**, **graph inference** with regularization—and **named** only after **stability / ablation** tests. **Do not** treat hand-coded historical priors as “discovered” without ablation.
 
-The initial tabular target was:
+---
 
-- `country_or_region`
-- `event_class`
-- `week_start`
-- `event_count_next_7d`
-- optional severity aggregate
+## Validated benchmark target (France protest — reference, not gate)
 
-The France protest benchmark has now validated the next modeling step: a
-heterogeneous GNN beat recurrence and the XGBoost tabular baseline on the main
-calibration/error metrics, with mixed ranking results. That is enough to justify
-expanding sources and node types while keeping the same temporal-cleanliness and
-backtest discipline.
+> Given information visible at date `t`, forecast **event intensity** for the next 7 days by **location** and **event class** (France regional units).
 
-## Success Criteria
+The heterogeneous **GNN** beat recurrence and **XGBoost** on main **calibration / error** metrics for the documented holdout; ranking metrics remain a tuning dimension.
 
-A useful system must beat naive recurrence on rolling historical backtests, then
-show that graph structure adds value beyond engineered tabular features.
-Minimum metrics:
+---
 
-- Brier score or log loss for thresholded event occurrence
-- ranking quality for top-risk locations
-- calibration by event class and region
-- comparison against recent-window recurrence
-- ablations that show which node types, edge types, and source layers actually
-  improve the forecast
+## Training curriculum: prediction markets
 
-## Allowed Inputs At Prediction Time
+**Polymarket** (optional **Kalshi**, peers) are **training data**:
 
-Every feature must be reconstructible as of date `t`.
+- resolutions and belief paths;
+- cross-market structure where modeled.
 
-Allowed early sources:
+Rules:
 
-- event records from ACLED-like or GDELT-like feeds
-- Wikidata IDs and aliases available in the chosen snapshot
-- source metadata and article clusters observed before `t`
-- market probabilities observed before `t`, when a matching market exists
+- **Frozen cutoffs** everywhere.
+- **Masking ablations** when claiming **non-market** inference.
+- If using **two heads** (e.g. terminal resolution + short-horizon dynamics), **label contracts** must not leak across heads.
 
-Not allowed:
+---
 
-- labels or entity facts first observed after `t`
-- future article clusters
-- final market resolutions
-- hand-authored retrospective macro explanations
+## Success criteria
 
-## Active Graph Scope
+### Material tier
 
-Keep the ontology small, but expand it now that the first GNN benchmark has
-earned the added complexity:
+- Beat naive **recurrence** where applicable.
+- Graph adds value vs **tabular** features from the **same** cutoff.
+- Report **Brier**, **MAE**, ranking diagnostics, and **prevalence-aware** metrics (`positive_rate`, `pr_auc`, `balanced_accuracy`) when label density varies.
+- **Ablations** for new nodes, edges, sources.
+- **Reproducibility:** seeds and audits for GNN runs that drive decisions.
 
-- actors
-- locations
-- events
-- narratives
-- markets
-- sources
+### Markets track (when active)
 
-Add new node or edge types only when a concrete feature, label, or failure case
-requires them.
+- Baselines: **market-implied**, naive, graph (or agreed stack).
+- Slices: liquidity, domain, era.
+- **Masked** runs for transfer claims to unlisted questions.
+- **Coverage audit:** for each eval geography or domain, report whether **any** listed market exists; **do not** assume silent supervision where coverage is zero (listed markets are a **non-random**, interest-biased sample—see `roadmap.md` Stage 5, `docs/research/outputs/perplexity.md` §4).
+- **PIT harness:** before trusting production resolution timestamps, run **adversarial tests on synthetic tapes** (injected future labels, retroactive corrections)—loaders and label builders must **fail closed** or alarm (`next_steps.md` Track M).
 
-## Immediate Work
+### Discovery / slow-structure track (research)
 
-1. Freeze the France protest benchmark as a regression suite for temporal
-   hygiene, recurrence baselines, tabular baselines, and GNN performance.
-2. Add a second event source, preferably ACLED, to test whether the GNN lift
-   survives cleaner conflict/protest data and source disagreement.
-3. Add canonical entity grounding with Wikidata snapshots for actors and
-   locations visible as of date `t`.
-4. Add actor, source, and narrative edge types only behind ablations that
-   measure their contribution against the current GNN.
-5. Start historical analog retrieval from graph neighborhoods and event
-   trajectories once the expanded graph has stable backtest artifacts.
+- **Held-out** time and geography; **multi-seed** stability.
+- **Ablations:** removing latent / switching / graph-inference module hurts prediction when the module is claimed.
+- Optional **post-hoc** alignment to named constructs—**not** the sole proof.
 
-## Explicit Non-Goals
+### Epistemological tier
 
-- no broad historical probe expansion
-- no open-ended QA layer
-- no agent-driven schema search
-- no macro-force layer until added sources and graph features improve forecasts
+- **Ranked hypotheses + evidence + uncertainty**—not one authoritative narrative.
+- **HITL**, rubrics, or proxy evaluation—**not** fluency alone.
+
+---
+
+## Allowed inputs at prediction time (all as of `t`)
+
+- Event records (GDELT-like, ACLED-like).
+- Wikidata IDs/properties in the chosen snapshot.
+- Source metadata and narrative clusters observed before `t`.
+- Market quotes/metadata before `t` when in scope.
+
+**Not allowed**
+
+- Facts first observed after `t`.
+- Future narrative clusters.
+- Final resolutions before resolution time.
+- Retrospective expert write-ups posed as contemporaneous evidence.
+
+---
+
+## Graph scope
+
+Keep ontology **small but typed:** actors, locations, events, narratives, sources, markets. Add types only when a **metric** or **failure mode** requires them.
+
+---
+
+## Immediate work (sync with `next_steps.md`)
+
+1. **Primary:** **training loop + WM v0** on **event** labels (time-then-space, multi-step losses, GRU/GNN ablations); then **prediction-market** ingestion with **adversarial PIT tests** and **coverage** reporting (`next_steps.md`, `roadmap.md` Stages 5–6).
+2. **Parallel:** time-boxed charter/PIT doc updates; evidence expansion, grounding, metrics—as needed for the active eval.
+3. **Constrained Q&A** prototype when retrieval + forecast stack exists.
+4. **France benchmark:** rerun on a **cadence** or when **ingest/snapshot/backtest** contracts change—not a blocker on WM v0 or market ingest.
+
+---
+
+## Non-goals
+
+- Universal ontology before measurement.
+- Ungrounded open-ended QA.
+- Epistemological accuracy claims without **HITL** or proxies.
+- LLM as **sole** forecaster.
+- Claiming **discovered** historical narratives from **fixed** priors in the core model without ablation.

@@ -15,6 +15,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from pydantic import BaseModel, Field
+from torch.nn.utils.rnn import pack_padded_sequence
 from torch_geometric.data import HeteroData
 from torch_geometric.nn import SAGEConv
 
@@ -268,6 +269,7 @@ class HeteroGNNModel(nn.Module):
             raise ValueError("qid_dim must be non-negative")
         if qid_dim > 0 and qid_bucket_count <= 0:
             raise ValueError("qid_bucket_count must be positive when qid_dim is enabled")
+        self.hidden_dim = hidden_dim
         self.qid_dim = qid_dim
         self.qid_bucket_count = qid_bucket_count
         self.loc_qid_embedding = (
@@ -276,6 +278,9 @@ class HeteroGNNModel(nn.Module):
             else None
         )
         self.loc_proj = nn.Linear(location_feature_dim + qid_dim, hidden_dim)
+        self.loc_hist_gru = nn.GRU(location_feature_dim, hidden_dim, batch_first=True)
+        self.loc_hist_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.loc_hist_qid_fuse = nn.Linear(qid_dim, hidden_dim) if qid_dim > 0 else None
         self.evt_proj = nn.Linear(event_feature_dim, hidden_dim)
         self.actor_proj = (
             nn.Linear(actor_feature_dim, hidden_dim) if actor_feature_dim > 0 else None
@@ -290,21 +295,61 @@ class HeteroGNNModel(nn.Module):
             nn.Linear(hidden_dim // 2, 1),
         )
 
-    def forward(self, data: HeteroData) -> torch.Tensor:
-        loc_input = data["location"].x
-        if self.loc_qid_embedding is not None:
-            qid_bucket = getattr(data["location"], "qid_bucket", None)
-            if qid_bucket is None:
-                qid_bucket = torch.zeros(
-                    loc_input.shape[0],
-                    dtype=torch.long,
-                    device=loc_input.device,
-                )
-            else:
-                qid_bucket = qid_bucket.to(device=loc_input.device, dtype=torch.long)
-            loc_input = torch.cat([loc_input, self.loc_qid_embedding(qid_bucket)], dim=1)
+    def _encode_location_temporal(
+        self,
+        loc_temporal: torch.Tensor,
+        loc_time_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        b, _, _ = loc_temporal.shape
+        device = loc_temporal.device
+        xr = torch.flip(loc_temporal, dims=(1,))
+        mr = torch.flip(loc_time_mask, dims=(1,))
+        lengths = mr.long().sum(dim=1)
+        out = torch.zeros(b, self.hidden_dim, device=device, dtype=loc_temporal.dtype)
+        ok = lengths > 0
+        if bool(ok.any().item()):
+            idx = torch.where(ok)[0]
+            x_sub = xr[ok]
+            lens = lengths[ok].detach().cpu()
+            packed = pack_padded_sequence(x_sub, lens, batch_first=True, enforce_sorted=False)
+            _, h_n = self.loc_hist_gru(packed)
+            out[idx] = h_n[-1]
+        return out
 
-        loc_x = F.relu(self.loc_proj(loc_input))
+    def _location_qid_embedding(self, data: HeteroData) -> torch.Tensor | None:
+        if self.loc_qid_embedding is None:
+            return None
+        loc_static = data["location"].x
+        qid_bucket = getattr(data["location"], "qid_bucket", None)
+        if qid_bucket is None:
+            qid_bucket = torch.zeros(
+                loc_static.shape[0],
+                dtype=torch.long,
+                device=loc_static.device,
+            )
+        else:
+            qid_bucket = qid_bucket.to(device=loc_static.device, dtype=torch.long)
+        return self.loc_qid_embedding(qid_bucket)
+
+    def forward(
+        self,
+        data: HeteroData,
+        loc_temporal: torch.Tensor | None = None,
+        loc_time_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        loc_static = data["location"].x
+        qid_emb = self._location_qid_embedding(data)
+
+        if loc_temporal is None:
+            loc_input = loc_static if qid_emb is None else torch.cat([loc_static, qid_emb], dim=1)
+            loc_x = F.relu(self.loc_proj(loc_input))
+        else:
+            if loc_time_mask is None:
+                raise ValueError("loc_time_mask is required when loc_temporal is set")
+            loc_h = self._encode_location_temporal(loc_temporal, loc_time_mask)
+            if self.loc_hist_qid_fuse is not None and qid_emb is not None:
+                loc_h = loc_h + self.loc_hist_qid_fuse(qid_emb)
+            loc_x = F.relu(self.loc_hist_proj(loc_h))
         evt_x = F.relu(self.evt_proj(data["event"].x))
 
         if (
@@ -682,10 +727,12 @@ def predict_gnn(
     target_lookup: dict[tuple[dt.date, str], tuple[int, bool]] | None = None,
     model_name: str = "gnn_sage",
     ablation: GNNGraphAblation | None = None,
+    loc_temporal: torch.Tensor | None = None,
+    loc_time_mask: torch.Tensor | None = None,
 ) -> list[GNNForecastRow]:
     model.eval()
     with torch.no_grad():
-        logits = model(graph)
+        logits = model(graph, loc_temporal, loc_time_mask)
         probs = torch.sigmoid(logits).cpu().numpy()
 
     rows: list[GNNForecastRow] = []

@@ -1,5 +1,7 @@
 # Source-Layer Experiments
 
+Program context: [`project.md`](../project.md), [`roadmap.md`](../roadmap.md), [`next_steps.md`](../next_steps.md), [`docs/reviewers-guide.md`](reviewers-guide.md). This page is the **France harness** recipe for comparing event sources in the warehouse.
+
 This workflow compares France protest forecasting runs across source layers:
 
 - `gdelt_only`

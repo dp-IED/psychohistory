@@ -1,4 +1,4 @@
-"""Per-origin per-admin1 feature extraction from the event tape."""
+"""Per-origin per-admin1 feature extraction from normalized event records."""
 
 from __future__ import annotations
 
