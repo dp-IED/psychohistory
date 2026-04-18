@@ -16,6 +16,30 @@ from schemas.graph_builder_probe import (
 )
 
 
+def test_probe_record_rejects_gate_coverage_mismatch() -> None:
+    origin = date(2024, 5, 1)
+    with pytest.raises(ValidationError, match=r"assumption_gate_coverage must match"):
+        ProbeRecord(
+            probe_id="p-mismatch",
+            origin=origin,
+            nl_text="x",
+            q_struct=QStructV0(
+                actor_state=ActorStateQuery(
+                    geography=["France"],
+                    actor_type=["government"],
+                    as_of=origin,
+                ),
+            ),
+            lens_params=LensParamsV0(),
+            assumption_emphasis=AssumptionEmphasis.PERSISTENCE,
+            generation_meta=GenerationMeta(
+                template_id="t",
+                generator_version="1",
+                assumption_gate_coverage=AssumptionEmphasis.COORDINATION,
+            ),
+        )
+
+
 def test_probe_record_valid_when_as_of_on_or_before_origin() -> None:
     origin = date(2024, 6, 15)
     as_of = date(2024, 6, 10)
@@ -32,7 +56,12 @@ def test_probe_record_valid_when_as_of_on_or_before_origin() -> None:
         ),
         lens_params=LensParamsV0(horizon_days=7, context_snippet="weekly slice"),
         assumption_emphasis=AssumptionEmphasis.PERSISTENCE,
-        generation_meta=GenerationMeta(template_id="t-a", generator_version="0.0.1", seed=42),
+        generation_meta=GenerationMeta(
+            template_id="t-a",
+            generator_version="0.0.1",
+            seed=42,
+            assumption_gate_coverage=AssumptionEmphasis.PERSISTENCE,
+        ),
     )
     assert probe.q_struct.actor_state.as_of == as_of
     assert probe.assumption_emphasis == AssumptionEmphasis.PERSISTENCE
@@ -47,7 +76,11 @@ def test_probe_record_same_day_as_of_allowed() -> None:
         q_struct=QStructV0(actor_state=ActorStateQuery(geography=["X"], actor_type=["group"], as_of=d)),
         lens_params=LensParamsV0(),
         assumption_emphasis=AssumptionEmphasis.COORDINATION,
-        generation_meta=GenerationMeta(template_id="t", generator_version="1"),
+        generation_meta=GenerationMeta(
+            template_id="t",
+            generator_version="1",
+            assumption_gate_coverage=AssumptionEmphasis.COORDINATION,
+        ),
     )
 
 
@@ -75,5 +108,9 @@ def test_probe_record_rejects_as_of_after_origin() -> None:
             ),
             lens_params=LensParamsV0(),
             assumption_emphasis=AssumptionEmphasis.PRECURSOR,
-            generation_meta=GenerationMeta(template_id="t", generator_version="1"),
+            generation_meta=GenerationMeta(
+                template_id="t",
+                generator_version="1",
+                assumption_gate_coverage=AssumptionEmphasis.PRECURSOR,
+            ),
         )

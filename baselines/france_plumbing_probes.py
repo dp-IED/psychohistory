@@ -95,6 +95,7 @@ def _probe_record(
             template_id=template_id,
             generator_version=_GENERATOR_VERSION,
             seed=seed,
+            assumption_gate_coverage=assumption_emphasis,
         ),
     )
 
@@ -404,13 +405,35 @@ def build_france_plumbing_probe_corpus() -> list[ProbeRecord]:
     return [_expanded_probe(row, i) for i, row in enumerate(combos)]
 
 
+def validate_france_plumbing_gate_annotations(probes: Sequence[ProbeRecord]) -> None:
+    """Require ``generation_meta.assumption_gate_coverage`` on every row (France harness).
+
+    Call this when ingesting France plumbing JSONL or before Stage 1 so coverage
+    can be verified from metadata alone without re-deriving from free text.
+    """
+    for p in probes:
+        if p.generation_meta.assumption_gate_coverage is None:
+            raise ValueError(
+                f"probe_id={p.probe_id!r}: France plumbing requires "
+                "generation_meta.assumption_gate_coverage for gate starvation audits",
+            )
+
+
 def validate_gate_coverage(probes: Sequence[ProbeRecord], *, training_context_id: str) -> None:
-    """Ensure each ``AssumptionEmphasis`` appears at least once (soft-gate batch coverage)."""
+    """Ensure each ``AssumptionEmphasis`` appears at least once (soft-gate batch coverage).
+
+    Counts use ``generation_meta.assumption_gate_coverage`` when present so audits
+    and Stage-1 wiring can rely on metadata alone; ``assumption_emphasis`` is used
+    only as a fallback for older rows.
+    """
     if not training_context_id.strip():
         raise ValueError("training_context_id must be a non-empty string")
     counts: dict[AssumptionEmphasis, int] = {g: 0 for g in AssumptionEmphasis}
     for p in probes:
-        counts[p.assumption_emphasis] = counts.get(p.assumption_emphasis, 0) + 1
+        gate = p.generation_meta.assumption_gate_coverage
+        if gate is None:
+            gate = p.assumption_emphasis
+        counts[gate] = counts.get(gate, 0) + 1
     missing = [g.value for g in AssumptionEmphasis if counts[g] == 0]
     if missing:
         joined = ", ".join(missing)
@@ -429,5 +452,6 @@ __all__ = [
     "HORIZON_DAYS_V0",
     "STATE_FLAGS_V0",
     "build_france_plumbing_probe_corpus",
+    "validate_france_plumbing_gate_annotations",
     "validate_gate_coverage",
 ]

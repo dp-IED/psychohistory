@@ -79,6 +79,15 @@ class GenerationMeta(BaseModel):
     generator_version: str = Field(description="Version string of the generator that produced this row.")
     seed: int | None = Field(default=None, description="Optional RNG seed for reproducibility.")
     notes: str | None = Field(default=None, description="Optional short human or pipeline notes.")
+    assumption_gate_coverage: AssumptionEmphasis | None = Field(
+        default=None,
+        description=(
+            "Explicit assumption-gate label for corpus coverage audits (JSONL / logs). "
+            "When set, must match ProbeRecord.assumption_emphasis. "
+            "France harness and similar corpora should set this on every row so Stage 1 "
+            "can verify no gate is starved without re-deriving from other fields."
+        ),
+    )
 
 
 class ProbeRecord(BaseModel):
@@ -102,6 +111,12 @@ class ProbeRecord(BaseModel):
             raise ValueError(
                 f"q_struct.actor_state.as_of ({as_of}) must be on or before origin ({self.origin}); "
                 "same calendar day is allowed.",
+            )
+        cov = self.generation_meta.assumption_gate_coverage
+        if cov is not None and cov != self.assumption_emphasis:
+            raise ValueError(
+                "generation_meta.assumption_gate_coverage must match assumption_emphasis when set; "
+                f"got coverage={cov!r} vs emphasis={self.assumption_emphasis!r}",
             )
         return self
 
