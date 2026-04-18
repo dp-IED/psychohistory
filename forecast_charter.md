@@ -8,7 +8,7 @@ Evaluation contract and **non-goals**. **`roadmap.md`** is the full program; **`
 
 Represent geopolitical, economic, social, and narrative dynamics as **evidence on a graph over time**, with **interactive Q&A** that returns **ranked hypotheses**, **probabilities**, and **evidence** under an explicit **information cutoff**.
 
-The **France protest** benchmark **validated** the pipeline and showed the GNN beats the main baselines there—it is a **reference eval**, not the product ceiling. **Ongoing France reruns are optional** (e.g. when ingestion or backtests change), not a requirement before work on markets or world-model tracks.
+The **France protest** benchmark **validated** the pipeline and showed the GNN beats the main baselines there—it is a **reference eval**, not the product ceiling. **Ongoing France reruns are optional** (e.g. when ingestion or backtests change), not a requirement before work on markets, **graph-builder**, or **assumption** tracks. **World-model (time-then-space) depth** stays in program order **after** a pinned **query subgraph + assumption** interface (`next_steps.md` §2.2). For the **learned graph builder**, France is a **validation harness**, not a primary **training** context—see [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md).
 
 **Discovery claim:** slow-moving structure (regimes, coalitions, framings) should be **learned** where possible—**multi-step prediction**, **switching / mixture** models, **self-supervision**, **graph inference** with regularization—and **named** only after **stability / ablation** tests. **Do not** treat hand-coded historical priors as “discovered” without ablation.
 
@@ -92,10 +92,10 @@ Keep ontology **small but typed:** actors, locations, events, narratives, source
 
 ## Immediate work (sync with `next_steps.md`)
 
-1. **Primary:** **training loop + WM v0** on **event** labels (time-then-space, multi-step losses, GRU/GNN ablations); then **prediction-market** ingestion with **adversarial PIT tests** and **coverage** reporting (`next_steps.md`, `roadmap.md` Stages 5–6).
+1. **Primary (ordering):** **training loop skeleton → graph builder / query subgraph v0 → assumption v0 → minimal forecast head** on **event** labels; then **WM v0** (time-then-space, multi-step losses, GRU/GNN ablations) on the **pinned** subgraph contract; then **prediction-market** ingestion with **adversarial PIT tests** and **coverage** reporting (`next_steps.md` §2.2, `roadmap.md` Stages 5–6).
 2. **Parallel:** time-boxed charter/PIT doc updates; evidence expansion, grounding, metrics—as needed for the active eval.
-3. **Constrained Q&A** prototype when retrieval + forecast stack exists.
-4. **France benchmark:** rerun on a **cadence** or when **ingest/snapshot/backtest** contracts change—not a blocker on WM v0 or market ingest.
+3. **Constrained Q&A** prototype when retrieval + assumptions + forecast stack exists.
+4. **France benchmark:** rerun on a **cadence** or when **ingest/snapshot/backtest** contracts change—not a blocker on builder, WM v0, or market ingest.
 
 ---
 

@@ -1,6 +1,6 @@
 # Psychohistory
 
-Temporally clean **graph forecasting** and (roadmap) **market-informed training**, **learned slow structure**, and **constrained Q&A**.
+Temporally clean **graph forecasting** with **query-conditioned subgraphs + assumptions** upstream of the encoder/WM; (roadmap) **market-informed training**, **learned slow structure**, and **constrained Q&A**.
 
 ## Start here
 
@@ -11,7 +11,8 @@ Temporally clean **graph forecasting** and (roadmap) **market-informed training*
 | [`next_steps.md`](next_steps.md) | **Actionable** work order (gradients-first sequencing) |
 | [`forecast_charter.md`](forecast_charter.md) | Metrics, inputs, non-goals |
 | [`docs/reviewers-guide.md`](docs/reviewers-guide.md) | Reviews, discovery protocol, red flags |
-| [`docs/research/architecture.md`](docs/research/architecture.md) | **Target** layered architecture (world model + graph; not code-bound) |
+| [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md) | **Locked** graph builder, assumptions, supervision stages, compute & training contexts |
+| [`docs/research/architecture.md`](docs/research/architecture.md) | **Target** layered architecture (evidence → builder/lens → encoder/WM; not code-bound) |
 | [`docs/research/research.md`](docs/research/research.md) | Deep-research handoff + conversation summary |
 
 ## Engineering

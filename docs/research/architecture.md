@@ -2,21 +2,21 @@
 
 This document describes the **intended** system—not a snapshot of the current codebase. Existing code (warehouse, snapshots, heterogeneous GNN, baselines) may **implement pieces** of this design behind stable interfaces; it is not the definition of the long-term architecture.
 
-**Related:** program contracts in `project.md`, `roadmap.md`, `forecast_charter.md`; evaluation in `docs/reviewers-guide.md`; deep-research handoff in `docs/research/research.md`. **Implementation-oriented literature synthesis:** [`docs/research/outputs/perplexity.md`](outputs/perplexity.md).
+**Related:** program contracts in `project.md`, `roadmap.md`, `forecast_charter.md`; **locked graph-builder + assumption design** in [`../graph-builder-contract-v0.1.md`](../graph-builder-contract-v0.1.md); evaluation in `docs/reviewers-guide.md`; deep-research handoff in `docs/research/research.md`. **Implementation-oriented literature synthesis:** [`docs/research/outputs/perplexity.md`](outputs/perplexity.md).
 
 ### Implementation status (codebase vs target)
 
 | Layer           | Role                                | In repo today (approx.)                                                                                                                |
 | --------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | 0 — Evidence    | Warehouse, tapes                    | **Yes** — DuckDB, JSONL ingest.                                                                                                        |
-| 1 — Builder     | \(S*t\) from \(E*{\le t}\)          | **Yes** — `ingest/snapshot_export` and related.                                                                                        |
-| 2 — Query lens  | \(S_t^{(q)}\)                       | **Mostly not** — contract is documented; benchmarks do not yet implement a general lens module.                                        |
+| 1 — Builder     | \(S*t\) from \(E*{\le t}\)          | **Partly** — deterministic **`ingest/snapshot_export`** situation graphs **yes**; **learned** query-conditioned retrieval / sparse subgraph selection **not** first-class yet (`next_steps.md` §2.2 **E**). |
+| 2 — Query lens  | \(S_t^{(q)}\)                       | **Mostly not** — contract is documented; benchmarks do not yet implement a general lens module; **research sequencing** treats lens + builder as **before** WM depth (`roadmap.md`).                                        |
 | 3 — Encoder     | \(h_t\)                             | **Yes** — `baselines/gnn.py` (hetero GNN).                                                                                             |
-| 4 — World model | \(z_t\), multi-step dynamics        | **Not** as a separate, named WM module; recurrent **time-then-space** v0 is a **planned** extension of the GNN path (`next_steps.md`). |
+| 4 — World model | \(z_t\), multi-step dynamics        | **Partially in code** as **time-then-space** training (`baselines/wm_ablation_train.py`); program order places **WM v0 + multi-step** after **subgraph + assumption** baselines (`next_steps.md` §2.2 **H**). |
 | 5 — Heads       | Material / market / epistemological | **Partial** — event forecasting backtests and baselines; market heads TBD.                                                             |
 | 6 — Q&A façade  | Routing + packaging                 | **Not** — LLM-as-router is roadmap Stage 8.                                                                                            |
 
-**Execution risk:** the **full stack** is a research target; the **highest-risk gaps** are **Layer 4** (explicit WM + ablatable temporal core) and **Layer 2** (lens with audit logs). **Training loops should attach to real snapshots first** and grow the stack around working gradients (`next_steps.md` §0–2).
+**Execution risk:** the **full stack** is a research target; the **highest-risk gaps** are now **Layers 1–2** (learned builder + query lens with auditability) and an **assumption** representation between lens and encoder, followed by **Layer 4** (WM depth and multi-step losses on a **pinned** subgraph interface). **Training loops should attach to real snapshots first** and grow the stack **builder → assumptions → forecast check → WM** (`next_steps.md` §0–2).
 
 ---
 
@@ -44,13 +44,14 @@ This document describes the **intended** system—not a snapshot of the current 
 
 ## Layer 1 — Canonical situation assembly (builder)
 
-**Role:** Map evidence \(E\_{\le t}\) to a structured situation \(S_t\): typed nodes and edges (or hyperedges), text spans, market objects, explicit unknowns.
+**Role:** Map evidence \(E\_{\le t}\) to a structured situation \(S_t\): typed nodes and edges (or hyperedges), text spans, market objects, explicit unknowns. **Learned query-conditioned retrieval** for forecasting is **specified** in [`../graph-builder-contract-v0.1.md`](../graph-builder-contract-v0.1.md) (fixed-budget subgraph, two-stage ANN + rerank, supervision stages, training contexts).
 
 **Subcomponents:**
 
 - **Deterministic / rule-based** extraction and normalization.
 - **Entity linking** under point-in-time constraints.
 - **Optional learned completion:** soft edges, missing links, weights—**regularized** and trained only as part of the full objective (not a standalone narrative generator).
+- **Learned query-conditioned retrieval** (fixed-budget candidates, reranking, sparse selection) when scaling—prefer **staged** objectives so the builder is not only trained through a moving forecast head (`roadmap.md` Stage 6).
 
 **Contract:** `S_t = Build(E_{\le t})`; no future labels in \(S_t\).
 
@@ -82,7 +83,7 @@ This is where analysis is **tuned to the question** without rewriting history. *
 
 ## Layer 4 — World model core (temporal heart)
 
-**Role:** Latent dynamics that support **multi-step** consistency and **hypothesis competition**, not only single-step scoring.
+**Role:** Latent dynamics that support **multi-step** consistency and **hypothesis competition**, not only single-step scoring—typically over **query-focused** representations \(S_t^{(q)}\) after the lens and any **assumption** packaging, so temporal depth does not confound an unset retrieval ontology.
 
 **Suggested structure:**
 

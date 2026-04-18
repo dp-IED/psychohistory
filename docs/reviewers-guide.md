@@ -6,7 +6,7 @@ What must be true for results and demos to **count**. Complements **`roadmap.md`
 
 ## What this project is trying to be
 
-An **adaptive graph forecaster**: heterogeneous GNN(s) on a **single situation-graph schema**, capturing **slow-moving structure** that manifests in **faster observables** (events, text proxies, markets)—without requiring every latent to be pre-named.
+An **adaptive graph forecaster**: **query-conditioned subgraphs** and **explicit assumptions** feed heterogeneous GNN(s) and **world-model-style** temporal cores on a **single situation-graph schema**, capturing **slow-moving structure** that manifests in **faster observables** (events, text proxies, markets)—without requiring every latent to be pre-named.
 
 **Product shape:** interactive Q&A with **ranked hypotheses**, **probabilities**, **evidence**, and a **cutoff**—not unconstrained punditry.
 
@@ -87,6 +87,7 @@ The France / GDELT pipeline is a **validated reference** for temporal hygiene an
 | `project.md` | Purpose, goals, repo map |
 | `roadmap.md` | Full stages, gates, **what to avoid** |
 | `next_steps.md` | Actionable work order |
+| `docs/graph-builder-contract-v0.1.md` | Locked builder retrieval, supervision, gates, compute, training contexts |
 | `forecast_charter.md` | Metrics, inputs, non-goals |
 | `docs/storage_architecture.md` | Warehouse layout |
 | `docs/source_layer_experiments.md` | France source ablations |
