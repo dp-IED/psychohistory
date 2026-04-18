@@ -8,7 +8,8 @@ Use this file (plus `docs/research/architecture.md`) as **primary context** for 
 
 1. **This file** (`docs/research/research.md`) — conversation summary and open questions below.  
 2. **`docs/research/architecture.md`** — target layered architecture (evidence → situation → lens → encoder → world model → heads → Q&A).  
-3. Optionally: `project.md`, `roadmap.md`, `docs/reviewers-guide.md` for program gates and what to avoid.
+3. **`docs/graph-builder-contract-v0.1.md`** — locked builder retrieval, supervision stages, assumption gates, compute limits, training vs validation contexts.  
+4. Optionally: `project.md`, `roadmap.md`, `docs/reviewers-guide.md` for program gates and what to avoid.
 
 ---
 
@@ -27,7 +28,7 @@ Build a **temporally clean**, **graph-informed** forecasting and analysis system
 
 ### Agreed product and training shape
 
-- **Prediction markets (Polymarket; Kalshi optional)** as **dense training signal**—resolutions, belief paths, cross-market structure—under **frozen cutoffs**.  
+- **Prediction markets (Polymarket; Kalshi optional)** as **dense training signal**—resolutions, belief paths, cross-market structure—under **frozen cutoffs** (for **forecaster / Stage 3**; they **do not** supervise the graph builder—[`docs/graph-builder-contract-v0.1.md`](../graph-builder-contract-v0.1.md)).  
 - **Deployment** includes questions **never listed** as markets; **market features are optional** at inference; **masking ablations** validate non-market use.  
 - **Dual material objectives** discussed: terminal outcomes + short-horizon belief dynamics; **human-facing “as of \(t\)”** explanation matches the **training cutoff regime**.  
 - **Epistemological tier:** competing interpretations / norms / framings as **ranked hypotheses + evidence + uncertainty**—**HITL** or rubrics for trustworthy iteration, not fluency alone.
@@ -52,7 +53,7 @@ Build a **temporally clean**, **graph-informed** forecasting and analysis system
 
 ### Docs already in repo (engineering program)
 
-`project.md`, `roadmap.md`, `next_steps.md`, `forecast_charter.md`, `docs/reviewers-guide.md`, `README.md`—program gates, goals, what to avoid, discovery protocol.
+`project.md`, `roadmap.md`, `next_steps.md`, `forecast_charter.md`, `docs/graph-builder-contract-v0.1.md`, `docs/reviewers-guide.md`, `README.md`—program gates, goals, what to avoid, discovery protocol, builder contract.
 
 ---
 

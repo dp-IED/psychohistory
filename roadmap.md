@@ -1,10 +1,10 @@
 # Program roadmap
 
-Single source of truth for **stages**, **decision gates**, **goals**, and **what to avoid**. **`project.md`** summarizes purpose; **`next_steps.md`** lists immediate execution order; **`forecast_charter.md`** locks eval contracts; **`docs/reviewers-guide.md`** defines review and discovery rigor.
+Single source of truth for **stages**, **decision gates**, **goals**, and **what to avoid**. **`project.md`** summarizes purpose; **`next_steps.md`** lists immediate execution order; **`forecast_charter.md`** locks eval contracts; **`docs/graph-builder-contract-v0.1.md`** locks builder retrieval, supervision, assumptions, and training contexts; **`docs/reviewers-guide.md`** defines review and discovery rigor.
 
 ### Execution reality
 
-The **target** layered architecture (`docs/research/architecture.md`) is **intellectually coherent** but **ambitious** relative to current code: the **world model** (Stage 6) and **query lens** (precursor to Stage 8) are **not yet first-class modules**, while the **GNN backbone** (Stage 4) is validated. **Forward progress** should prioritize a **thin, correct training loop on existing event snapshots** (multi-step losses, ablatable time-then-space stack) **before** treating Polymarket ingestion as the main thread—markets then become **label contracts + coverage** on top of a **running** optimizer. **Do not** let open-ended charter or PIT documentation expand to fill the schedule **without** parallel training work (`next_steps.md` §0–2).
+The **target** layered architecture (`docs/research/architecture.md`) is **intellectually coherent** but **ambitious** relative to current code: **learned graph building** (query-conditioned retrieval / subgraph selection), the **query lens**, and **assumption formulation** are **not yet first-class modules**, while the **GNN backbone** (Stage 4) is **validated as an encoder** on deterministic snapshots. The **world model** (Stage 6)—time-then-space temporal core, multi-step losses—remains essential but should land **after** a pinned **subgraph + assumption** interface so WM ablations are not confounded with an unset retrieval ontology. **Forward progress** should prioritize a **thin loop** that proves **builder + assumptions + minimal forecast attachment**, then **WM v0 + multi-step losses + encoder ablations** on that contract, **before** treating Polymarket ingestion as the main thread—markets then become **label contracts + coverage** on top of a **running** optimizer. **Do not** let open-ended charter or PIT documentation expand to fill the schedule **without** parallel training work (`next_steps.md` §0–2).
 
 ---
 
@@ -14,7 +14,7 @@ A system that:
 
 1. **Forecasts** and **ranks** outcomes from **situation graphs** + time-varying evidence under **frozen cutoffs**.
 2. **Trains** partly on **prediction markets** and other dense signals, but can **answer questions nothing lists as a contract**.
-3. **Discovers** (or approximates) **slow-moving structure** via **neural estimators + multi-step losses + ablations**, instead of hard-coding named historical narratives as model priors.
+3. **Discovers** (or approximates) **slow-moving structure** via **learned retrieval and query-conditioned subgraphs**, **latent assumptions** with reviewable graph signatures, then **neural estimators + multi-step losses + ablations** on that stack—instead of hard-coding named historical narratives as model priors.
 4. **Explains** through **retrieved graph evidence** and **explicit uncertainty**, with **HITL** for the epistemological tier.
 
 ---
@@ -26,9 +26,9 @@ A system that:
 | P1 | **Forecastable ontology** — types must be applicable to real evidence by two annotators. |
 | P2 | **Temporal cleanliness** — no post-`t` facts in inputs. |
 | P3 | **Baselines first** — recurrence + tabular stay in every comparable audit. |
-| P4 | **Graph earns complexity** — ablations, seeds, documented minus-variants. |
+| P4 | **Graph earns complexity** — ablations, seeds, documented minus-variants; **graph construction** (retrieval unit, sparsity, stability) is as ablatable as the encoder/WM stack. |
 | P5 | **Markets supervise, don’t define the product** — masking / non-market queries matter. |
-| P6 | **Discovery protocol** — named regimes and social-science labels require **post-hoc alignment** or probes, not baked-in switches, unless ablated as **optional** covariates. |
+| P6 | **Discovery protocol** — named regimes and social-science labels require **post-hoc alignment** or probes, not baked-in switches, unless ablated as **optional** covariates; **assumption types** should be **inspectable** (evidence pointers, graph patterns), not only opaque latents. |
 | P7 | **Q&A is constrained** — LLM routes/summarizes; structured stack does forecasting and evidence. |
 
 ---
@@ -57,26 +57,28 @@ Recurrence, seasonal patterns, tabular models on graph-derived features.
 
 ### Stage 4 — Heterogeneous GNN (backbone)
 
-Typed relations, temporal context, sparse regimes. **Status:** validated on the **France protest** benchmark vs baselines—treating further protest-only reruns as **optional** maintenance, not a prerequisite for Stages 5–6. **Requirements when extending the graph:** seeds, ablations for new node/edge types; **second event source** (e.g. ACLED) when multi-source evidence is in scope (`docs/source_layer_experiments.md`).  
+Typed relations, temporal context, sparse regimes. **Status:** validated on the **France protest** benchmark vs baselines—the backbone is **infrastructure** for Stages 5–6; further France-only encoder tuning is **optional maintenance** unless it informs **builder, lens, or assumption** design. **Requirements when extending the graph:** seeds, ablations for new node/edge types; **second event source** (e.g. ACLED) when multi-source evidence is in scope (`docs/source_layer_experiments.md`).  
 **Gate:** new structure improves metrics **or** transfer **or** explains a **documented** failure mode.
 
 ### Stage 5 — Prediction-market training track
 
-Ingest **Polymarket** (optional **Kalshi**, etc.): resolutions, price paths, metadata, cross-market links. Define **label contracts** (resolution vs short-horizon dynamics) so heads do not leak; short-horizon targets must be predictable from **state at $t$** only. Train with **frozen cutoffs**; run **market-feature masking** ablations and compare to a **no-market** training run to test generalization vs. contract-structure overfitting.  
+Ingest **Polymarket** (optional **Kalshi**, etc.): resolutions, price paths, metadata, cross-market links. Per **`docs/graph-builder-contract-v0.1.md`**, markets are **Stage 3** for **forecaster calibration** (and late gate validation)—they **do not** supervise the graph builder. Define **label contracts** (resolution vs short-horizon dynamics) so heads do not leak; short-horizon targets must be predictable from **state at $t$** only. Train with **frozen cutoffs**; run **market-feature masking** ablations and compare to a **no-market** training run to test generalization vs. contract-structure overfitting.  
 **PIT de-risking:** resolution timestamps are **operationally messy** (delays, retroactive corrections)—run an **adversarial harness on synthetic tapes** before trusting production labels. **Coverage audit:** report which **domains or geographies lack any listed market** so evals do not **silently** assume supervision where none exists (listed markets are a **biased** sample of “interesting” questions).  
 **Gate:** beats documented baselines on agreed slices; **masked** runs still usable for non-market eval.  
 **Research note:** [`docs/research/outputs/perplexity.md`](docs/research/outputs/perplexity.md) §4.
 
 ### Stage 6 — Learned slow structure & hypotheses (research)
 
-**Intent:** latent **slow** factors + **switching / mixture** dynamics (world-model style) + optional **adaptive / latent graph** components—trained with **multi-step predictive losses**, self-supervision where useful, **sparsity / diversity** regularizers.  
-**Implementation hints (not mandatory vendors):** **time-then-space** fusion (temporal GRU/SSM per node, then MP), exogenous heads for markets; **stochastic** structure losses where adjacency is learned (Manenti et al.); **GTGIB**-style bottlenecks for noisy temporal graphs; **query lens** with scored retrieval + **mask audit log** (GNN-RAG–style) and optional iterative expansion (RoE-style).  
+**Locked design:** [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md) — retrieval hierarchy (actor-state / trend thread / historical analogue), two-stage **ANN → rerank+edges**, fixed **50×200** subgraph, staged **SSL then weak forecast-utility** builder supervision, five **soft assumption gates**, **laptop-class** compute limits, **primary training contexts** (Arab Spring, Euro debt crisis, Latin America TBD) vs **France as validation-only** for the builder.
+
+**Intent:** **query-conditioned graph building** (retriever / reranker / sparse subgraph selector), **assumption gates** (architectural priors modulating the forecaster—not a hand label schema), then latent **slow** factors + **switching / mixture** dynamics (**world-model** style on top of the subgraph interface) + optional **adaptive / latent graph** edges—trained with **plural objectives**: multi-step predictive losses, **tape-side self-supervision** where labels are thin (persistence, lag, denoising), **weak utility signals** from short-horizon heads without letting them fully define long-horizon retrieval, and **sparsity / stability** regularizers. Prefer **staged or alternating** training (e.g. indirect / snapshot-based builder supervision before aggressive end-to-end coupling) so credit assignment stays reviewable.  
+**Implementation hints (not mandatory vendors):** **retrieval + rerank** with fixed candidate budgets; **time-then-space** fusion (temporal GRU/SSM per node, then MP) **after** the builder subgraph is pinned; exogenous heads for markets; **stochastic** structure losses where adjacency is learned (Manenti et al.); **GTGIB**-style bottlenecks for noisy temporal graphs; **query lens** with scored retrieval + **mask audit log** (GNN-RAG–style) and optional iterative expansion (RoE-style).  
 **Rules:**
 
 - **Do not** bake specific historical events (e.g. calendar shocks) as **fixed** train-time priors in the core model if the claim is “discovered structure”; use them only as **ablation covariates** or **post-hoc alignment**.
 - **Do** report **stability** across seeds/splits and **ablations** (remove module → performance drops). **France harness:** run as **smoke** only if the WM code path still touches shared snapshot/backtest code—not as proof the WM is “good.”
 
-**Gate:** held-out prediction gain **and** identifiable failure modes; expert naming optional and **separate**.  
+**Gate:** held-out gain **and** identifiable failure modes for **builder + assumptions + WM** where claimed; expert naming optional and **separate**; when “discovered structure” is claimed, **G5** expects gains **vs** forecast-only or full-graph baselines **under the same cutoff**, not only single-metric France protest deltas.  
 **Research synthesis:** [`docs/research/outputs/perplexity.md`](docs/research/outputs/perplexity.md).
 
 ### Stage 7 — Analog retrieval
@@ -91,7 +93,7 @@ LLM **interprets** and **packages**; **retrieval + graph/world-model outputs + c
 
 ### Stage 9 — Cross-domain stress
 
-One adjacent + one more distant domain; shared ontology **subset**; **per-domain** metrics. **Earlier shadow work:** a geography such as **Iran** may begin as a **red-team / ingest–lens–transfer–reviewer** slice **after** the GRU ablation driver is stable on the primary scaffold—**not** as the main optimization benchmark (`next_steps.md` **§2.3**); that split avoids collapsing the program into one contested domain before metrics and contracts are frozen.
+One adjacent + one more distant domain; shared ontology **subset**; **per-domain** metrics. **Earlier shadow work:** a geography such as **Iran** may begin as a **red-team / ingest–lens–transfer–reviewer** slice **after** the **WM + encoder ablation** spine is stable on the primary scaffold—**not** as the main optimization benchmark (`next_steps.md` **§2.3**); that split avoids collapsing the program into one contested domain before metrics and contracts are frozen.
 
 ### Stage 10 — Product identity
 
@@ -107,7 +109,7 @@ Choose flagship emphasis (forecasting vs analyst copilot vs disagreement analyti
 | G2 | Do baselines justify the task for material targets? |
 | G3 | Does the graph beat tabular features **from the same cutoff**? |
 | G4 | With markets: does **masking** still yield a usable model for non-market queries (when claimed)? |
-| G5 | For “discovered” structure: **ablations** and **held-out** time/regions support the claim? |
+| G5 | For “discovered” structure: **ablations** and **held-out** time/regions support the claim for **retrieval / subgraphs / assumptions / WM** as credited—not only the encoder on a fixed full graph? |
 | G6 | Analog retrieval useful to humans (when in scope)? |
 | G7 | Q&A grounded and temporally faithful? |
 | G8 | Epistemological tier: **HITL** or proxy evaluation in place? |
@@ -121,7 +123,7 @@ Choose flagship emphasis (forecasting vs analyst copilot vs disagreement analyti
 | **Engineering** | Green France harness; reproducible audits; warehouse path documented. |
 | **Material forecasting** | Calibration + ranking on agreed slices; ablations published. |
 | **Markets** | Ingestion + baselines + masking story; no single “beat close” vanity metric without context. |
-| **Discovery** | Slow / switching latents or graph inference justified by prediction + ablations. |
+| **Discovery** | Learned **retrieval / subgraphs**, **assumptions**, then slow / switching **WM** latents or graph inference—justified by prediction + ablations. |
 | **Product** | Ranked hypotheses + evidence + cutoff; no solo-LLM forecasting. |
 
 ---
@@ -166,4 +168,4 @@ Choose flagship emphasis (forecasting vs analyst copilot vs disagreement analyti
 
 ## Current summary
 
-The **France GNN benchmark** established that the graph approach **earns its keep** on a clean protest forecast task. **Forward work** prioritizes a **working training loop** on **event** snapshots (time-then-space WM v0, multi-step losses, ablations), then **market-informed training** with **adversarial PIT tests** and **coverage reporting**, then **lens** and **constrained Q&A**; the France pipeline remains a **useful smoke test** when core ingestion or backtests change, not a perpetual validation gate. **Iran** (or similar) is planned as a **parallel stress-test lane** after ablations are real—**France (or agreed scaffold) stays the regression-controlled harness** until labeled eval contracts justify headline claims (**`next_steps.md` §2.3**).
+The **France GNN benchmark** established that the graph approach **earns its keep** on a clean protest forecast task. **Forward work** follows **[`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md)** where locked: **retrieval ontology + two-stage builder + five assumption gates + laptop budgets**, **primary training contexts** (not France for builder training), then **minimal forecast attachment**, then **time-then-space WM v0**, **multi-step losses**, and **GRU/GNN ablations** on the **pinned** subgraph interface, then **market-informed training** (forecaster / Stage 3—**not** builder supervision) with **adversarial PIT tests** and **coverage reporting**, then **constrained Q&A**. The France pipeline remains a **validation harness + smoke test** when core ingestion or backtests change, not a perpetual validation gate or the main scientific headline. **Iran** (or similar) is planned as a **parallel stress-test lane** after the **WM + encoder ablation** spine is stable—**France (or agreed scaffold) stays the regression-controlled harness** until labeled eval contracts justify headline claims (**`next_steps.md` §2.3**).
