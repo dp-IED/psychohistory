@@ -13,6 +13,94 @@ from schemas.graph_builder_retrieval import (
 )
 
 
+def ann_rerank_global_indices_for_row(
+    query_row: np.ndarray,
+    ann_indices_row: np.ndarray,
+    mmap: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Rerank one ANN row into ordered global indices and scores."""
+
+    query_row_arr = np.asarray(query_row, dtype=np.float32)
+    ann_indices_row_arr = np.asarray(ann_indices_row)
+    mmap_arr = np.asarray(mmap, dtype=np.float32)
+
+    if query_row_arr.ndim != 1:
+        raise ValueError(f"query_row must have shape (F,), got {query_row_arr.shape}")
+    if ann_indices_row_arr.ndim != 1:
+        raise ValueError(
+            f"ann_indices_row must have shape (100,), got {ann_indices_row_arr.shape}"
+        )
+    if not np.issubdtype(ann_indices_row_arr.dtype, np.integer):
+        raise ValueError(
+            f"ann_indices_row must have an integer dtype, got {ann_indices_row_arr.dtype}"
+        )
+    if mmap_arr.ndim != 2:
+        raise ValueError(f"mmap must have shape (N, F), got {mmap_arr.shape}")
+    if mmap_arr.shape[1] != query_row_arr.shape[0]:
+        raise ValueError(
+            "mmap feature dim must match query_row feature dim "
+            f"{query_row_arr.shape[0]}, got {mmap_arr.shape[1]}"
+        )
+
+    row_count = mmap_arr.shape[0]
+    valid_mask = (ann_indices_row_arr >= 0) & (ann_indices_row_arr < row_count)
+    valid_indices = ann_indices_row_arr[valid_mask].astype(np.int64, copy=False)
+    if valid_indices.size == 0:
+        return np.zeros(0, dtype=np.int64), np.zeros(0, dtype=np.float32)
+
+    candidate_feat = mmap_arr[valid_indices]
+    node_scores = (candidate_feat @ query_row_arr).astype(np.float32, copy=False)
+    node_order = np.argsort(-node_scores, kind="stable")
+    take_nodes = min(MAX_RETRIEVED_NODES, int(node_order.size))
+    top_order = node_order[:take_nodes]
+    return valid_indices[top_order], node_scores[top_order]
+
+
+def ann_rerank_global_indices(
+    query: np.ndarray,
+    ann_indices: np.ndarray,
+    mmap: np.ndarray,
+) -> np.ndarray:
+    """Rerank ANN rows into padded global-index rows."""
+
+    query_arr = np.asarray(query, dtype=np.float32)
+    ann_indices_arr = np.asarray(ann_indices)
+    mmap_arr = np.asarray(mmap, dtype=np.float32)
+
+    if query_arr.ndim != 2:
+        raise ValueError(f"query must have shape (B, F), got {query_arr.shape}")
+    if ann_indices_arr.ndim != 2:
+        raise ValueError(f"ann_indices must have shape (B, 100), got {ann_indices_arr.shape}")
+    if not np.issubdtype(ann_indices_arr.dtype, np.integer):
+        raise ValueError(f"ann_indices must have an integer dtype, got {ann_indices_arr.dtype}")
+    if mmap_arr.ndim != 2:
+        raise ValueError(f"mmap must have shape (N, F), got {mmap_arr.shape}")
+
+    batch_size, feature_dim = query_arr.shape
+    if ann_indices_arr.shape[0] != batch_size:
+        raise ValueError(
+            f"ann_indices batch dim must match query batch dim {batch_size}, got {ann_indices_arr.shape[0]}"
+        )
+    if ann_indices_arr.shape[1] != 100:
+        raise ValueError(f"ann_indices must have shape (B, 100), got {ann_indices_arr.shape}")
+    if mmap_arr.shape[1] != feature_dim:
+        raise ValueError(
+            f"mmap feature dim must match query feature dim {feature_dim}, got {mmap_arr.shape[1]}"
+        )
+
+    global_indices = np.full((batch_size, MAX_RETRIEVED_NODES), -1, dtype=np.int64)
+    for b in range(batch_size):
+        global_indices_row, _ = ann_rerank_global_indices_for_row(
+            query_arr[b],
+            ann_indices_arr[b],
+            mmap_arr,
+        )
+        take_nodes = int(global_indices_row.size)
+        if take_nodes > 0:
+            global_indices[b, :take_nodes] = global_indices_row
+    return global_indices
+
+
 def build_retrieved_graph_batch_from_ann(
     query: np.ndarray,
     ann_indices: np.ndarray,
@@ -59,6 +147,8 @@ def build_retrieved_graph_batch_from_ann(
             f"mmap feature dim must match query feature dim {feature_dim}, got {mmap_feature_dim}"
         )
 
+    global_indices = ann_rerank_global_indices(query_arr, ann_indices_arr, mmap_arr)
+
     node_feat = torch.zeros(
         (batch_size, MAX_RETRIEVED_NODES, feature_dim),
         dtype=torch.float32,
@@ -75,17 +165,13 @@ def build_retrieved_graph_batch_from_ann(
     edge_mask = torch.zeros((batch_size, MAX_RETRIEVED_EDGES), dtype=torch.bool)
 
     for b in range(batch_size):
-        valid_mask = (ann_indices_arr[b] >= 0) & (ann_indices_arr[b] < row_count)
-        valid_indices = ann_indices_arr[b, valid_mask].astype(np.int64, copy=False)
-        if valid_indices.size == 0:
+        global_indices_row = global_indices[b]
+        valid_global_indices = global_indices_row[global_indices_row >= 0]
+        take_nodes = int(valid_global_indices.size)
+        if take_nodes == 0:
             continue
 
-        candidate_feat = mmap_arr[valid_indices]
-        node_scores = (candidate_feat @ query_arr[b]).astype(np.float32, copy=False)
-        node_order = np.argsort(-node_scores, kind="stable")
-        take_nodes = min(MAX_RETRIEVED_NODES, int(node_order.size))
-
-        top_feat = candidate_feat[node_order[:take_nodes]]
+        top_feat = mmap_arr[valid_global_indices]
         node_feat[b, :take_nodes] = torch.from_numpy(top_feat)
         node_mask[b, :take_nodes] = True
 
@@ -121,4 +207,8 @@ def build_retrieved_graph_batch_from_ann(
     return batch
 
 
-__all__ = ["build_retrieved_graph_batch_from_ann"]
+__all__ = [
+    "ann_rerank_global_indices",
+    "ann_rerank_global_indices_for_row",
+    "build_retrieved_graph_batch_from_ann",
+]
