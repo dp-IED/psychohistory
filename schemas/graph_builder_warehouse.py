@@ -6,6 +6,7 @@ the manifest is optional for large corpora.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -32,6 +33,13 @@ class NodeWarehouseRowMeta(BaseModel):
     """Per-node metadata aligned with one row of the mmap embedding matrix."""
 
     node_id: str
+    first_seen: date | None = Field(
+        default=None,
+        description=(
+            "Earliest evidence date for this node in the warehouse build "
+            "(temporal OOB vs probe as_of)."
+        ),
+    )
     slice_id: str | None = None
     source_refs: dict[str, str] | None = None
     admin1_code: str | None = None
