@@ -200,6 +200,48 @@ def test_pit_window_includes_as_of_day() -> None:
     assert _log_count_term(m0) > 0.0
 
 
+def test_first_seen_is_earliest_event_in_pit_window() -> None:
+    """Events before ``start`` do not affect ``first_seen``; min date is over in-window rows only."""
+    as_of = date(2026, 4, 18)
+    window_days = 7
+    start = date(2026, 4, 12)
+    name = "anchor_actor"
+    recs = [
+        _fra_record(source_event_id="on_as_of", event_date=as_of, actor1_name=name),
+        _fra_record(source_event_id="on_start", event_date=start, actor1_name=name),
+        _fra_record(
+            source_event_id="before_window",
+            event_date=start - timedelta(days=1),
+            actor1_name=name,
+        ),
+    ]
+    _, metas = build_france_node_matrix_v0(recs, as_of=as_of, window_days=window_days)
+    assert len(metas) == 1
+    assert metas[0].first_seen == start
+
+
+def test_entity_hint_keys_normalizes_and_dedupes() -> None:
+    as_of = date(2026, 4, 18)
+    window_days = 14
+    recs = [
+        _fra_record(
+            source_event_id="e1",
+            event_date=date(2026, 4, 17),
+            actor1_name="  Acme Corp  ",
+        ),
+        _fra_record(
+            source_event_id="e2",
+            event_date=date(2026, 4, 18),
+            actor1_name="ACME CORP",
+        ),
+    ]
+    _, metas = build_france_node_matrix_v0(recs, as_of=as_of, window_days=window_days)
+    assert len(metas) == 1
+    keys = metas[0].extensions.get("entity_hint_keys")
+    assert isinstance(keys, list)
+    assert set(keys) == {"acme corp"}
+
+
 def test_mmap_write_rejects_zero_row_matrix(tmp_path) -> None:
     z = np.zeros((1, 128), dtype=np.float32)
     with pytest.raises(ValueError, match=r"mmap write"):

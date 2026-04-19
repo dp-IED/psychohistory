@@ -56,6 +56,8 @@ NODE_VECTOR_DIM: int = NODE_WAREHOUSE_EMBEDDING_DIM_V1
 # Reject near-zero feature rows before L2 normalisation so we never write NaNs from 0/0
 # or propagate silent zeros into ANN (downstream cosine/dot assumes finite directions).
 _PRE_L2_NORM_EPS = 1e-6
+# Matches graph_builder_query_encoder.ENTITY_HINT_KEYS; avoid importing that module (torch).
+_ENTITY_HINT_KEYS = "entity_hint_keys"
 
 
 def _stable_actor_slot(actor1_name: str | None) -> int:
@@ -152,13 +154,22 @@ def build_france_node_matrix_v0(
         feats[row_idx, 106] = float(np.mean(quad_vals)) if quad_vals else 0.0
         feats[row_idx, 107] = float(np.mean(tone_vals)) if tone_vals else 0.0
 
+        first_seen = min(ev.event_date for ev in evs)
+        hint_keys: set[str] = set()
+        for ev in evs:
+            label = (ev.actor1_name or "").strip().lower()
+            if label:
+                hint_keys.add(label)
+
         node_id = f"fr_v0|{admin1}|slot{slot}"
         slice_id = f"as_of_{as_of.isoformat()}"
         rows_meta.append(
             NodeWarehouseRowMeta(
                 node_id=node_id,
+                first_seen=first_seen,
                 slice_id=slice_id,
                 admin1_code=admin1,
+                extensions={_ENTITY_HINT_KEYS: list(hint_keys)},
             )
         )
 
