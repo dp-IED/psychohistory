@@ -108,6 +108,14 @@ All three primary sequences are preprocessed into **offline node embedding store
 
 ---
 
+## Encoder path (implementation): dual eval
+
+The **primary** v0 stack is **query-conditioned retrieval → fixed-budget subgraph** (≤50 nodes, ≤200 edges) encoded by a **bag encoder** consuming the tensor contract in code (`schemas/graph_builder_retrieval.py`: `RetrievedGraphBatch`).
+
+For **ablations and reviewer-facing comparisons**, keep an **optional parallel branch** on the **same** \((t, \text{labels})\) rows: the existing deterministic **full weekly snapshot** path (`ingest/snapshot_export` → `baselines.gnn.build_graph_from_snapshot` → `HeteroGNNModel`). That branch is **not** the primary research encoder once the learned builder is active; it exists so subgraph-policy vs encoder effects can be separated without conflating a new retrieval interface with legacy graph construction.
+
+---
+
 ## Not decided yet (implementation)
 
 These follow after the contract is stable:
@@ -125,3 +133,4 @@ These follow after the contract is stable:
 | Version | Date | Notes |
 |---------|------|--------|
 | v0.1 | 2026-04-18 | Initial locked decisions |
+| v0.1.1 | 2026-04-18 | Dual eval: bag encoder vs legacy full-graph baseline (`schemas/graph_builder_retrieval`, `baselines/gnn`) |
