@@ -66,6 +66,13 @@ class NodeWarehouseManifest(BaseModel):
         ge=1,
         description="Backward point-in-time window length in days for histogram-derived features.",
     )
+    as_of: date | None = Field(
+        default=None,
+        description=(
+            "Inclusive end date of the warehouse PIT window (with window_days); "
+            "when set, downstream builders filter row evidence to this window."
+        ),
+    )
     embedding_dim: int = Field(default=NODE_WAREHOUSE_EMBEDDING_DIM_V1, ge=1)
     mmap_path: str
     row_count: int = Field(ge=0)
