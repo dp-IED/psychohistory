@@ -18,7 +18,20 @@ from ingest.io_utils import open_text_auto
 
 UTC = dt.timezone.utc
 SOURCE_NAME = "acled"
+SOURCE_NAME_CSV = "acled_v3"
 AvailabilityPolicy = Literal["timestamp", "event_date_lag", "retrieved_at"]
+
+# ACLED exports use ISO-3166-1 numeric; map to alpha-2 for EventTapeRecord.country_code.
+# Extend as needed; unknown codes raise in normalize_acled_csv_row.
+ACLED_ISO_NUMERIC_TO_ALPHA2: dict[int, str] = {
+    250: "FR",  # France
+    818: "EG",
+    788: "TN",
+    434: "LY",
+    760: "SY",
+    840: "US",
+    887: "YE",
+}
 
 
 FRANCE_ADMIN1_NAME_TO_GDELT_CODE = {
@@ -302,6 +315,85 @@ def normalize_acled_row(
         actor2_country_code=None,
         source_url=None,
         raw=row,
+    )
+
+
+def _parse_iso3166_numeric(value: Any) -> int:
+    text = _none_if_blank(value)
+    if text is None:
+        raise ValueError("missing or blank iso")
+    return int(float(text))
+
+
+def _alpha2_from_acled_iso(value: Any) -> str:
+    n = _parse_iso3166_numeric(value)
+    out = ACLED_ISO_NUMERIC_TO_ALPHA2.get(n)
+    if not out:
+        raise ValueError(f"unsupported ACLED iso code (map in ACLED_ISO_NUMERIC_TO_ALPHA2): {n}")
+    return out
+
+
+def acled_event_date_end_utc(event_date: dt.date) -> dt.datetime:
+    """Point-in-time at end of calendar day in UTC (CSV ingest availability anchor)."""
+    return dt.datetime.combine(
+        event_date,
+        dt.time(23, 59, 59, 999999, tzinfo=UTC),
+    )
+
+
+def normalize_acled_csv_row(
+    row: dict[str, Any],
+    *,
+    retrieved_at: dt.datetime,
+    input_basename: str,
+    csv_row_index: int,
+) -> EventTapeRecord:
+    """
+    Map one ACLED CSV row (``ACLED_FIELDS`` column names) to a tape record.
+    ``event_root_code`` / ``event_code`` follow ``event_type`` / ``sub_event_type``; not France-filtered.
+    """
+    if retrieved_at.tzinfo is None:
+        retrieved_at = retrieved_at.replace(tzinfo=UTC)
+    else:
+        retrieved_at = retrieved_at.astimezone(UTC)
+    event_date = dt.date.fromisoformat(_required_text(row, "event_date"))
+    source_event_id = f"acled:{_required_text(row, 'event_id_cnty')}"
+    admin1 = _none_if_blank(row.get("admin1")) or "UNKNOWN"
+    hydrated: dict[str, Any] = {
+        **dict(row),
+        "_retrieved_at": format_datetime_z(retrieved_at),
+        "_csv_input_file": input_basename,
+        "_csv_row": csv_row_index,
+    }
+    return EventTapeRecord(
+        source_name=SOURCE_NAME_CSV,
+        source_event_id=source_event_id,
+        event_date=event_date,
+        source_available_at=acled_event_date_end_utc(event_date),
+        retrieved_at=retrieved_at,
+        country_code=_alpha2_from_acled_iso(row.get("iso")),
+        admin1_code=admin1,
+        location_name=_none_if_blank(row.get("location"))
+        or _none_if_blank(row.get("admin2"))
+        or _none_if_blank(row.get("admin1")),
+        latitude=_optional_float(row, "latitude"),
+        longitude=_optional_float(row, "longitude"),
+        event_class="protest",
+        event_code=_required_text(row, "sub_event_type"),
+        event_base_code="",
+        event_root_code=_required_text(row, "event_type"),
+        quad_class=None,
+        goldstein_scale=None,
+        num_mentions=None,
+        num_sources=None,
+        num_articles=None,
+        avg_tone=None,
+        actor1_name=_none_if_blank(row.get("actor1")),
+        actor1_country_code=None,
+        actor2_name=_none_if_blank(row.get("actor2")),
+        actor2_country_code=None,
+        source_url=None,
+        raw=hydrated,
     )
 
 
