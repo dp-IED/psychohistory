@@ -6,8 +6,19 @@ from pathlib import Path
 
 import pytest
 
-from ingest.event_tape import EventTapeRecord, load_event_tape, normalize_raw_row, write_event_tape
-from ingest.gdelt_raw import GDELT_V2_EVENT_COLUMNS
+from ingest.event_tape import (
+    EventTapeRecord,
+    load_event_tape,
+    normalize_raw_row,
+    write_arab_spring_merged_tape,
+    write_event_tape,
+)
+from ingest.gdelt_raw import (
+    GDELT_V1_EVENT_COLUMNS,
+    GDELT_V2_EVENT_COLUMNS,
+    format_datetime_z,
+    utc_now,
+)
 
 
 def _raw_row(**overrides: str) -> dict[str, str]:
@@ -217,3 +228,121 @@ def test_load_event_tape_reads_gzip(tmp_path: Path) -> None:
     records = load_event_tape(out_path)
     assert len(records) == 1
     assert records[0].source_event_id == "gdelt:100"
+
+
+def _arab_gdelt_jsonl_row(gid: str) -> dict[str, str]:
+    row: dict[str, str] = {c: "" for c in GDELT_V1_EVENT_COLUMNS}
+    row.update(
+        {
+            "GLOBALEVENTID": gid,
+            "SQLDATE": "20120101",
+            "MonthYear": "201201",
+            "Year": "2012",
+            "FractionDate": "2012.0",
+            "EventCode": "10",
+            "EventBaseCode": "1",
+            "EventRootCode": "1",
+            "QuadClass": "0",
+            "ActionGeo_FullName": "Cairo",
+            "ActionGeo_CountryCode": "EG",
+            "ActionGeo_ADM1Code": "EGC1",
+            "ActionGeo_Lat": "30",
+            "ActionGeo_Long": "31",
+            "DATEADDED": "20120101120000",
+            "SOURCEURL": "https://e.test/x",
+        }
+    )
+    row["_retrieved_at"] = format_datetime_z(utc_now())
+    row["_source_file_url"] = "http://data.gdeltproject.org/events/20120101.export.CSV.zip"
+    row["_source_file_timestamp"] = "2012-01-01T00:00:00Z"
+    return row
+
+
+def _acled_page_line(eid: str, row_num: int) -> dict[str, str | int]:
+    return {
+        "event_id_cnty": eid,
+        "event_date": "2012-01-01",
+        "year": "2012",
+        "time_precision": "1",
+        "disorder_type": "",
+        "event_type": "Protests",
+        "sub_event_type": "Peaceful protest",
+        "actor1": "x",
+        "assoc_actor_1": "",
+        "inter1": "",
+        "actor2": "",
+        "assoc_actor_2": "",
+        "inter2": "",
+        "interaction": "",
+        "civilian_targeting": "",
+        "iso": "818",
+        "region": "",
+        "country": "Egypt",
+        "admin1": "Cairo",
+        "admin2": "",
+        "admin3": "",
+        "location": "Cairo",
+        "latitude": "30",
+        "longitude": "31",
+        "geo_precision": "1",
+        "source": "test",
+        "source_scale": "",
+        "notes": "",
+        "fatalities": "0",
+        "tags": "",
+        "timestamp": "",
+        "_retrieved_at": format_datetime_z(utc_now()),
+        "_csv_input_file": "t.csv",
+        "_csv_row": row_num,
+    }
+
+
+def test_write_arab_spring_merged_tape_dedup_and_manifest(tmp_path: Path) -> None:
+    gdir = tmp_path / "gd"
+    gdir.mkdir()
+    frag = gdir / "arab_spring_20120101.jsonl"
+    lines = [
+        _arab_gdelt_jsonl_row("10"),
+        _arab_gdelt_jsonl_row("20"),
+        _arab_gdelt_jsonl_row("30"),
+    ]
+    with frag.open("w", encoding="utf-8") as f:
+        for d in lines:
+            f.write(json.dumps(d) + "\n")
+    (gdir / "fetch_manifest.json").write_text(
+        json.dumps(
+            {
+                "date_start": "2012-01-01",
+                "date_end": "2012-12-31",
+                "rows_written": 3,
+            }
+        ),
+        encoding="utf-8",
+    )
+    aroot = tmp_path / "ac"
+    (aroot / "fragments").mkdir(parents=True)
+    ap = aroot / "fragments" / "page_000001.jsonl"
+    dup = "EGDUP1"
+    with ap.open("w", encoding="utf-8") as f:
+        f.write(json.dumps(_acled_page_line(dup, 0)) + "\n")
+        f.write(json.dumps(_acled_page_line(dup, 1)) + "\n")
+    (aroot / "fetch_metadata.json").write_text(
+        json.dumps({"accepted_row_count": 2}),
+        encoding="utf-8",
+    )
+    out = tmp_path / "out" / "events.jsonl"
+    res = write_arab_spring_merged_tape(
+        gdelt_raw_dir=gdir,
+        acled_raw_dir=aroot,
+        out_path=out,
+        allow_empty=False,
+    )
+    recs = load_event_tape(out)
+    assert len(recs) == 4
+    assert res["dedup_dropped"] == 1
+    assert res["total_record_count"] == 4
+    man = json.loads((out.parent / "tape_manifest.json").read_text())
+    assert man["dedup_dropped"] == 1
+    assert man["total_record_count"] == 4
+    assert man["gdelt_record_count"] == 3
+    assert man["acled_record_count"] == 2

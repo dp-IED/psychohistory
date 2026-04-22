@@ -3,14 +3,21 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import io
+import json
 import zipfile
 from pathlib import Path
+import pytest
 
 from ingest.gdelt_raw import (
+    GDELT_V1_EVENT_COLUMNS,
     GDELT_V2_EVENT_COLUMNS,
+    fetch_arab_spring,
     fetch_france_protests,
+    iter_gdelt10_daily_export_urls,
+    map_gdelt_event_row,
     parse_gdelt_zip_bytes,
     parse_masterfilelist,
+    row_matches_arab_spring,
     row_matches_france_protest,
 )
 
@@ -48,14 +55,42 @@ def _raw_row(**overrides: str) -> dict[str, str]:
     return row
 
 
-def _zip_for_rows(rows: list[dict[str, str]]) -> bytes:
+def _zip_for_rows(rows: list[dict[str, str]], *, v1: bool = False) -> bytes:
+    cols = GDELT_V1_EVENT_COLUMNS if v1 else GDELT_V2_EVENT_COLUMNS
     payload = "\n".join(
-        "\t".join(row[column] for column in GDELT_V2_EVENT_COLUMNS) for row in rows
+        "\t".join(row[column] for column in cols) for row in rows
     )
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
         archive.writestr("events.CSV", payload + "\n")
     return buffer.getvalue()
+
+
+def _raw_v1_row(**overrides: str) -> dict[str, str]:
+    row: dict[str, str] = {c: "" for c in GDELT_V1_EVENT_COLUMNS}
+    row.update(
+        {
+            "GLOBALEVENTID": "1",
+            "SQLDATE": "20120101",
+            "MonthYear": "201201",
+            "Year": "2012",
+            "FractionDate": "2012.0",
+            "Actor1Name": "A",
+            "EventCode": "10",
+            "EventBaseCode": "1",
+            "EventRootCode": "1",
+            "QuadClass": "0",
+            "ActionGeo_FullName": "Cairo",
+            "ActionGeo_CountryCode": "EG",
+            "ActionGeo_ADM1Code": "EGC1",
+            "ActionGeo_Lat": "30",
+            "ActionGeo_Long": "31",
+            "DATEADDED": "20120101120000",
+            "SOURCEURL": "https://e.test/1",
+        }
+    )
+    row.update(overrides)
+    return row
 
 
 def test_gdelt_raw_masterfilelist_parses_export_entries() -> None:
@@ -92,6 +127,63 @@ def test_gdelt_raw_csv_row_maps_61_columns() -> None:
     assert {column for column in GDELT_V2_EVENT_COLUMNS}.issubset(parsed[0])
     assert parsed[0]["Actor1Name"] == "Students"
     assert parsed[0]["_source_file_md5"] == "abc"
+
+
+def test_gdelt_v1_column_count_is_58_and_subset_of_v2() -> None:
+    assert len(GDELT_V1_EVENT_COLUMNS) == 58
+    assert len(GDELT_V2_EVENT_COLUMNS) == 61
+    assert not set(
+        (
+            "Actor1Geo_Type",
+            "Actor2Geo_Type",
+            "ActionGeo_Type",
+        )
+    ) & set(GDELT_V1_EVENT_COLUMNS)
+    f = {c: "x" for c in GDELT_V1_EVENT_COLUMNS}
+    m = map_gdelt_event_row(
+        [f[c] for c in GDELT_V1_EVENT_COLUMNS], column_names=GDELT_V1_EVENT_COLUMNS
+    )
+    assert "ActionGeo_Type" not in m
+    assert m["GLOBALEVENTID"] == "x"
+
+
+def test_gdelt_parse_1_0_sample_zip_matches_synthetic_row() -> None:
+    row = _raw_v1_row(GLOBALEVENTID="999", ActionGeo_CountryCode="EG", SQLDATE="20120101")
+    buf = _zip_for_rows([row], v1=True)
+    rows = parse_gdelt_zip_bytes(buf, metadata={}, gdelt_version="1.0")
+    assert len(rows) == 1
+    assert rows[0]["GLOBALEVENTID"] == "999"
+    assert rows[0]["ActionGeo_CountryCode"] == "EG"
+
+
+@pytest.mark.parametrize(
+    ("cc", "sql", "lo", "hi", "expect"),
+    [
+        ("EG", "20120101", "2010-01-01", "2013-12-31", True),
+        ("FR", "20120101", "2010-01-01", "2013-12-31", False),
+        ("EG", "20150101", "2010-01-01", "2013-12-31", False),
+    ],
+)
+def test_row_matches_arab_spring(
+    cc: str, sql: str, lo: str, hi: str, expect: bool
+) -> None:
+    r = _raw_v1_row(ActionGeo_CountryCode=cc, SQLDATE=sql)
+    out = row_matches_arab_spring(
+        {k: str(v) for k, v in r.items() if not str(k).startswith("_")},
+        event_start=dt.date.fromisoformat(lo),
+        event_end=dt.date.fromisoformat(hi),
+    )
+    assert out is expect
+
+
+def test_iter_gdelt10_daily_export_urls_yields_three_urls() -> None:
+    urls = list(
+        iter_gdelt10_daily_export_urls(
+            dt.date(2010, 1, 1), dt.date(2010, 1, 3)
+        )
+    )
+    assert len(urls) == 3
+    assert "20100101" in urls[0] and "20100103" in urls[2]
 
 
 def test_gdelt_raw_filter_keeps_france_protests_only() -> None:
@@ -154,3 +246,46 @@ def test_gdelt_raw_force_refetch_removes_stale_fragment(tmp_path: Path) -> None:
 
     assert metadata["kept_row_count"] == 0
     assert not fragment.exists()
+
+
+def test_fetch_arab_spring_writes_filtered_jsonl(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    eg1 = _raw_v1_row(
+        GLOBALEVENTID="1",
+        SQLDATE="20120101",
+        ActionGeo_CountryCode="EG",
+    )
+    eg2 = _raw_v1_row(
+        GLOBALEVENTID="2",
+        SQLDATE="20120101",
+        ActionGeo_CountryCode="EG",
+    )
+    fr = _raw_v1_row(
+        GLOBALEVENTID="3",
+        SQLDATE="20120101",
+        ActionGeo_CountryCode="FR",
+    )
+    z = _zip_for_rows([eg1, eg2, fr], v1=True)
+    out_dir = tmp_path / "raw"
+
+    def fake_get(
+        u: str, *, max_retries: int, retry_backoff_seconds: float
+    ) -> tuple[int, bytes | None]:
+        return 200, z
+
+    monkeypatch.setattr("ingest.gdelt_raw._http_get_bytes", fake_get)
+    r = fetch_arab_spring(
+        event_start=dt.date(2012, 1, 1),
+        event_end=dt.date(2012, 1, 1),
+        out_dir=out_dir,
+        workers=1,
+        allow_partial=True,
+    )
+    frag = out_dir / "arab_spring_20120101.jsonl"
+    assert frag.is_file()
+    lines = [json.loads(s) for s in frag.read_text().strip().splitlines()]
+    assert len(lines) == 2
+    assert {x["ActionGeo_CountryCode"] for x in lines} == {"EG"}
+    assert r.get("context") == "arab_spring"
+    assert (out_dir / "fetch_manifest.json").is_file()

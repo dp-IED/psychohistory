@@ -9,8 +9,12 @@ import datetime as dt
 import hashlib
 import io
 import json
+import logging
+import shutil
 import sys
+import threading
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
@@ -19,8 +23,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator, Literal, Sequence
 
-from ingest.io_utils import open_text_auto
+from ingest.io_utils import open_text_auto, write_json_atomic
 
+
+logger = logging.getLogger(__name__)
 
 GDELT_V2_EVENT_COLUMNS = [
     "GLOBALEVENTID",
@@ -86,8 +92,15 @@ GDELT_V2_EVENT_COLUMNS = [
     "SOURCEURL",
 ]
 
+# GDELT 1.0 daily /events/ exports omit the three *_Geo_Type columns that GDELT 2.0 added.
+_GDELT_1_0_OMIT_FROM_V2 = ("Actor1Geo_Type", "Actor2Geo_Type", "ActionGeo_Type")
+GDELT_V1_EVENT_COLUMNS = [c for c in GDELT_V2_EVENT_COLUMNS if c not in _GDELT_1_0_OMIT_FROM_V2]
+assert len(GDELT_V1_EVENT_COLUMNS) == 58, "GDELT 1.0 event export is 58 columns; update column lists"
+assert len(GDELT_V2_EVENT_COLUMNS) == 61, "expected 61 V2 event columns"
+
 MASTERFILELIST_URL = "http://data.gdeltproject.org/gdeltv2/masterfilelist.txt"
 SOURCE_NAME = "gdelt_v2_events"
+ARAB_SPRING_GDELT_SOURCE_NAME = "gdelt_v1_events"
 DOMAIN = "france_protest"
 FRANCE_PROTEST_FILTERS = {"ActionGeo_CountryCode": "FR", "EventRootCode": "14"}
 UTC = dt.timezone.utc
@@ -174,12 +187,17 @@ def select_export_entries(
     ]
 
 
-def map_gdelt_event_row(fields: Sequence[str]) -> dict[str, str]:
-    if len(fields) != len(GDELT_V2_EVENT_COLUMNS):
+def map_gdelt_event_row(
+    fields: Sequence[str],
+    *,
+    column_names: Sequence[str] | None = None,
+) -> dict[str, str]:
+    names = list(column_names) if column_names is not None else list(GDELT_V2_EVENT_COLUMNS)
+    if len(fields) != len(names):
         raise ValueError(
-            f"expected {len(GDELT_V2_EVENT_COLUMNS)} GDELT columns, got {len(fields)}"
+            f"expected {len(names)} GDELT columns, got {len(fields)}"
         )
-    return dict(zip(GDELT_V2_EVENT_COLUMNS, fields))
+    return dict(zip(names, fields, strict=True))
 
 
 def row_matches_france_protest(
@@ -199,12 +217,218 @@ def row_matches_france_protest(
     return event_start <= event_date <= event_end
 
 
+ARAB_SPRING_COUNTRY_CODES = frozenset({"EG", "TU", "LY", "SY"})
+
+
+def row_matches_arab_spring(
+    row: dict[str, str],
+    *,
+    event_start: dt.date,
+    event_end: dt.date,
+) -> bool:
+    if row.get("ActionGeo_CountryCode") not in ARAB_SPRING_COUNTRY_CODES:
+        return False
+    try:
+        event_date = parse_sql_date(row.get("SQLDATE", ""))
+    except ValueError:
+        return False
+    return event_start <= event_date <= event_end
+
+
+def iter_gdelt10_daily_export_urls(start: dt.date, end: dt.date) -> Iterator[str]:
+    d = start
+    while d <= end:
+        yield f"http://data.gdeltproject.org/events/{d:%Y%m%d}.export.CSV.zip"
+        d += dt.timedelta(days=1)
+
+
+def _source_timestamp_gdelt10_url(url: str) -> str:
+    name = urllib.parse.urlparse(url).path.rsplit("/", 1)[-1]
+    if not name.endswith(".export.CSV.zip") or len(name) < 8:
+        raise ValueError(f"not a GDELT 1.0 daily export URL: {url}")
+    day = name[:8]
+    dt0 = dt.datetime.strptime(day, "%Y%m%d").replace(tzinfo=UTC)
+    return format_datetime_z(dt0)
+
+
+def _http_get_bytes(
+    url: str,
+    *,
+    max_retries: int,
+    retry_backoff_seconds: float,
+) -> tuple[int, bytes | None]:
+    """Return (status, body). 404 returns (404, None). 2xx returns (code, data)."""
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme in {"", "file"}:
+        path = Path(urllib.request.url2pathname(parsed.path if parsed.scheme else url))
+        return 200, path.read_bytes()
+    last_error: Exception | None = None
+    for attempt in range(max_retries + 1):
+        try:
+            with urllib.request.urlopen(url, timeout=120) as response:
+                code = int(response.getcode() or 200)
+                return code, response.read()
+        except urllib.error.HTTPError as exc:
+            code = int(exc.code)
+            if code == 404:
+                return 404, None
+            last_error = exc
+            if code not in {429, 500, 502, 503, 504} or attempt >= max_retries:
+                return code, None
+        except (TimeoutError, OSError, urllib.error.URLError) as exc:
+            last_error = exc
+        if attempt < max_retries:
+            time.sleep(retry_backoff_seconds * (attempt + 1))
+    logger.warning("GET failed for %s after %s retries: %s", url, max_retries, last_error)
+    return 0, None
+
+
+def _arab_spring_fetch_config(
+    *, event_start: dt.date, event_end: dt.date
+) -> dict[str, Any]:
+    return {
+        "source_name": ARAB_SPRING_GDELT_SOURCE_NAME,
+        "countries": sorted(ARAB_SPRING_COUNTRY_CODES),
+        "event_start": event_start.isoformat(),
+        "event_end": event_end.isoformat(),
+        "gdelt_version": "1.0",
+    }
+
+
+def _write_arab_spring_fetch_manifest(
+    out_dir: Path,
+    payload: dict[str, Any],
+    *,
+    lock: threading.Lock,
+) -> None:
+    with lock:
+        write_json_atomic(out_dir / "fetch_manifest.json", payload)
+
+
+def _process_gdelt10_arab_spring_day(
+    url: str,
+    day: dt.date,
+    *,
+    out_dir: Path,
+    event_start: dt.date,
+    event_end: dt.date,
+    force: bool,
+    max_retries: int,
+    retry_backoff_seconds: float,
+) -> dict[str, Any]:
+    fragment_name = f"arab_spring_{day:%Y%m%d}.jsonl"
+    relative_path = Path(fragment_name)
+    absolute_path = out_dir / relative_path
+    if absolute_path.exists() and not force:
+        n_lines = 0
+        with open_text_auto(absolute_path, "r") as handle:
+            for line in handle:
+                if line.strip():
+                    n_lines += 1
+        return {
+            "url": url,
+            "day": day.isoformat(),
+            "status": "skipped",
+            "raw_row_count": 0,
+            "kept_row_count": n_lines,
+            "fragment_path": fragment_name,
+            "error": None,
+        }
+
+    free = shutil.disk_usage(out_dir).free
+    if free < 20 * 1024**3:
+        logger.warning(
+            "low disk: free space under 20GB on out_dir (bytes free=%s): %s",
+            free,
+            out_dir,
+        )
+    code, zip_bytes = _http_get_bytes(
+        url, max_retries=max_retries, retry_backoff_seconds=retry_backoff_seconds
+    )
+    if code == 404:
+        return {
+            "url": url,
+            "day": day.isoformat(),
+            "status": "not_found",
+            "raw_row_count": 0,
+            "kept_row_count": 0,
+            "fragment_path": None,
+            "error": None,
+        }
+    if code not in range(200, 300) or zip_bytes is None:
+        return {
+            "url": url,
+            "day": day.isoformat(),
+            "status": "failed",
+            "raw_row_count": 0,
+            "kept_row_count": 0,
+            "fragment_path": None,
+            "error": f"GET status {code}",
+        }
+    logger.warning(
+        "GDELT 1.0: skipping MD5 verification for one export (no masterfile for daily URLs): %s",
+        url,
+    )
+    retrieved_at = format_datetime_z(utc_now())
+    ts = _source_timestamp_gdelt10_url(url)
+    metadata = {
+        "_source_file_url": url,
+        "_source_file_timestamp": ts,
+        "_retrieved_at": retrieved_at,
+    }
+    try:
+        rows = parse_gdelt_zip_bytes(
+            zip_bytes, metadata=metadata, gdelt_version="1.0"
+        )
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "url": url,
+            "day": day.isoformat(),
+            "status": "failed",
+            "raw_row_count": 0,
+            "kept_row_count": 0,
+            "fragment_path": None,
+            "error": str(exc),
+        }
+    kept_rows: list[dict[str, str]] = []
+    for row in rows:
+        match_map = {k: str(v) for k, v in row.items() if not str(k).startswith("_")}
+        if not row_matches_arab_spring(
+            match_map, event_start=event_start, event_end=event_end
+        ):
+            continue
+        kept_rows.append({str(k): str(v) for k, v in row.items()})
+
+    fragment_path_str: str | None = None
+    if kept_rows:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        temp_path = out_dir / f".{fragment_name}.tmp"
+        with open_text_auto(temp_path, "w") as handle:
+            for row in kept_rows:
+                handle.write(_json_dump_line(row))
+        temp_path.replace(absolute_path)
+        fragment_path_str = fragment_name
+    return {
+        "url": url,
+        "day": day.isoformat(),
+        "status": "ok",
+        "raw_row_count": len(rows),
+        "kept_row_count": len(kept_rows),
+        "fragment_path": fragment_path_str,
+        "error": None,
+    }
+
+
 def parse_gdelt_zip_bytes(
     zip_bytes: bytes,
     *,
     metadata: dict[str, Any] | None = None,
+    gdelt_version: Literal["1.0", "2.0"] = "2.0",
 ) -> list[dict[str, Any]]:
     attached_metadata = metadata or {}
+    column_names: Sequence[str] = (
+        GDELT_V1_EVENT_COLUMNS if gdelt_version == "1.0" else GDELT_V2_EVENT_COLUMNS
+    )
     rows: list[dict[str, Any]] = []
     with zipfile.ZipFile(io.BytesIO(zip_bytes)) as archive:
         names = [name for name in archive.namelist() if not name.endswith("/")]
@@ -214,7 +438,7 @@ def parse_gdelt_zip_bytes(
             text = io.TextIOWrapper(raw, encoding="utf-8", newline="")
             reader = csv.reader(text, delimiter="\t")
             for fields in reader:
-                row = map_gdelt_event_row(fields)
+                row = map_gdelt_event_row(fields, column_names=column_names)
                 row.update(attached_metadata)
                 rows.append(row)
     return rows
@@ -638,6 +862,147 @@ def fetch_france_protests(
     return metadata
 
 
+def fetch_arab_spring(
+    *,
+    event_start: dt.date,
+    event_end: dt.date,
+    out_dir: Path,
+    workers: int = 2,
+    force: bool = False,
+    allow_partial: bool = False,
+    max_retries: int = 3,
+    retry_backoff_seconds: float = 2.0,
+    raw_retention: RawRetention = "none",
+    progress: bool = False,
+) -> dict[str, Any]:
+    """
+    Download GDELT 1.0 daily event exports, filter to Arab Spring area rows, one JSONL per day.
+
+    When ``raw_retention`` is ``"none"`` (the default for this pipeline as with France),
+    the raw .zip is not retained; filtered rows are still written to ``arab_spring_*.jsonl``.
+    """
+    if event_end < event_start:
+        raise ValueError("event_end before event_start")
+    if raw_retention not in {"none", "compressed", "full"}:
+        raise ValueError(f"unknown raw retention: {raw_retention}")
+    if raw_retention != "none":
+        raise NotImplementedError("Arab Spring fetch only supports raw_retention=none for v0.1")
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    lock = threading.Lock()
+    day_iter = (event_start + dt.timedelta(days=d) for d in range((event_end - event_start).days + 1))
+    days_urls = list(
+        zip(day_iter, iter_gdelt10_daily_export_urls(event_start, event_end), strict=True)
+    )
+    config = _arab_spring_fetch_config(event_start=event_start, event_end=event_end)
+
+    not_found_404: int = 0
+    failed_count: int = 0
+    skipped_count: int = 0
+    done_index = 0
+
+    def scan_arab_spring_fragments() -> tuple[int, int]:
+        """(total_jsonl_line_count, number_of_arab_spring_*.jsonl files)."""
+        n_lines = 0
+        n_frags = 0
+        for p in sorted(out_dir.glob("arab_spring_*.jsonl")):
+            n_frags += 1
+            with open_text_auto(p, "r") as handle:
+                n_lines += sum(1 for line in handle if line.strip())
+        return n_lines, n_frags
+
+    def current_manifest() -> dict[str, Any]:
+        rows_written, files_fetched = scan_arab_spring_fragments()
+        return {
+            "context": "arab_spring",
+            "countries": list(config["countries"]),
+            "date_start": event_start.isoformat(),
+            "date_end": event_end.isoformat(),
+            "files_fetched": files_fetched,
+            "rows_written": rows_written,
+            "not_found_404_count": not_found_404,
+            "failed_count": failed_count,
+            "skipped_existing_count": skipped_count,
+            "days_completed": done_index,
+            "days_total": len(days_urls),
+            "fetch_completed_at": format_datetime_z(utc_now()),
+            "gdelt_version": "1.0",
+            "source_name": ARAB_SPRING_GDELT_SOURCE_NAME,
+        }
+
+    _write_arab_spring_fetch_manifest(
+        out_dir, current_manifest(), lock=lock
+    )
+
+    def run_day(day: dt.date, url: str) -> dict[str, Any]:
+        return _process_gdelt10_arab_spring_day(
+            url,
+            day,
+            out_dir=out_dir,
+            event_start=event_start,
+            event_end=event_end,
+            force=force,
+            max_retries=max_retries,
+            retry_backoff_seconds=retry_backoff_seconds,
+        )
+
+    max_w = max(1, workers)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_w) as executor:
+        future_to: dict[concurrent.futures.Future[dict[str, Any]], tuple[dt.date, str]] = {}
+        it = iter(days_urls)
+        for _ in range(min(max_w * 2, len(days_urls))):
+            try:
+                d0, u0 = next(it)
+            except StopIteration:
+                break
+            fut = executor.submit(run_day, d0, u0)
+            future_to[fut] = (d0, u0)
+        while future_to:
+            done, _ = concurrent.futures.wait(
+                future_to, return_when=concurrent.futures.FIRST_COMPLETED
+            )
+            for fut in done:
+                future_to.pop(fut)
+                result = fut.result()
+                st = str(result.get("status") or "")
+                if st == "ok":
+                    pass
+                elif st == "not_found":
+                    not_found_404 += 1
+                elif st == "failed":
+                    failed_count += 1
+                elif st == "skipped":
+                    skipped_count += 1
+                done_index += 1
+                _write_arab_spring_fetch_manifest(
+                    out_dir, current_manifest(), lock=lock
+                )
+                if progress and (
+                    done_index % 50 == 0
+                    or done_index == len(days_urls)
+                ):
+                    n_r, n_f = scan_arab_spring_fragments()
+                    print(
+                        f"[fetch-arab-spring] {done_index}/{len(days_urls)} "
+                        f"fragments={n_f} rows={n_r} 404s={not_found_404} failed={failed_count}",
+                        file=sys.stderr,
+                        flush=True,
+                    )
+                try:
+                    d1, u1 = next(it)
+                except StopIteration:
+                    continue
+                f2 = executor.submit(run_day, d1, u1)
+                future_to[f2] = (d1, u1)
+
+    if failed_count and not allow_partial:
+        raise RuntimeError(
+            f"{failed_count} GDELT 1.0 day(s) failed; rerun with --allow-partial to ignore"
+        )
+    return current_manifest()
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -657,6 +1022,29 @@ def _build_parser() -> argparse.ArgumentParser:
         "--raw-retention",
         choices=["none", "compressed", "full"],
         default="none",
+    )
+    arab = subparsers.add_parser("fetch-arab-spring")
+    arab.add_argument(
+        "--raw-dir", default="data/gdelt/raw/arab_spring", help="Output directory for JSONL and fetch_manifest.json"
+    )
+    arab.add_argument("--event-start", required=True)
+    arab.add_argument("--event-end", required=True)
+    arab.add_argument(
+        "--workers",
+        type=int,
+        default=2,
+        help="Parallel download workers (default: 2; raise for more throughput on fast links)",
+    )
+    arab.add_argument("--force", action="store_true")
+    arab.add_argument(
+        "--allow-partial", action="store_true", help="Do not fail if some day downloads fail (non-404)"
+    )
+    arab.add_argument("--max-retries", type=int, default=3)
+    arab.add_argument("--retry-backoff-seconds", type=float, default=2.0)
+    arab.add_argument(
+        "--progress",
+        action="store_true",
+        help="Print periodic progress to stderr (known-good 20130401 is a good smoke date before a long run)",
     )
     return parser
 
@@ -685,6 +1073,24 @@ def main(argv: Sequence[str] | None = None) -> int:
                 retry_backoff_seconds=args.retry_backoff_seconds,
                 raw_retention=args.raw_retention,
                 progress=True,
+            )
+        except Exception as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
+    if args.command == "fetch-arab-spring":
+        try:
+            fetch_arab_spring(
+                event_start=dt.date.fromisoformat(args.event_start),
+                event_end=dt.date.fromisoformat(args.event_end),
+                out_dir=Path(args.raw_dir),
+                workers=args.workers,
+                force=args.force,
+                allow_partial=args.allow_partial,
+                max_retries=args.max_retries,
+                retry_backoff_seconds=args.retry_backoff_seconds,
+                raw_retention="none",
+                progress=args.progress,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)

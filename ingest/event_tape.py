@@ -12,15 +12,27 @@ from typing import Any, Literal, Sequence
 
 from pydantic import BaseModel
 
-from ingest.io_utils import open_text_auto
-from ingest.gdelt_raw import parse_datetime_utc, parse_sql_date
+from ingest.io_utils import open_text_auto, write_json_atomic
+from ingest.gdelt_raw import (
+    ARAB_SPRING_COUNTRY_CODES,
+    ARAB_SPRING_GDELT_SOURCE_NAME,
+    format_datetime_z,
+    parse_datetime_utc,
+    parse_sql_date,
+)
 
 
 UTC = dt.timezone.utc
 
+ARAB_SPRING_GDELT_NORMALIZE: dict[str, Any] = {
+    "source_name": ARAB_SPRING_GDELT_SOURCE_NAME,
+    "countries": sorted(ARAB_SPRING_COUNTRY_CODES),
+    "description": "GDELT 1.0 daily exports; all CAMEO root codes; ActionGeo in EG/TU/LY/SY",
+}
+
 
 class EventTapeRecord(BaseModel):
-    source_name: Literal["gdelt_v2_events", "acled", "acled_v3"]
+    source_name: Literal["gdelt_v1_events", "gdelt_v2_events", "acled", "acled_v3"]
     source_event_id: str
     event_date: dt.date
     source_available_at: dt.datetime
@@ -203,6 +215,256 @@ def normalize_raw_row(
     )
 
 
+def normalize_gdelt_arab_spring_row(
+    row: dict[str, Any],
+    *,
+    event_start: dt.date,
+    event_end: dt.date,
+) -> EventTapeRecord | None:
+    if row.get("ActionGeo_CountryCode") not in ARAB_SPRING_COUNTRY_CODES:
+        return None
+    event_date = parse_sql_date(_required_text(row, "SQLDATE"))
+    if not (event_start <= event_date <= event_end):
+        return None
+    cc = _required_text(row, "ActionGeo_CountryCode")
+    admin1_code = _none_if_blank(row.get("ActionGeo_ADM1Code")) or f"{cc}_UNKNOWN"
+    source_event_id = f"gdelt:{_required_text(row, 'GLOBALEVENTID')}"
+    return EventTapeRecord(
+        source_name="gdelt_v1_events",
+        source_event_id=source_event_id,
+        event_date=event_date,
+        source_available_at=parse_datetime_utc(_required_text(row, "DATEADDED")),
+        retrieved_at=parse_datetime_utc(_required_text(row, "_retrieved_at")),
+        country_code=cc,
+        admin1_code=admin1_code,
+        location_name=_none_if_blank(row.get("ActionGeo_FullName")),
+        latitude=_optional_float(row, "ActionGeo_Lat"),
+        longitude=_optional_float(row, "ActionGeo_Long"),
+        event_class="protest",
+        event_code=_required_text(row, "EventCode"),
+        event_base_code=_required_text(row, "EventBaseCode"),
+        event_root_code=_required_text(row, "EventRootCode"),
+        quad_class=_optional_int(row, "QuadClass"),
+        goldstein_scale=_optional_float(row, "GoldsteinScale"),
+        num_mentions=_optional_int(row, "NumMentions"),
+        num_sources=_optional_int(row, "NumSources"),
+        num_articles=_optional_int(row, "NumArticles"),
+        avg_tone=_optional_float(row, "AvgTone"),
+        actor1_name=_none_if_blank(row.get("Actor1Name")),
+        actor1_country_code=_none_if_blank(row.get("Actor1CountryCode")),
+        actor2_name=_none_if_blank(row.get("Actor2Name")),
+        actor2_country_code=_none_if_blank(row.get("Actor2CountryCode")),
+        source_url=_none_if_blank(row.get("SOURCEURL")),
+        raw=row,
+    )
+
+
+def _iter_gdelt_arab_spring_jsonl(
+    raw_dir: Path,
+) -> tuple[int, list[EventTapeRecord], int]:
+    paths = sorted(raw_dir.glob("arab_spring_*.jsonl"))
+    input_count = 0
+    records: list[EventTapeRecord] = []
+    invalid = 0
+    event_start = dt.date(1, 1, 1)
+    event_end = dt.date(9999, 12, 31)
+    mpath = raw_dir / "fetch_manifest.json"
+    if mpath.is_file():
+        try:
+            m = json.loads(mpath.read_text(encoding="utf-8"))
+            if m.get("date_start"):
+                event_start = dt.date.fromisoformat(str(m["date_start"])[:10])
+            if m.get("date_end"):
+                event_end = dt.date.fromisoformat(str(m["date_end"])[:10])
+        except (TypeError, ValueError, OSError, json.JSONDecodeError):
+            pass
+    for path in paths:
+        with open_text_auto(path, "r") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                input_count += 1
+                row = json.loads(line)
+                try:
+                    rec = normalize_gdelt_arab_spring_row(
+                        row, event_start=event_start, event_end=event_end
+                    )
+                except (TypeError, ValueError):
+                    invalid += 1
+                    continue
+                if rec is None:
+                    continue
+                records.append(rec)
+    return input_count, records, invalid
+
+
+def _acled_fetch_expected_rows(acled_raw_dir: Path) -> int | None:
+    """``fetch_metadata.json`` from :mod:`ingest.acled_raw` (CSV); not a single ``fetch_manifest.json``."""
+    path = acled_raw_dir / "fetch_metadata.json"
+    if not path.is_file():
+        return None
+    try:
+        meta = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    v = meta.get("accepted_row_count")
+    if v is None:
+        return None
+    return int(v)
+
+
+def _gdelt_arab_fetch_expected_rows(gdelt_raw_dir: Path) -> int | None:
+    path = gdelt_raw_dir / "fetch_manifest.json"
+    if not path.is_file():
+        return None
+    try:
+        meta = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    v = meta.get("rows_written")
+    if v is None:
+        return None
+    return int(v)
+
+
+def _glob_acled_page_fragments(acled_raw_dir: Path) -> list[Path]:
+    frag = acled_raw_dir / "fragments"
+    if not frag.is_dir():
+        return []
+    return sorted(
+        [*frag.glob("page_*.jsonl"), *frag.glob("page_*.jsonl.gz")],
+    )
+
+
+def _iter_acled_fragment_tape(
+    acled_raw_dir: Path,
+) -> tuple[int, list[EventTapeRecord], int]:
+    from ingest.acled_tape import normalize_acled_csv_row
+
+    paths = _glob_acled_page_fragments(acled_raw_dir)
+    n_in = 0
+    n_invalid = 0
+    out: list[EventTapeRecord] = []
+    for path in paths:
+        with open_text_auto(path, "r") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                n_in += 1
+                row = json.loads(line)
+                try:
+                    r_at_s = str(row.get("_retrieved_at") or "")
+                    retrieved = (
+                        parse_datetime_utc(r_at_s) if r_at_s else None
+                    )
+                except (TypeError, ValueError):
+                    retrieved = None
+                if retrieved is None:
+                    n_invalid += 1
+                    continue
+                try:
+                    rec = normalize_acled_csv_row(
+                        row,
+                        retrieved_at=retrieved,
+                        input_basename=str(row.get("_csv_input_file") or path.name),
+                        csv_row_index=int(row.get("_csv_row") or 0),
+                    )
+                except (TypeError, ValueError, KeyError):
+                    n_invalid += 1
+                    continue
+                out.append(rec)
+    return n_in, out, n_invalid
+
+
+def write_arab_spring_merged_tape(
+    *,
+    gdelt_raw_dir: Path,
+    acled_raw_dir: Path,
+    out_path: Path,
+    cleanup_fragments: bool = False,
+    allow_empty: bool = False,
+) -> dict[str, Any]:
+    gd_in, gd_recs, gd_invalid = _iter_gdelt_arab_spring_jsonl(gdelt_raw_dir)
+    ac_in, ac_recs, ac_invalid = _iter_acled_fragment_tape(acled_raw_dir)
+    if not gd_recs and not ac_recs and not allow_empty:
+        raise ValueError("merge input is empty (no GDELT or ACLED records); use allow_empty to write empty")
+    by_id: dict[str, EventTapeRecord] = {}
+    dedup_dropped = 0
+    for rec in gd_recs:
+        if rec.source_event_id in by_id:
+            continue
+        by_id[rec.source_event_id] = rec
+    n_after_gd = len(by_id)
+    for rec in ac_recs:
+        if rec.source_event_id in by_id:
+            dedup_dropped += 1
+            continue
+        by_id[rec.source_event_id] = rec
+    total = len(by_id)
+    if total != n_after_gd + len(ac_recs) - dedup_dropped:
+        raise ValueError("internal: dedup invariant failed")
+    if total == 0 and not allow_empty:
+        raise ValueError("merged event tape is empty after normalize/dedup")
+    if allow_empty and total == 0:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text("", encoding="utf-8")
+        man = {
+            "gdelt_record_count": len(gd_recs),
+            "acled_record_count": len(ac_recs),
+            "total_record_count": 0,
+            "dedup_dropped": dedup_dropped,
+            "tape_path": str(out_path.resolve()),
+            "completed_at": format_datetime_z(dt.datetime.now(tz=UTC)),
+        }
+        write_json_atomic(out_path.with_name("tape_manifest.json"), man)
+        return {**man, "dedup_dropped": dedup_dropped}
+
+    if cleanup_fragments:
+        ex_g = _gdelt_arab_fetch_expected_rows(gdelt_raw_dir)
+        ex_a = _acled_fetch_expected_rows(acled_raw_dir)
+        if ex_g is None or ex_a is None:
+            raise ValueError(
+                "cleanup_fragments needs GDELT fetch_manifest.json rows_written and "
+                "ACLED fetch_metadata.json accepted_row_count; refusing delete"
+            )
+        if ex_g != gd_in or ex_a != ac_in:
+            raise ValueError(
+                "on-disk line counts do not match fetch metadata; refusing to delete fragments"
+            )
+        if n_after_gd + len(ac_recs) - dedup_dropped != total:
+            raise ValueError("dedup accounting mismatch; refusing to delete fragments")
+
+    output_records = sorted(by_id.values(), key=_event_sort_key)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open_text_auto(out_path, "w") as handle:
+        for record in output_records:
+            handle.write(record.model_dump_json() + "\n")
+    completed = format_datetime_z(dt.datetime.now(tz=UTC))
+    manifest = {
+        "gdelt_record_count": len(gd_recs),
+        "acled_record_count": len(ac_recs),
+        "total_record_count": total,
+        "dedup_dropped": dedup_dropped,
+        "tape_path": str(out_path.resolve()),
+        "completed_at": completed,
+    }
+    write_json_atomic(out_path.with_name("tape_manifest.json"), manifest)
+    if cleanup_fragments:
+        for p in gdelt_raw_dir.glob("arab_spring_*.jsonl"):
+            p.unlink()
+        afrag = acled_raw_dir / "fragments"
+        if afrag.is_dir():
+            for p in afrag.glob("page_*.jsonl*"):
+                p.unlink()
+    return {
+        **manifest,
+        "gdelt_input_lines": gd_in,
+        "acled_input_lines": ac_in,
+        "gdelt_invalid": gd_invalid,
+        "acled_invalid": ac_invalid,
+    }
+
+
 def _iter_raw_fragment_rows(
     raw_dir: Path,
     *,
@@ -326,6 +588,16 @@ def _build_parser() -> argparse.ArgumentParser:
     normalize.add_argument("--allow-empty", action="store_true")
     normalize.add_argument("--allow-partial", action="store_true")
     normalize.add_argument("--compress", action="store_true")
+    merge = subparsers.add_parser("merge-arab-spring")
+    merge.add_argument("--raw-gdelt", required=True)
+    merge.add_argument("--acled-raw", required=True)
+    merge.add_argument("--out", required=True)
+    merge.add_argument(
+        "--cleanup-fragments",
+        action="store_true",
+        help="After successful merge, delete arab_spring_*.jsonl and ACLED page_*.jsonl fragments if fetch metadata row counts match",
+    )
+    merge.add_argument("--allow-empty", action="store_true")
     return parser
 
 
@@ -340,6 +612,19 @@ def main(argv: Sequence[str] | None = None) -> int:
                 allow_empty=args.allow_empty,
                 allow_partial=args.allow_partial,
                 compress=args.compress,
+            )
+        except Exception as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
+    if args.command == "merge-arab-spring":
+        try:
+            write_arab_spring_merged_tape(
+                gdelt_raw_dir=Path(args.raw_gdelt),
+                acled_raw_dir=Path(args.acled_raw),
+                out_path=Path(args.out),
+                cleanup_fragments=args.cleanup_fragments,
+                allow_empty=args.allow_empty,
             )
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)
