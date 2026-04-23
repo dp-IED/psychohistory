@@ -63,7 +63,7 @@ def _resolve_acled_csv_warehouse_path(
     if warehouse_path is not None:
         return Path(warehouse_path).expanduser().resolve()
     if data_root is not None:
-        return default_warehouse_path(resolve_data_root(data_root))
+        return arab_spring_warehouse_path(resolve_data_root(data_root)).resolve()
     return arab_spring_warehouse_path(resolve_data_root()).resolve()
 
 

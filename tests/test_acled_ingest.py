@@ -10,6 +10,7 @@ from ingest.acled_raw import (
     ACLED_FIELDS,
     AcledCredentials,
     _expand_acled_csv_country_allow,
+    _resolve_acled_csv_warehouse_path,
     fetch_france_protests,
     ingest_acled_csv,
 )
@@ -277,6 +278,14 @@ def test_expand_acled_csv_country_allow_libya_alias() -> None:
     assert "Libya" in a and "Libyan Arab Jamahiriya" in a
     b = _expand_acled_csv_country_allow(["Libya"])
     assert "Libyan Arab Jamahiriya" in b
+
+
+def test_resolve_acled_csv_warehouse_path_data_root_uses_arab_spring(tmp_path: Path) -> None:
+    resolved = _resolve_acled_csv_warehouse_path(
+        warehouse_path=None,
+        data_root=tmp_path,
+    )
+    assert resolved == (tmp_path / "arab_spring" / "events.duckdb").resolve()
 
 
 def test_ingest_acled_csv_utf8_bom_header(tmp_path: Path) -> None:

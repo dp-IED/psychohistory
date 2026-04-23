@@ -6,9 +6,11 @@ import argparse
 import datetime as dt
 import gzip
 import json
+import logging
+import re
 import sys
 from pathlib import Path
-from typing import Any, Literal, Sequence
+from typing import Any, Final, Literal, Sequence
 
 from pydantic import BaseModel
 
@@ -16,6 +18,7 @@ from ingest.io_utils import open_text_auto, write_json_atomic
 from ingest.gdelt_raw import (
     ARAB_SPRING_COUNTRY_CODES,
     ARAB_SPRING_GDELT_SOURCE_NAME,
+    _action_geo_in_arab_spring_area,
     format_datetime_z,
     parse_datetime_utc,
     parse_sql_date,
@@ -29,6 +32,16 @@ ARAB_SPRING_GDELT_NORMALIZE: dict[str, Any] = {
     "countries": sorted(ARAB_SPRING_COUNTRY_CODES),
     "description": "GDELT 1.0 daily exports; all CAMEO root codes; ActionGeo in EG/TU/LY/SY",
 }
+
+# Corrupt 2013 daily zips: skip in normalization audit; do not count line failures as ``invalid``.
+KNOWN_BAD_FRAGMENTS: Final[frozenset[str]] = frozenset(
+    {
+        "arab_spring_20130901.jsonl",
+        "arab_spring_20130902.jsonl",
+    }
+)
+
+_log = logging.getLogger(__name__)
 
 
 class EventTapeRecord(BaseModel):
@@ -109,6 +122,40 @@ def _dedupe_tie_key(record: EventTapeRecord) -> tuple[dt.datetime, str, str, str
         str(record.raw.get("_source_file_timestamp") or ""),
         str(record.raw.get("_source_file_url") or ""),
     )
+
+
+_ARAB_SPRING_FN_MONTHLY = re.compile(r"^arab_spring_(\d{6})_monthly\.jsonl$")
+_ARAB_SPRING_FN_DAILY = re.compile(r"^arab_spring_(\d{8})\.jsonl$")
+
+
+def _gdelt_arab_spring_fragment_calendar_month_key(filename: str) -> str:
+    m = _ARAB_SPRING_FN_MONTHLY.match(filename)
+    if m:
+        s = m.group(1)
+        return f"{s[:4]}-{s[4:6]}"
+    m = _ARAB_SPRING_FN_DAILY.match(filename)
+    if m:
+        s = m.group(1)
+        return f"{s[:4]}-{s[4:6]}"
+    return "unknown"
+
+
+def _gdelt_arab_spring_event_date_bounds(
+    raw_dir: Path,
+) -> tuple[dt.date, dt.date]:
+    event_start = dt.date(1, 1, 1)
+    event_end = dt.date(9999, 12, 31)
+    mpath = raw_dir / "fetch_manifest.json"
+    if mpath.is_file():
+        try:
+            m = json.loads(mpath.read_text(encoding="utf-8"))
+            if m.get("date_start"):
+                event_start = dt.date.fromisoformat(str(m["date_start"])[:10])
+            if m.get("date_end"):
+                event_end = dt.date.fromisoformat(str(m["date_end"])[:10])
+        except (TypeError, ValueError, OSError, json.JSONDecodeError):
+            pass
+    return event_start, event_end
 
 
 def _manifest_fragment_paths(raw_dir: Path, *, allow_partial: bool = False) -> list[Path]:
@@ -215,19 +262,33 @@ def normalize_raw_row(
     )
 
 
+def _arab_spring_tape_fips_code(row: dict[str, Any]) -> str | None:
+    """2-letter FIPS for ``country_code``; criteria match :func:`_action_geo_in_arab_spring_area` in raw fetch."""
+    match = {k: str(v) for k, v in row.items() if not str(k).startswith("_")}
+    if not _action_geo_in_arab_spring_area(match):
+        return None
+    cc = (row.get("ActionGeo_CountryCode") or "").strip()
+    if cc in ARAB_SPRING_COUNTRY_CODES:
+        return cc
+    adm1 = (row.get("ActionGeo_ADM1Code") or "").strip()
+    if len(adm1) >= 2 and adm1[:2] in ARAB_SPRING_COUNTRY_CODES:
+        return adm1[:2]
+    return None
+
+
 def normalize_gdelt_arab_spring_row(
     row: dict[str, Any],
     *,
     event_start: dt.date,
     event_end: dt.date,
 ) -> EventTapeRecord | None:
-    if row.get("ActionGeo_CountryCode") not in ARAB_SPRING_COUNTRY_CODES:
+    fips = _arab_spring_tape_fips_code(row)
+    if fips is None:
         return None
     event_date = parse_sql_date(_required_text(row, "SQLDATE"))
     if not (event_start <= event_date <= event_end):
         return None
-    cc = _required_text(row, "ActionGeo_CountryCode")
-    admin1_code = _none_if_blank(row.get("ActionGeo_ADM1Code")) or f"{cc}_UNKNOWN"
+    admin1_code = _none_if_blank(row.get("ActionGeo_ADM1Code")) or f"{fips}_UNKNOWN"
     source_event_id = f"gdelt:{_required_text(row, 'GLOBALEVENTID')}"
     return EventTapeRecord(
         source_name="gdelt_v1_events",
@@ -235,7 +296,7 @@ def normalize_gdelt_arab_spring_row(
         event_date=event_date,
         source_available_at=parse_datetime_utc(_required_text(row, "DATEADDED")),
         retrieved_at=parse_datetime_utc(_required_text(row, "_retrieved_at")),
-        country_code=cc,
+        country_code=fips,
         admin1_code=admin1_code,
         location_name=_none_if_blank(row.get("ActionGeo_FullName")),
         latitude=_optional_float(row, "ActionGeo_Lat"),
@@ -259,6 +320,214 @@ def normalize_gdelt_arab_spring_row(
     )
 
 
+def _gdelt_row_tape_reject_after_geo(
+    row: dict[str, Any], *, event_start: dt.date, event_end: dt.date
+) -> Literal["date"] | None:
+    """
+    If :func:`_arab_spring_tape_fips_code` is non-None, classify ``normalize`` non-match as date
+    (outside fetch window) vs malformed (caller treats as ``invalid``).
+    """
+    try:
+        event_date = parse_sql_date(_required_text(row, "SQLDATE"))
+    except (TypeError, ValueError):
+        return None
+    if not (event_start <= event_date <= event_end):
+        return "date"
+    return None
+
+
+def audit_gdelt_arab_spring_raw_normalization(
+    raw_dir: Path,
+    *,
+    flag_min_raw: int = 10_000,
+    flag_drop_rate_ge: float = 0.005,
+) -> dict[str, Any]:
+    """
+    For each raw ``arab_spring_*.jsonl`` line, compare counts before vs after
+    :func:`normalize_gdelt_arab_spring_row` (same date window as :func:`write_arab_spring_merged_tape`).
+
+    Returns per-fragment, per calendar month (``YYYY-MM``), totals, and ``flags`` where the drop
+    rate is unusually high.
+    """
+    raw_dir = Path(raw_dir)
+    if not raw_dir.is_dir():
+        raise FileNotFoundError(f"missing raw directory: {raw_dir}")
+    event_start, event_end = _gdelt_arab_spring_event_date_bounds(raw_dir)
+    paths = sorted(raw_dir.glob("arab_spring_*.jsonl"))
+    totals: dict[str, int] = {
+        "raw_lines": 0,
+        "ok": 0,
+        "invalid": 0,
+        "filtered_geo": 0,
+        "filtered_date": 0,
+        "skipped_known_bad": 0,
+    }
+    by_month: dict[str, dict[str, int]] = {}
+    by_file: list[dict[str, Any]] = []
+
+    for path in paths:
+        month_key = _gdelt_arab_spring_fragment_calendar_month_key(path.name)
+        if path.name in KNOWN_BAD_FRAGMENTS:
+            n_bad = 0
+            with open_text_auto(path, "r") as handle:
+                for line in handle:
+                    if not line.strip():
+                        continue
+                    n_bad += 1
+            _log.warning(
+                "skipping known-bad GDELT Arab Spring fragment %s (%d lines)",
+                path.name,
+                n_bad,
+            )
+            fstats = {
+                "raw_lines": n_bad,
+                "ok": 0,
+                "invalid": 0,
+                "filtered_geo": 0,
+                "filtered_date": 0,
+                "skipped_known_bad": n_bad,
+            }
+            for k, v in fstats.items():
+                totals[k] = totals.get(k, 0) + v
+            acc = by_month.setdefault(
+                month_key,
+                {
+                    "raw_lines": 0,
+                    "ok": 0,
+                    "invalid": 0,
+                    "filtered_geo": 0,
+                    "filtered_date": 0,
+                    "skipped_known_bad": 0,
+                },
+            )
+            for k, v in fstats.items():
+                acc[k] += v
+            by_file.append(
+                {
+                    "path": str(path.name),
+                    "calendar_month": month_key,
+                    **fstats,
+                    "dropped": 0,
+                    "drop_rate": 0.0,
+                }
+            )
+            continue
+        fstats = {
+            "raw_lines": 0,
+            "ok": 0,
+            "invalid": 0,
+            "filtered_geo": 0,
+            "filtered_date": 0,
+            "skipped_known_bad": 0,
+        }
+        with open_text_auto(path, "r") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                fstats["raw_lines"] += 1
+                row = json.loads(line)
+                try:
+                    rec = normalize_gdelt_arab_spring_row(
+                        row, event_start=event_start, event_end=event_end
+                    )
+                except (TypeError, ValueError):
+                    fstats["invalid"] += 1
+                    continue
+                if rec is not None:
+                    fstats["ok"] += 1
+                    continue
+                if _arab_spring_tape_fips_code(row) is None:
+                    fstats["filtered_geo"] += 1
+                elif (
+                    _gdelt_row_tape_reject_after_geo(
+                        row, event_start=event_start, event_end=event_end
+                    )
+                    == "date"
+                ):
+                    fstats["filtered_date"] += 1
+                else:
+                    fstats["invalid"] += 1
+
+        for k, v in fstats.items():
+            totals[k] = totals.get(k, 0) + v
+        acc = by_month.setdefault(
+            month_key,
+            {
+                "raw_lines": 0,
+                "ok": 0,
+                "invalid": 0,
+                "filtered_geo": 0,
+                "filtered_date": 0,
+                "skipped_known_bad": 0,
+            },
+        )
+        for k, v in fstats.items():
+            acc[k] += v
+        sk = int(fstats.get("skipped_known_bad", 0))
+        dropped = fstats["raw_lines"] - fstats["ok"] - sk
+        eff = fstats["raw_lines"] - sk
+        rate = (dropped / eff) if eff else 0.0
+        by_file.append(
+            {
+                "path": str(path.name),
+                "calendar_month": month_key,
+                **fstats,
+                "dropped": dropped,
+                "drop_rate": rate,
+            }
+        )
+
+    def _m_stats(m: str) -> dict[str, Any]:
+        st: dict[str, int] = by_month.get(m) or {
+            "raw_lines": 0,
+            "ok": 0,
+            "invalid": 0,
+            "filtered_geo": 0,
+            "filtered_date": 0,
+            "skipped_known_bad": 0,
+        }
+        raw = st["raw_lines"]
+        sk = int(st.get("skipped_known_bad", 0))
+        dropped = raw - st["ok"] - sk
+        eff = raw - sk
+        rate = (dropped / eff) if eff else 0.0
+        return {**st, "dropped": dropped, "drop_rate": rate}
+
+    by_month_out = {m: _m_stats(m) for m in sorted(by_month)}
+
+    total_raw = totals["raw_lines"]
+    total_sk = int(totals.get("skipped_known_bad", 0))
+    total_dropped = total_raw - totals["ok"] - total_sk
+    eff_total = total_raw - total_sk
+    total_rate = (total_dropped / eff_total) if eff_total else 0.0
+    flags: list[dict[str, Any]] = []
+    for m, st in by_month_out.items():
+        r, dr = st["raw_lines"], st["drop_rate"]
+        if r >= flag_min_raw and dr >= flag_drop_rate_ge:
+            flags.append(
+                {
+                    "calendar_month": m,
+                    "raw_lines": r,
+                    "dropped": st["dropped"],
+                    "drop_rate": dr,
+                }
+            )
+
+    return {
+        "raw_dir": str(raw_dir.resolve()),
+        "event_start": event_start.isoformat(),
+        "event_end": event_end.isoformat(),
+        "totals": {**totals, "dropped": total_dropped, "drop_rate": total_rate},
+        "by_month": by_month_out,
+        "by_file": by_file,
+        "flags": flags,
+        "flag_criteria": {
+            "min_raw_lines": flag_min_raw,
+            "drop_rate_ge": flag_drop_rate_ge,
+        },
+    }
+
+
 def _iter_gdelt_arab_spring_jsonl(
     raw_dir: Path,
 ) -> tuple[int, list[EventTapeRecord], int]:
@@ -266,18 +535,7 @@ def _iter_gdelt_arab_spring_jsonl(
     input_count = 0
     records: list[EventTapeRecord] = []
     invalid = 0
-    event_start = dt.date(1, 1, 1)
-    event_end = dt.date(9999, 12, 31)
-    mpath = raw_dir / "fetch_manifest.json"
-    if mpath.is_file():
-        try:
-            m = json.loads(mpath.read_text(encoding="utf-8"))
-            if m.get("date_start"):
-                event_start = dt.date.fromisoformat(str(m["date_start"])[:10])
-            if m.get("date_end"):
-                event_end = dt.date.fromisoformat(str(m["date_end"])[:10])
-        except (TypeError, ValueError, OSError, json.JSONDecodeError):
-            pass
+    event_start, event_end = _gdelt_arab_spring_event_date_bounds(raw_dir)
     for path in paths:
         with open_text_auto(path, "r") as handle:
             for line in handle:
@@ -598,6 +856,28 @@ def _build_parser() -> argparse.ArgumentParser:
         help="After successful merge, delete arab_spring_*.jsonl and ACLED page_*.jsonl fragments if fetch metadata row counts match",
     )
     merge.add_argument("--allow-empty", action="store_true")
+    audit = subparsers.add_parser(
+        "audit-gdelt-arab-spring-raw",
+        help="Count raw jsonl lines vs rows accepted by normalize_gdelt_arab_spring_row (per file and per calendar month)",
+    )
+    audit.add_argument(
+        "--raw",
+        type=Path,
+        default=Path("data/gdelt/raw/arab_spring"),
+        help="Directory containing fetch_manifest.json and arab_spring_*.jsonl",
+    )
+    audit.add_argument(
+        "--flag-min-raw",
+        type=int,
+        default=10_000,
+        help="Only emit month flags when raw line count in that month is at least this (default: 10000)",
+    )
+    audit.add_argument(
+        "--flag-drop-rate-ge",
+        type=float,
+        default=0.005,
+        help="Only emit month flags when (raw-ok)/raw >= this (default: 0.005)",
+    )
     return parser
 
 
@@ -629,6 +909,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         except Exception as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
+        return 0
+    if args.command == "audit-gdelt-arab-spring-raw":
+        try:
+            out = audit_gdelt_arab_spring_raw_normalization(
+                Path(args.raw),
+                flag_min_raw=args.flag_min_raw,
+                flag_drop_rate_ge=args.flag_drop_rate_ge,
+            )
+        except Exception as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps(out, indent=2, sort_keys=True))
         return 0
     parser.error(f"unknown command: {args.command}")
     return 2
