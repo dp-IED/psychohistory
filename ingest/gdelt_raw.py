@@ -459,6 +459,9 @@ def _process_gdelt10_arab_spring_day(
                 handle.write(_json_dump_line(row))
         temp_path.replace(absolute_path)
         fragment_path_str = fragment_name
+    elif absolute_path.exists():
+        # On force re-fetch, drop stale fragments when the fresh filtered result is empty.
+        absolute_path.unlink()
     return {
         "url": url,
         "day": day.isoformat(),
@@ -583,6 +586,9 @@ def _process_gdelt10_arab_spring_monthly(
                 handle.write(_json_dump_line(row))
         temp_path.replace(absolute_path)
         fragment_path_str = fragment_name
+    elif absolute_path.exists():
+        # On force re-fetch, drop stale fragments when the fresh filtered result is empty.
+        absolute_path.unlink()
     return {
         "url": url,
         "yyyymm": yyyymm,

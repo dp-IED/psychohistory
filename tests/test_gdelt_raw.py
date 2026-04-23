@@ -426,6 +426,74 @@ def test_fetch_arab_spring_monthly_respects_existing_fragment(
     assert r.get("days_completed") == 0
 
 
+def test_fetch_arab_spring_force_daily_removes_stale_fragment_when_refetch_keeps_zero(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    out_dir = tmp_path / "raw"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stale = out_dir / "arab_spring_20130401.jsonl"
+    stale.write_text(json.dumps({"stale": "row"}) + "\n", encoding="utf-8")
+    us_row = _raw_v1_row(
+        GLOBALEVENTID="9",
+        SQLDATE="20130401",
+        ActionGeo_CountryCode="FR",
+        ActionGeo_ADM1Code="USCA",
+    )
+    z = _zip_for_rows([us_row], v1=True)
+
+    def fake_get(
+        u: str, *, max_retries: int, retry_backoff_seconds: float
+    ) -> tuple[int, bytes | None]:
+        assert u == "http://data.gdeltproject.org/events/20130401.export.CSV.zip"
+        return 200, z
+
+    monkeypatch.setattr("ingest.gdelt_raw._http_get_bytes", fake_get)
+    r = fetch_arab_spring(
+        event_start=dt.date(2013, 4, 1),
+        event_end=dt.date(2013, 4, 1),
+        out_dir=out_dir,
+        workers=1,
+        force=True,
+        allow_partial=True,
+    )
+    assert not stale.exists()
+    assert r.get("rows_written") == 0
+
+
+def test_fetch_arab_spring_force_monthly_removes_stale_fragment_when_refetch_keeps_zero(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    out_dir = tmp_path / "raw"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stale = out_dir / "arab_spring_201101_monthly.jsonl"
+    stale.write_text(json.dumps({"stale": "row"}) + "\n", encoding="utf-8")
+    us_row = _raw_v1_row(
+        GLOBALEVENTID="9",
+        SQLDATE="20110101",
+        ActionGeo_CountryCode="FR",
+        ActionGeo_ADM1Code="USCA",
+    )
+    z = _zip_for_rows([us_row], v1=True, v1_pre_daily_monthly=True)
+
+    def fake_get(
+        u: str, *, max_retries: int, retry_backoff_seconds: float
+    ) -> tuple[int, bytes | None]:
+        assert u == "http://data.gdeltproject.org/events/201101.zip"
+        return 200, z
+
+    monkeypatch.setattr("ingest.gdelt_raw._http_get_bytes", fake_get)
+    r = fetch_arab_spring(
+        event_start=dt.date(2011, 1, 1),
+        event_end=dt.date(2011, 1, 31),
+        out_dir=out_dir,
+        workers=1,
+        force=True,
+        allow_partial=True,
+    )
+    assert not stale.exists()
+    assert r.get("rows_written") == 0
+
+
 def _v1_monthly_zip_bytes(yyyymm: str, rows: list[dict[str, str]]) -> bytes:
     """Mirror GDELT pre-daily monthly zips: one ``{yyyymm}.csv`` member, 57 columns, no SOURCEURL."""
     cols: tuple[str, ...] = GDELT_V1_EVENT_COLUMNS_NO_SOURCEURL
