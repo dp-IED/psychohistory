@@ -25,7 +25,7 @@ def main() -> None:
     p.add_argument(
         "--warehouse-path",
         type=Path,
-        default=Path("data/arab_spring/events.duckdb"),
+        default=Path("shared_data/arab_spring/events.duckdb"),
     )
     p.add_argument(
         "--recipe",
@@ -69,12 +69,12 @@ def main() -> None:
         args.window_days = 1 if args.recipe == "v0" else 1461
 
     default_out_mmap = {
-        "v0": Path("data/arab_spring/node_warehouse_v0.mmap"),
-        "v1": Path("data/arab_spring/node_warehouse_v1.mmap"),
+        "v0": Path("shared_data/arab_spring/node_warehouse_v0.mmap"),
+        "v1": Path("shared_data/arab_spring/node_warehouse_v1.mmap"),
     }
     default_out_manifest = {
-        "v0": Path("data/arab_spring/node_warehouse_v0_manifest.json"),
-        "v1": Path("data/arab_spring/node_warehouse_v1_manifest.json"),
+        "v0": Path("shared_data/arab_spring/node_warehouse_v0_manifest.json"),
+        "v1": Path("shared_data/arab_spring/node_warehouse_v1_manifest.json"),
     }
     builder = {
         "v0": build_arab_spring_node_warehouse_v0,

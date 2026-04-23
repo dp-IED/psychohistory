@@ -65,8 +65,8 @@ NODE_WAREHOUSE_RECIPE_ID_V1 = "gdelt_cameo_hist_actor1_admin1_monthly_v1"
 # Locked: shared mmap / query-encoder ANN version for France and Arab Spring v0 builds.
 NODE_WAREHOUSE_MMAP_EMBEDDING_VERSION_V0: Final[str] = "gdelt_cameo_hist_actor1_admin1_v0"
 NODE_WAREHOUSE_MMAP_EMBEDDING_VERSION_V1: Final[str] = "ar_v1"
-DEFAULT_ARAB_SPRING_NODE_MMAP: Final[Path] = Path("data/arab_spring/node_warehouse_v0.mmap")
-DEFAULT_ARAB_SPRING_NODE_MANIFEST: Final[Path] = Path("data/arab_spring/node_warehouse_v0.mmap.json")
+DEFAULT_ARAB_SPRING_NODE_MMAP: Final[Path] = Path("shared_data/arab_spring/node_warehouse_v0.mmap")
+DEFAULT_ARAB_SPRING_NODE_MANIFEST: Final[Path] = Path("shared_data/arab_spring/node_warehouse_v0.mmap.json")
 ARAB_SPRING_COUNTRY_RANGE_START: Final[date] = date(2010, 1, 1)
 ARAB_SPRING_COUNTRY_RANGE_END: Final[date] = date(2013, 12, 31)
 # Node matrix over EG, TU, LY, and SY when present in the warehouse (FIPS 2-letter ``country_code``).
