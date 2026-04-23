@@ -10,6 +10,7 @@ __pycache__/
 *.egg-info/
 
 proposal.json
+ACLED Data_*.csv
 
 data/polymarket_resolved/**
 data/gdelt
@@ -20,6 +21,12 @@ data/mixed
 data/mixed/**
 data/warehouse/*.duckdb
 data/warehouse/*.duckdb-*
+data/arab_spring/**
+data/arab_spring/*.duckdb
+data/arab_spring/*.duckdb-*
+snapshots/**
+shared_data/arab_spring/*.duckdb
+shared_data/arab_spring/*.duckdb-*
 logs
 logs/**
 !data/polymarket_resolved/.gitkeep

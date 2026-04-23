@@ -22,6 +22,7 @@ LABEL_GRACE_DAYS = 14
 WINDOW_DAYS = 7
 EXCLUDED_REGIONAL_ADMIN1_CODES = frozenset({"FR", "FR00", "FR_UNKNOWN"})
 SOURCE_LABELS = {
+    "gdelt_v1_events": "GDELT 1.0 Events",
     "gdelt_v2_events": "GDELT 2.0 Events",
     "acled": "ACLED",
 }

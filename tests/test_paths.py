@@ -4,7 +4,13 @@ import argparse
 from pathlib import Path
 
 from ingest.cli_args import DATA_ROOT_HELP, WAREHOUSE_PATH_HELP, add_warehouse_source_args
-from ingest.paths import DEFAULT_DATA_ROOT, resolve_data_root, runs_root, warehouse_path
+from ingest.paths import (
+    DEFAULT_DATA_ROOT,
+    arab_spring_warehouse_path,
+    resolve_data_root,
+    runs_root,
+    warehouse_path,
+)
 
 
 def test_resolve_data_root_prefers_cli_value(monkeypatch, tmp_path: Path) -> None:
@@ -27,6 +33,7 @@ def test_resolve_data_root_default(monkeypatch) -> None:
 
 def test_data_root_child_paths(tmp_path: Path) -> None:
     assert warehouse_path(tmp_path) == tmp_path / "warehouse" / "events.duckdb"
+    assert arab_spring_warehouse_path(tmp_path) == tmp_path / "arab_spring" / "events.duckdb"
     assert runs_root(tmp_path) == tmp_path / "runs"
 
 

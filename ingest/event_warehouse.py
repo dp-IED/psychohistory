@@ -141,6 +141,27 @@ def _record_row(record: EventTapeRecord, inserted_at: dt.datetime) -> tuple[Any,
     )
 
 
+def delete_by_source_name(
+    *,
+    db_path: Path,
+    source_name: str,
+) -> dict[str, Any]:
+    """Remove all events with the given ``source_name`` (e.g. mistaken ``acled_v3`` in France warehouse)."""
+    db_path = Path(db_path)
+    if not db_path.is_file():
+        raise FileNotFoundError(f"missing event warehouse: {db_path}; init or import first")
+    with _connect(db_path) as con:
+        before = int(
+            con.execute("SELECT count(*) FROM events WHERE source_name = ?", [source_name]).fetchone()[0]
+        )
+        con.execute("DELETE FROM events WHERE source_name = ?", [source_name])
+    return {
+        "deleted": before,
+        "source_name": source_name,
+        "warehouse_path": str(db_path.resolve()),
+    }
+
+
 def upsert_records(
     *,
     db_path: Path,
@@ -352,6 +373,14 @@ def _build_parser() -> argparse.ArgumentParser:
     audit.add_argument("--data-root", default=None)
     audit.add_argument("--warehouse-path", default=None)
     audit.add_argument("--out", default=None)
+
+    del_src = subparsers.add_parser(
+        "delete-source",
+        help="Delete all rows with a given source_name (e.g. acled_v3) from a warehouse.",
+    )
+    del_src.add_argument("--source-name", required=True)
+    del_src.add_argument("--data-root", default=None)
+    del_src.add_argument("--warehouse-path", default=None)
     return parser
 
 
@@ -386,6 +415,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             if args.out:
                 write_json_atomic(Path(args.out), audit)
             print(json.dumps(audit, indent=2, sort_keys=True))
+            return 0
+        if args.command == "delete-source":
+            out = delete_by_source_name(
+                db_path=db_path,
+                source_name=str(args.source_name).strip(),
+            )
+            print(json.dumps(out, indent=2, sort_keys=True))
             return 0
     except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import datetime as dt
 import json
 import os
@@ -12,14 +13,58 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal, Sequence
+from typing import IO, Any, Literal, Sequence
 
-from ingest.acled_tape import AvailabilityPolicy, normalize_acled_row
+from ingest.acled_tape import (
+    AvailabilityPolicy,
+    normalize_acled_csv_row,
+    normalize_acled_row,
+)
+from ingest.event_tape import EventTapeRecord
 from ingest.event_warehouse import upsert_records
 from ingest.io_utils import open_text_auto
-from ingest.paths import resolve_data_root, warehouse_path as default_warehouse_path
+from ingest.paths import (
+    arab_spring_warehouse_path,
+    resolve_data_root,
+    warehouse_path as default_warehouse_path,
+)
+
+
+def _expand_acled_csv_country_allow(user: Sequence[str]) -> set[str]:
+    """
+    ACLED CSV `country` strings vary by export (e.g. ``Libya`` vs ``Libyan Arab Jamahiriya``).
+    If the user names any spelling in a group, accept all spellings in that group.
+    """
+    groups: tuple[frozenset[str], ...] = (
+        frozenset({"Libya", "Libyan Arab Jamahiriya"}),
+        frozenset({"Syria", "Syrian Arab Republic"}),
+    )
+    out: set[str] = set()
+    for c in user:
+        s = (c or "").strip()
+        if not s:
+            continue
+        out.add(s)
+        for g in groups:
+            if s in g:
+                out |= set(g)
+                break
+    return out
+
+
+def _resolve_acled_csv_warehouse_path(
+    *,
+    warehouse_path: Path | str | None,
+    data_root: Path | str | None,
+) -> Path:
+    if warehouse_path is not None:
+        return Path(warehouse_path).expanduser().resolve()
+    if data_root is not None:
+        return arab_spring_warehouse_path(resolve_data_root(data_root)).resolve()
+    return arab_spring_warehouse_path(resolve_data_root()).resolve()
 
 
 SOURCE_NAME = "acled"
@@ -486,6 +531,200 @@ def fetch_france_protests(
     return metadata
 
 
+CSV_PAGE_LIMIT = 5000
+
+
+# Manifest on-disk: France `fetch_france_protests` appends JSON lines to `fetch_manifest.jsonl`;
+# Arab Spring GDELT (elsewhere) may use a single `fetch_manifest.json` atomic file.
+# This path uses `fetch_manifest.jsonl` to mirror the France API shape for page-sized chunks.
+def ingest_acled_csv(
+    input_src: Path | IO[str],
+    *,
+    out_dir: Path,
+    countries: Sequence[str],
+    normalize_to_warehouse: bool = False,
+    data_root: Path | str | None = None,
+    warehouse_path: Path | str | None = None,
+) -> dict[str, Any]:
+    if not countries:
+        raise ValueError("countries must be non-empty")
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    fragments_sub = Path("fragments")
+    run_id = f"{utc_now():%Y%m%dT%H%M%SZ}-{uuid.uuid4().hex[:12]}"
+    if isinstance(input_src, Path):
+        input_basename = input_src.name
+    else:
+        input_basename = getattr(input_src, "name", "inline")
+    input_file_label = str(Path(input_basename)) if input_basename else "inline"
+    country_allow = _expand_acled_csv_country_allow(countries)
+    if not country_allow:
+        raise ValueError("countries must contain at least one non-blank name")
+
+    resolved_warehouse_path: Path | None = None
+    if normalize_to_warehouse:
+        resolved_warehouse_path = _resolve_acled_csv_warehouse_path(
+            warehouse_path=warehouse_path, data_root=data_root
+        )
+
+    fetch_config: dict[str, Any] = {
+        "ingest": "acled_csv",
+        "fields": list(ACLED_FIELDS),
+        "countries": sorted(country_allow),
+    }
+    manifest_path = out_dir / "fetch_manifest.jsonl"
+    ingested_at = utc_now()
+    retrieved_at_run = format_datetime_z(ingested_at)
+    total_read = 0
+    country_skipped = 0
+    invalid_count = 0
+    written = 0
+    normalized_row_count = 0
+    last_upsert: dict[str, Any] | None = None
+    page = 0
+    current_chunk: list[str] = []
+    current_records: list[EventTapeRecord] = []
+    with _acled_csv_input(input_src) as handle, manifest_path.open("w", encoding="utf-8") as manifest:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames is None:
+            raise ValueError("CSV has no header row or is empty")
+        for row in reader:
+            total_read += 1
+            if not row:
+                continue
+            if _row_country(row) not in country_allow:
+                country_skipped += 1
+                continue
+            try:
+                rec = normalize_acled_csv_row(
+                    row,
+                    retrieved_at=ingested_at,
+                    input_basename=input_basename,
+                    csv_row_index=total_read - 1,
+                )
+            except (TypeError, ValueError):
+                invalid_count += 1
+                continue
+            current_chunk.append(_json_dump_line(rec.raw))
+            current_records.append(rec)
+            written += 1
+            if len(current_chunk) >= CSV_PAGE_LIMIT:
+                page += 1
+                rel = (fragments_sub / f"page_{page:06d}.jsonl").as_posix()
+                _write_text_lines(out_dir / rel, current_chunk)
+                n_norm = 0
+                if normalize_to_warehouse and current_records:
+                    assert resolved_warehouse_path is not None
+                    last_upsert = upsert_records(
+                        db_path=resolved_warehouse_path, records=current_records
+                    )
+                    n_norm = len(current_records)
+                    normalized_row_count += n_norm
+                line = {
+                    "run_id": run_id,
+                    "fetch_config": fetch_config,
+                    "raw_retention": "full",
+                    "normalize_to_warehouse": normalize_to_warehouse,
+                    "status": "ok",
+                    "endpoint_path": "csv",
+                    "source": "csv",
+                    "input_file": input_file_label,
+                    "page": page,
+                    "limit": CSV_PAGE_LIMIT,
+                    "row_count": len(current_chunk),
+                    "normalized_row_count": n_norm,
+                    "fragment_path": rel,
+                    "retrieved_at": retrieved_at_run,
+                    "error": None,
+                }
+                manifest.write(_json_dump_line(line))
+                manifest.flush()
+                current_chunk = []
+                current_records = []
+        if current_chunk:
+            page += 1
+            rel = (fragments_sub / f"page_{page:06d}.jsonl").as_posix()
+            _write_text_lines(out_dir / rel, current_chunk)
+            n_norm_end = 0
+            if normalize_to_warehouse and current_records:
+                assert resolved_warehouse_path is not None
+                last_upsert = upsert_records(
+                    db_path=resolved_warehouse_path, records=current_records
+                )
+                n_norm_end = len(current_records)
+                normalized_row_count += n_norm_end
+            line = {
+                "run_id": run_id,
+                "fetch_config": fetch_config,
+                "raw_retention": "full",
+                "normalize_to_warehouse": normalize_to_warehouse,
+                "status": "ok",
+                "endpoint_path": "csv",
+                "source": "csv",
+                "input_file": input_file_label,
+                "page": page,
+                "limit": CSV_PAGE_LIMIT,
+                "row_count": len(current_chunk),
+                "normalized_row_count": n_norm_end,
+                "fragment_path": rel,
+                "retrieved_at": retrieved_at_run,
+                "error": None,
+            }
+            manifest.write(_json_dump_line(line))
+            manifest.flush()
+    failed_pages = 0
+    completed_pages = page
+    metadata: dict[str, Any] = {
+        "run_id": run_id,
+        "source": "csv",
+        "source_name": SOURCE_NAME,
+        "input_file": input_file_label,
+        "countries": sorted(country_allow),
+        "api_endpoint_path": "csv",
+        "row_count": total_read,
+        "accepted_row_count": written,
+        "normalized_row_count": normalized_row_count,
+        "normalize_to_warehouse": normalize_to_warehouse,
+        "warehouse_path": str(resolved_warehouse_path) if resolved_warehouse_path is not None else None,
+        "warehouse_upsert": last_upsert,
+        "country_skipped_count": country_skipped,
+        "invalid_row_count": invalid_count,
+        "completed_page_count": completed_pages,
+        "failed_page_count": failed_pages,
+        "chunk_size": CSV_PAGE_LIMIT,
+        "retrieved_at": format_datetime_z(utc_now()),
+        "fetch_config": fetch_config,
+    }
+    (out_dir / "fetch_metadata.json").write_text(
+        json.dumps(metadata, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return metadata
+
+
+def _row_country(row: dict[str, str | None]) -> str | None:
+    v = row.get("country")
+    if v is None:
+        return None
+    s = str(v).strip()
+    return s or None
+
+
+def _write_text_lines(absolute: Path, lines: list[str]) -> None:
+    absolute.parent.mkdir(parents=True, exist_ok=True)
+    absolute.write_text("".join(lines), encoding="utf-8")
+
+
+@contextmanager
+def _acled_csv_input(input_src: Path | IO[str]) -> Any:
+    # utf-8-sig strips a leading UTF-8 BOM so the first header matches ``event_id_cnty`` (Excel exports).
+    if isinstance(input_src, Path):
+        with input_src.open(encoding="utf-8-sig", newline="") as handle:
+            yield handle
+    else:
+        yield input_src
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -517,12 +756,45 @@ def _build_parser() -> argparse.ArgumentParser:
         default="event_date_lag",
     )
     fetch.add_argument("--availability-lag-days", type=int, default=7)
+    ing = subparsers.add_parser("ingest-csv")
+    ing.add_argument("--input", type=Path, required=True)
+    ing.add_argument("--out", type=Path, required=True)
+    ing.add_argument("--countries", nargs="+", required=True)
+    ing.add_argument(
+        "--normalize-to-warehouse",
+        action="store_true",
+        help=(
+            "Upsert into DuckDB. Default: data-root/arab_spring/events.duckdb (Arab Spring only; "
+            "e.g. shared_data/arab_spring/events.duckdb), separate from data-root/warehouse/events.duckdb (France+GDELT). "
+            "Override with --warehouse-path if needed."
+        ),
+    )
+    ing.add_argument("--data-root", default=None)
+    ing.add_argument(
+        "--warehouse-path",
+        default=None,
+        help="DuckDB path (e.g. shared_data/warehouse/events.duckdb to merge into the shared warehouse).",
+    )
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    if args.command == "ingest-csv":
+        try:
+            ingest_acled_csv(
+                args.input,
+                out_dir=Path(args.out),
+                countries=args.countries,
+                normalize_to_warehouse=args.normalize_to_warehouse,
+                data_root=Path(args.data_root) if args.data_root is not None else None,
+                warehouse_path=Path(args.warehouse_path) if args.warehouse_path is not None else None,
+            )
+        except Exception as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
     if args.command == "fetch-france-protests":
         try:
             fetch_france_protests(

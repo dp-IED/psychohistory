@@ -6,6 +6,7 @@ from pathlib import Path
 from ingest.event_records import load_event_records
 from ingest.event_tape import EventTapeRecord, load_event_tape
 from ingest.event_warehouse import (
+    delete_by_source_name,
     export_jsonl,
     import_jsonl,
     init_warehouse,
@@ -141,3 +142,18 @@ def test_load_event_records_reads_warehouse(tmp_path: Path) -> None:
     records = load_event_records(warehouse_db_path=db_path)
 
     assert [r.source_event_id for r in records] == ["gdelt:1"]
+
+
+def test_delete_by_source_name(tmp_path: Path) -> None:
+    db_path = tmp_path / "events.duckdb"
+    upsert_records(
+        db_path=db_path,
+        records=[
+            _record("acled", "acled:FRA1"),
+            _record("acled_v3", "acled:EG1"),
+        ],
+    )
+    out = delete_by_source_name(db_path=db_path, source_name="acled_v3")
+    assert out["deleted"] == 1
+    assert source_counts(db_path) == {"acled": 1}
+    assert len(query_records(db_path=db_path)) == 1

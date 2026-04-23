@@ -25,8 +25,9 @@ include = ["evals*", "schemas*", "ingest*", "baselines*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-q -m 'not torch_train and not warehouse'"
+addopts = "-q -m 'not torch_train and not warehouse and not gdelt_live'"
 markers = [
   "torch_train: GNN training tests that require an isolated process (run with: pytest -m torch_train tests/test_gnn.py)",
   "warehouse: DuckDB warehouse integration (opt-in: pytest -m warehouse)",
+  "gdelt_live: downloads real GDELT zips (slow, needs network; pytest -m gdelt_live …)",
 ]

@@ -4,6 +4,7 @@ import datetime as dt
 
 import pytest
 import torch
+from torch_geometric.data import HeteroData
 
 from baselines.gnn import (
     ACTOR_FEATURE_DIM,
@@ -281,8 +282,6 @@ def test_learned_qid_embedding_forward_pass_uses_location_buckets() -> None:
 
 
 def test_build_graph_from_snapshot_returns_heterodata() -> None:
-    from torch_geometric.data import HeteroData
-
     origin = dt.date(2021, 1, 11)
     snap = _minimal_snapshot(origin)
     feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
@@ -668,3 +667,66 @@ def test_predict_gnn_returns_one_row_per_location_per_origin() -> None:
         assert isinstance(pred, GNNForecastRow)
         assert pred.model_name == "gnn_sage"
         assert 0.0 <= pred.predicted_occurrence_probability <= 1.0
+
+
+def _hetero_model_and_actor_graph(hidden_dim: int = 16) -> tuple[HeteroGNNModel, HeteroData]:
+    origin = dt.date(2021, 1, 11)
+    snap = _snapshot_with_actor_track(origin)
+    feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+    data = build_graph_from_snapshot(snapshot=snap, feature_rows=feature_rows)
+    model = HeteroGNNModel(
+        location_feature_dim=len(FEATURE_NAMES),
+        event_feature_dim=4,
+        actor_feature_dim=ACTOR_FEATURE_DIM,
+        hidden_dim=hidden_dim,
+    )
+    return model, data
+
+
+def test_forward_location_embeddings_shape_matches_head_input() -> None:
+    model, data = _hetero_model_and_actor_graph(hidden_dim=32)
+    assert isinstance(data, HeteroData)
+    num_loc = data["location"].x.shape[0]
+    emb = model.forward_location_embeddings(data)
+    logits = model(data)
+
+    assert emb.shape == (num_loc, model.hidden_dim)
+    assert logits.shape == (num_loc,)
+    manual = model.head(emb).squeeze(-1)
+    assert torch.allclose(logits, manual, atol=1e-5, rtol=1e-4)
+
+
+def test_legacy_graph_embedding_mean_pools_locations() -> None:
+    model, data = _hetero_model_and_actor_graph(hidden_dim=24)
+    assert isinstance(data, HeteroData)
+    loc_emb = model.forward_location_embeddings(data)
+    legacy = model.legacy_graph_embedding(data)
+    assert legacy.shape == (model.hidden_dim,)
+    assert torch.allclose(legacy, loc_emb.mean(dim=0))
+
+
+def test_location_embeddings_match_forward_without_actor() -> None:
+    origin = dt.date(2021, 1, 11)
+    snap = _minimal_snapshot(origin, n_events=4)
+    feature_rows = _minimal_feature_rows(origin, ["FR11", "FR22"])
+    data = build_graph_from_snapshot(snapshot=snap, feature_rows=feature_rows)
+    model = HeteroGNNModel(
+        location_feature_dim=len(FEATURE_NAMES),
+        event_feature_dim=4,
+        hidden_dim=16,
+    )
+    emb = model.forward_location_embeddings(data)
+    logits = model(data)
+    assert torch.allclose(logits, model.head(emb).squeeze(-1))
+
+
+def test_frozen_model_embeddings_no_grad_under_no_grad() -> None:
+    model, data = _hetero_model_and_actor_graph()
+    for p in model.parameters():
+        p.requires_grad_(False)
+    model.eval()
+    with torch.no_grad():
+        emb = model.forward_location_embeddings(data)
+        leg = model.legacy_graph_embedding(data)
+    assert not emb.requires_grad
+    assert not leg.requires_grad

@@ -22,5 +22,10 @@ def warehouse_path(data_root: Path) -> Path:
     return data_root / "warehouse" / "events.duckdb"
 
 
+def arab_spring_warehouse_path(data_root: Path) -> Path:
+    """DuckDB for Arab Spring sources (e.g. ACLED CSV as ``acled_v3``), separate from ``warehouse_path`` (France + GDELT)."""
+    return data_root / "arab_spring" / "events.duckdb"
+
+
 def runs_root(data_root: Path) -> Path:
     return data_root / "runs"

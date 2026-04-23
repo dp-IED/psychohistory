@@ -331,7 +331,7 @@ class HeteroGNNModel(nn.Module):
             qid_bucket = qid_bucket.to(device=loc_static.device, dtype=torch.long)
         return self.loc_qid_embedding(qid_bucket)
 
-    def forward(
+    def _location_hidden_before_head(
         self,
         data: HeteroData,
         loc_temporal: torch.Tensor | None = None,
@@ -369,6 +369,36 @@ class HeteroGNNModel(nn.Module):
             edge_index = data["event", "occurs_in", "location"].edge_index
             loc_x = F.relu(self.conv((evt_x, loc_x), edge_index))
 
+        return loc_x
+
+    def forward_location_embeddings(
+        self,
+        data: HeteroData,
+        loc_temporal: torch.Tensor | None = None,
+        loc_time_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        """Per-location hidden states before ``self.head`` (shape ``[num_locations, hidden_dim]``)."""
+
+        return self._location_hidden_before_head(data, loc_temporal, loc_time_mask)
+
+    def legacy_graph_embedding(
+        self,
+        data: HeteroData,
+        loc_temporal: torch.Tensor | None = None,
+        loc_time_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        """Mean-pool location hiddens to a single graph vector (Path B legacy)."""
+
+        loc_x = self.forward_location_embeddings(data, loc_temporal, loc_time_mask)
+        return loc_x.mean(dim=0)
+
+    def forward(
+        self,
+        data: HeteroData,
+        loc_temporal: torch.Tensor | None = None,
+        loc_time_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        loc_x = self._location_hidden_before_head(data, loc_temporal, loc_time_mask)
         logits = self.head(loc_x).squeeze(-1)
         return logits
 
