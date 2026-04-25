@@ -14,10 +14,6 @@ import numpy as np
 import torch
 from torch.optim import Adam
 
-from baselines.france_plumbing_probes import (
-    build_france_plumbing_probe_corpus,
-    validate_france_plumbing_gate_annotations,
-)
 from baselines.graph_builder_ann import brute_topk
 from baselines.graph_builder_positive_pairs import load_positive_pairs
 from baselines.graph_builder_query_encoder import (
@@ -27,6 +23,7 @@ from baselines.graph_builder_query_encoder import (
 )
 from baselines.graph_builder_rerank import ann_rerank_global_indices, build_retrieved_graph_batch_from_ann
 from baselines.node_warehouse_mmap import read_float32_matrix
+from baselines.stage1_probe_corpus import Stage1ProbeCorpus
 from schemas.graph_builder_probe import AssumptionEmphasis, ProbeRecord
 from schemas.graph_builder_warehouse import NodeWarehouseManifest
 
@@ -130,6 +127,7 @@ def run_stage1_training(
     batch_size: int = 8,
     temperature: float = 0.07,
     seed: int = 42,
+    corpus: Stage1ProbeCorpus | None = None,
 ) -> None:
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -151,9 +149,10 @@ def run_stage1_training(
     mmap_np = np.asarray(mmap, dtype=np.float32)
     slice_ctx = full_ctx = warehouse_context_from_manifest(manifest, mmap_np)
 
-    corpus = build_france_plumbing_probe_corpus()
-    validate_france_plumbing_gate_annotations(corpus)
+    bundle = corpus if corpus is not None else Stage1ProbeCorpus.france_default()
+    bundle.validate(manifest)
 
+    probes = bundle.probes
     encoder = QueryEncoder().to(device)
     encoder.train()
     opt = Adam(encoder.parameters(), lr=_DEFAULT_LR)
@@ -163,10 +162,10 @@ def run_stage1_training(
 
     for epoch in range(epochs):
         epoch_losses: list[float] = []
-        order = np.random.permutation(len(corpus))
-        for start in range(0, len(corpus), batch_size):
+        order = np.random.permutation(len(probes))
+        for start in range(0, len(probes), batch_size):
             batch_idx = order[start : start + batch_size]
-            batch: list[ProbeRecord] = [corpus[i] for i in batch_idx]
+            batch: list[ProbeRecord] = [probes[i] for i in batch_idx]
 
             q_list: list[torch.Tensor] = []
             for probe in batch:

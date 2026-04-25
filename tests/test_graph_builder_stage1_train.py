@@ -19,6 +19,7 @@ from baselines.graph_builder_positive_pairs import (
 )
 from baselines.graph_builder_query_encoder import ENTITY_HINT_KEYS
 from baselines.graph_builder_stage1_train import run_stage1_training
+from baselines.stage1_probe_corpus import Stage1ProbeCorpus
 from baselines.node_warehouse_mmap import write_float32_matrix, write_manifest
 from schemas.graph_builder_probe import (
     ActorStateQuery,
@@ -119,21 +120,29 @@ def test_version_mismatch_before_training_raises(tmp_path: Path) -> None:
     assert list(out.glob("query_encoder_epoch_*.pt")) == []
 
 
+def _all_gates_probes(hints: list[str]) -> list[ProbeRecord]:
+    """Return one probe per AssumptionEmphasis gate (5 total) for smoke tests."""
+    gates = list(AssumptionEmphasis)
+    hint_cycle = (hints * 5)[:5]
+    return [_probe(f"smoke_{i}", hint_cycle[i], gates[i]) for i in range(5)]
+
+
 def test_smoke_one_step_saves_checkpoint_and_state(tmp_path: Path) -> None:
     manifest_path, mmap_path, meta_path = _write_smoke_warehouse(tmp_path)
-    probes = [_probe("p0", "hint_a", AssumptionEmphasis.PERSISTENCE), _probe("p1", "hint_b", AssumptionEmphasis.PROPAGATION)]
+    probes = _all_gates_probes(["hint_a", "hint_b", "hint_c", "hint_d"])
+    corpus = Stage1ProbeCorpus(kind="france", probes=probes)
     out = tmp_path / "train_out"
 
-    with patch("baselines.graph_builder_stage1_train.build_france_plumbing_probe_corpus", return_value=probes):
-        run_stage1_training(
-            manifest_path,
-            mmap_path,
-            meta_path,
-            out,
-            epochs=1,
-            batch_size=2,
-            seed=0,
-        )
+    run_stage1_training(
+        manifest_path,
+        mmap_path,
+        meta_path,
+        out,
+        epochs=1,
+        batch_size=2,
+        seed=0,
+        corpus=corpus,
+    )
 
     ckpt = out / "query_encoder_epoch_000.pt"
     assert ckpt.is_file()
@@ -150,19 +159,20 @@ def test_gate_coverage_logs_all_five_gates(caplog: pytest.LogCaptureFixture, tmp
     gates = list(AssumptionEmphasis)
     assert len(gates) == 5
     probes = [_probe(f"p{i}", f"h{i}", gates[i]) for i in range(5)]
+    corpus = Stage1ProbeCorpus(kind="france", probes=probes)
     out = tmp_path / "train_out"
 
-    with patch("baselines.graph_builder_stage1_train.build_france_plumbing_probe_corpus", return_value=probes):
-        with caplog.at_level(logging.INFO, logger="baselines.graph_builder_stage1_train"):
-            run_stage1_training(
-                manifest_path,
-                mmap_path,
-                meta_path,
-                out,
-                epochs=1,
-                batch_size=5,
-                seed=0,
-            )
+    with caplog.at_level(logging.INFO, logger="baselines.graph_builder_stage1_train"):
+        run_stage1_training(
+            manifest_path,
+            mmap_path,
+            meta_path,
+            out,
+            epochs=1,
+            batch_size=5,
+            seed=0,
+            corpus=corpus,
+        )
 
     text = caplog.text
     for g in gates:
@@ -230,21 +240,22 @@ def test_no_positive_in_retrieved_skips_without_crash(caplog: pytest.LogCaptureF
     write_manifest(manifest_path, manifest)
     meta_path = _write_pairs_manual_only_45(tmp_path, manifest, mmap_path)
 
-    probes = [_probe("only", "h0", AssumptionEmphasis.PERSISTENCE)]
+    probes = _all_gates_probes(["h0", "h1", "h2", "h3"])
+    corpus = Stage1ProbeCorpus(kind="france", probes=probes)
     out = tmp_path / "train_out"
 
-    with patch("baselines.graph_builder_stage1_train.build_france_plumbing_probe_corpus", return_value=probes):
-        with patch("baselines.graph_builder_stage1_train.brute_topk", side_effect=_fake_brute_topk_first_four):
-            with caplog.at_level(logging.WARNING, logger="baselines.graph_builder_stage1_train"):
-                run_stage1_training(
-                    manifest_path,
-                    mmap_path,
-                    meta_path,
-                    out,
-                    epochs=1,
-                    batch_size=1,
-                    seed=0,
-                )
+    with patch("baselines.graph_builder_stage1_train.brute_topk", side_effect=_fake_brute_topk_first_four):
+        with caplog.at_level(logging.WARNING, logger="baselines.graph_builder_stage1_train"):
+            run_stage1_training(
+                manifest_path,
+                mmap_path,
+                meta_path,
+                out,
+                epochs=1,
+                batch_size=1,
+                seed=0,
+                corpus=corpus,
+            )
 
     assert "skipping probe" in caplog.text.lower() or "no intra-retrieved" in caplog.text.lower()
     assert (out / "query_encoder_epoch_000.pt").is_file()
