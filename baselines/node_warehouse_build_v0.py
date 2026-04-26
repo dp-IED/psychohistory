@@ -49,7 +49,7 @@ from pathlib import Path
 from typing import Any, Final
 
 import numpy as np
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from ingest.event_tape import EventTapeRecord
 from ingest.event_warehouse import query_records
@@ -231,7 +231,7 @@ def _actor1_hint_keys_raw(evs: Sequence[EventTapeRecord]) -> list[str]:
     seen: set[str] = set()
     out: list[str] = []
     for ev in evs:
-        label = (ev.actor1_name or "").strip()
+        label = (ev.actor1_name or "").strip().lower()
         if not label or label in seen:
             continue
         seen.add(label)
@@ -398,6 +398,7 @@ def build_arab_spring_node_warehouse_v0(
             db_path=wp,
             event_start=event_start,
             event_end=event_end,
+            order_by=False,
         )
         if pbar is not None:
             pbar.set_postfix_str(
@@ -590,13 +591,20 @@ def build_arab_spring_node_warehouse_v1(
     )
     t_query = time.perf_counter()
     try:
-        if pbar is not None:
-            pbar.set_postfix_str("DuckDB query …", refresh=False)
+        if show_progress:
+            print("[v1] Querying DuckDB for Arab Spring events (EG/TU/LY/SY, 2010-2013)…", flush=True)
         recs = query_records(
             db_path=wp,
+            country_codes=ARAB_SPRING_NODE_COUNTRY_CODES,
             event_start=event_start,
             event_end=event_end,
+            order_by=False,
         )
+        if show_progress:
+            print(
+                f"[v1] Loaded {len(recs):,} Arab Spring events in {time.perf_counter() - t_query:.1f}s; building matrix…",
+                flush=True,
+            )
         if pbar is not None:
             pbar.set_postfix_str(
                 f"loaded {len(recs):,} events in {time.perf_counter() - t_query:.1f}s"
@@ -613,6 +621,11 @@ def build_arab_spring_node_warehouse_v1(
             data_start=data_start,
             data_end=data_end,
         )
+        if show_progress:
+            print(
+                f"[v1] Built {matrix.shape[0]:,} × {matrix.shape[1]} matrix in {time.perf_counter() - t_build:.1f}s; writing to disk…",
+                flush=True,
+            )
         if pbar is not None:
             pbar.set_postfix_str(
                 f"matrix {matrix.shape[0]:,}×{matrix.shape[1]} in {time.perf_counter() - t_build:.1f}s"
@@ -636,6 +649,11 @@ def build_arab_spring_node_warehouse_v1(
             embedding_dim=NODE_WAREHOUSE_EMBEDDING_DIM_V1,
         )
         write_manifest(out_j, manifest)
+        if show_progress:
+            print(
+                f"[v1] Complete: {int(matrix.shape[0]):,} nodes, {int(matrix.shape[1])} dims, {time.perf_counter() - t_query:.1f}s total",
+                flush=True,
+            )
         if pbar is not None:
             pbar.set_postfix_str(
                 f"wrote in {time.perf_counter() - t_write:.1f}s total {time.perf_counter() - t_query:.1f}s"

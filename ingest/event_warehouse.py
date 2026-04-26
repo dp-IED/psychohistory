@@ -223,8 +223,10 @@ def query_records(
     event_start: dt.date | None = None,
     event_end: dt.date | None = None,
     available_before: dt.datetime | None = None,
+    country_codes: set[str] | None = None,
     country_code: str | None = None,
     event_class: str | None = None,
+    order_by: bool = True,
 ) -> list[EventTapeRecord]:
     if not Path(db_path).exists():
         raise FileNotFoundError(
@@ -243,7 +245,11 @@ def query_records(
     if available_before is not None:
         where.append("source_available_at < ?")
         params.append(_ensure_aware(available_before))
-    if country_code is not None:
+    if country_codes:
+        placeholders = ",".join(["?"] * len(country_codes))
+        where.append(f"country_code IN ({placeholders})")
+        params.extend(sorted(country_codes))
+    elif country_code is not None:
         where.append("country_code = ?")
         params.append(country_code)
     if event_class is not None:
@@ -252,9 +258,10 @@ def query_records(
 
     sql = (
         f"SELECT {', '.join(EVENT_COLUMNS)} FROM events "
-        f"WHERE {' AND '.join(where)} "
-        "ORDER BY source_available_at, event_date, source_name, source_event_id"
+        f"WHERE {' AND '.join(where)}"
     )
+    if order_by:
+        sql += " ORDER BY source_available_at, event_date, source_name, source_event_id"
     records: list[EventTapeRecord] = []
     with _connect(db_path) as con:
         rows = con.execute(sql, params).fetchall()
