@@ -337,7 +337,8 @@ if __name__ == "__main__":
     manifest = NodeWarehouseManifest.model_validate(manifest_dict)
     
     # Build positive pairs (always uses admin1_lead_lag_v0 recipe)
-    pairs, metadata = build_positive_pairs(
+    # Function writes files and returns output directory path
+    output_path = build_positive_pairs(
         manifest=manifest,
         mmap_path=Path(args.mmap),
         output_dir=Path(args.output_dir),
@@ -345,5 +346,5 @@ if __name__ == "__main__":
     )
     
     if args.show_progress:
-        print(f"[✓] Positive pairs built: {len(pairs):,} pairs", file=sys.stderr)
-        print(f"    Output dir: {args.output_dir}", file=sys.stderr)
+        print(f"[✓] Positive pairs built", file=sys.stderr)
+        print(f"    Output dir: {output_path}", file=sys.stderr)
