@@ -326,7 +326,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Build positive pairs for SSL training")
     parser.add_argument("--manifest", required=True, help="Path to warehouse manifest JSON")
     parser.add_argument("--mmap", required=True, help="Path to warehouse mmap file")
-    parser.add_argument("--recipe", default="admin1_lead_lag_v0", help="Pair recipe")
     parser.add_argument("--output-dir", required=True, help="Output directory for pairs")
     parser.add_argument("--show-progress", action="store_true", help="Show progress bars")
     
@@ -337,27 +336,14 @@ if __name__ == "__main__":
         manifest_dict = json.load(f)
     manifest = NodeWarehouseManifest.model_validate(manifest_dict)
     
-    # Build positive pairs
+    # Build positive pairs (always uses admin1_lead_lag_v0 recipe)
     pairs, metadata = build_positive_pairs(
         manifest=manifest,
-        mmap_path=args.mmap,
-        recipe=args.recipe,
+        mmap_path=Path(args.mmap),
+        output_dir=Path(args.output_dir),
         show_progress=args.show_progress,
     )
     
-    # Create output directory
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Write pairs and metadata
-    pairs_path = output_dir / PAIRS_ARRAY_BASENAME
-    meta_path = output_dir / META_JSON_BASENAME
-    
-    np.save(pairs_path, pairs)
-    with open(meta_path, 'w') as f:
-        json.dump(metadata, f, indent=2)
-    
     if args.show_progress:
-        print(f"[✓] Positive pairs built: {pairs.shape[0]:,} pairs", file=sys.stderr)
-        print(f"    Pairs: {pairs_path}", file=sys.stderr)
-        print(f"    Metadata: {meta_path}", file=sys.stderr)
+        print(f"[✓] Positive pairs built: {len(pairs):,} pairs", file=sys.stderr)
+        print(f"    Output dir: {args.output_dir}", file=sys.stderr)
