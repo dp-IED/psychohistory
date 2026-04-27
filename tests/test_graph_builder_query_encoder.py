@@ -52,7 +52,10 @@ def _base_manifest(
     )
 
 
-def test_build_hint_index_conflict() -> None:
+def test_build_hint_index_duplicate_hint_first_wins_with_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Real tape can map one normalized string to several node_ids; we keep the first row."""
     rows = [
         NodeWarehouseRowMeta(
             node_id="a",
@@ -63,8 +66,10 @@ def test_build_hint_index_conflict() -> None:
             extensions={ENTITY_HINT_KEYS: ["same"]},
         ),
     ]
-    with pytest.raises(ValueError, match="hint alias conflict"):
-        build_hint_index(rows)
+    with caplog.at_level(logging.WARNING, logger="baselines.graph_builder_query_encoder"):
+        idx = build_hint_index(rows)
+    assert idx == {"same": "a"}
+    assert "keeping first" in caplog.text or "skipping" in caplog.text
 
 
 def test_valid_hint_l2_norm(
@@ -123,7 +128,7 @@ def test_unk_hint(embedding_version: str, rng: np.random.Generator) -> None:
     assert torch.allclose(torch.linalg.vector_norm(out), torch.tensor(1.0), atol=1e-5)
 
 
-def test_temporal_oob(embedding_version: str, rng: np.random.Generator) -> None:
+def test_future_only_hint_falls_back_to_unk(embedding_version: str, rng: np.random.Generator) -> None:
     mmap = _l2_normalize_rows(rng, 1)
     rows = [
         NodeWarehouseRowMeta(
@@ -141,13 +146,46 @@ def test_temporal_oob(embedding_version: str, rng: np.random.Generator) -> None:
         as_of=date(2020, 1, 1),
         entity_hints=["early_actor"],
     )
+    out = encode_actor_state_query(
+        actor_state=actor_state,
+        probe_id="probe_oob",
+        slice_ctx=ctx,
+        full_ctx=ctx,
+        encoder=encoder,
+    )
+    assert out.shape == (128,)
+    assert torch.isfinite(out).all()
+
+
+def test_temporal_oob_forced_override_still_raises(
+    embedding_version: str,
+    rng: np.random.Generator,
+) -> None:
+    mmap = _l2_normalize_rows(rng, 1)
+    rows = [
+        NodeWarehouseRowMeta(
+            node_id="future",
+            first_seen=date(2021, 6, 1),
+            extensions={ENTITY_HINT_KEYS: ["future_actor"]},
+        ),
+    ]
+    manifest = _base_manifest(embedding_version, mmap, rows)
+    ctx = warehouse_context_from_manifest(manifest, mmap)
+    encoder = QueryEncoder()
+    actor_state = ActorStateQuery(
+        geography=["F"],
+        actor_type=["gov"],
+        as_of=date(2020, 1, 1),
+        entity_hints=["future_actor"],
+    )
     with pytest.raises(ValueError, match="temporal out-of-bounds"):
         encode_actor_state_query(
             actor_state=actor_state,
-            probe_id="probe_oob",
+            probe_id="probe_oob_override",
             slice_ctx=ctx,
             full_ctx=ctx,
             encoder=encoder,
+            hint_index_override={normalize_hint("future_actor"): "future"},
         )
 
 
@@ -250,6 +288,76 @@ def test_manifest_integrity_error(embedding_version: str, rng: np.random.Generat
             encoder=encoder,
             hint_index_override={normalize_hint("phantom"): "ghost_id"},
         )
+
+
+def test_duplicate_hint_picks_in_window_country_match(
+    embedding_version: str,
+    rng: np.random.Generator,
+) -> None:
+    """Generic hint on EG then LY: first index row can be OOB; Libya probe must use LY row."""
+    mmap = _l2_normalize_rows(rng, 2)
+    rows = [
+        NodeWarehouseRowMeta(
+            node_id="ar_v0|EG|slot0",
+            first_seen=date(2010, 12, 27),
+            extensions={ENTITY_HINT_KEYS: ["military"]},
+        ),
+        NodeWarehouseRowMeta(
+            node_id="ar_v0|LY|slot0",
+            first_seen=date(2010, 12, 10),
+            extensions={ENTITY_HINT_KEYS: ["military"]},
+        ),
+    ]
+    manifest = _base_manifest(embedding_version, mmap, rows)
+    full_ctx = warehouse_context_from_manifest(manifest, mmap)
+    encoder = QueryEncoder()
+    actor_state = ActorStateQuery(
+        geography=["Libya"],
+        actor_type=["gov"],
+        as_of=date(2010, 12, 15),
+        entity_hints=["military"],
+    )
+    out = encode_actor_state_query(
+        actor_state=actor_state,
+        probe_id="p_dup",
+        slice_ctx=full_ctx,
+        full_ctx=full_ctx,
+        encoder=encoder,
+    )
+    assert out.shape == (128,)
+
+
+def test_preferred_country_no_node_falls_back_to_unk(
+    embedding_version: str,
+    rng: np.random.Generator,
+) -> None:
+    """When only other countries are in the temporal window, do not attach their node."""
+    mmap = _l2_normalize_rows(rng, 1)
+    rows = [
+        NodeWarehouseRowMeta(
+            node_id="ar_v0|EG|slot0",
+            first_seen=date(2010, 1, 1),
+            extensions={ENTITY_HINT_KEYS: ["military"]},
+        ),
+    ]
+    manifest = _base_manifest(embedding_version, mmap, rows)
+    ctx = warehouse_context_from_manifest(manifest, mmap)
+    encoder = QueryEncoder()
+    actor_state = ActorStateQuery(
+        geography=["Libya"],
+        actor_type=["gov"],
+        as_of=date(2010, 12, 15),
+        entity_hints=["military"],
+    )
+    out = encode_actor_state_query(
+        actor_state=actor_state,
+        probe_id="p_wrong_co",
+        slice_ctx=ctx,
+        full_ctx=ctx,
+        encoder=encoder,
+    )
+    assert out.shape == (128,)
+    assert torch.isfinite(out).all()
 
 
 def test_empty_entity_hints_unit_norm(embedding_version: str, rng: np.random.Generator) -> None:

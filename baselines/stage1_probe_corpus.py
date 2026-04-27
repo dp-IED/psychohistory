@@ -12,7 +12,16 @@ dispatches to the appropriate gate annotation validator and coverage checker.
   - ``arab_spring``: runs ``validate_arab_spring_probe_gate_annotations`` +
     ``validate_gate_coverage(..., ARAB_SPRING_TRAINING_CONTEXT_ID)``.
     When ``manifest`` is not ``None``, also runs ``validate_probe_hints_against_manifest``
-    to catch entity hints that do not resolve in the loaded warehouse.
+    to catch entity hints absent from the union of all ``entity_hint_keys`` in the loaded manifest.
+
+**Manifest and Arab Spring:** If ``validate()`` is called with ``manifest=None`` on an
+``arab_spring`` bundle, only gate-annotation and gate-coverage checks run — **hint
+resolution against the warehouse is skipped.** That is intentional for unit tests and
+prototyping without a built mmap, but **production Stage 1 training** must call
+``validate(manifest)`` with the same manifest used for the mmap
+(``run_stage1_training`` does this after loading the manifest from disk). Calling
+``arab_spring_default().validate()`` in isolation does not verify that ``entity_hints``
+resolve; do not use that as a preflight for meaningful training.
 """
 
 from __future__ import annotations
@@ -52,11 +61,13 @@ class Stage1ProbeCorpus:
         """Validate gate annotations and coverage for this corpus.
 
         Dispatches based on ``kind``:
-        - ``france``: gate annotation check + gate coverage check.
-          ``manifest`` is accepted but unused.
-        - ``arab_spring``: gate annotation check + gate coverage check.
-          When ``manifest`` is provided, additionally validates all entity_hints
-          resolve in the manifest hint index.
+        - **france:** gate annotation check + gate coverage check. ``manifest`` is ignored.
+        - **arab_spring:** same gate checks, plus **iff** ``manifest is not None``,
+          ``validate_probe_hints_against_manifest`` so every ``entity_hint`` appears in
+          the manifest’s combined ``entity_hint_keys`` set. If ``manifest`` is **None**, hint resolution is
+          **not** checked — only gate metadata. For Arab Spring, that is appropriate in
+          tests; for real training, always pass the mmap manifest
+          (``run_stage1_training`` passes it automatically after load).
 
         Raises:
             ValueError: on any validation failure (single error per check, listing all failures).

@@ -206,6 +206,22 @@ class TestExpansion:
         counts = Counter(p.assumption_emphasis for p in corpus)
         assert set(counts.keys()) == set(AssumptionEmphasis)
 
+    def test_expansion_gate_counts_balanced_within_one(self) -> None:
+        """Round-robin % 5 over 243 rows: counts differ by at most 1; not axis-skewed."""
+        corpus = build_arab_spring_probe_corpus()
+        counts = Counter(p.assumption_emphasis for p in corpus)
+        cvals = sorted(counts.values())
+        assert cvals[-1] - cvals[0] <= 1, (
+            f"per-gate counts should differ by at most 1; got {dict(counts)}"
+        )
+        assert counts == {
+            AssumptionEmphasis.PERSISTENCE: 49,
+            AssumptionEmphasis.PROPAGATION: 49,
+            AssumptionEmphasis.PRECURSOR: 49,
+            AssumptionEmphasis.SUPPRESSION: 48,
+            AssumptionEmphasis.COORDINATION: 48,
+        }
+
     def test_all_gate_coverage_populated(self) -> None:
         corpus = build_arab_spring_probe_corpus()
         missing = [p.probe_id for p in corpus if p.generation_meta.assumption_gate_coverage is None]

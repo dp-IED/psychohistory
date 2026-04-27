@@ -73,7 +73,7 @@ def test_basic_two_admin1_regions_four_nodes(tmp_path: Path) -> None:
     meta_path = build_positive_pairs(manifest, mmap_file, tmp_path)
     pairs, meta = load_positive_pairs(meta_path, manifest)
 
-    assert set(map(tuple, pairs.tolist())) == {(0, 1), (2, 3)}
+    assert pairs.shape == (0, 2)
     assert meta["positive_pair_version"] == POSITIVE_PAIR_VERSION
     assert meta["pairs_path"] == PAIRS_ARRAY_BASENAME
     assert meta["pairs_path"] == Path(meta["pairs_path"]).name
@@ -93,10 +93,23 @@ def test_metadata_as_of_null_when_manifest_has_no_as_of(tmp_path: Path) -> None:
     assert meta["as_of"] is None
 
 
-def test_boundary_fourteen_days_included(tmp_path: Path) -> None:
+def test_min_boundary_excluded(tmp_path: Path) -> None:
     rows = [
         NodeWarehouseRowMeta(node_id="a", admin1_code="FR-IDF", first_seen=date(2026, 1, 1)),
-        NodeWarehouseRowMeta(node_id="b", admin1_code="FR-IDF", first_seen=date(2026, 1, 15)),
+        NodeWarehouseRowMeta(node_id="b", admin1_code="FR-IDF", first_seen=date(2026, 2, 1)),
+    ]
+    manifest = _manifest(rows=rows, as_of=None)
+    mmap_file = tmp_path / "dummy.f32"
+    mmap_file.write_bytes(b"")
+    meta_path = build_positive_pairs(manifest, mmap_file, tmp_path)
+    pairs, _ = load_positive_pairs(meta_path, manifest)
+    assert pairs.shape == (0, 2)
+
+
+def test_min_boundary_plus_one_included(tmp_path: Path) -> None:
+    rows = [
+        NodeWarehouseRowMeta(node_id="a", admin1_code="FR-IDF", first_seen=date(2026, 1, 1)),
+        NodeWarehouseRowMeta(node_id="b", admin1_code="FR-IDF", first_seen=date(2026, 2, 2)),
     ]
     manifest = _manifest(rows=rows, as_of=None)
     mmap_file = tmp_path / "dummy.f32"
@@ -107,10 +120,24 @@ def test_boundary_fourteen_days_included(tmp_path: Path) -> None:
     assert tuple(pairs[0].tolist()) == (0, 1)
 
 
-def test_boundary_fifteen_days_excluded(tmp_path: Path) -> None:
+def test_max_boundary_included(tmp_path: Path) -> None:
     rows = [
         NodeWarehouseRowMeta(node_id="a", admin1_code="FR-IDF", first_seen=date(2026, 1, 1)),
-        NodeWarehouseRowMeta(node_id="b", admin1_code="FR-IDF", first_seen=date(2026, 1, 16)),
+        NodeWarehouseRowMeta(node_id="b", admin1_code="FR-IDF", first_seen=date(2026, 4, 1)),
+    ]
+    manifest = _manifest(rows=rows, as_of=None)
+    mmap_file = tmp_path / "dummy.f32"
+    mmap_file.write_bytes(b"")
+    meta_path = build_positive_pairs(manifest, mmap_file, tmp_path)
+    pairs, _ = load_positive_pairs(meta_path, manifest)
+    assert pairs.shape == (1, 2)
+    assert tuple(pairs[0].tolist()) == (0, 1)
+
+
+def test_max_boundary_plus_one_excluded(tmp_path: Path) -> None:
+    rows = [
+        NodeWarehouseRowMeta(node_id="a", admin1_code="FR-IDF", first_seen=date(2026, 1, 1)),
+        NodeWarehouseRowMeta(node_id="b", admin1_code="FR-IDF", first_seen=date(2026, 4, 2)),
     ]
     manifest = _manifest(rows=rows, as_of=None)
     mmap_file = tmp_path / "dummy.f32"
@@ -124,6 +151,19 @@ def test_different_admin1_close_dates_excluded(tmp_path: Path) -> None:
     rows = [
         NodeWarehouseRowMeta(node_id="a", admin1_code="FR-IDF", first_seen=date(2026, 4, 10)),
         NodeWarehouseRowMeta(node_id="b", admin1_code="FR-PACA", first_seen=date(2026, 4, 11)),
+    ]
+    manifest = _manifest(rows=rows, as_of=None)
+    mmap_file = tmp_path / "dummy.f32"
+    mmap_file.write_bytes(b"")
+    meta_path = build_positive_pairs(manifest, mmap_file, tmp_path)
+    pairs, _ = load_positive_pairs(meta_path, manifest)
+    assert pairs.shape == (0, 2)
+
+
+def test_different_admin1_in_range_gap_excluded(tmp_path: Path) -> None:
+    rows = [
+        NodeWarehouseRowMeta(node_id="a", admin1_code="FR-IDF", first_seen=date(2026, 1, 1)),
+        NodeWarehouseRowMeta(node_id="b", admin1_code="FR-PACA", first_seen=date(2026, 2, 15)),
     ]
     manifest = _manifest(rows=rows, as_of=None)
     mmap_file = tmp_path / "dummy.f32"

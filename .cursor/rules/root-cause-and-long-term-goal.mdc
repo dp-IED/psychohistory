@@ -1,0 +1,28 @@
+---
+description: Fix root causes, not symptoms; protect long-term project goals from scope cuts and "simple version" shortcuts
+alwaysApply: true
+---
+
+# Root cause and long-term goal
+
+## Prefer causes over symptoms
+
+- Diagnose *why* something fails or is awkward before changing behavior at the surface.
+- Avoid patches that only hide errors (broader `try/except`, silent fallbacks, magic defaults) when the real issue is bad data, wrong API, missing invariant, or unclear contract.
+- When unsure, ask what would break if the symptom reappeared elsewhere — that points to the cause.
+
+**Examples**
+
+- **Symptom fix**: Test fails; loosen assertion or mock more of the system.
+- **Cause fix**: Test fails; fix the bug, update the spec to match the true requirement, or fix the test’s setup so it matches production assumptions.
+
+- **Symptom fix**: Flaky timeout; increase sleep or timeout.
+- **Cause fix**: Find race or missing sync; use deterministic wait or fix ordering.
+
+## Do not trade away the long-term goal
+
+- Do not "ship faster" by permanently narrowing scope, dumbing down the design, or leaving known gaps that contradict the project’s stated direction.
+- A smaller interim step is fine when it is a **deliberate slice toward** the same end state, not a different product justified as "MVP" that the team will have to throw away.
+- If the right fix is larger than a single PR, say so: outline phases that still advance the end goal, instead of a permanent shortcut.
+
+When proposing alternatives, prefer options that keep architecture and invariants aligned with the long-term goal, even if that means more discussion or a phased plan.

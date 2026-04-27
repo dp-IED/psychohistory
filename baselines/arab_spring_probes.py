@@ -21,7 +21,7 @@ from itertools import product
 from typing import Sequence
 
 from baselines.france_plumbing_probes import validate_gate_coverage
-from baselines.graph_builder_query_encoder import build_hint_index, normalize_hint
+from baselines.graph_builder_query_encoder import ENTITY_HINT_KEYS, normalize_hint
 from schemas import (
     ActorStateQuery,
     AssumptionEmphasis,
@@ -72,15 +72,17 @@ _GRANULARITY_MODES: tuple[tuple[str, str | None, str], ...] = (
 )
 ARAB_SPRING_GRANULARITY_LABELS: tuple[str, ...] = tuple(g[0] for g in _GRANULARITY_MODES)
 
-# Named entity hints per country (not Syria). Round-robin across expansion index.
+# Named entity hints per country (not Syria). Use strings that can appear in GDELT
+# ``actor1_name`` / ``actor2_name`` (stored lowercased in ``entity_hint_keys``) — not
+# synthetic slugs with underscores, or training validation fails against a real mmap.
 _NAMED_HINTS_BY_COUNTRY: dict[str, list[str]] = {
-    "Tunisia": ["Ennahda", "UGTT", "Ben Ali"],
-    "Egypt": ["Muslim Brotherhood", "Supreme Council of the Armed Forces", "ElBaradei"],
-    "Libya": ["National Transitional Council", "Gaddafi loyalists", "February 17 Martyrs Brigade"],
+    "Tunisia": ["tunisia", "tunis", "police"],
+    "Egypt": ["egypt", "cairo", "civilians (egypt)"],
+    "Libya": ["libya", "rebel", "military"],
 }
 
-# Actor-type hints (for admin1_geo granularity)
-_ACTOR_TYPE_HINTS: tuple[str, ...] = ("protest_group", "security_forces", "opposition_coalition")
+# Actor-type hints (for admin1_geo granularity): short tokens that commonly occur in tape.
+_ACTOR_TYPE_HINTS: tuple[str, ...] = ("police", "military", "civilians")
 
 # Actor types used in probes
 _ACTOR_TYPES: tuple[str, ...] = ("protest_group", "government", "opposition_coalition")
@@ -483,6 +485,8 @@ def _expanded_probe(
         horizon_days=horizon_days,
         context_snippet=context_snippet,
     )
+    # Round-robin over five gates: N%5==0..4 cycles; when N is not a multiple of 5,
+    # the first (N mod 5) gates get one extra row each (e.g. 243 rows → 49+49+49+48+48).
     emphasis = _GATES_ORDERED[expansion_index % len(_GATES_ORDERED)]
     probe_id = (
         f"ar_v0_{expansion_index:04d}_"
@@ -510,6 +514,10 @@ def build_arab_spring_probe_corpus() -> list[ProbeRecord]:
     Axes: Geography (3) × Temporal bucket (3) × Granularity (3) × Actor type (3) × Horizon days (3) = 243 rows.
     The three primary axes (geography, temporal, granularity) are the structural dimensions;
     actor_type and horizon_days provide the cross-cutting signal variation.
+    ``AssumptionEmphasis`` is assigned by round-robin over expansion order (``expansion_index % 5``),
+    not by the Cartesian slot tuple, so gate counts differ by at most one per gate
+    (243 rows → 49+49+49+48+48; three remainder slots go to the first three gates in
+    ``_GATES_ORDERED``), not skewed by any single axis.
     """
     rows: list[ProbeRecord] = []
     expansion_index = 0
@@ -547,11 +555,28 @@ def validate_arab_spring_probe_gate_annotations(probes: Sequence[ProbeRecord]) -
         )
 
 
+def manifest_entity_hint_key_set(manifest: NodeWarehouseManifest) -> set[str]:
+    """All ``normalize_hint(k)`` values from ``entity_hint_keys`` across rows (set union).
+
+    ``build_hint_index`` is one-hint-wins; for *existence* checks we only need whether a
+    probe hint string appears in **any** row’s keys, which matches what retrieval can use
+    when that string exists on at least one node.
+    """
+    s: set[str] = set()
+    for row in manifest.rows or []:
+        raw = row.extensions.get(ENTITY_HINT_KEYS) if row.extensions else None
+        aliases: list[str] = raw if isinstance(raw, list) else []
+        for k in aliases:
+            if isinstance(k, str):
+                s.add(normalize_hint(k))
+    return s
+
+
 def validate_probe_hints_against_manifest(
     probes: Sequence[ProbeRecord],
     manifest: NodeWarehouseManifest,
 ) -> None:
-    """Validate that every entity_hint in probes resolves in the NodeWarehouseManifest hint index.
+    """Validate that every entity_hint in probes appears in the manifest’s hint-key union.
 
     Args:
         probes: Probe records to validate.
@@ -560,17 +585,17 @@ def validate_probe_hints_against_manifest(
     Raises:
         ValueError listing all (probe_id, hint) pairs that do not resolve, in a single error.
     """
-    hint_index = build_hint_index(manifest.rows or [])
+    key_set = manifest_entity_hint_key_set(manifest)
     failures: list[str] = []
     for probe in probes:
         for hint in probe.q_struct.actor_state.entity_hints:
             nk = normalize_hint(hint)
-            if nk not in hint_index:
+            if nk not in key_set:
                 failures.append(f"probe_id={probe.probe_id!r} hint={hint!r} (normalized: {nk!r})")
     if failures:
         listed = "; ".join(failures)
         raise ValueError(
-            f"entity_hint(s) not found in NodeWarehouseManifest hint index: {listed}",
+            f"entity_hint(s) not found in NodeWarehouseManifest hint key union: {listed}",
         )
 
 
