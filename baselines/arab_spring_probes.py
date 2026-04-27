@@ -76,13 +76,13 @@ ARAB_SPRING_GRANULARITY_LABELS: tuple[str, ...] = tuple(g[0] for g in _GRANULARI
 # ``actor1_name`` / ``actor2_name`` (stored lowercased in ``entity_hint_keys``) — not
 # synthetic slugs with underscores, or training validation fails against a real mmap.
 _NAMED_HINTS_BY_COUNTRY: dict[str, list[str]] = {
-    "Tunisia": ["tunisia", "tunis", "police"],
-    "Egypt": ["egypt", "cairo", "civilians (egypt)"],
-    "Libya": ["libya", "rebel", "military"],
+    "Tunisia": ["protester", "government", "military"],
+    "Egypt": ["protester", "government", "military"],
+    "Libya": ["protester", "government", "military"],
 }
 
-# Actor-type hints (for admin1_geo granularity): short tokens that commonly occur in tape.
-_ACTOR_TYPE_HINTS: tuple[str, ...] = ("police", "military", "civilians")
+# Actor-type hints (for admin1_geo granularity): short tokens that commonly occur in GDELT tape.
+_ACTOR_TYPE_HINTS: tuple[str, ...] = ("protester", "government", "military")
 
 # Actor types used in probes
 _ACTOR_TYPES: tuple[str, ...] = ("protest_group", "government", "opposition_coalition")
