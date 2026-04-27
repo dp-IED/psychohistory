@@ -616,14 +616,29 @@ def build_arab_spring_node_warehouse_v1(
     t_query = time.perf_counter()
     try:
         if show_progress:
-            print("[v1] Querying DuckDB for Arab Spring events (EG/TU/LY/SY, 2010-2013)…", flush=True)
-        recs = query_records(
-            db_path=wp,
-            country_codes=ARAB_SPRING_NODE_COUNTRY_CODES,
-            event_start=event_start,
-            event_end=event_end,
-            order_by=False,
-        )
+            print("[v1] Reading Arab Spring events (streaming from JSONL)…", flush=True)
+        
+        jsonl_path = Path(wp).parent / "events.jsonl"
+        if jsonl_path.exists():
+            import json
+            recs: list[EventTapeRecord] = []
+            with open(jsonl_path) as f:
+                for line in tqdm(f, desc="[v1] Loading events", unit=" events", disable=False):
+                    if not line.strip():
+                        continue
+                    payload = json.loads(line)
+                    rec = EventTapeRecord.model_validate(payload)
+                    recs.append(rec)
+        else:
+            if show_progress:
+                print("[v1] JSONL not found, falling back to DuckDB…", flush=True)
+            recs = query_records(
+                db_path=wp,
+                country_codes=ARAB_SPRING_NODE_COUNTRY_CODES,
+                event_start=event_start,
+                event_end=event_end,
+                order_by=False,
+            )
         if show_progress:
             print(
                 f"[v1] Loaded {len(recs):,} Arab Spring events in {time.perf_counter() - t_query:.1f}s; building matrix…",
