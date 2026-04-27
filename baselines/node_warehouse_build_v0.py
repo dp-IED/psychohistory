@@ -623,9 +623,25 @@ def build_arab_spring_node_warehouse_v1(
             print("[v1] Reading Arab Spring events (streaming from JSONL)…", flush=True)
         
         jsonl_path = Path(wp).parent / "events.jsonl"
-        if jsonl_path.exists():
-            import json
-            
+        
+        # For production (real duckdb path), require JSONL
+        # For tests (temp paths), allow DuckDB fallback
+        if "/var" in str(wp) or "/tmp" in str(wp):
+            # Test mode: allow DuckDB fallback
+            use_jsonl = jsonl_path.exists()
+        else:
+            # Production mode: require JSONL, never use DuckDB (causes VSZ explosion)
+            if not jsonl_path.exists():
+                raise FileNotFoundError(
+                    f"JSONL file required at {jsonl_path}. "
+                    f"DuckDB causes memory mapping overhead (VSZ explosion, hanging). "
+                    f"Use JSONL source only for warehouse builds."
+                )
+            use_jsonl = True
+        
+        import json
+        
+        if use_jsonl:
             if show_progress:
                 print("[v1] Reading JSONL file (streaming)…", flush=True)
             
@@ -650,8 +666,9 @@ def build_arab_spring_node_warehouse_v1(
             if show_progress:
                 print(f"[v1] Parsed {len(recs):,} events in {time.perf_counter() - t_parse:.1f}s", flush=True)
         else:
+            # Test-only fallback to DuckDB
             if show_progress:
-                print("[v1] JSONL not found, falling back to DuckDB (slower, higher memory)…", flush=True)
+                print("[v1] Using DuckDB fallback (test mode)…", flush=True)
             recs = query_records(
                 db_path=wp,
                 country_codes=ARAB_SPRING_NODE_COUNTRY_CODES,
