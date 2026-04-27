@@ -628,21 +628,27 @@ def build_arab_spring_node_warehouse_v1(
             
             if show_progress:
                 print("[v1] Reading JSONL file (streaming)…", flush=True)
+            
+            rec_count = 0
             def build_records_from_jsonl():
+                nonlocal rec_count
                 with open(jsonl_path) as f:
                     for line in f:
                         if not line.strip():
                             continue
                         payload = json.loads(line)
                         rec = EventTapeRecord.model_validate(payload)
+                        rec_count += 1
+                        if show_progress and rec_count % 100000 == 0:
+                            print(f"  ...parsed {rec_count:,} events...", flush=True)
                         yield rec
             
-            # Don't use tqdm for initial parsing - just collect the list
             if show_progress:
-                print("[v1] Parsing events into memory (no progress bar due to tqdm buffering)…", flush=True)
+                print("[v1] Parsing events into memory…", flush=True)
+            t_parse = time.perf_counter()
             recs = list(build_records_from_jsonl())
             if show_progress:
-                print(f"[v1] Parsed {len(recs):,} events", flush=True)
+                print(f"[v1] Parsed {len(recs):,} events in {time.perf_counter() - t_parse:.1f}s", flush=True)
         else:
             if show_progress:
                 print("[v1] JSONL not found, falling back to DuckDB (slower, higher memory)…", flush=True)
