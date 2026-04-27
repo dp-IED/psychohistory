@@ -2,118 +2,53 @@
 
 ## Overview
 
-The v1 warehouse aggregates events by `(event_type, country, month)`. To fix the probe mismatch, we need to aggregate by `(named_actor, country, admin1, month)`.
+**What this is**: An implementation bug fix. The v1 recipe was supposed to aggregate by `(actor1_name, admin1_code, month)` per the design doc, but instead aggregates by `(event_code, country, month)`. This document outlines the recipe changes needed to implement the design as specified.
 
-This document outlines the recipe changes needed.
+**What this is NOT**: A redesign of the warehouse architecture or the probe corpus. Diagnostic query results show 8 of 9 named entities in base seed probes do not appear in GDELT/ACLED event data. The warehouse fix enables proper actor-keyed structure, but probe validation will still fail for those missing entities. After the warehouse fix, **base seed probes must be rewritten** to reference ACLED actor names that actually exist. See `docs/warehouse-v1-diagnostic-query-results.md` for details.
 
 ---
 
-## Current v1 Recipe (Broken)
+## What Changed
+
+### Current Broken v1 Recipe
 
 ```
 Input: GDELT/ACLED event stream
   ↓
-Aggregate by: (GDELT.event_code, country, month)
+Aggregate by: (event_code, country, month)
   ↓
 Output: 168,195 nodes keyed on event types
-  - ar_v1|a cabinet meeting|EG|2010-02
-  - ar_v1|rioters (egypt)|LY|2011-03
-  ↓
-Hint index: All GDELT/ACLED actors merged into single index
-  - 6,673 unique hints (many are generic like "police", "government")
-  - Probes cannot distinguish named actors
+  Example nodes:
+    ar_v1|a cabinet meeting|EG|2010-02
+    ar_v1|rioters (egypt)|LY|2011-03
 ```
 
----
-
-## Proposed v2 Recipe (Fixed)
+### Fixed v1 Recipe (Per Design Doc)
 
 ```
 Input: GDELT/ACLED event stream
   ↓
-Extract named actors: 
-  - GDELT: use actor1_name (actor)
-  - ACLED: use actor (primary actor)
+Aggregate by: (actor1_name, admin1_code, month)
   ↓
-Standardize/deduplicate actor names:
-  - Lowercase, strip punctuation
-  - Merge variant spellings (e.g., "UGTT", "Union Générale Tunisienne du Travail")
-  - Create mapping table for Stage 2 label propagation
-  ↓
-Aggregate by: (named_actor, country, admin1, month)
-  ↓
-Output: ~500–1,000 nodes keyed on actors
-  - ar_v2|ugtt|TU|Sfax|2011-02
-  - ar_v2|scaf|EG|Cairo|2011-03
-  - ar_v2|ntc|LY|Tripoli|2011-05
-  ↓
-Hint index: Actor names as primary keys
-  - UGTT → ar_v2|ugtt|TU|... (all occurrences)
-  - Supreme Council Armed Forces → ar_v2|scaf|EG|... (all occurrences)
-  - Each named actor maps to one or more nodes
+Output: ~74,325 nodes keyed on named actors (≥3 events per node)
+  Example nodes:
+    ar_v1|egypt|EG|Cairo|2011-02
+    ar_v1|military forces of libya|LY|Tripoli|2011-03
+    ar_v1|muslim brotherhood|EG|Cairo|2011-01
 ```
 
 ---
 
-## Implementation Steps
+## Implementation
 
-### 1. Identify Named Actors in Raw Tape
+### Step 1: Locate the warehouse build code
 
-**Input**: `shared_data/arab_spring/events.jsonl` (GDELT events)
+Find `baselines/graph_builder_warehouse.py` and locate the function that builds the node key (likely `_warehouse_key()` or `_node_id_from_event()`).
 
-**Script**: Extract and count unique actors
+### Step 2: Change the aggregation key
 
+**Current implementation** (pseudocode):
 ```python
-import json
-from collections import Counter
-
-actors = Counter()
-with open("shared_data/arab_spring/events.jsonl") as f:
-    for line in f:
-        event = json.loads(line)
-        actor1 = event.get("actor1_name", "").strip().lower()
-        if actor1:
-            actors[actor1] += 1
-
-# Keep top N by frequency (e.g., top 500 actors covering 90% of events)
-total_events = sum(actors.values())
-cumsum = 0
-for actor, count in actors.most_common(1000):
-    cumsum += count
-    pct = 100 * cumsum / total_events
-    if pct > 90:
-        break
-    print(f"{count:5d}x  {actor}")
-```
-
-**Expected output**: ~200–300 actors cover 80–90% of Arab Spring events. Manual review to merge variants (e.g., "muslim brotherhood", "muslim brothers").
-
-### 2. Build Actor Standardization Mapping
-
-Create a JSON mapping of raw → canonical actor names:
-
-```json
-{
-  "ugtt": "ugtt",
-  "union general tunisienne du travail": "ugtt",
-  "general union tunisian labour": "ugtt",
-  "scaf": "scaf",
-  "supreme council armed forces": "scaf",
-  "supreme military council": "scaf",
-  "ntc": "ntc",
-  "national transitional council": "ntc",
-  "libyan ntc": "ntc",
-  ...
-}
-```
-
-### 3. Revise graph_builder_warehouse.py
-
-Change the aggregation key:
-
-**Before** (v1):
-```python
-# In graph_builder_warehouse.py
 def _warehouse_key(event: dict) -> str:
     event_type = event.get("event_code", "unknown")
     country = event.get("country_code", "XX")
@@ -121,53 +56,93 @@ def _warehouse_key(event: dict) -> str:
     return f"ar_v1|{event_type}|{country}|{month}"
 ```
 
-**After** (v2):
+**Fixed implementation**:
 ```python
-def _warehouse_key(event: dict, actor_map: dict[str, str]) -> str:
-    # Standardize actor name
-    raw_actor = event.get("actor1_name", "unknown").strip().lower()
-    canonical_actor = actor_map.get(raw_actor, raw_actor)
+def _warehouse_key(event: dict) -> str:
+    # Use actor1_name instead of event_code
+    actor = event.get("actor1_name", "unknown").strip().lower()
+    if not actor:
+        actor = "unknown"
     
-    # Get geography
-    country = event.get("country_code", "XX")
+    # Use admin1_code instead of country
     admin1 = event.get("admin1_code", "unknown")
-    month = event.get("date", "2010-01")[:7]
+    if not admin1:
+        admin1 = event.get("country_code", "unknown")
     
-    return f"ar_v2|{canonical_actor}|{country}|{admin1}|{month}"
+    month = event.get("date", "2010-01")[:7]
+    return f"ar_v1|{actor}|{admin1}|{month}"
 ```
 
-### 4. Rebuild Hint Index
+### Step 3: Add minimum event count filtering
 
-**Before** (v1): All raw actor strings → no structure
-
-**After** (v2): Canonical actor names → warehouse rows
+After aggregating, filter out nodes with <3 events (noise reduction):
 
 ```python
-def build_actor_hint_index(manifest: NodeWarehouseManifest) -> dict[str, list[str]]:
-    """Map canonical actor name to list of node_ids containing that actor."""
-    index: dict[str, list[str]] = {}
-    for row in manifest.rows:
-        # Extract canonical actor from node_id
-        # e.g., ar_v2|ugtt|TU|Sfax|2011-02 → "ugtt"
-        parts = row.node_id.split("|")
-        if len(parts) >= 2:
-            actor = parts[1]
-            if actor not in index:
-                index[actor] = []
-            index[actor].append(row.node_id)
-    return index
+def build_warehouse(events):
+    nodes = {}
+    for event in events:
+        key = _warehouse_key(event)
+        if key not in nodes:
+            nodes[key] = []
+        nodes[key].append(event)
+    
+    # Filter: keep only nodes with ≥3 events
+    MIN_EVENTS = 3
+    nodes = {k: v for k, v in nodes.items() if len(v) >= MIN_EVENTS}
+    return nodes
 ```
 
-### 5. Update Probe Corpus
+### Step 4: Update entity_hint_keys derivation
 
-No changes needed! The probes already reference the right named actors:
-- UGTT ✓
-- SCAF ✓
-- NTC ✓
-- Ennahda ✓
-- February 17 Martyrs Brigade ✓
+For each node, extract all unique actor1_name values (lowercased):
 
-With the new warehouse, `validate_probe_hints_against_manifest` will pass because these actors will now exist.
+```python
+# For each node's events, build entity_hint_keys
+entity_hint_keys = set()
+for event in node_events:
+    actor = event.get("actor1_name", "").strip().lower()
+    if actor and actor != "unknown":
+        entity_hint_keys.add(actor)
+
+# Store as list in manifest
+node.extensions["entity_hint_keys"] = sorted(entity_hint_keys)
+```
+
+### Step 5: Rewrite base seed probes
+
+The warehouse fix alone doesn't resolve base seed probes because those named entities (UGTT, SCAF, NTC, Ennahda, etc.) don't appear in GDELT/ACLED. Rewrite base seeds to use ACLED actor names that exist:
+
+**Before** (won't resolve):
+```python
+_probe_record(
+    probe_id="ar_base_00",
+    nl_text="Base seed: Tunisian labour union wage grievance persistence post-Ben Ali.",
+    geography=["Tunisia"],
+    actor_type=["protest_group"],
+    entity_hints=["UGTT"],  # ✗ Not in GDELT/ACLED
+    ...
+)
+```
+
+**After** (will resolve):
+```python
+_probe_record(
+    probe_id="ar_base_00",
+    nl_text="Base seed: Tunisian protesters persistence post-Ben Ali.",
+    geography=["Tunisia"],
+    actor_type=["protest_group"],
+    entity_hints=["protesters (egypt)"],  # ✓ Exists in ACLED (2,323 events)
+    ...
+)
+```
+
+Available ACLED actor names (from diagnostic query):
+- `Protesters (Egypt)` — 2,323 events
+- `Rioters (Egypt)` — 1,111 events
+- `Military Forces of Libya` — 281–367 events
+- `Police Forces of Egypt` — 92–129 events
+- `Libyan Rebel Forces` — 52 events
+- `Muslim Brotherhood` — 41 events
 
 ---
 
@@ -175,49 +150,50 @@ With the new warehouse, `validate_probe_hints_against_manifest` will pass becaus
 
 ### Before (v1 Broken)
 
-- Warehouse: 168k nodes on event types
-- Base seeds: 8/20 fail to resolve named actors → UNK embeddings
-- Templated corpus: 243 probes on generic features only
-- Training loss: ~0.003 (degenerate due to semantic collapse)
-- Stage 2 signal: None (no named-actor embeddings to propagate)
+| Aspect | Status |
+|--------|--------|
+| Warehouse nodes | 168,195 keyed on event type |
+| Example node | `ar_v1\|a cabinet meeting\|EG\|2010-02` |
+| Base seeds (named entities) | 8/20 resolve to UNK (not in warehouse) |
+| Templated probes | Generic actor types only |
+| Training loss | ~0.003 (degenerate due to semantic collapse) |
+| Stage 1 trainable | **No** |
+| Stage 2 signal | **None** |
 
-### After (v2 Fixed)
+### After (v1 Fixed)
 
-- Warehouse: 500–1,000 nodes on named actors
-- Base seeds: 20/20 resolve successfully
-- Templated corpus: Meaningful discrimination on actor×geography×time
-- Training loss: Higher but informative (0.5–2.0 range expected)
-- Stage 2 signal: Named-actor embeddings that support label propagation
-
----
-
-## Implementation Effort
-
-- **Step 1** (Actor extraction): 2 hours (includes manual deduplication)
-- **Step 2** (Mapping file): 1 hour (manual curation)
-- **Step 3** (Code changes): 4 hours (update warehouse recipe, add new hint indexing)
-- **Step 4** (Testing): 2 hours (regenerate warehouse, validate probes)
-- **Total**: ~9 hours of work across 1–2 days
+| Aspect | Status |
+|--------|--------|
+| Warehouse nodes | ~74,325 keyed on actors (≥3 events filter) |
+| Example node | `ar_v1\|military forces of libya\|LY\|Tripoli\|2011-03` |
+| Base seeds | Still 8/20 fail (must rewrite to ACLED names) |
+| Templated probes | Generic ACLED actor types (exist in data) |
+| Training loss | 0.5–2.0 range (informative) |
+| Stage 1 trainable | **Yes** (on real ACLED actor types) |
+| Stage 2 signal | **Partial** (on actor types, not named entities) |
 
 ---
 
-## Risk Mitigation
+## What Must Happen Next
 
-1. **Backup v1 warehouse**: Keep the old recipe for comparison.
-2. **Validate coverage**: Ensure new actor list covers >80% of events.
-3. **Rerun full pipeline**: Regenerate positive pairs, retrain Stage 1, verify loss sanity.
-4. **Keep v0 as fallback**: v0 warehouse is still available if v2 has issues.
+1. **Implement warehouse aggregation fix** (3 hours)
+2. **Rewrite base seed probes** to use ACLED actor names (1 hour)
+3. **Rebuild warehouse** (2 hours compute)
+4. **Regenerate positive pairs** (1 hour compute)
+5. **Retrain Stage 1** (1 hour compute + validation)
+
+**Total**: ~6–8 hours of work + 4 hours compute time
 
 ---
 
-## Decision Point
+## Key Constraint
 
-This is not a small patch. It requires:
-- Rebuilding the warehouse (~2 hours compute time)
-- Rerunning positive pair generation (~1 hour)
-- Retraining Stage 1 (~1 hour)
-- **Total pipeline time: 4 hours**
+The probe corpus assumptions were incorrect. The named entities (UGTT, SCAF, NTC, Ennahda) **do not appear in GDELT/ACLED event data**. This is not a warehouse problem; it's a probe design problem.
 
-**Proceed if**: You want Stage 1 to train meaningful embeddings and Stage 2 to have a signal for label propagation.
+After the warehouse fix:
+- The architecture will be correct (actor-keyed nodes)
+- The probe corpus will still need revision (use ACLED actor names)
+- Stage 1 training will work on real event data patterns
+- Stage 2 will have signal from actor-type discrimination
 
-**Skip if**: You're comfortable with generic-actor-type embeddings and want to unblock downstream work quickly by rewriting the probe corpus to match v1.
+This is not a "return to design spec" fix. It's a "implement design spec + adapt probe corpus to real data" fix.
