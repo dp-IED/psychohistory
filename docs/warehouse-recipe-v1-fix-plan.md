@@ -73,11 +73,19 @@ def _warehouse_key(event: dict) -> str:
     return f"ar_v1|{actor}|{admin1}|{month}"
 ```
 
-### Step 3: Add minimum event count filtering
+### Step 3: Add minimum event count filtering with named constant
 
-After aggregating, filter out nodes with <3 events (noise reduction):
+After aggregating, filter out nodes with <MIN_EVENTS_PER_NODE events (noise reduction). Define as a module-level constant for visibility and empirical tuning:
 
 ```python
+# At module level, with documentation
+MIN_EVENTS_PER_NODE = 3
+"""Minimum events per actor×admin1×month node.
+Filters one-off noise while retaining meaningful patterns.
+Lower values (≥1) increase node count but add noise.
+Higher values (≥5, ≥10) reduce noise but may drop low-frequency signals.
+Currently set to 3; empirically tunable if noise/signal tradeoff changes."""
+
 def build_warehouse(events):
     nodes = {}
     for event in events:
@@ -86,9 +94,8 @@ def build_warehouse(events):
             nodes[key] = []
         nodes[key].append(event)
     
-    # Filter: keep only nodes with ≥3 events
-    MIN_EVENTS = 3
-    nodes = {k: v for k, v in nodes.items() if len(v) >= MIN_EVENTS}
+    # Filter: keep only nodes with ≥MIN_EVENTS_PER_NODE events
+    nodes = {k: v for k, v in nodes.items() if len(v) >= MIN_EVENTS_PER_NODE}
     return nodes
 ```
 
