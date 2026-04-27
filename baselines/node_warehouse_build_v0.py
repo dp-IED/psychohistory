@@ -480,25 +480,8 @@ def build_arab_spring_node_matrix_v1(
         raise ValueError("data_start must be on or before data_end")
 
     event_counts: dict[tuple[str, str, str], int] = defaultdict(int)
-    for rec in records:
-        if rec.country_code not in country_codes:
-            continue
-        if not (data_start <= rec.event_date <= data_end):
-            continue
-        admin1 = (rec.admin1_code or "").strip()
-        if not admin1:
-            continue
-        if not (start <= rec.event_date <= as_of):
-            continue
-        norm_actor = _normalize_actor_name(rec.actor1_name)
-        time_bucket = _month_bucket(rec.event_date)
-        event_counts[(norm_actor, admin1, time_bucket)] += 1
-
-    qualified_keys = {
-        k for k, count in event_counts.items() if count >= MIN_EVENTS_PER_NODE
-    }
-
-    grouped: dict[tuple[str, str, str], list[EventTapeRecord]] = defaultdict(list)
+    node_accumulators: dict[tuple[str, str, str], dict] = {}
+    
     for rec in records:
         if rec.country_code not in country_codes:
             continue
@@ -512,29 +495,49 @@ def build_arab_spring_node_matrix_v1(
         norm_actor = _normalize_actor_name(rec.actor1_name)
         time_bucket = _month_bucket(rec.event_date)
         key = (norm_actor, admin1, time_bucket)
-        if key in qualified_keys:
-            grouped[key].append(rec)
-
-    keys_sorted = sorted(grouped.keys(), key=lambda k: (k[0], k[1], k[2]))
+        event_counts[key] += 1
+        
+        if key not in node_accumulators:
+            node_accumulators[key] = {
+                "hist": np.zeros(64, dtype=np.float64),
+                "gold_vals": [],
+                "quad_vals": [],
+                "tone_vals": [],
+                "first_seen": rec.event_date,
+                "hint_keys": set(),
+            }
+        
+        acc = node_accumulators[key]
+        acc["hist"][_root_bin(rec.event_root_code)] += 1.0
+        if rec.goldstein_scale is not None:
+            acc["gold_vals"].append(float(rec.goldstein_scale))
+        if rec.quad_class is not None:
+            acc["quad_vals"].append(_map_quad_to_neg1_1(rec.quad_class))
+        if rec.avg_tone is not None:
+            acc["tone_vals"].append(float(rec.avg_tone))
+        if rec.event_date < acc["first_seen"]:
+            acc["first_seen"] = rec.event_date
+        label = (rec.actor1_name or "").strip().lower()
+        if label:
+            acc["hint_keys"].add(label)
+    
+    keys_sorted = sorted(
+        (k for k, count in event_counts.items() if count >= MIN_EVENTS_PER_NODE),
+        key=lambda k: (k[0], k[1], k[2])
+    )
     rows_meta: list[NodeWarehouseRowMeta] = []
     feats = np.zeros((len(keys_sorted), NODE_VECTOR_DIM), dtype=np.float64)
 
-    for row_idx, (norm_actor, admin1, time_bucket) in enumerate(keys_sorted):
-        evs = grouped[(norm_actor, admin1, time_bucket)]
-        hist = np.zeros(64, dtype=np.float64)
-        gold_vals: list[float] = []
-        quad_vals: list[float] = []
-        tone_vals: list[float] = []
+    for row_idx, key in enumerate(keys_sorted):
+        norm_actor, admin1, time_bucket = key
+        acc = node_accumulators[key]
+        hist = acc["hist"]
+        gold_vals = acc["gold_vals"]
+        quad_vals = acc["quad_vals"]
+        tone_vals = acc["tone_vals"]
+        first_seen = acc["first_seen"]
+        hint_keys = acc["hint_keys"]
         slot = _stable_actor_slot(norm_actor)
-
-        for ev in evs:
-            hist[_root_bin(ev.event_root_code)] += 1.0
-            if ev.goldstein_scale is not None:
-                gold_vals.append(float(ev.goldstein_scale))
-            if ev.quad_class is not None:
-                quad_vals.append(_map_quad_to_neg1_1(ev.quad_class))
-            if ev.avg_tone is not None:
-                tone_vals.append(float(ev.avg_tone))
 
         s = float(hist.sum())
         if s > 0.0:
@@ -545,13 +548,14 @@ def build_arab_spring_node_matrix_v1(
         aidx = _admin1_hash_bin(admin1)
         feats[row_idx, 72 + aidx] = 1.0
 
-        n_ev = len(evs)
+        n_ev = len(gold_vals) + len(quad_vals) + len(tone_vals)
+        if n_ev == 0:
+            n_ev = int(np.sum(hist))
         feats[row_idx, 104] = np.log1p(n_ev) / 10.0
         feats[row_idx, 105] = float(np.mean(gold_vals)) if gold_vals else 0.0
         feats[row_idx, 106] = float(np.mean(quad_vals)) if quad_vals else 0.0
         feats[row_idx, 107] = float(np.mean(tone_vals)) if tone_vals else 0.0
 
-        first_seen = min(ev.event_date for ev in evs)
         node_id = f"ar_v1|{norm_actor}|{admin1}|{time_bucket}"
         slice_id = f"monthly_{time_bucket}"
         rows_meta.append(
@@ -561,7 +565,7 @@ def build_arab_spring_node_matrix_v1(
                 slice_id=slice_id,
                 admin1_code=admin1,
                 extensions={
-                    _ENTITY_HINT_KEYS: _actor1_hint_keys_raw(evs),
+                    _ENTITY_HINT_KEYS: sorted(hint_keys),
                     "actor_name_normalized": norm_actor,
                     "time_bucket": time_bucket,
                 },
