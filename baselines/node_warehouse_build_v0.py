@@ -67,6 +67,9 @@ NODE_WAREHOUSE_MMAP_EMBEDDING_VERSION_V0: Final[str] = "gdelt_cameo_hist_actor1_
 NODE_WAREHOUSE_MMAP_EMBEDDING_VERSION_V1: Final[str] = "ar_v1"
 DEFAULT_ARAB_SPRING_NODE_MMAP: Final[Path] = Path("shared_data/arab_spring/node_warehouse_v0.mmap")
 DEFAULT_ARAB_SPRING_NODE_MANIFEST: Final[Path] = Path("shared_data/arab_spring/node_warehouse_v0.mmap.json")
+# Minimum number of events required to create a node in the warehouse.
+# Nodes with fewer than this many events are filtered out to ensure statistical stability.
+MIN_EVENTS_PER_NODE: Final[int] = 3
 ARAB_SPRING_COUNTRY_RANGE_START: Final[date] = date(2010, 1, 1)
 ARAB_SPRING_COUNTRY_RANGE_END: Final[date] = date(2013, 12, 31)
 # Node matrix over EG, TU, LY, and SY when present in the warehouse (FIPS 2-letter ``country_code``).
@@ -476,6 +479,25 @@ def build_arab_spring_node_matrix_v1(
     if data_start > data_end:
         raise ValueError("data_start must be on or before data_end")
 
+    event_counts: dict[tuple[str, str, str], int] = defaultdict(int)
+    for rec in records:
+        if rec.country_code not in country_codes:
+            continue
+        if not (data_start <= rec.event_date <= data_end):
+            continue
+        admin1 = (rec.admin1_code or "").strip()
+        if not admin1:
+            continue
+        if not (start <= rec.event_date <= as_of):
+            continue
+        norm_actor = _normalize_actor_name(rec.actor1_name)
+        time_bucket = _month_bucket(rec.event_date)
+        event_counts[(norm_actor, admin1, time_bucket)] += 1
+
+    qualified_keys = {
+        k for k, count in event_counts.items() if count >= MIN_EVENTS_PER_NODE
+    }
+
     grouped: dict[tuple[str, str, str], list[EventTapeRecord]] = defaultdict(list)
     for rec in records:
         if rec.country_code not in country_codes:
@@ -489,7 +511,9 @@ def build_arab_spring_node_matrix_v1(
             continue
         norm_actor = _normalize_actor_name(rec.actor1_name)
         time_bucket = _month_bucket(rec.event_date)
-        grouped[(norm_actor, admin1, time_bucket)].append(rec)
+        key = (norm_actor, admin1, time_bucket)
+        if key in qualified_keys:
+            grouped[key].append(rec)
 
     keys_sorted = sorted(grouped.keys(), key=lambda k: (k[0], k[1], k[2]))
     rows_meta: list[NodeWarehouseRowMeta] = []
