@@ -625,17 +625,21 @@ def build_arab_spring_node_warehouse_v1(
         jsonl_path = Path(wp).parent / "events.jsonl"
         if jsonl_path.exists():
             import json
-            recs: list[EventTapeRecord] = []
-            with open(jsonl_path) as f:
-                for line in tqdm(f, desc="[v1] Loading events", unit=" events", disable=False):
-                    if not line.strip():
-                        continue
-                    payload = json.loads(line)
-                    rec = EventTapeRecord.model_validate(payload)
-                    recs.append(rec)
+            
+            print("[v1] Reading JSONL file (streaming)…", flush=True)
+            def build_records_from_jsonl():
+                with open(jsonl_path) as f:
+                    for line in f:
+                        if not line.strip():
+                            continue
+                        payload = json.loads(line)
+                        rec = EventTapeRecord.model_validate(payload)
+                        yield rec
+            
+            recs = list(tqdm(build_records_from_jsonl(), desc="[v1] Parsing events", unit=" events"))
         else:
             if show_progress:
-                print("[v1] JSONL not found, falling back to DuckDB…", flush=True)
+                print("[v1] JSONL not found, falling back to DuckDB (slower, higher memory)…", flush=True)
             recs = query_records(
                 db_path=wp,
                 country_codes=ARAB_SPRING_NODE_COUNTRY_CODES,
