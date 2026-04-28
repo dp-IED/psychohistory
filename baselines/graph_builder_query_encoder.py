@@ -6,6 +6,7 @@ import hashlib
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import date
 
 import numpy as np
 import torch
@@ -27,12 +28,21 @@ _FLAG_BUCKETS = 32
 _HASH_FEATURE_DIM = _GEO_BUCKETS + _ACTOR_BUCKETS + _FLAG_BUCKETS
 _LINEAR_IN_DIM = _HASH_FEATURE_DIM + NODE_WAREHOUSE_EMBEDDING_DIM_V1
 
+logger = logging.getLogger(__name__)
+
 
 def normalize_hint(s: str) -> str:
     return s.strip().casefold()
 
 
 def build_hint_index(rows: Sequence[NodeWarehouseRowMeta]) -> dict[str, str]:
+    """Map normalized hint string to one ``node_id``.
+
+    If the same hint appears on multiple rows (common in real GDELT/ACLED tape), the
+    **first** row in manifest order wins; later rows log a warning and are skipped
+    for that hint key. This keeps training and ``validate_probe_hints_against_manifest``
+    usable on world data where actor strings collide across (admin1, slot) buckets.
+    """
     out: dict[str, str] = {}
     for row in rows:
         raw = row.extensions.get(ENTITY_HINT_KEYS) if row.extensions else None
@@ -41,12 +51,100 @@ def build_hint_index(rows: Sequence[NodeWarehouseRowMeta]) -> dict[str, str]:
             if not isinstance(k, str):
                 continue
             nk = normalize_hint(k)
-            if nk in out and out[nk] != row.node_id:
-                raise ValueError(
-                    f"hint alias conflict for {nk!r}: node_ids {out[nk]!r} and {row.node_id!r}",
+            if nk in out:
+                if out[nk] == row.node_id:
+                    continue
+                logger.warning(
+                    "hint alias maps to multiple node_ids; keeping first %r -> %r (skipping %r)",
+                    nk,
+                    out[nk],
+                    row.node_id,
                 )
+                continue
             out[nk] = row.node_id
     return out
+
+
+def _warehouse_country_segment(node_id: str) -> str | None:
+    parts = node_id.split("|")
+    if len(parts) < 2:
+        return None
+    seg = parts[1]
+    return seg if seg else None
+
+
+# First geography token (before "-") for Arab Spring expanded probes -> middle segment
+# in ``ar_v0|XX|...`` node_id strings.
+_GEO_PREFIX_TO_WAREHOUSE_COUNTRY: dict[str, str] = {
+    "tunisia": "TU",
+    "egypt": "EG",
+    "libya": "LY",
+    "syria": "SY",
+}
+
+
+def _preferred_warehouse_country(geography: Sequence[str]) -> str | None:
+    if not geography:
+        return None
+    base = geography[0].split("-")[0].strip().casefold()
+    return _GEO_PREFIX_TO_WAREHOUSE_COUNTRY.get(base)
+
+
+def collect_rows_with_hint_key(
+    rows: Sequence[NodeWarehouseRowMeta],
+    key: str,
+) -> list[NodeWarehouseRowMeta]:
+    out: list[NodeWarehouseRowMeta] = []
+    for row in rows:
+        raw = row.extensions.get(ENTITY_HINT_KEYS) if row.extensions else None
+        aliases: list[str] = raw if isinstance(raw, list) else []
+        for k in aliases:
+            if isinstance(k, str) and normalize_hint(k) == key:
+                out.append(row)
+                break
+    return out
+
+
+def resolve_entity_hint_to_node_id(
+    *,
+    key: str,
+    as_of: date,
+    geography: Sequence[str],
+    rows: Sequence[NodeWarehouseRowMeta],
+    probe_id: str,
+    raw_hint: str,
+) -> str | None:
+    """Resolve a hint to a single ``node_id`` when many rows share the same alias.
+
+    World tape repeats generic actor strings (``police``, ``military``, ``egypt``) on
+    many (country, admin1) nodes. ``build_hint_index``'s first-row win can attach a
+    hint to a node whose ``first_seen`` is *after* the probe's ``as_of`` or to the
+    wrong country. This resolver considers **all** rows listing the key, keeps those
+    with ``first_seen is None or first_seen <= as_of``, then prefers ``node_id``'s
+    warehouse country segment (``ar_v0|LY|...``) when the probe's geography names a
+    mapped country. If no in-window node matches that country segment, returns
+    ``None`` (use unknown embedding) rather than stealing another country's row.
+
+    Returns:
+        ``None`` if no row lists this hint, if all rows are future evidence, or
+        if a geography-consistent in-window node cannot be chosen.
+    """
+    candidates = collect_rows_with_hint_key(rows, key)
+    if not candidates:
+        return None
+    temporal_ok = [r for r in candidates if r.first_seen is None or r.first_seen <= as_of]
+    if not temporal_ok:
+        return None
+    pref = _preferred_warehouse_country(geography)
+    pool = temporal_ok
+    if pref:
+        matched = [r for r in temporal_ok if _warehouse_country_segment(r.node_id) == pref]
+        if matched:
+            pool = matched
+        else:
+            return None
+    pool.sort(key=lambda r: (r.first_seen or date.min, r.node_id))
+    return pool[0].node_id
 
 
 def build_id_to_row_index(rows: list[NodeWarehouseRowMeta], row_count: int) -> dict[str, int]:
@@ -159,36 +257,53 @@ def encode_actor_state_query(
 ) -> torch.Tensor:
     """Encode an actor-state probe into the warehouse embedding space.
 
-    hint_index_override is a test-only hook: when set, it replaces the hint index
-    built from full_ctx.manifest.rows (used to simulate manifest integrity cases).
+    hint_index_override is a test-only hook: when set, it replaces per-hint
+    resolution with a fixed map (for tests; temporal OOB is still checked).
 
-    After a hint resolves to a row, if that row has ``first_seen`` set and
-    ``first_seen > actor_state.as_of``, encoding raises (evidence after the probe
-    date). Same calendar day is allowed (``first_seen == as_of``).
+    Otherwise, each hint is resolved with ``resolve_entity_hint_to_node_id`` so
+    generic aliases (``military``, ``police``) map to a row with
+    ``first_seen <= as_of`` and, for Arab-Spring geographies, the matching
+    ``ar_v0|CC|...`` country segment. Same calendar day is allowed
+    (``first_seen == as_of``). If the hint is missing or no row fits geography +
+    time, the unknown hint embedding is used.
     """
     if hint_index_override is not None:
         hint_index: dict[str, str] = dict(hint_index_override)
     else:
-        hint_index = build_hint_index(full_ctx.manifest.rows or [])
+        hint_index = {}
 
     device = encoder.unk_embedding.device
     dtype = encoder.unk_embedding.dtype
     hint_vecs: list[torch.Tensor] = []
     log = logging.getLogger(__name__)
+    rows = full_ctx.manifest.rows or []
 
     for hint in actor_state.entity_hints:
         key = normalize_hint(hint)
-        if key not in hint_index:
-            hint_vecs.append(encoder.unk_unit())
-            continue
-        node_id = hint_index[key]
-        meta = full_ctx.row_meta_by_id.get(node_id)
-        if meta is not None and meta.first_seen is not None and meta.first_seen > actor_state.as_of:
-            raise ValueError(
-                "temporal out-of-bounds: entity hint evidence is after probe as_of "
-                f"(probe_id={probe_id!r}, hint={hint!r}, node_id={node_id!r}, "
-                f"first_seen={meta.first_seen.isoformat()}, as_of={actor_state.as_of.isoformat()})",
+        if hint_index_override is not None:
+            if key not in hint_index:
+                hint_vecs.append(encoder.unk_unit())
+                continue
+            node_id = hint_index[key]
+            meta = full_ctx.row_meta_by_id.get(node_id)
+            if meta is not None and meta.first_seen is not None and meta.first_seen > actor_state.as_of:
+                raise ValueError(
+                    "temporal out-of-bounds: entity hint evidence is after probe as_of "
+                    f"(probe_id={probe_id!r}, hint={hint!r}, node_id={node_id!r}, "
+                    f"first_seen={meta.first_seen.isoformat()}, as_of={actor_state.as_of.isoformat()})",
+                )
+        else:
+            node_id = resolve_entity_hint_to_node_id(
+                key=key,
+                as_of=actor_state.as_of,
+                geography=actor_state.geography,
+                rows=rows,
+                probe_id=probe_id,
+                raw_hint=hint,
             )
+            if node_id is None:
+                hint_vecs.append(encoder.unk_unit())
+                continue
 
         emb_np: np.ndarray | None = None
         if node_id in slice_ctx.id_to_row:
@@ -227,7 +342,9 @@ __all__ = [
     "WarehouseMmapContext",
     "build_hint_index",
     "build_id_to_row_index",
+    "collect_rows_with_hint_key",
     "encode_actor_state_query",
     "normalize_hint",
+    "resolve_entity_hint_to_node_id",
     "warehouse_context_from_manifest",
 ]

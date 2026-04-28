@@ -49,7 +49,10 @@ def ann_rerank_global_indices_for_row(
         return np.zeros(0, dtype=np.int64), np.zeros(0, dtype=np.float32)
 
     candidate_feat = mmap_arr[valid_indices]
-    node_scores = (candidate_feat @ query_row_arr).astype(np.float32, copy=False)
+    node_scores = np.einsum("ij,j->i", candidate_feat, query_row_arr, optimize=True).astype(
+        np.float32,
+        copy=False,
+    )
     node_order = np.argsort(-node_scores, kind="stable")
     take_nodes = min(MAX_RETRIEVED_NODES, int(node_order.size))
     top_order = node_order[:take_nodes]

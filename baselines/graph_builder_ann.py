@@ -54,7 +54,7 @@ def brute_topk(
     scores = np.full(k, -np.inf, dtype=np.float32)
     if n_rows == 0 or k == 0:
         return indices, scores
-    sims = (cn @ qn).astype(np.float32)
+    sims = np.einsum("ij,j->i", cn, qn, optimize=True).astype(np.float32)
     take = min(k, n_rows)
     order = np.argsort(-sims, kind="stable")[:take]
     indices[:take] = order.astype(np.int64, copy=False)

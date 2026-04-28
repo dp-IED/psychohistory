@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import subprocess
+import sys
 from datetime import date
 from pathlib import Path
 from unittest.mock import patch
@@ -19,6 +22,7 @@ from baselines.graph_builder_positive_pairs import (
 )
 from baselines.graph_builder_query_encoder import ENTITY_HINT_KEYS
 from baselines.graph_builder_stage1_train import run_stage1_training
+from baselines.stage1_probe_corpus import Stage1ProbeCorpus
 from baselines.node_warehouse_mmap import write_float32_matrix, write_manifest
 from schemas.graph_builder_probe import (
     ActorStateQuery,
@@ -32,7 +36,14 @@ from schemas.graph_builder_warehouse import NodeWarehouseManifest, NodeWarehouse
 
 _ORIGIN = date(2019, 6, 1)
 _AS_OF = date(2019, 6, 1)
-# Within manifest PIT window [as_of - (window_days-1), as_of] so positive-pair builder keeps rows.
+# Staggered first_seen in [32, 90]-day lead-lag pairs; window must span ≥32 days inside PIT.
+_SMOKE_FIRST_SEEN = (
+    date(2019, 4, 15),
+    date(2019, 5, 17),
+    date(2019, 5, 18),
+    date(2019, 6, 1),
+)
+_SMOKE_WINDOW_DAYS = 60
 _SEEN = date(2019, 5, 15)
 
 
@@ -68,14 +79,14 @@ def _probe(probe_id: str, hint: str, gate: AssumptionEmphasis) -> ProbeRecord:
     )
 
 
-def _write_smoke_warehouse(tmp_path: Path, *, embedding_version: str = "smoke_emb_v1") -> tuple[Path, Path, Path]:
+def _write_smoke_manifest_and_mmap(tmp_path: Path, *, embedding_version: str = "smoke_emb_v1") -> tuple[Path, Path]:
     rng = np.random.default_rng(2027)
     mmap = _l2_rows(rng, 4)
     hints = ["hint_a", "hint_b", "hint_c", "hint_d"]
     rows = [
         NodeWarehouseRowMeta(
             node_id=f"n{i}",
-            first_seen=_SEEN,
+            first_seen=_SMOKE_FIRST_SEEN[i],
             admin1_code="FR-IDF",
             extensions={ENTITY_HINT_KEYS: [hints[i]]},
         )
@@ -87,13 +98,19 @@ def _write_smoke_warehouse(tmp_path: Path, *, embedding_version: str = "smoke_em
         mmap_path="nodes.f32",
         row_count=4,
         rows=rows,
-        window_days=30,
+        window_days=_SMOKE_WINDOW_DAYS,
         as_of=_AS_OF,
     )
     mmap_path = tmp_path / "nodes.f32"
     manifest_path = tmp_path / "manifest.json"
     write_float32_matrix(mmap_path, mmap)
     write_manifest(manifest_path, manifest)
+    return manifest_path, mmap_path
+
+
+def _write_smoke_warehouse(tmp_path: Path, *, embedding_version: str = "smoke_emb_v1") -> tuple[Path, Path, Path]:
+    manifest_path, mmap_path = _write_smoke_manifest_and_mmap(tmp_path, embedding_version=embedding_version)
+    manifest = NodeWarehouseManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
     pairs_dir = tmp_path / "pairs_out"
     meta_path = build_positive_pairs(manifest, mmap_path, pairs_dir)
     return manifest_path, mmap_path, meta_path
@@ -115,25 +132,35 @@ def test_version_mismatch_before_training_raises(tmp_path: Path) -> None:
             epochs=1,
             batch_size=1,
             seed=0,
+            show_progress=False,
         )
     assert list(out.glob("query_encoder_epoch_*.pt")) == []
 
 
+def _all_gates_probes(hints: list[str]) -> list[ProbeRecord]:
+    """Return one probe per AssumptionEmphasis gate (5 total) for smoke tests."""
+    gates = list(AssumptionEmphasis)
+    hint_cycle = (hints * 5)[:5]
+    return [_probe(f"smoke_{i}", hint_cycle[i], gates[i]) for i in range(5)]
+
+
 def test_smoke_one_step_saves_checkpoint_and_state(tmp_path: Path) -> None:
     manifest_path, mmap_path, meta_path = _write_smoke_warehouse(tmp_path)
-    probes = [_probe("p0", "hint_a", AssumptionEmphasis.PERSISTENCE), _probe("p1", "hint_b", AssumptionEmphasis.PROPAGATION)]
+    probes = _all_gates_probes(["hint_a", "hint_b", "hint_c", "hint_d"])
+    corpus = Stage1ProbeCorpus(kind="france", probes=probes)
     out = tmp_path / "train_out"
 
-    with patch("baselines.graph_builder_stage1_train.build_france_plumbing_probe_corpus", return_value=probes):
-        run_stage1_training(
-            manifest_path,
-            mmap_path,
-            meta_path,
-            out,
-            epochs=1,
-            batch_size=2,
-            seed=0,
-        )
+    run_stage1_training(
+        manifest_path,
+        mmap_path,
+        meta_path,
+        out,
+        epochs=1,
+        batch_size=2,
+        seed=0,
+        corpus=corpus,
+        show_progress=False,
+    )
 
     ckpt = out / "query_encoder_epoch_000.pt"
     assert ckpt.is_file()
@@ -150,19 +177,21 @@ def test_gate_coverage_logs_all_five_gates(caplog: pytest.LogCaptureFixture, tmp
     gates = list(AssumptionEmphasis)
     assert len(gates) == 5
     probes = [_probe(f"p{i}", f"h{i}", gates[i]) for i in range(5)]
+    corpus = Stage1ProbeCorpus(kind="france", probes=probes)
     out = tmp_path / "train_out"
 
-    with patch("baselines.graph_builder_stage1_train.build_france_plumbing_probe_corpus", return_value=probes):
-        with caplog.at_level(logging.INFO, logger="baselines.graph_builder_stage1_train"):
-            run_stage1_training(
-                manifest_path,
-                mmap_path,
-                meta_path,
-                out,
-                epochs=1,
-                batch_size=5,
-                seed=0,
-            )
+    with caplog.at_level(logging.INFO, logger="baselines.graph_builder_stage1_train"):
+        run_stage1_training(
+            manifest_path,
+            mmap_path,
+            meta_path,
+            out,
+            epochs=1,
+            batch_size=5,
+            seed=0,
+            corpus=corpus,
+            show_progress=False,
+        )
 
     text = caplog.text
     for g in gates:
@@ -183,7 +212,7 @@ def _fake_brute_topk_first_four(
 
 
 def _write_pairs_manual_only_45(tmp_path: Path, manifest: NodeWarehouseManifest, mmap_path: Path) -> Path:
-    """Single pair (4, 5) — not the full admin1_14day closure (tests ANN-restricted retrieved set)."""
+    """Single pair (4, 5) — manual artifact, not the full admin1_lead_lag closure (ANN-restricted retrieved set)."""
     arr = np.array([[4, 5]], dtype=np.int32)
     pairs_name = "only45.npy"
     np.save(tmp_path / pairs_name, arr)
@@ -230,21 +259,80 @@ def test_no_positive_in_retrieved_skips_without_crash(caplog: pytest.LogCaptureF
     write_manifest(manifest_path, manifest)
     meta_path = _write_pairs_manual_only_45(tmp_path, manifest, mmap_path)
 
-    probes = [_probe("only", "h0", AssumptionEmphasis.PERSISTENCE)]
+    probes = _all_gates_probes(["h0", "h1", "h2", "h3"])
+    corpus = Stage1ProbeCorpus(kind="france", probes=probes)
     out = tmp_path / "train_out"
 
-    with patch("baselines.graph_builder_stage1_train.build_france_plumbing_probe_corpus", return_value=probes):
-        with patch("baselines.graph_builder_stage1_train.brute_topk", side_effect=_fake_brute_topk_first_four):
-            with caplog.at_level(logging.WARNING, logger="baselines.graph_builder_stage1_train"):
-                run_stage1_training(
-                    manifest_path,
-                    mmap_path,
-                    meta_path,
-                    out,
-                    epochs=1,
-                    batch_size=1,
-                    seed=0,
-                )
+    with patch("baselines.graph_builder_stage1_train.brute_topk", side_effect=_fake_brute_topk_first_four):
+        with caplog.at_level(logging.WARNING, logger="baselines.graph_builder_stage1_train"):
+            run_stage1_training(
+                manifest_path,
+                mmap_path,
+                meta_path,
+                out,
+                epochs=1,
+                batch_size=1,
+                seed=0,
+                corpus=corpus,
+                show_progress=False,
+            )
 
     assert "skipping probe" in caplog.text.lower() or "no intra-retrieved" in caplog.text.lower()
     assert (out / "query_encoder_epoch_000.pt").is_file()
+
+
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _cli_env() -> dict[str, str]:
+    return {**os.environ, "PYTHONPATH": str(_REPO_ROOT)}
+
+
+def test_cli_help_exits_zero() -> None:
+    r = subprocess.run(
+        [sys.executable, "-m", "baselines.graph_builder_stage1_train", "--help"],
+        cwd=_REPO_ROOT,
+        env=_cli_env(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert r.returncode == 0, r.stderr
+
+
+def test_cli_happy_path_build_pairs_france_subprocess(tmp_path: Path) -> None:
+    manifest_path, mmap_path = _write_smoke_manifest_and_mmap(tmp_path)
+    pairs_dir = tmp_path / "pairs_out"
+    out = tmp_path / "train_out"
+    r = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "baselines.graph_builder_stage1_train",
+            "--manifest",
+            str(manifest_path),
+            "--mmap",
+            str(mmap_path),
+            "--output-dir",
+            str(out),
+            "--build-pairs-to",
+            str(pairs_dir),
+            "--corpus",
+            "france",
+            "--epochs",
+            "1",
+            "--batch-size",
+            "2",
+            "--no-progress",
+        ],
+        cwd=_REPO_ROOT,
+        env=_cli_env(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert r.returncode == 0, (r.stderr, r.stdout)
+    assert "epoch=1/1 complete" in r.stderr
+    assert "mean_loss=" in r.stderr
+    assert (out / "query_encoder_epoch_000.pt").is_file()
+    assert (pairs_dir / META_JSON_BASENAME).is_file()

@@ -27,7 +27,13 @@ from schemas.graph_builder_warehouse import NodeWarehouseManifest, NodeWarehouse
 
 _ORIGIN = date(2019, 6, 1)
 _AS_OF = date(2019, 6, 1)
-_SEEN = date(2019, 5, 15)
+_SMOKE_FIRST_SEEN = (
+    date(2019, 4, 15),
+    date(2019, 5, 17),
+    date(2019, 5, 18),
+    date(2019, 6, 1),
+)
+_SMOKE_WINDOW_DAYS = 60
 
 
 def _probe(probe_id: str, hint: str, gate: AssumptionEmphasis) -> ProbeRecord:
@@ -65,7 +71,7 @@ def _write_smoke_warehouse(tmp_path: Path, *, embedding_version: str = "smoke_em
     rows = [
         NodeWarehouseRowMeta(
             node_id=f"n{i}",
-            first_seen=_SEEN,
+            first_seen=_SMOKE_FIRST_SEEN[i],
             admin1_code="FR-IDF",
             extensions={ENTITY_HINT_KEYS: [hints[i]]},
         )
@@ -77,7 +83,7 @@ def _write_smoke_warehouse(tmp_path: Path, *, embedding_version: str = "smoke_em
         mmap_path="nodes.f32",
         row_count=4,
         rows=rows,
-        window_days=30,
+        window_days=_SMOKE_WINDOW_DAYS,
         as_of=_AS_OF,
     )
     mmap_path = tmp_path / "nodes.f32"

@@ -92,8 +92,12 @@ def test_v1_collapses_same_normalized_actor_to_one_monthly_node() -> None:
 def test_v1_splits_same_actor_across_two_months() -> None:
     as_of = date(2011, 2, 28)
     recs = [
-        _eg_record(source_event_id="jan", event_date=date(2011, 1, 20), actor1_name="Coalition"),
-        _eg_record(source_event_id="feb", event_date=date(2011, 2, 20), actor1_name="Coalition"),
+        _eg_record(source_event_id="jan1", event_date=date(2011, 1, 20), actor1_name="Coalition"),
+        _eg_record(source_event_id="jan2", event_date=date(2011, 1, 21), actor1_name="Coalition"),
+        _eg_record(source_event_id="jan3", event_date=date(2011, 1, 22), actor1_name="Coalition"),
+        _eg_record(source_event_id="feb1", event_date=date(2011, 2, 20), actor1_name="Coalition"),
+        _eg_record(source_event_id="feb2", event_date=date(2011, 2, 21), actor1_name="Coalition"),
+        _eg_record(source_event_id="feb3", event_date=date(2011, 2, 22), actor1_name="Coalition"),
     ]
     matrix, metas = build_arab_spring_node_matrix_v1(recs, as_of=as_of, window_days=365)
     assert matrix.shape == (2, 128)
@@ -112,14 +116,17 @@ def test_v1_entity_hint_keys_keep_sorted_distinct_raw_names() -> None:
     ]
     _, metas = build_arab_spring_node_matrix_v1(recs, as_of=as_of, window_days=365)
     assert metas[0].extensions["entity_hint_keys"] == [
-        "Free Syrian Army",
         "free syrian army",
     ]
 
 
 def test_v1_pre_norm_guard_raises() -> None:
     as_of = date(2011, 2, 28)
-    recs = [_eg_record(source_event_id="e1", event_date=date(2011, 2, 10), actor1_name="anchor_actor")]
+    recs = [
+        _eg_record(source_event_id="e1", event_date=date(2011, 2, 10), actor1_name="anchor_actor"),
+        _eg_record(source_event_id="e2", event_date=date(2011, 2, 11), actor1_name="anchor_actor"),
+        _eg_record(source_event_id="e3", event_date=date(2011, 2, 12), actor1_name="anchor_actor"),
+    ]
     with patch("baselines.node_warehouse_build_v0._PRE_L2_NORM_EPS", 1.0e9):
         with pytest.raises(ValueError, match="node warehouse v1"):
             build_arab_spring_node_matrix_v1(recs, as_of=as_of, window_days=365)
