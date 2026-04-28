@@ -1,5 +1,26 @@
 """France (FRA) node warehouse v0: locked 128-d features from ``EventTapeRecord``.
 
+**CRITICAL: Memory-efficient warehouse aggregation pattern**
+
+Warehouse builds for large event corpora (millions of events) must use a **single-pass 
+streaming aggregation** pattern to avoid RAM exhaustion. This module implements the pattern:
+
+1. **JSONL-only data source for production** (not DuckDB): DuckDB's memory mapping causes 
+   virtual memory (VSZ) explosion even when RSS is manageable. JSONL streams naturally.
+
+2. **One-by-one event processing with numpy accumulators**: Never store full ``EventTapeRecord`` 
+   objects in memory. Instead, directly accumulate features (histograms, scalars, sets) into 
+   numpy arrays indexed by node key. See ``build_arab_spring_node_matrix_v1(records)``.
+
+3. **Progress tracking with manual prints** (not tqdm): ``tqdm`` buffers output, causing 
+   perceived hangs and silent exits. Use manual ``print(..., flush=True)`` every 100k events.
+
+**Result:** Peak RAM reduced from 85GB+ to ~4.4GB for ~6M events over 98k nodes.
+
+This pattern is mandatory for all future warehouse recipes (Eurozone, Latin America, etc.).
+
+---
+
 Point-in-time window (inclusive on both ends): for ``as_of`` and ``window_days``,
 events satisfy ``event_date <= as_of`` and
 ``event_date >= as_of - timedelta(days=window_days - 1)``. That is exactly

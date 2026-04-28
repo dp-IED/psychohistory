@@ -12,6 +12,7 @@ import pytest
 from baselines.graph_builder_positive_pairs import (
     PAIRS_ARRAY_BASENAME,
     POSITIVE_PAIR_VERSION,
+    STRICT_POSITIVE_PAIR_VERSION,
     build_positive_pairs,
     load_positive_pairs,
 )
@@ -263,3 +264,49 @@ def test_load_rejects_non_basename_pairs_path(tmp_path: Path) -> None:
     meta_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     with pytest.raises(ValueError, match=r"basename"):
         load_positive_pairs(meta_path, manifest)
+
+
+def test_strict_v1_country_level_rows_allowed_with_actor_guard(tmp_path: Path) -> None:
+    rows = [
+        NodeWarehouseRowMeta(node_id="ar_v1|protester|EG|2011-01", admin1_code="EG", first_seen=date(2011, 1, 1)),
+        NodeWarehouseRowMeta(node_id="ar_v1|protester|EG|2011-03", admin1_code="EG", first_seen=date(2011, 3, 5)),
+    ]
+    manifest = _manifest(rows=rows, as_of=None, window_days=1461)
+    mmap_file = tmp_path / "dummy.f32"
+    mmap_file.write_bytes(b"")
+    meta_path = build_positive_pairs(
+        manifest,
+        mmap_file,
+        tmp_path,
+        positive_pair_version=STRICT_POSITIVE_PAIR_VERSION,
+    )
+    pairs, meta = load_positive_pairs(meta_path, manifest)
+    assert pairs.shape == (1, 2)
+    assert tuple(pairs[0].tolist()) == (0, 1)
+    assert meta["positive_pair_version"] == STRICT_POSITIVE_PAIR_VERSION
+
+
+def test_strict_v1_requires_same_actor_bucket(tmp_path: Path) -> None:
+    rows = [
+        NodeWarehouseRowMeta(
+            node_id="ar_v1|protester|EG-C|2011-01",
+            admin1_code="EG-C",
+            first_seen=date(2011, 1, 1),
+        ),
+        NodeWarehouseRowMeta(
+            node_id="ar_v1|government|EG-C|2011-03",
+            admin1_code="EG-C",
+            first_seen=date(2011, 3, 5),
+        ),
+    ]
+    manifest = _manifest(rows=rows, as_of=None, window_days=1461)
+    mmap_file = tmp_path / "dummy.f32"
+    mmap_file.write_bytes(b"")
+    meta_path = build_positive_pairs(
+        manifest,
+        mmap_file,
+        tmp_path,
+        positive_pair_version=STRICT_POSITIVE_PAIR_VERSION,
+    )
+    pairs, _ = load_positive_pairs(meta_path, manifest)
+    assert pairs.shape == (0, 2)

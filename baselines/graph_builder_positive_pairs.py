@@ -41,6 +41,8 @@ def _progress_note(message: str, *, show_progress: bool) -> None:
         tqdm.write(message, file=sys.stderr)
 
 POSITIVE_PAIR_VERSION = "admin1_lead_lag_v0"
+STRICT_POSITIVE_PAIR_VERSION = "admin1_lead_lag_strict_v1"
+SUPPORTED_POSITIVE_PAIR_VERSIONS = {POSITIVE_PAIR_VERSION, STRICT_POSITIVE_PAIR_VERSION}
 LEAD_LAG_MIN_DAYS = 32
 LEAD_LAG_MAX_DAYS = 90
 PAIRS_ARRAY_BASENAME = "positive_pairs.admin1_lead_lag_v0.npy"
@@ -65,11 +67,26 @@ def _first_seen_in_pit_window(
     return start <= first_seen <= as_of
 
 
+def _parse_actor_from_node_id(node_id: str) -> str:
+    parts = node_id.split("|")
+    if len(parts) >= 4:
+        return parts[1].strip().lower()
+    return ""
+
+
+def _country_prefix_from_admin1(admin1: str) -> str:
+    admin1 = admin1.strip()
+    if "-" in admin1:
+        return admin1.split("-", 1)[0].strip().upper()
+    return admin1.strip().upper()
+
+
 def _eligible_row_indices(
     rows: Sequence[NodeWarehouseRowMeta],
     *,
     as_of: date | None,
     window_days: int,
+    positive_pair_version: str,
 ) -> list[tuple[int, date, str]]:
     out: list[tuple[int, date, str]] = []
     for idx, meta in enumerate(rows):
@@ -82,7 +99,23 @@ def _eligible_row_indices(
             window_days=window_days,
         ):
             continue
-        out.append((idx, meta.first_seen, admin1))
+
+        if positive_pair_version == POSITIVE_PAIR_VERSION:
+            bucket_key = admin1
+        elif positive_pair_version == STRICT_POSITIVE_PAIR_VERSION:
+            # Strict v1: enforce actor-consistent buckets within geographic code.
+            actor = _parse_actor_from_node_id(meta.node_id)
+            if not actor:
+                continue
+            country = _country_prefix_from_admin1(admin1)
+            bucket_key = f"{country}|{admin1}|{actor}"
+        else:
+            raise ValueError(
+                f"Unsupported positive_pair_version={positive_pair_version!r}; "
+                f"supported={sorted(SUPPORTED_POSITIVE_PAIR_VERSIONS)}",
+            )
+
+        out.append((idx, meta.first_seen, bucket_key))
     return out
 
 
@@ -161,6 +194,7 @@ def build_positive_pairs(
     output_dir: Path,
     *,
     show_progress: bool = False,
+    positive_pair_version: str = POSITIVE_PAIR_VERSION,
 ) -> Path:
     rows = manifest.rows
     if rows is None:
@@ -184,6 +218,7 @@ def build_positive_pairs(
         rows_for_eligible,
         as_of=manifest.as_of,
         window_days=manifest.window_days,
+        positive_pair_version=positive_pair_version,
     )
     pair_tuples = _pairs_from_buckets(entries, show_progress=show_progress)
     n_pairs = len(pair_tuples)
@@ -222,7 +257,7 @@ def build_positive_pairs(
         "pair_count": int(pairs.shape[0]),
         "mmap_path": mmap_str,
         "as_of": as_of_val,
-        "positive_pair_version": POSITIVE_PAIR_VERSION,
+        "positive_pair_version": positive_pair_version,
         "pairs_path": PAIRS_ARRAY_BASENAME,
     }
     meta_path.write_text(json.dumps(meta, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -314,6 +349,8 @@ __all__ = [
     "META_JSON_BASENAME",
     "PAIRS_ARRAY_BASENAME",
     "POSITIVE_PAIR_VERSION",
+    "STRICT_POSITIVE_PAIR_VERSION",
+    "SUPPORTED_POSITIVE_PAIR_VERSIONS",
     "PositivePairLookup",
     "build_positive_pairs",
     "load_positive_pairs",
@@ -328,7 +365,13 @@ if __name__ == "__main__":
     parser.add_argument("--mmap", required=True, help="Path to warehouse mmap file")
     parser.add_argument("--output-dir", required=True, help="Output directory for pairs")
     parser.add_argument("--show-progress", action="store_true", help="Show progress bars")
-    
+    parser.add_argument(
+        "--recipe",
+        choices=sorted(SUPPORTED_POSITIVE_PAIR_VERSIONS),
+        default=POSITIVE_PAIR_VERSION,
+        help="Positive-pair recipe id.",
+    )
+
     args = parser.parse_args()
     
     # Load manifest
@@ -343,6 +386,7 @@ if __name__ == "__main__":
         mmap_path=Path(args.mmap),
         output_dir=Path(args.output_dir),
         show_progress=args.show_progress,
+        positive_pair_version=args.recipe,
     )
     
     if args.show_progress:

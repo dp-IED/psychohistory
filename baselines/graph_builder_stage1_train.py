@@ -22,6 +22,8 @@ from tqdm.auto import tqdm
 from baselines.graph_builder_ann import brute_topk
 from baselines.graph_builder_positive_pairs import (
     META_JSON_BASENAME,
+    POSITIVE_PAIR_VERSION,
+    SUPPORTED_POSITIVE_PAIR_VERSIONS,
     PositivePairLookup,
     build_positive_pairs,
     load_positive_pairs,
@@ -33,6 +35,8 @@ from baselines.graph_builder_query_encoder import (
 )
 from baselines.graph_builder_rerank import ann_rerank_global_indices, build_retrieved_graph_batch_from_ann
 from baselines.node_warehouse_mmap import read_float32_matrix
+from baselines.stage1_predictive_targets import load_predictive_targets
+from baselines.stage1_predictive_tuples import build_predictive_training_tuples
 from baselines.stage1_probe_corpus import Stage1ProbeCorpus
 from schemas.graph_builder_probe import AssumptionEmphasis, ProbeRecord
 from schemas.graph_builder_warehouse import NodeWarehouseManifest
@@ -40,6 +44,12 @@ from schemas.graph_builder_warehouse import NodeWarehouseManifest
 logger = logging.getLogger(__name__)
 
 _DEFAULT_LR = 1e-3
+STAGE1_OBJECTIVE_INFONCE_V0 = "infonce_v0"
+STAGE1_OBJECTIVE_PREDICTIVE_RANKCHANGE_V1 = "predictive_coding_rankchange_v1"
+SUPPORTED_STAGE1_OBJECTIVES = {
+    STAGE1_OBJECTIVE_INFONCE_V0,
+    STAGE1_OBJECTIVE_PREDICTIVE_RANKCHANGE_V1,
+}
 
 
 def _positive_nodes_in_retrieved(R: set[int], pair_lookup: PositivePairLookup) -> set[int]:
@@ -121,6 +131,280 @@ def _per_probe_infonce(
     return loss_b, True
 
 
+def _inject_predictive_positives_into_retrieved(
+    *,
+    batch: list[ProbeRecord],
+    predictive_probe_horizon_mapping: dict[str, int],
+    predictive_tuple_map: dict[tuple[str, int], dict[str, object]],
+    global_idx: np.ndarray,
+    retrieved_node_mask: torch.Tensor,
+    retrieved_node_feat: torch.Tensor,
+    mmap_np: np.ndarray,
+) -> int:
+    """Ensure each predictive probe has at least one tuple-positive in retrieved top-K.
+
+    If no tuple positive is present in a probe's reranked retrieved row, replace the
+    last retrieved slot with a sampled tuple-positive global row and inject its
+    embedding into ``retrieved_node_feat``.
+    """
+    if global_idx.ndim != 2:
+        raise ValueError(f"global_idx must be 2D, got shape={global_idx.shape}")
+    injected = 0
+    last_slot = int(global_idx.shape[1] - 1)
+    for b, probe in enumerate(batch):
+        probe_horizon = int(probe.lens_params.horizon_days)
+        mapped_horizon = int(predictive_probe_horizon_mapping.get(str(probe_horizon), probe_horizon))
+        tuple_entry = predictive_tuple_map.get((str(probe.probe_id), mapped_horizon))
+        if tuple_entry is None:
+            continue
+        positives = [int(i) for i in tuple_entry.get("pos_global_indices", [])]
+        if not positives:
+            continue
+        present = {
+            int(global_idx[b, s])
+            for s in range(global_idx.shape[1])
+            if bool(retrieved_node_mask[b, s].item()) and int(global_idx[b, s]) >= 0
+        }
+        if any(p in present for p in positives):
+            continue
+        chosen = int(np.random.choice(np.asarray(positives, dtype=np.int64)))
+        global_idx[b, last_slot] = chosen
+        retrieved_node_mask[b, last_slot] = True
+        retrieved_node_feat[b, last_slot] = torch.tensor(
+            mmap_np[chosen],
+            dtype=retrieved_node_feat.dtype,
+            device=retrieved_node_feat.device,
+        )
+        injected += 1
+    return injected
+
+
+def _per_probe_predictive_rankchange(
+    q: torch.Tensor,
+    *,
+    probe: ProbeRecord,
+    global_indices_row: np.ndarray,
+    node_mask_row: torch.Tensor,
+    node_feat_row: torch.Tensor,
+    manifest: NodeWarehouseManifest,
+    horizon_targets: dict[int, np.ndarray],
+    horizon_weights: dict[int, float],
+    temperature: float,
+    tuple_entry: dict[str, object] | None = None,
+    predictive_tuple_weight: float = 1.0,
+    predictive_fallback_weight: float = 0.25,
+    predictive_stratum_weight_same_time_wrong_domain: float = 2.0,
+    predictive_stratum_weight_same_domain_wrong_horizon: float = 1.25,
+    predictive_stratum_weight_same_region_non_precursor: float = 1.0,
+    return_branch_usage: bool = False,
+    return_diagnostics: bool = False,
+) -> tuple[torch.Tensor | None, bool] | tuple[torch.Tensor | None, bool, dict[str, bool]] | tuple[torch.Tensor | None, bool, dict[str, bool], dict[str, object]]:
+    expected_country = None
+    for g in probe.q_struct.actor_state.geography:
+        gs = g.strip().lower()
+        if gs in {"tunisia", "egypt", "libya", "syria", "bahrain", "yemen", "jordan"}:
+            expected_country = {
+                "tunisia": "TU",
+                "egypt": "EG",
+                "libya": "LY",
+                "syria": "SY",
+                "bahrain": "BA",
+                "yemen": "YM",
+                "jordan": "JO",
+            }[gs]
+            break
+        if "-" in gs:
+            tok = gs.split("-", 1)[0]
+            if tok in {"tunisia", "egypt", "libya", "syria", "bahrain", "yemen", "jordan"}:
+                expected_country = {
+                    "tunisia": "TU",
+                    "egypt": "EG",
+                    "libya": "LY",
+                    "syria": "SY",
+                    "bahrain": "BA",
+                    "yemen": "YM",
+                    "jordan": "JO",
+                }[tok]
+                break
+
+    slot_by_global: dict[int, int] = {}
+    for s in range(int(global_indices_row.shape[0])):
+        if not bool(node_mask_row[s].item()):
+            continue
+        gix = int(global_indices_row[s])
+        if 0 <= gix < manifest.row_count:
+            slot_by_global[gix] = s
+
+    tuple_loss: torch.Tensor | None = None
+    fallback_loss: torch.Tensor | None = None
+    q_norm = float(torch.linalg.vector_norm(q.detach()).cpu().item())
+    pos_scores: list[float] = []
+    neg_scores: list[float] = []
+
+    if tuple_entry is not None:
+        tuple_pos = {int(i) for i in tuple_entry.get("pos_global_indices", [])}
+        tuple_neg = {int(i) for i in tuple_entry.get("neg_global_indices", [])}
+        tuple_nodes = sorted((tuple_pos | tuple_neg) & set(slot_by_global.keys()))
+        if tuple_nodes:
+            tuple_slots = [slot_by_global[g] for g in tuple_nodes]
+            index_by_global = {g: idx for idx, g in enumerate(tuple_nodes)}
+            raw_scores = torch.stack([(q * node_feat_row[s].detach()).sum() for s in tuple_slots], dim=0)
+            logits = raw_scores / temperature
+            y_t = torch.tensor(
+                [1.0 if g in tuple_pos else 0.0 for g in tuple_nodes],
+                dtype=logits.dtype,
+                device=logits.device,
+            )
+            y_mask = y_t > 0.5
+            if bool(y_mask.any().item()):
+                pos_scores.extend([float(v) for v in raw_scores[y_mask].detach().cpu().tolist()])
+            if bool((~y_mask).any().item()):
+                neg_scores.extend([float(v) for v in raw_scores[~y_mask].detach().cpu().tolist()])
+            sample_weights = torch.ones_like(y_t)
+            strata_indices = tuple_entry.get("strata_indices", {})
+            if isinstance(strata_indices, dict):
+                for i in strata_indices.get("same_time_wrong_domain", []):
+                    gi = int(i)
+                    if gi in tuple_neg and gi in index_by_global:
+                        sample_weights[index_by_global[gi]] = predictive_stratum_weight_same_time_wrong_domain
+                for i in strata_indices.get("same_domain_wrong_horizon", []):
+                    gi = int(i)
+                    if gi in tuple_neg and gi in index_by_global:
+                        sample_weights[index_by_global[gi]] = predictive_stratum_weight_same_domain_wrong_horizon
+                for i in strata_indices.get("same_region_non_precursor", []):
+                    gi = int(i)
+                    if gi in tuple_neg and gi in index_by_global:
+                        sample_weights[index_by_global[gi]] = predictive_stratum_weight_same_region_non_precursor
+            bce_unreduced = torch.nn.functional.binary_cross_entropy_with_logits(logits, y_t, reduction="none")
+            denom = sample_weights.sum().clamp_min(torch.finfo(sample_weights.dtype).eps)
+            tuple_loss = (bce_unreduced * sample_weights).sum() / denom
+
+    slot_ix: list[int] = []
+    ys: list[float] = []
+    for gix, s in slot_by_global.items():
+        row = manifest.rows[gix] if manifest.rows is not None else None
+        if row is None:
+            continue
+        if expected_country is not None:
+            admin1 = (row.admin1_code or "").strip().upper()
+            if not admin1.startswith(expected_country):
+                continue
+
+        y = 0.0
+        for h, arr in horizon_targets.items():
+            w = float(horizon_weights.get(h, 0.0))
+            if w <= 0:
+                continue
+            y += w * float(arr[gix])
+        y = max(0.0, min(1.0, y))
+        slot_ix.append(s)
+        ys.append(y)
+
+    if slot_ix:
+        raw_scores = torch.stack([(q * node_feat_row[s].detach()).sum() for s in slot_ix], dim=0)
+        logits = raw_scores / temperature
+        y_t = torch.tensor(ys, dtype=logits.dtype, device=logits.device)
+        y_mask = y_t > 0.5
+        if bool(y_mask.any().item()):
+            pos_scores.extend([float(v) for v in raw_scores[y_mask].detach().cpu().tolist()])
+        if bool((~y_mask).any().item()):
+            neg_scores.extend([float(v) for v in raw_scores[~y_mask].detach().cpu().tolist()])
+        fallback_loss = torch.nn.functional.binary_cross_entropy_with_logits(logits, y_t)
+
+    branch_usage = {
+        "tuple_used": tuple_loss is not None,
+        "fallback_used": fallback_loss is not None,
+    }
+
+    diagnostics = {
+        "query_vec_norm": q_norm,
+        "pos_scores": pos_scores,
+        "neg_scores": neg_scores,
+    }
+
+    if tuple_loss is not None and fallback_loss is not None:
+        loss = (predictive_tuple_weight * tuple_loss) + (predictive_fallback_weight * fallback_loss)
+        if return_branch_usage and return_diagnostics:
+            return loss, True, branch_usage, diagnostics
+        if return_branch_usage:
+            return loss, True, branch_usage
+        return loss, True
+    if tuple_loss is not None:
+        if return_branch_usage and return_diagnostics:
+            return tuple_loss, True, branch_usage, diagnostics
+        if return_branch_usage:
+            return tuple_loss, True, branch_usage
+        return tuple_loss, True
+    if fallback_loss is not None:
+        if return_branch_usage and return_diagnostics:
+            return fallback_loss, True, branch_usage, diagnostics
+        if return_branch_usage:
+            return fallback_loss, True, branch_usage
+        return fallback_loss, True
+    if return_branch_usage and return_diagnostics:
+        return None, False, branch_usage, diagnostics
+    if return_branch_usage:
+        return None, False, branch_usage
+    return None, False
+
+
+def _nearest_predictive_horizon(probe_horizon_days: int, predictive_horizons_days: list[int]) -> int:
+    if not predictive_horizons_days:
+        raise ValueError("predictive_horizons_days must be non-empty")
+    return int(min(predictive_horizons_days, key=lambda h: (abs(int(h) - int(probe_horizon_days)), int(h))))
+
+
+def _build_predictive_probe_horizon_mapping(
+    probes: list[ProbeRecord],
+    predictive_horizons_days: list[int],
+) -> dict[str, int]:
+    uniq_probe_horizons = sorted({int(p.lens_params.horizon_days) for p in probes})
+    return {
+        str(h): _nearest_predictive_horizon(h, predictive_horizons_days)
+        for h in uniq_probe_horizons
+    }
+
+
+def _predictive_geo_bucket(probe: ProbeRecord) -> str:
+    for g in probe.q_struct.actor_state.geography:
+        gs = g.strip().lower()
+        if gs.startswith("egypt"):
+            return "egypt"
+        if gs.startswith("libya"):
+            return "libya"
+        if gs.startswith("tunisia"):
+            return "tunisia"
+    return "unknown"
+
+
+def _resolve_horizon_weights(
+    *,
+    horizons_days: list[int],
+    meta_horizon_weights: list[float],
+    mode: str,
+) -> dict[int, float]:
+    if not horizons_days:
+        return {}
+    if mode == "meta":
+        return {
+            int(h): float(w)
+            for h, w in zip(horizons_days, meta_horizon_weights)
+        }
+    if mode == "uniform":
+        w = 1.0 / float(len(horizons_days))
+        return {int(h): w for h in horizons_days}
+    if mode == "inverse_horizon":
+        raw = np.asarray([1.0 / float(h) for h in horizons_days], dtype=np.float64)
+        norm = float(raw.sum())
+        if norm <= 0.0:
+            return {int(h): 0.0 for h in horizons_days}
+        return {
+            int(h): float(v / norm)
+            for h, v in zip(horizons_days, raw)
+        }
+    raise ValueError(f"Unsupported predictive_horizon_weight_mode={mode!r}")
+
+
 def run_stage1_training(
     manifest_path: Path,
     mmap_path: Path,
@@ -134,6 +418,14 @@ def run_stage1_training(
     corpus: Stage1ProbeCorpus | None = None,
     show_progress: bool = True,
     progress_style: Literal["tqdm", "plain"] = "plain",
+    objective: str = STAGE1_OBJECTIVE_INFONCE_V0,
+    predictive_targets_meta_path: Path | None = None,
+    predictive_tuple_weight: float = 1.0,
+    predictive_fallback_weight: float = 0.25,
+    predictive_stratum_weight_same_time_wrong_domain: float = 2.0,
+    predictive_stratum_weight_same_domain_wrong_horizon: float = 1.25,
+    predictive_stratum_weight_same_region_non_precursor: float = 1.0,
+    predictive_horizon_weight_mode: str = "meta",
 ) -> None:
     """Run Stage 1 SSL. Loads ``manifest_path`` then calls ``corpus.validate(manifest)``.
 
@@ -153,6 +445,29 @@ def run_stage1_training(
     manifest = NodeWarehouseManifest.model_validate_json(
         manifest_path.read_text(encoding="utf-8"),
     )
+    if objective not in SUPPORTED_STAGE1_OBJECTIVES:
+        raise ValueError(f"Unsupported objective={objective!r}; supported={sorted(SUPPORTED_STAGE1_OBJECTIVES)}")
+    if predictive_tuple_weight < 0.0:
+        raise ValueError("predictive_tuple_weight must be non-negative")
+    if predictive_fallback_weight < 0.0:
+        raise ValueError("predictive_fallback_weight must be non-negative")
+    if (predictive_tuple_weight + predictive_fallback_weight) <= 0.0:
+        raise ValueError("at least one predictive branch weight must be positive")
+
+    predictive_meta = None
+    horizon_targets: dict[int, np.ndarray] = {}
+    horizon_weights: dict[int, float] = {}
+    predictive_probe_horizon_mapping: dict[str, int] = {}
+    if objective == STAGE1_OBJECTIVE_PREDICTIVE_RANKCHANGE_V1:
+        if predictive_targets_meta_path is None:
+            raise ValueError("predictive_targets_meta_path is required for predictive_coding_rankchange_v1")
+        predictive_meta, horizon_targets = load_predictive_targets(predictive_targets_meta_path, manifest)
+        horizon_weights = _resolve_horizon_weights(
+            horizons_days=[int(h) for h in predictive_meta.horizons_days],
+            meta_horizon_weights=[float(w) for w in predictive_meta.horizon_weights],
+            mode=predictive_horizon_weight_mode,
+        )
+
     if show_progress:
         print(
             "[Stage1] Loading positive pairs (.npy can be hundreds of MB; this can take 1–3 minutes)…",
@@ -183,6 +498,24 @@ def run_stage1_training(
     bundle.validate(manifest)
 
     probes = bundle.probes
+    if objective == STAGE1_OBJECTIVE_PREDICTIVE_RANKCHANGE_V1 and predictive_meta is not None:
+        predictive_probe_horizon_mapping = _build_predictive_probe_horizon_mapping(
+            probes,
+            [int(h) for h in predictive_meta.horizons_days],
+        )
+    predictive_tuple_audit: dict[str, object] | None = None
+    predictive_tuple_map: dict[tuple[str, int], dict[str, object]] = {}
+    if objective == STAGE1_OBJECTIVE_PREDICTIVE_RANKCHANGE_V1 and predictive_targets_meta_path is not None:
+        predictive_tuples, predictive_tuple_audit = build_predictive_training_tuples(
+            probes,
+            manifest,
+            predictive_targets_meta_path,
+            seed=seed,
+        )
+        predictive_tuple_map = {
+            (str(t["probe_id"]), int(t["horizon_days"])): t
+            for t in predictive_tuples
+        }
     encoder = QueryEncoder().to(device)
     encoder.train()
     opt = Adam(encoder.parameters(), lr=_DEFAULT_LR)
@@ -217,11 +550,31 @@ def run_stage1_training(
             flush=True,
         )
 
+    epoch_history: list[dict[str, object]] = []
+
     for epoch in epoch_pbar_obj or range(epochs):
         epoch_losses: list[float] = []
         epoch_contributors = 0
         epoch_probes = 0
         epoch_gate_contrib: dict[AssumptionEmphasis, int] = {g: 0 for g in AssumptionEmphasis}
+        branch_usage_counts = {
+            "tuple_branch_used_count": 0,
+            "fallback_branch_used_count": 0,
+            "both_branch_used_count": 0,
+            "no_branch_used_count": 0,
+        }
+        epoch_diag_query_norm_sum = 0.0
+        epoch_diag_query_norm_count = 0
+        epoch_diag_pos_score_sum = 0.0
+        epoch_diag_pos_score_count = 0
+        epoch_diag_neg_score_sum = 0.0
+        epoch_diag_neg_score_count = 0
+        branch_usage_by_geo: dict[str, dict[str, int]] = {
+            "egypt": dict(branch_usage_counts),
+            "libya": dict(branch_usage_counts),
+            "tunisia": dict(branch_usage_counts),
+            "unknown": dict(branch_usage_counts),
+        }
         logger.debug(
             "epoch=%s/%s start probes=%s batch_size=%s",
             epoch + 1,
@@ -295,6 +648,17 @@ def run_stage1_training(
             )
             global_idx = ann_rerank_global_indices(queries_np, ann_indices, mmap_np)
 
+            if objective == STAGE1_OBJECTIVE_PREDICTIVE_RANKCHANGE_V1:
+                _inject_predictive_positives_into_retrieved(
+                    batch=batch,
+                    predictive_probe_horizon_mapping=predictive_probe_horizon_mapping,
+                    predictive_tuple_map=predictive_tuple_map,
+                    global_idx=global_idx,
+                    retrieved_node_mask=retrieved.node_mask,
+                    retrieved_node_feat=retrieved.node_feat,
+                    mmap_np=mmap_np,
+                )
+
             gate_batch_count: dict[AssumptionEmphasis, int] = {g: 0 for g in AssumptionEmphasis}
             gate_contrib_count: dict[AssumptionEmphasis, int] = {g: 0 for g in AssumptionEmphasis}
             gate_loss_sum: dict[AssumptionEmphasis, float] = {g: 0.0 for g in AssumptionEmphasis}
@@ -306,15 +670,76 @@ def run_stage1_training(
                     raise ValueError(f"probe {probe.probe_id!r} missing assumption_gate_coverage after validation")
                 gate_batch_count[cov] += 1
 
-                loss_b, ok = _per_probe_infonce(
-                    queries[b],
-                    global_indices_row=global_idx[b],
-                    node_mask_row=retrieved.node_mask[b],
-                    node_feat_row=retrieved.node_feat[b],
-                    pair_lookup=pair_lookup,
-                    temperature=temperature,
-                    probe_id=probe.probe_id,
-                )
+                if objective == STAGE1_OBJECTIVE_INFONCE_V0:
+                    loss_b, ok = _per_probe_infonce(
+                        queries[b],
+                        global_indices_row=global_idx[b],
+                        node_mask_row=retrieved.node_mask[b],
+                        node_feat_row=retrieved.node_feat[b],
+                        pair_lookup=pair_lookup,
+                        temperature=temperature,
+                        probe_id=probe.probe_id,
+                    )
+                else:
+                    probe_horizon = int(probe.lens_params.horizon_days)
+                    mapped_horizon = int(
+                        predictive_probe_horizon_mapping.get(str(probe_horizon), probe_horizon)
+                    )
+                    tuple_entry = predictive_tuple_map.get(
+                        (str(probe.probe_id), mapped_horizon),
+                    )
+                    per_horizon_targets = (
+                        {mapped_horizon: horizon_targets[mapped_horizon]}
+                        if mapped_horizon in horizon_targets
+                        else horizon_targets
+                    )
+                    per_horizon_weights = (
+                        {mapped_horizon: float(horizon_weights.get(mapped_horizon, 1.0))}
+                        if mapped_horizon in per_horizon_targets
+                        else horizon_weights
+                    )
+                    loss_b, ok, branch_usage, diagnostics = _per_probe_predictive_rankchange(
+                        queries[b],
+                        probe=probe,
+                        global_indices_row=global_idx[b],
+                        node_mask_row=retrieved.node_mask[b],
+                        node_feat_row=retrieved.node_feat[b],
+                        manifest=manifest,
+                        horizon_targets=per_horizon_targets,
+                        horizon_weights=per_horizon_weights,
+                        temperature=temperature,
+                        tuple_entry=tuple_entry,
+                        predictive_tuple_weight=predictive_tuple_weight,
+                        predictive_fallback_weight=predictive_fallback_weight,
+                        predictive_stratum_weight_same_time_wrong_domain=predictive_stratum_weight_same_time_wrong_domain,
+                        predictive_stratum_weight_same_domain_wrong_horizon=predictive_stratum_weight_same_domain_wrong_horizon,
+                        predictive_stratum_weight_same_region_non_precursor=predictive_stratum_weight_same_region_non_precursor,
+                        return_branch_usage=True,
+                        return_diagnostics=True,
+                    )
+                    geo_bucket = _predictive_geo_bucket(probe)
+                    if branch_usage["tuple_used"]:
+                        branch_usage_counts["tuple_branch_used_count"] += 1
+                        branch_usage_by_geo[geo_bucket]["tuple_branch_used_count"] += 1
+                    if branch_usage["fallback_used"]:
+                        branch_usage_counts["fallback_branch_used_count"] += 1
+                        branch_usage_by_geo[geo_bucket]["fallback_branch_used_count"] += 1
+                    if branch_usage["tuple_used"] and branch_usage["fallback_used"]:
+                        branch_usage_counts["both_branch_used_count"] += 1
+                        branch_usage_by_geo[geo_bucket]["both_branch_used_count"] += 1
+                    if (not branch_usage["tuple_used"]) and (not branch_usage["fallback_used"]):
+                        branch_usage_counts["no_branch_used_count"] += 1
+                        branch_usage_by_geo[geo_bucket]["no_branch_used_count"] += 1
+                    epoch_diag_query_norm_sum += float(diagnostics.get("query_vec_norm", 0.0))
+                    epoch_diag_query_norm_count += 1
+                    _pos_scores = diagnostics.get("pos_scores", [])
+                    _neg_scores = diagnostics.get("neg_scores", [])
+                    if _pos_scores:
+                        epoch_diag_pos_score_sum += float(sum(float(v) for v in _pos_scores))
+                        epoch_diag_pos_score_count += len(_pos_scores)
+                    if _neg_scores:
+                        epoch_diag_neg_score_sum += float(sum(float(v) for v in _neg_scores))
+                        epoch_diag_neg_score_count += len(_neg_scores)
                 if ok and loss_b is not None:
                     loss_terms.append(loss_b)
                     gate_contrib_count[cov] += 1
@@ -346,6 +771,17 @@ def run_stage1_training(
                     )
             else:
                 logger.warning("step=%s: no probes contributed InfoNCE in this batch", global_step)
+                if (
+                    objective == STAGE1_OBJECTIVE_PREDICTIVE_RANKCHANGE_V1
+                    and epoch == 0
+                    and batch_i == 0
+                ):
+                    raise RuntimeError(
+                        "No InfoNCE contributors in first batch for predictive objective; "
+                        f"mapped_probe_horizons={predictive_probe_horizon_mapping} "
+                        f"predictive_target_horizons={sorted(horizon_targets.keys())} "
+                        "(likely retrieval/tuple horizon mismatch or empty in-batch overlap)."
+                    )
                 if pbar is not None:
                     pbar.set_postfix(skipped=1, step=global_step)
 
@@ -367,6 +803,32 @@ def run_stage1_training(
             pbar.close()
 
         mean_epoch = float(np.mean(epoch_losses)) if epoch_losses else 0.0
+        epoch_history.append(
+            {
+                "epoch": int(epoch),
+                "mean_loss": mean_epoch,
+                "contributors": int(epoch_contributors),
+                "tuple_branch": int(branch_usage_counts["tuple_branch_used_count"]),
+                "fallback_branch": int(branch_usage_counts["fallback_branch_used_count"]),
+                "both_branch": int(branch_usage_counts["both_branch_used_count"]),
+                "no_branch": int(branch_usage_counts["no_branch_used_count"]),
+                "mean_query_vec_norm": (
+                    float(epoch_diag_query_norm_sum / epoch_diag_query_norm_count)
+                    if epoch_diag_query_norm_count > 0
+                    else 0.0
+                ),
+                "mean_pos_score": (
+                    float(epoch_diag_pos_score_sum / epoch_diag_pos_score_count)
+                    if epoch_diag_pos_score_count > 0
+                    else 0.0
+                ),
+                "mean_neg_score": (
+                    float(epoch_diag_neg_score_sum / epoch_diag_neg_score_count)
+                    if epoch_diag_neg_score_count > 0
+                    else 0.0
+                ),
+            }
+        )
         ckpt = output_dir / f"query_encoder_epoch_{epoch:03d}.pt"
         torch.save(encoder.state_dict(), ckpt)
         state_path = output_dir / "train_state.json"
@@ -378,6 +840,19 @@ def run_stage1_training(
                     "embedding_version": manifest.embedding_version,
                     "positive_pair_version": positive_pair_version,
                     "mean_loss": mean_epoch,
+                    "epoch_history": epoch_history,
+                    "stage1_objective": objective,
+                    "predictive_targets_meta": str(predictive_targets_meta_path) if predictive_targets_meta_path else None,
+                    "predictive_horizon_weight_mode": predictive_horizon_weight_mode,
+                    "predictive_horizon_weights_resolved": horizon_weights if horizon_weights else None,
+                    "predictive_probe_horizon_mapping": predictive_probe_horizon_mapping if predictive_probe_horizon_mapping else None,
+                    "predictive_tuple_audit": predictive_tuple_audit,
+                    "predictive_branch_usage": {
+                        "counts": branch_usage_counts,
+                        "by_geo_bucket": branch_usage_by_geo,
+                    }
+                    if objective == STAGE1_OBJECTIVE_PREDICTIVE_RANKCHANGE_V1
+                    else None,
                 },
                 indent=2,
                 sort_keys=True,
@@ -443,9 +918,38 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=Path,
         help="Directory to write positive pairs via build_positive_pairs; uses META_JSON_BASENAME inside it.",
     )
+    p.add_argument(
+        "--pairs-recipe",
+        choices=sorted(SUPPORTED_POSITIVE_PAIR_VERSIONS),
+        default=POSITIVE_PAIR_VERSION,
+        help="Positive-pairs recipe used only when --build-pairs-to is set.",
+    )
     p.add_argument("--epochs", type=int, default=10)
+
     p.add_argument("--batch-size", type=int, default=8)
     p.add_argument("--temperature", type=float, default=0.07)
+    p.add_argument(
+        "--objective",
+        choices=sorted(SUPPORTED_STAGE1_OBJECTIVES),
+        default=STAGE1_OBJECTIVE_INFONCE_V0,
+        help="Stage1 training objective version.",
+    )
+    p.add_argument(
+        "--predictive-targets-meta",
+        type=Path,
+        default=None,
+        help="Path to predictive targets metadata JSON (required for predictive_coding_rankchange_v1).",
+    )
+    p.add_argument("--predictive-tuple-weight", type=float, default=1.0)
+    p.add_argument("--predictive-fallback-weight", type=float, default=0.25)
+    p.add_argument("--predictive-stratum-weight-same-time-wrong-domain", type=float, default=2.0)
+    p.add_argument("--predictive-stratum-weight-same-domain-wrong-horizon", type=float, default=1.25)
+    p.add_argument("--predictive-stratum-weight-same-region-non-precursor", type=float, default=1.0)
+    p.add_argument(
+        "--predictive-horizon-weight-mode",
+        choices=["meta", "uniform", "inverse_horizon"],
+        default="meta",
+    )
     p.add_argument("--seed", type=int, default=42)
     p.add_argument(
         "--log-level",
@@ -501,6 +1005,7 @@ def main() -> int:
             mmap_path,
             build_dir,
             show_progress=not args.no_progress,
+            positive_pair_version=args.pairs_recipe,
         )
         logger.info("Positive pairs written under %s", build_dir)
         pairs_metadata = build_dir / META_JSON_BASENAME
@@ -521,6 +1026,14 @@ def main() -> int:
         corpus=corpus,
         show_progress=not args.no_progress,
         progress_style=args.progress,
+        objective=args.objective,
+        predictive_targets_meta_path=args.predictive_targets_meta,
+        predictive_tuple_weight=args.predictive_tuple_weight,
+        predictive_fallback_weight=args.predictive_fallback_weight,
+        predictive_stratum_weight_same_time_wrong_domain=args.predictive_stratum_weight_same_time_wrong_domain,
+        predictive_stratum_weight_same_domain_wrong_horizon=args.predictive_stratum_weight_same_domain_wrong_horizon,
+        predictive_stratum_weight_same_region_non_precursor=args.predictive_stratum_weight_same_region_non_precursor,
+        predictive_horizon_weight_mode=args.predictive_horizon_weight_mode,
     )
     return 0
 

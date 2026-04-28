@@ -191,3 +191,61 @@ All pre-implementation docs are in `docs/`:
 ✓ Validation criteria specified  
 
 **Ready to implement.** Review checklist and begin Phase 1 code changes.
+
+---
+
+## Post-Implementation Findings (2026-04-27)
+
+### Implementation Execution
+
+**Phase 1–4 completed successfully:**
+- ✓ Warehouse rebuilt: 98,798 nodes (actor×admin1×month keying, ≥3 events threshold)
+- ✓ Memory efficiency: Peak RAM 4.4GB (from 85GB+) via JSONL streaming + single-pass aggregation
+- ✓ Positive pairs: 101.5M pairs generated (admin1_lead_lag_v0 recipe)
+- ✓ Training: 50 epochs converged, loss: 1.84 → 0.32 (informative improvement)
+
+### Critical Issue: Retrieval Quality is Broken
+
+**Query inspection (epoch 50 checkpoint) reveals fundamental geographic/temporal confusion:**
+
+| Query | Geography | Time Period | Top Result | Issue |
+|-------|-----------|-------------|-----------|-------|
+| Tunisia Dec 2010 | Tunisia | 2010 precursor | **Syria Aug 2013** | Wrong country, 3+ years later |
+| Egypt Jan 2011 | Egypt | 2011 propagation | **Syria Aug 2013** | Wrong country, 2+ years later |
+| Libya Feb 2011 | Libya | 2011 suppression | **Syria Nov 2012** | Wrong country, 1+ year later |
+
+**Scores are normalized** (0.46–0.48 cosine similarity, correct range), but the model learned to **ignore geography and temporal alignment** entirely.
+
+### Root Cause: Flawed SSL Positive Pairs Recipe
+
+The `admin1_lead_lag_v0` recipe pairs nodes by:
+1. **Exact `admin1_code` match** (any governorate or country code)
+2. **Temporal separation 32–90 days**
+
+**Problem in Arab Spring data:**
+
+- **Warehouse mixes geographic granularities:** Egypt has both country-level `EG` nodes AND governorate-level nodes (Cairo, Alexandria, Giza, etc.)
+- **No country-level pairing:** Cairo nodes pair with Cairo; EG nodes pair with EG—they never cross-pair
+- **Temporal leakage:** Syrian nodes (SY) from 2012–2013 overlap temporally with many Egyptian governorate nodes, causing false positive pairs
+- **Deceptive loss:** Model learns to match the SSL pairs well (loss drops to 0.32), but those pairs teach it to confuse Syria with Egypt
+
+**Example false pair:** 
+- `ar_v1|protester|Cairo|2011-02` (first_seen: 2011-02-02) pairs with `ar_v1|protester|Cairo|2011-05` (first_seen: 2011-05-05) ✓ Same region, 32–90 day gap
+- But model also sees: `ar_v1|government|SY|2012-05` (first_seen: 2012-05-08) in the corpus, and nothing prevents it from learning Cairo ≈ Syria in the embedding space during optimization
+
+### Implication
+
+**Loss improvement is necessary but not sufficient.** The encoder learned to encode queries consistently, but into a latent space that does not preserve geographic or temporal discrimination. This is a **data quality / recipe choice failure**, not a training failure.
+
+### Next Steps Required
+
+**Before declaring the warehouse "fixed":**
+
+1. **Redesign the SSL positive pairs recipe** — Options:
+   - `admin1_lead_lag_strict_v1`: Only pair nodes from the same exact admin1 AND exclude cross-country pairs entirely
+   - `actor_type_consistency_v1`: Pair nodes that have similar actor type distributions (requires aggregation)
+   - `supervised_pairs_v1`: Use ground-truth event co-occurrence as pairs (loses SSL unsupervised advantage)
+
+2. **Retrain Stage 1** with corrected pairs and validate retrieval again
+
+3. **Document the pattern:** Single-pass warehouse aggregation now works; next issue is SSL recipe design for heterogeneous geographic data

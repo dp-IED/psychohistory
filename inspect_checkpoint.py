@@ -13,9 +13,9 @@ from baselines.graph_builder_ann import brute_topk
 from schemas.graph_builder_probe import ActorStateQuery
 
 # Paths — adjust to your actual output locations
-manifest_path = Path("shared_data/arab_spring/node_warehouse_v1_manifest.json")
-mmap_path     = Path("shared_data/arab_spring/node_warehouse_v1.mmap")
-ckpt_path     = Path("shared_data/arab_spring/stage1_v1_lead_lag_out/query_encoder_epoch_009.pt")
+manifest_path = Path("/Users/darenpalmer/conductor/shared-data/psychohistory-v2/arab_spring/node_warehouse_v1_fixed_manifest.json")
+mmap_path     = Path("/Users/darenpalmer/conductor/shared-data/psychohistory-v2/arab_spring/node_warehouse_v1_fixed.mmap")
+ckpt_path     = Path("/Users/darenpalmer/conductor/shared-data/psychohistory-v2/arab_spring/checkpoints/stage1_v1_fixed/query_encoder_epoch_049.pt")
 
 manifest = NodeWarehouseManifest.model_validate_json(
     manifest_path.read_text(encoding="utf-8")
@@ -28,29 +28,30 @@ encoder.load_state_dict(torch.load(ckpt_path, map_location="cpu"))
 encoder.eval()
 
 # Three test queries — one per structural type you care about
+# NOTE: entity_hints must use GDELT actor type strings present in the warehouse
 queries = [
-    # Precursor: Bouazizi incident, Sidi Bouzid, December 2010
+    # Precursor: Tunisia December 2010 — protester escalation
     ActorStateQuery(
         geography=["Tunisia"],
         actor_type=["individual"],
         state_flags=["escalating"],
-        entity_hints=["Mohamed Bouazizi"],
+        entity_hints=["protester"],
         as_of="2010-12-17",
     ),
-    # Propagation: Tahrir Square mobilisation, Egypt, January 2011
+    # Propagation: Egypt January 2011 — protester escalation at Tahrir
     ActorStateQuery(
         geography=["Egypt"],
         actor_type=["civil_resistance"],
         state_flags=["escalating"],
-        entity_hints=["April 6 Youth Movement"],
+        entity_hints=["protester"],
         as_of="2011-01-25",
     ),
-    # Suppression: Gaddafi regime response, Libya, February 2011
+    # Suppression: Libya February 2011 — military/government response
     ActorStateQuery(
         geography=["Libya"],
         actor_type=["security_force"],
         state_flags=["repressive"],
-        entity_hints=["Muammar Gaddafi"],
+        entity_hints=["military"],
         as_of="2011-02-20",
     ),
 ]
@@ -63,10 +64,10 @@ for i, q in enumerate(queries):
         full_ctx=ctx,
         encoder=encoder,
     ).detach().numpy()
-    scores, indices = brute_topk(q_vec, matrix, k=10)
+    indices, scores = brute_topk(q_vec, matrix, k=10)
     
     print(f"\n--- Query {i+1}: {q.geography} {q.actor_type} ({q.as_of}) hints={q.entity_hints} ---")
-    for rank, (score, idx) in enumerate(zip(scores, indices)):
+    for rank, (idx, score) in enumerate(zip(indices, scores)):
         row = manifest.rows[int(idx)]
         print(f"  {rank+1:2d}. score={score:.4f}  node={row.node_id}  "
               f"admin1={row.admin1_code}  first_seen={row.first_seen}")
