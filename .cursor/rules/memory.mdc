@@ -1,0 +1,119 @@
+---
+description: Psychohistory project memory — goals, principles, data, sequencing; agent-maintained prefs and parked work; keep in sync with project.md / roadmap / next_steps
+alwaysApply: true
+last_reviewed: 2026-04-29
+---
+
+# Project memory
+
+Canonical specs live in repo docs—this file is the **agent-facing distillate**. Patch this file **in-session** when triggers below fire; do not rely on chat memory alone.
+
+## Self-update protocol
+
+1. **Durable user preference** (style, tooling, process, things they want or never want again) → add or revise **User preferences** with `YYYY-MM-DD:` prefix.
+2. **Deferred work** ("later", "not this PR", "backlog", agreed follow-up) → add **Parked / planned later** with what / why parked / optional trigger or link.
+3. **Program fact changed** (new data source, new sequencing decision, merged milestone) → update **static sections** below and bump `last_reviewed` in frontmatter.
+4. Keep bullets **short**; dedupe; retire superseded preference lines; move long narratives to `project.md`, `roadmap.md`, or `next_steps.md` instead of copying them here.
+
+## Canonical pointers
+
+| Document | Role |
+|----------|------|
+| [`project.md`](project.md) | Purpose, goals, repo map, strategic themes |
+| [`roadmap.md`](roadmap.md) | Stages, gates (G1–G8), what to avoid |
+| [`next_steps.md`](next_steps.md) | Immediate sequencing (A–C′, D→M) |
+| [`forecast_charter.md`](forecast_charter.md) | Targets, metrics, non-goals |
+| [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md) | Locked builder, assumptions, supervision |
+| [`docs/research/architecture.md`](docs/research/architecture.md) | Target layered architecture |
+| [`docs/reviewers-guide.md`](docs/reviewers-guide.md) | Reviews, discovery rigor |
+| [`docs/storage_architecture.md`](docs/storage_architecture.md) | Warehouse layout |
+| [`docs/source_layer_experiments.md`](docs/source_layer_experiments.md) | France harness / source ablations |
+
+## Long-term goals (north star)
+
+- **Replayable history** at cutoffs—no post-`t` leakage.
+- **Material forecasting:** strong baselines, calibration, evidence when graph beats tabular-at-same-cutoff.
+- **Market-informed training** (Polymarket / Kalshi / peers) with masking—backbone must generalize beyond contract trivia.
+- **Beyond listed contracts** at inference when scoped.
+- **Learned query-conditioned subgraphs + assumptions** that earn their keep on held-out prediction and ablations—not baked historical priors dressed as discovery.
+- **Interpretations tier:** ranked hypotheses + evidence + uncertainty; judged by HITL/rubrics—not fluency.
+- **Constrained Q&A:** NL routes to retrieval + forecasts + cutoff; **LLM does not forecast alone.**
+
+## Principles (roadmap P1–P7)
+
+| ID | Principle |
+|----|-----------|
+| P1 | Forecastable ontology—two annotators can apply types to real evidence. |
+| P2 | Temporal cleanliness—inputs only visible by `t`. |
+| P3 | Baselines first—recurrence + tabular in comparable audits. |
+| P4 | Graph earns complexity—ablations; retrieval/sparsity as ablatable as encoder/WM. |
+| P5 | Markets supervise; they don't define the product—masking / non-market queries matter. |
+| P6 | Discovery protocol—named regimes need post-hoc alignment/probes unless optional ablated covariates; assumptions inspectable. |
+| P7 | Q&A constrained—LLM routes/summarizes; structured stack forecasts. |
+
+## Strategic tie-breakers
+
+- **Gradients before grand design:** thin correct loop on pinned snapshots → builder/subgraph + assumptions + minimal head → WM v0 → markets (`next_steps.md`).
+- **Measurement over ontology:** minus-variants before new node types.
+- **Parallel tracks:** builder supervision on **GDELT + ACLED** per contract; markets **Stage 3 for forecaster**, not builder; **WM after** pinned subgraph + assumptions; **France** = validation/smoke for builder, not primary training corpus; **Iran-like** lanes = shadow/red-team after WM + encoder ablation spine stable (`next_steps.md` §2.3).
+- **Discovery vs naming:** statistical structure first; naming second with checks.
+
+## Engineering practices (repo)
+
+- Contracts: [`evals/graph_artifact_contract.py`](evals/graph_artifact_contract.py); metrics [`baselines/metrics.py`](baselines/metrics.py).
+- Run **leakage audits** when pipelines change; adversarial inject-post-`t` tests where relevant.
+- Rerun **France harness** when shared ingest/snapshot/backtest paths change—smoke, not universal gate.
+
+## Data sources (summary)
+
+- **Warehouse:** DuckDB + JSONL; weekly snapshots as-of `t` ([`docs/storage_architecture.md`](docs/storage_architecture.md)).
+- **Identity / events:** Wikidata (`docs/wikidata/`); GDELT / ACLED event layers ([`docs/source_layer_experiments.md`](docs/source_layer_experiments.md)).
+- **Prediction markets:** resolutions/paths/metadata—forecaster calibration / Stage 3 per graph-builder contract; **not** builder supervision; watch coverage + masking ([`roadmap.md`](roadmap.md) Stage 5).
+
+## Timeline / sequencing
+
+**Roadmap stages (high level):** 0 Charter → 1 ontology → 2 replay → 3 baselines → 4 heterogeneous GNN backbone → 5 markets track → 6 learned builder + assumptions + WM → 7 analog retrieval → 8 constrained Q&A → 9 cross-domain stress → 10 product identity.
+
+**Near-term execution order** (`next_steps.md`): prerequisites **A–C′**, then model **D → E → F → G → H** (skeleton → builder subgraph → assumption gates → minimal forecast head → WM v0 + multi-step + ablations), then **I** (Iran shadow), then **M** (markets ingestion emphasis).
+
+---
+
+## User preferences (agent-maintained)
+
+_Newest entries at bottom. Only capture preferences the user intends to apply generally—not one-off ticket choices._
+
+## Parked / planned later (agent-maintained)
+
+_One line each: what · why parked · optional trigger/link._
+
+---
+
+## Agent behavior & quality standards
+
+### Root cause and long-term goal
+
+**Prefer causes over symptoms**
+
+- Diagnose *why* something fails before changing behavior at the surface.
+- Avoid patches (broader try/except, silent fallbacks, magic defaults) when the root issue is bad data, wrong API, missing invariant, or unclear contract.
+- When unsure, ask what would break if the symptom reappeared—that points to the cause.
+
+**Do not trade away the long-term goal**
+
+- Do not "ship faster" by permanently narrowing scope or dumbing down design.
+- A smaller interim step is fine when it is a **deliberate slice toward** the same end state, not a different product.
+- If the right fix is larger than a single PR, outline phases that still advance the end goal.
+
+### Full commands, not placeholders
+
+When suggesting shell commands (shell, `python -m`, `pytest`, `git`):
+
+- **Use complete commands**: every flag and argument needed; no `...` or "and the rest".
+- **No fake paths**: avoid `/path/to/manifest.json`, `<repo>`, `~/project`. Use real paths or workspace-relative paths from repo root.
+- **Concrete examples**: show sensible defaults (e.g., `export PYTHONPATH=.` and `pytest -q tests/test_X.py` from repo root).
+
+### File length & readability
+
+- Keep individual files focused and readable; move long narratives to dedicated docs.
+- Update `canonical pointers` table when creating new foundational docs.
+- Prefer shallow hierarchy; dedupe references across rule files.
