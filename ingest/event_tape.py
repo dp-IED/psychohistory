@@ -9,6 +9,7 @@ import json
 import logging
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final, Literal, Sequence
 
@@ -55,7 +56,6 @@ class EventTapeRecord(BaseModel):
     location_name: str | None
     latitude: float | None
     longitude: float | None
-    event_class: Literal["protest"]
     event_code: str
     event_base_code: str
     event_root_code: str
@@ -71,6 +71,82 @@ class EventTapeRecord(BaseModel):
     actor2_country_code: str | None
     source_url: str | None
     raw: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class GdeltTapeNormalizeParams:
+    """Parameters for normalizing GDELT raw JSONL rows into ``EventTapeRecord``."""
+
+    country_codes: frozenset[str]
+    event_root_codes: frozenset[str] | None
+    event_start: dt.date
+    event_end: dt.date
+
+
+FRANCE_PROTEST_GDELT_NORMALIZE = GdeltTapeNormalizeParams(
+    country_codes=frozenset({"FR"}),
+    event_root_codes=frozenset({"14"}),
+    event_start=dt.date(2019, 1, 1),
+    event_end=dt.date(2026, 1, 4),
+)
+
+ARAB_SPRING_GDELT_NORMALIZE = GdeltTapeNormalizeParams(
+    country_codes=frozenset({"EG", "TU", "LY", "SY"}),
+    event_root_codes=None,
+    event_start=dt.date(2010, 1, 1),
+    event_end=dt.date(2013, 12, 31),
+)
+
+ACLED_ARAB_SPRING_COUNTRY_TO_ISO = {
+    "Egypt": "EG",
+    "Tunisia": "TU",
+    "Libya": "LY",
+    "Syria": "SY",
+}
+
+
+def _event_date_end_utc(day: dt.date) -> dt.datetime:
+    return dt.datetime(day.year, day.month, day.day, 23, 59, 59, 999999, tzinfo=UTC)
+
+
+def normalize_acled_arab_spring_row(row: dict[str, Any]) -> EventTapeRecord:
+    """Normalize a raw ACLED API v3 JSON object (plus ``_retrieved_at``) to ``EventTapeRecord``."""
+
+    event_date = dt.date.fromisoformat(_required_text(row, "event_date"))
+    retrieved_at = parse_datetime_utc(_required_text(row, "_retrieved_at"))
+    cnty = _required_text(row, "event_id_cnty")
+    country_name = (_none_if_blank(row.get("country")) or "").strip()
+    country_code = ACLED_ARAB_SPRING_COUNTRY_TO_ISO.get(country_name)
+    if country_code is None:
+        raise ValueError(f"unexpected ACLED country for Arab Spring ingest: {country_name!r}")
+    sub_type = _none_if_blank(row.get("sub_event_type")) or ""
+    return EventTapeRecord(
+        source_name="acled_v3",
+        source_event_id=f"acled:{cnty}",
+        event_date=event_date,
+        source_available_at=_event_date_end_utc(event_date),
+        retrieved_at=retrieved_at,
+        country_code=country_code,
+        admin1_code=_none_if_blank(row.get("admin1")) or "UNKNOWN",
+        location_name=_none_if_blank(row.get("admin1")),
+        latitude=None,
+        longitude=None,
+        event_code=sub_type,
+        event_base_code="",
+        event_root_code=_required_text(row, "event_type"),
+        quad_class=None,
+        goldstein_scale=None,
+        num_mentions=None,
+        num_sources=None,
+        num_articles=None,
+        avg_tone=None,
+        actor1_name=_none_if_blank(row.get("actor1")),
+        actor1_country_code=None,
+        actor2_name=_none_if_blank(row.get("actor2")),
+        actor2_country_code=None,
+        source_url=None,
+        raw=row,
+    )
 
 
 def _none_if_blank(value: Any) -> str | None:
@@ -219,18 +295,22 @@ def _raw_fragment_paths(raw_dir: Path, *, allow_partial: bool = False) -> list[P
 def normalize_raw_row(
     row: dict[str, Any],
     *,
-    event_start: dt.date = dt.date(2019, 1, 1),
-    event_end: dt.date = dt.date(2026, 1, 4),
+    country_codes: frozenset[str],
+    event_root_codes: frozenset[str] | None,
+    event_start: dt.date,
+    event_end: dt.date,
 ) -> EventTapeRecord | None:
-    if row.get("ActionGeo_CountryCode") != "FR":
+    cc = _none_if_blank(row.get("ActionGeo_CountryCode"))
+    if cc is None or cc not in country_codes:
         return None
-    if row.get("EventRootCode") != "14":
+    root = _none_if_blank(row.get("EventRootCode"))
+    if event_root_codes is not None and (root is None or root not in event_root_codes):
         return None
     event_date = parse_sql_date(_required_text(row, "SQLDATE"))
     if not (event_start <= event_date <= event_end):
         return None
 
-    admin1_code = _none_if_blank(row.get("ActionGeo_ADM1Code")) or "FR_UNKNOWN"
+    admin1_code = _none_if_blank(row.get("ActionGeo_ADM1Code")) or f"{cc}_UNKNOWN"
     source_event_id = f"gdelt:{_required_text(row, 'GLOBALEVENTID')}"
     return EventTapeRecord(
         source_name="gdelt_v2_events",
@@ -238,12 +318,11 @@ def normalize_raw_row(
         event_date=event_date,
         source_available_at=parse_datetime_utc(_required_text(row, "DATEADDED")),
         retrieved_at=parse_datetime_utc(_required_text(row, "_retrieved_at")),
-        country_code="FR",
+        country_code=cc,
         admin1_code=admin1_code,
         location_name=_none_if_blank(row.get("ActionGeo_FullName")),
         latitude=_optional_float(row, "ActionGeo_Lat"),
         longitude=_optional_float(row, "ActionGeo_Long"),
-        event_class="protest",
         event_code=_required_text(row, "EventCode"),
         event_base_code=_required_text(row, "EventBaseCode"),
         event_root_code=_required_text(row, "EventRootCode"),
@@ -587,11 +666,12 @@ def _gdelt_arab_fetch_expected_rows(gdelt_raw_dir: Path) -> int | None:
 
 def _glob_acled_page_fragments(acled_raw_dir: Path) -> list[Path]:
     frag = acled_raw_dir / "fragments"
-    if not frag.is_dir():
-        return []
-    return sorted(
-        [*frag.glob("page_*.jsonl"), *frag.glob("page_*.jsonl.gz")],
-    )
+    paths: list[Path] = []
+    if frag.is_dir():
+        paths.extend([*frag.glob("page_*.jsonl"), *frag.glob("page_*.jsonl.gz")])
+    paths.extend(acled_raw_dir.glob("acled_arab_spring_page_*.jsonl"))
+    paths.extend(acled_raw_dir.glob("acled_arab_spring_page_*.jsonl.gz"))
+    return sorted(paths)
 
 
 def _iter_acled_fragment_tape(
@@ -610,11 +690,15 @@ def _iter_acled_fragment_tape(
                     continue
                 n_in += 1
                 row = json.loads(line)
+                if path.name.startswith("acled_arab_spring_page_"):
+                    try:
+                        out.append(normalize_acled_arab_spring_row(row))
+                    except (TypeError, ValueError, KeyError):
+                        n_invalid += 1
+                    continue
                 try:
                     r_at_s = str(row.get("_retrieved_at") or "")
-                    retrieved = (
-                        parse_datetime_utc(r_at_s) if r_at_s else None
-                    )
+                    retrieved = parse_datetime_utc(r_at_s) if r_at_s else None
                 except (TypeError, ValueError):
                     retrieved = None
                 if retrieved is None:
@@ -639,6 +723,7 @@ def write_arab_spring_merged_tape(
     gdelt_raw_dir: Path,
     acled_raw_dir: Path,
     out_path: Path,
+    gdelt_normalize: GdeltTapeNormalizeParams | None = None,
     cleanup_fragments: bool = False,
     allow_empty: bool = False,
 ) -> dict[str, Any]:
@@ -726,6 +811,7 @@ def write_arab_spring_merged_tape(
 def _iter_raw_fragment_rows(
     raw_dir: Path,
     *,
+    gdelt_normalize: GdeltTapeNormalizeParams,
     allow_empty: bool,
     allow_partial: bool = False,
 ) -> tuple[int, list[EventTapeRecord], int, int]:
@@ -744,7 +830,13 @@ def _iter_raw_fragment_rows(
                 input_count += 1
                 row = json.loads(line)
                 try:
-                    record = normalize_raw_row(row)
+                    record = normalize_raw_row(
+                        row,
+                        country_codes=gdelt_normalize.country_codes,
+                        event_root_codes=gdelt_normalize.event_root_codes,
+                        event_start=gdelt_normalize.event_start,
+                        event_end=gdelt_normalize.event_end,
+                    )
                 except (TypeError, ValueError):
                     invalid_count += 1
                     continue
@@ -761,12 +853,14 @@ def write_event_tape(
     *,
     raw_dir: Path,
     out_path: Path,
+    gdelt_normalize: GdeltTapeNormalizeParams,
     allow_empty: bool = False,
     allow_partial: bool = False,
     compress: bool = False,
 ) -> dict[str, Any]:
     input_count, records, filtered_count, invalid_count = _iter_raw_fragment_rows(
         raw_dir,
+        gdelt_normalize=gdelt_normalize,
         allow_empty=allow_empty,
         allow_partial=allow_partial,
     )
@@ -843,6 +937,8 @@ def _build_parser() -> argparse.ArgumentParser:
     normalize = subparsers.add_parser("normalize-france-protests")
     normalize.add_argument("--raw", default="data/gdelt/raw/france_protest")
     normalize.add_argument("--out", default="data/gdelt/tape/france_protest/events.jsonl")
+    normalize.add_argument("--event-start", default="2019-01-01")
+    normalize.add_argument("--event-end", default="2026-01-04")
     normalize.add_argument("--allow-empty", action="store_true")
     normalize.add_argument("--allow-partial", action="store_true")
     normalize.add_argument("--compress", action="store_true")
@@ -889,6 +985,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             write_event_tape(
                 raw_dir=Path(args.raw),
                 out_path=Path(args.out),
+                gdelt_normalize=GdeltTapeNormalizeParams(
+                    country_codes=frozenset({"FR"}),
+                    event_root_codes=frozenset({"14"}),
+                    event_start=dt.date.fromisoformat(args.event_start),
+                    event_end=dt.date.fromisoformat(args.event_end),
+                ),
                 allow_empty=args.allow_empty,
                 allow_partial=args.allow_partial,
                 compress=args.compress,
@@ -928,3 +1030,4 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

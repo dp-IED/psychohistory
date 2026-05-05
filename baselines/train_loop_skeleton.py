@@ -47,6 +47,15 @@ from baselines.training_slice import (
 )
 from ingest.event_records import load_event_records
 from ingest.event_tape import EventTapeRecord
+
+
+def _record_is_protest_forecast_target(record: EventTapeRecord) -> bool:
+    """PIT protest occurrence: GDELT CAMEO root 14; ACLED protest-type rows."""
+    if record.source_name == "gdelt_v2_events":
+        return record.event_root_code == "14"
+    if record.source_name in {"acled", "acled_v3"}:
+        return record.event_root_code == "Protests"
+    return False
 from ingest.snapshot_export import (
     EXCLUDED_REGIONAL_ADMIN1_CODES,
     LABEL_GRACE_DAYS,
@@ -194,6 +203,8 @@ def occurs_protest_in_forward_window(
     grace_cutoff = w_end_dt + dt.timedelta(days=LABEL_GRACE_DAYS)
     for record in sorted_records:
         if record.admin1_code != admin1_code:
+            continue
+        if not _record_is_protest_forecast_target(record):
             continue
         if not (w_start <= record.event_date < w_end):
             continue

@@ -27,7 +27,6 @@ EVENT_COLUMNS = (
     "location_name",
     "latitude",
     "longitude",
-    "event_class",
     "event_code",
     "event_base_code",
     "event_root_code",
@@ -82,7 +81,6 @@ def init_warehouse(db_path: Path) -> None:
               location_name TEXT,
               latitude DOUBLE,
               longitude DOUBLE,
-              event_class TEXT NOT NULL,
               event_code TEXT NOT NULL,
               event_base_code TEXT NOT NULL,
               event_root_code TEXT NOT NULL,
@@ -107,6 +105,10 @@ def init_warehouse(db_path: Path) -> None:
         con.execute("CREATE INDEX IF NOT EXISTS idx_events_event_date ON events(event_date)")
         con.execute("CREATE INDEX IF NOT EXISTS idx_events_available ON events(source_available_at)")
         con.execute("CREATE INDEX IF NOT EXISTS idx_events_admin1 ON events(admin1_code)")
+        try:
+            con.execute("ALTER TABLE events DROP COLUMN IF EXISTS event_class")
+        except Exception:  # pragma: no cover - duckdb-specific
+            pass
 
 
 def _record_row(record: EventTapeRecord, inserted_at: dt.datetime) -> tuple[Any, ...]:
@@ -121,7 +123,6 @@ def _record_row(record: EventTapeRecord, inserted_at: dt.datetime) -> tuple[Any,
         record.location_name,
         record.latitude,
         record.longitude,
-        record.event_class,
         record.event_code,
         record.event_base_code,
         record.event_root_code,
@@ -225,6 +226,7 @@ def query_records(
     available_before: dt.datetime | None = None,
     country_codes: set[str] | None = None,
     country_code: str | None = None,
+    event_root_code: str | None = None,
     event_class: str | None = None,
     order_by: bool = True,
 ) -> list[EventTapeRecord]:
@@ -252,8 +254,11 @@ def query_records(
     elif country_code is not None:
         where.append("country_code = ?")
         params.append(country_code)
-    if event_class is not None:
-        where.append("event_class = ?")
+    if event_root_code is not None:
+        where.append("event_root_code = ?")
+        params.append(event_root_code)
+    elif event_class is not None:
+        where.append("event_root_code = ?")
         params.append(event_class)
 
     sql = (

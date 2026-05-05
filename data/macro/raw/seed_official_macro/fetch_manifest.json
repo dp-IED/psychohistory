@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "created_at": "2026-05-03T22:01:11Z",
+  "seed": "/Users/darenpalmer/conductor/workspaces/psychohistory-v2/philadelphia/.context/polymarket_30_seed_coverage_audit.json",
+  "date_window": {
+    "start": "2023-10-05",
+    "end": "2025-10-06"
+  },
+  "pit_policy": "release/publication-time observability",
+  "sources": {
+    "bls": {
+      "status": "REQUEST_SUCCEEDED",
+      "messages": [],
+      "series_returned": 3,
+      "records": 108
+    },
+    "fred": {
+      "enabled": true,
+      "series_returned": 8,
+      "records": 2315,
+      "series_failed": []
+    },
+    "treasury": {
+      "records": 408
+    },
+    "fed_monetary_feed": {
+      "records": 15
+    }
+  },
+  "records_total": 2846,
+  "outputs": {
+    "jsonl": "/Users/darenpalmer/conductor/workspaces/psychohistory-v2/philadelphia/data/macro/raw/seed_official_macro/seed_official_macro_events.jsonl",
+    "manifest": "/Users/darenpalmer/conductor/workspaces/psychohistory-v2/philadelphia/data/macro/raw/seed_official_macro/fetch_manifest.json"
+  },
+  "notes": [
+    "FRED ingestion is conditional on FRED_API_KEY.",
+    "BLS/Treasury release timestamps currently use deterministic PIT proxies where exact intraday release time is not exposed by endpoint response."
+  ]
+}
