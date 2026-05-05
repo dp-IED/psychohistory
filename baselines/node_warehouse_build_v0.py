@@ -242,6 +242,60 @@ def _actor1_hint_keys_raw(evs: Sequence[EventTapeRecord]) -> list[str]:
     return sorted(out)
 
 
+def _fallback_entity_hint_keys(row: NodeWarehouseRowMeta) -> list[str]:
+    """Deterministic fallback hints from row-local context."""
+    tokens: set[str] = set()
+
+    def _add(raw: str | None) -> None:
+        s = (raw or "").strip().lower()
+        if not s:
+            return
+        s = re.sub(r"\s+", " ", s)
+        if s:
+            tokens.add(s)
+
+    ext = row.extensions or {}
+    actor_norm = ext.get("actor_name_normalized")
+    if isinstance(actor_norm, str):
+        _add(actor_norm)
+
+    _add(row.admin1_code)
+
+    for part in row.node_id.split("|"):
+        p = part.strip().lower()
+        if not p or p in {"ar_v0", "ar_v1", "fr_v0"} or p.startswith("slot"):
+            continue
+        _add(p)
+
+    _add(row.slice_id)
+
+    if not tokens:
+        return ["unknown"]
+    return sorted(tokens)
+
+
+def _fill_missing_entity_hint_keys(rows_meta: list[NodeWarehouseRowMeta]) -> int:
+    """Populate deterministic fallback hints for rows with missing/empty hint lists."""
+    fallback_filled = 0
+    for row in rows_meta:
+        ext = row.extensions
+        hints = ext.get(_ENTITY_HINT_KEYS)
+        if isinstance(hints, list) and len(hints) > 0:
+            continue
+        ext[_ENTITY_HINT_KEYS] = _fallback_entity_hint_keys(row)
+        fallback_filled += 1
+
+    unresolved = sum(
+        1
+        for row in rows_meta
+        if not isinstance((row.extensions or {}).get(_ENTITY_HINT_KEYS), list)
+        or len((row.extensions or {}).get(_ENTITY_HINT_KEYS)) == 0
+    )
+    if unresolved:
+        raise ValueError(f"entity_hint_keys fallback failed for {unresolved} rows")
+    return fallback_filled
+
+
 def _month_bucket(d: date) -> str:
     return d.strftime("%Y-%m")
 
@@ -419,6 +473,7 @@ def build_arab_spring_node_warehouse_v0(
             data_start=data_start,
             data_end=data_end,
         )
+        fallback_filled_rows = _fill_missing_entity_hint_keys(rows_meta)
         if pbar is not None:
             pbar.set_postfix_str(
                 f"matrix {matrix.shape[0]:,}×{matrix.shape[1]} in {time.perf_counter() - t_build:.1f}s"
@@ -460,6 +515,7 @@ def build_arab_spring_node_warehouse_v0(
         "window_days": window_days,
         "event_query_start": event_start.isoformat(),
         "event_query_end": event_end.isoformat(),
+        "fallback_filled_entity_hint_rows": fallback_filled_rows,
     }
 
 
@@ -548,9 +604,7 @@ def build_arab_spring_node_matrix_v1(
         aidx = _admin1_hash_bin(admin1)
         feats[row_idx, 72 + aidx] = 1.0
 
-        n_ev = len(gold_vals) + len(quad_vals) + len(tone_vals)
-        if n_ev == 0:
-            n_ev = int(np.sum(hist))
+        n_ev = int(event_counts[key])
         feats[row_idx, 104] = np.log1p(n_ev) / 10.0
         feats[row_idx, 105] = float(np.mean(gold_vals)) if gold_vals else 0.0
         feats[row_idx, 106] = float(np.mean(quad_vals)) if quad_vals else 0.0
@@ -597,8 +651,13 @@ def build_arab_spring_node_warehouse_v1(
     data_start: date = ARAB_SPRING_COUNTRY_RANGE_START,
     data_end: date = ARAB_SPRING_COUNTRY_RANGE_END,
     show_progress: bool = True,
+    allow_duckdb_fallback: bool = False,
 ) -> dict[str, Any]:
-    """Load Arab Spring events from DuckDB, build v1 embeddings, write mmap + JSON manifest."""
+    """Load Arab Spring events, build v1 embeddings, write mmap + JSON manifest.
+
+    Prefers ``events.jsonl`` adjacent to ``warehouse_path``. Optional DuckDB fallback is
+    explicit via ``allow_duckdb_fallback=True``.
+    """
     wp = Path(warehouse_path)
     out_m = Path(out_mmap)
     out_j = Path(out_manifest)
@@ -619,33 +678,19 @@ def build_arab_spring_node_warehouse_v1(
     )
     t_query = time.perf_counter()
     try:
-        if show_progress:
-            print("[v1] Reading Arab Spring events (streaming from JSONL)…", flush=True)
-        
         jsonl_path = Path(wp).parent / "events.jsonl"
-        
-        # For production (real duckdb path), require JSONL
-        # For tests (temp paths), allow DuckDB fallback
-        if "/var" in str(wp) or "/tmp" in str(wp):
-            # Test mode: allow DuckDB fallback
-            use_jsonl = jsonl_path.exists()
-        else:
-            # Production mode: require JSONL, never use DuckDB (causes VSZ explosion)
-            if not jsonl_path.exists():
-                raise FileNotFoundError(
-                    f"JSONL file required at {jsonl_path}. "
-                    f"DuckDB causes memory mapping overhead (VSZ explosion, hanging). "
-                    f"Use JSONL source only for warehouse builds."
-                )
-            use_jsonl = True
-        
+        use_jsonl = jsonl_path.exists()
+        if not use_jsonl and not allow_duckdb_fallback:
+            raise FileNotFoundError(
+                f"JSONL file required at {jsonl_path}. "
+                "Set allow_duckdb_fallback=True to explicitly enable DuckDB fallback."
+            )
+
         import json
-        
+
         if use_jsonl:
-            if show_progress:
-                print("[v1] Reading JSONL file (streaming)…", flush=True)
-            
             rec_count = 0
+
             def build_records_from_jsonl():
                 nonlocal rec_count
                 with open(jsonl_path) as f:
@@ -655,31 +700,22 @@ def build_arab_spring_node_warehouse_v1(
                         payload = json.loads(line)
                         rec = EventTapeRecord.model_validate(payload)
                         rec_count += 1
-                        if show_progress and rec_count % 100000 == 0:
-                            print(f"  ...parsed {rec_count:,} events...", flush=True)
                         yield rec
-            
-            if show_progress:
-                print("[v1] Parsing events into memory…", flush=True)
+
             t_parse = time.perf_counter()
             recs = list(build_records_from_jsonl())
-            if show_progress:
-                print(f"[v1] Parsed {len(recs):,} events in {time.perf_counter() - t_parse:.1f}s", flush=True)
+            if pbar is not None:
+                pbar.set_postfix_str(
+                    f"parsed {len(recs):,} JSONL events in {time.perf_counter() - t_parse:.1f}s",
+                    refresh=False,
+                )
         else:
-            # Test-only fallback to DuckDB
-            if show_progress:
-                print("[v1] Using DuckDB fallback (test mode)…", flush=True)
             recs = query_records(
                 db_path=wp,
                 country_codes=ARAB_SPRING_NODE_COUNTRY_CODES,
                 event_start=event_start,
                 event_end=event_end,
                 order_by=False,
-            )
-        if show_progress:
-            print(
-                f"[v1] Loaded {len(recs):,} Arab Spring events in {time.perf_counter() - t_query:.1f}s; building matrix…",
-                flush=True,
             )
         if pbar is not None:
             pbar.set_postfix_str(
@@ -697,11 +733,7 @@ def build_arab_spring_node_warehouse_v1(
             data_start=data_start,
             data_end=data_end,
         )
-        if show_progress:
-            print(
-                f"[v1] Built {matrix.shape[0]:,} × {matrix.shape[1]} matrix in {time.perf_counter() - t_build:.1f}s; writing to disk…",
-                flush=True,
-            )
+        fallback_filled_rows = _fill_missing_entity_hint_keys(rows_meta)
         if pbar is not None:
             pbar.set_postfix_str(
                 f"matrix {matrix.shape[0]:,}×{matrix.shape[1]} in {time.perf_counter() - t_build:.1f}s"
@@ -725,11 +757,6 @@ def build_arab_spring_node_warehouse_v1(
             embedding_dim=NODE_WAREHOUSE_EMBEDDING_DIM_V1,
         )
         write_manifest(out_j, manifest)
-        if show_progress:
-            print(
-                f"[v1] Complete: {int(matrix.shape[0]):,} nodes, {int(matrix.shape[1])} dims, {time.perf_counter() - t_query:.1f}s total",
-                flush=True,
-            )
         if pbar is not None:
             pbar.set_postfix_str(
                 f"wrote in {time.perf_counter() - t_write:.1f}s total {time.perf_counter() - t_query:.1f}s"
@@ -748,6 +775,7 @@ def build_arab_spring_node_warehouse_v1(
         "window_days": window_days,
         "event_query_start": event_start.isoformat(),
         "event_query_end": event_end.isoformat(),
+        "fallback_filled_entity_hint_rows": fallback_filled_rows,
     }
 
 
