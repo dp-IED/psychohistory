@@ -35,6 +35,16 @@ Rolling snapshot of what exists in **this repo** for the graph-builder / France 
 - **Optimizer carry-over:** Stage 2 has an explicit `# TODO(optimizer)` next to `Adam` — Stage 1 checkpoints still omit Adam state; extending Stage 1 `torch.save` to persist optimizer state is what makes “carry over” literal.
 - **`brute_topk` / ANN `k=100`:** still a magic constant shared by Stage 1 / Stage 2 pipelines; easy to miss during refactors.
 
+## Strategic addendum (Karpathy talk implications; 2026-04-30)
+
+- 2026-05-03 LLM-in-the-loop update: treat `R(q, h_t)` as a **learned/query-conditioned representation process**, not a fixed global contract. Keep only a minimal invariant envelope for audit joins (`query_id`, `cutoff_t`, query text, market/resolution refs, query-specific scaffold fields, evidence refs, assumptions/unknowns, coverage flags, trace/output ids). Track this week in `.context/week_2026-05-03_llm_representation_eval.md`.
+- 2026-05-03 evaluation update: add a thin end-to-end eval track with three axes—representation quality, reasoning faithfulness, and terminal calibration—before RL or ingestion expansion; seed set is locked to 30 resolved Polymarket-only questions split evenly across politics/institutional power, economics/macro-policy, and culture/entertainment to expose scaffold collapse and cross-domain generalization limits. Operational caveats: culture belief extraction is expected to be weaker than politics/economics, and 10/domain is an anti-collapse/scaffold-diversity test, not a powered calibration benchmark.
+- Add a **predictive-coding verification harness** (France-equivalent) before centrality-trajectory positives: use small synthetic subgraphs with known precedence so positives can be inspected quickly.
+- Treat **BagEncoder + directed GateMLP + centrality-weighted message passing** as novel design work: do not delegate blindly; require manual inspection of gate-score distributions on France and Arab Spring runs.
+- Make **DuckDB grammar constraints for `GeneratedLabelSpec`** explicit and enumerated before agent label generation; grammar is the fast verification loop, not optional polish.
+- Keep Section 18 locked decisions in design docs as a **fast-path memory index**; if a locked decision is missing there, treat it as operationally unlocked.
+- Keep **Contract 6 before Wikipedia ingestion** for harness-speed reasons: isolate integration behavior first, then add ingestion complexity where regressions are attributable.
+
 ---
 
 ## Overnight / batch commands
