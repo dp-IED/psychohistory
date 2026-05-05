@@ -911,6 +911,92 @@ def write_event_tape(
     return audit
 
 
+def _iter_gdelt_arab_spring_fragment_rows(raw_dir: Path) -> Iterator[dict[str, Any]]:
+    for path in sorted(raw_dir.glob("arab_spring_*.jsonl")):
+        with open_text_auto(path, "r") as handle:
+            for line in handle:
+                if line.strip():
+                    yield json.loads(line)
+
+
+def _iter_acled_arab_spring_fragment_rows(raw_dir: Path) -> Iterator[dict[str, Any]]:
+    for path in sorted(raw_dir.glob("acled_arab_spring_page_*.jsonl")):
+        with open_text_auto(path, "r") as handle:
+            for line in handle:
+                if line.strip():
+                    yield json.loads(line)
+
+
+def write_arab_spring_merged_tape(
+    *,
+    gdelt_raw_dir: Path,
+    acled_raw_dir: Path,
+    out_path: Path,
+    gdelt_normalize: GdeltTapeNormalizeParams,
+    cleanup_fragments: bool = False,
+) -> dict[str, Any]:
+    """Merge GDELT + ACLED Arab Spring fragments into one deduplicated JSONL tape."""
+
+    gdelt_records: list[EventTapeRecord] = []
+    for row in _iter_gdelt_arab_spring_fragment_rows(gdelt_raw_dir):
+        rec = normalize_raw_row(
+            row,
+            country_codes=gdelt_normalize.country_codes,
+            event_root_codes=gdelt_normalize.event_root_codes,
+            event_start=gdelt_normalize.event_start,
+            event_end=gdelt_normalize.event_end,
+        )
+        if rec is not None:
+            gdelt_records.append(rec)
+
+    acled_records: list[EventTapeRecord] = []
+    for row in _iter_acled_arab_spring_fragment_rows(acled_raw_dir):
+        acled_records.append(normalize_acled_arab_spring_row(row))
+
+    combined = gdelt_records + acled_records
+    gdelt_record_count = len(gdelt_records)
+    acled_record_count = len(acled_records)
+
+    deduped: dict[str, EventTapeRecord] = {}
+    duplicate_count = 0
+    for record in sorted(combined, key=_dedupe_tie_key):
+        existing = deduped.get(record.source_event_id)
+        if existing is None:
+            deduped[record.source_event_id] = record
+            continue
+        duplicate_count += 1
+        if _dedupe_tie_key(record) < _dedupe_tie_key(existing):
+            deduped[record.source_event_id] = record
+
+    output_records = sorted(deduped.values(), key=_event_sort_key)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open_text_auto(out_path, "w") as handle:
+        for record in output_records:
+            handle.write(record.model_dump_json() + "\n")
+
+    tape_manifest = {
+        "gdelt_record_count": gdelt_record_count,
+        "acled_record_count": acled_record_count,
+        "total_record_count": len(output_records),
+        "dedup_dropped": duplicate_count,
+        "tape_path": str(out_path.resolve()),
+        "completed_at": _format_datetime_z(dt.datetime.now(tz=UTC)),
+    }
+    manifest_path = out_path.parent / "tape_manifest.json"
+    manifest_path.write_text(json.dumps(tape_manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    if cleanup_fragments:
+        on_disk = load_event_tape(out_path, allow_empty=True)
+        if len(on_disk) != len(output_records):
+            raise ValueError("cleanup refused: tape line count does not match merge audit")
+        for path in gdelt_raw_dir.glob("arab_spring_*.jsonl"):
+            path.unlink()
+        for path in acled_raw_dir.glob("acled_arab_spring_page_*.jsonl"):
+            path.unlink()
+
+    return tape_manifest
+
+
 def load_event_tape(
     path: Path,
     *,
