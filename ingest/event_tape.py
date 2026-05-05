@@ -666,9 +666,9 @@ def _gdelt_arab_fetch_expected_rows(gdelt_raw_dir: Path) -> int | None:
 
 def _glob_acled_page_fragments(acled_raw_dir: Path) -> list[Path]:
     frag = acled_raw_dir / "fragments"
-    if not frag.is_dir():
-        return []
-    paths = [*frag.glob("page_*.jsonl"), *frag.glob("page_*.jsonl.gz")]
+    paths: list[Path] = []
+    if frag.is_dir():
+        paths.extend([*frag.glob("page_*.jsonl"), *frag.glob("page_*.jsonl.gz")])
     paths.extend(acled_raw_dir.glob("acled_arab_spring_page_*.jsonl"))
     paths.extend(acled_raw_dir.glob("acled_arab_spring_page_*.jsonl.gz"))
     return sorted(paths)
