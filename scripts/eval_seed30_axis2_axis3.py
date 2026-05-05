@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -158,6 +159,8 @@ def main() -> None:
     ap.add_argument('--traces', default='data/representations/seed30/day5_trace_prototype/seed30_full_traces.jsonl')
     ap.add_argument('--audit', default='.context/polymarket_30_seed_coverage_audit.json')
     ap.add_argument('--out-dir', default='data/representations/seed30/day6_axis2_day7_ledger')
+    ap.add_argument('--calibration-policy', default=None, help='Optional policy JSON path. When set, runs apply_seed30_calibration_policy.py after axis summaries.')
+    ap.add_argument('--policy-mode', choices=['benchmark', 'production', 'both'], default='both')
     args = ap.parse_args()
 
     root = Path.cwd()
@@ -261,7 +264,29 @@ def main() -> None:
     (out_dir / 'seed30_ablation_summary.json').write_text(json.dumps(ablation_summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     (out_dir / 'seed30_axis123_summary.json').write_text(json.dumps(joined_summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
-    print(json.dumps({'out_dir': str(out_dir.resolve()), 'axis2_hard_gate_pass': axis2_summary['hard_gate']['pass'], 'axis3_brier': axis3_summary['overall']['brier'], 'near_0_5_rate': axis3_summary['overall']['near_0_5']}, ensure_ascii=False, indent=2))
+    policy_runs: list[dict[str, Any]] = []
+    if args.calibration_policy:
+        modes = ['benchmark', 'production'] if args.policy_mode == 'both' else [args.policy_mode]
+        for mode in modes:
+            cmd = [
+                'python',
+                'scripts/apply_seed30_calibration_policy.py',
+                '--policy',
+                args.calibration_policy,
+                '--mode',
+                mode,
+            ]
+            proc = subprocess.run(cmd, cwd=root, capture_output=True, text=True)
+            policy_runs.append({
+                'mode': mode,
+                'returncode': proc.returncode,
+                'stdout': proc.stdout.strip(),
+                'stderr': proc.stderr.strip(),
+            })
+            if proc.returncode != 0:
+                raise RuntimeError(f'Policy run failed for mode={mode}: {proc.stderr}')
+
+    print(json.dumps({'out_dir': str(out_dir.resolve()), 'axis2_hard_gate_pass': axis2_summary['hard_gate']['pass'], 'axis3_brier': axis3_summary['overall']['brier'], 'near_0_5_rate': axis3_summary['overall']['near_0_5'], 'policy_runs': policy_runs}, ensure_ascii=False, indent=2))
 
 
 if __name__ == '__main__':
