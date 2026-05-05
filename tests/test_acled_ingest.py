@@ -363,7 +363,7 @@ def test_normalize_acled_csv_row_mapping() -> None:
     assert rec.event_root_code == "Protests"
     assert rec.event_code == "Peaceful protest"
     assert rec.event_base_code == ""
-    assert rec.event_class == "protest"
+    assert rec.raw["event_type"] == "Protests"
     assert rec.raw["_csv_input_file"] == "example.csv"
     assert rec.raw["_csv_row"] == 2
 

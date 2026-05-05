@@ -8,10 +8,13 @@ from pathlib import Path
 import pytest
 
 from ingest.event_tape import (
+    ARAB_SPRING_GDELT_NORMALIZE,
+    FRANCE_PROTEST_GDELT_NORMALIZE,
     EventTapeRecord,
     KNOWN_BAD_FRAGMENTS,
     audit_gdelt_arab_spring_raw_normalization,
     load_event_tape,
+    normalize_acled_arab_spring_row,
     normalize_gdelt_arab_spring_row,
     normalize_raw_row,
     write_arab_spring_merged_tape,

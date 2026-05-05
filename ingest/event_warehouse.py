@@ -226,6 +226,7 @@ def query_records(
     available_before: dt.datetime | None = None,
     country_codes: set[str] | None = None,
     country_code: str | None = None,
+    event_root_code: str | None = None,
     event_class: str | None = None,
     order_by: bool = True,
 ) -> list[EventTapeRecord]:
@@ -256,6 +257,9 @@ def query_records(
     if event_root_code is not None:
         where.append("event_root_code = ?")
         params.append(event_root_code)
+    elif event_class is not None:
+        where.append("event_root_code = ?")
+        params.append(event_class)
 
     sql = (
         f"SELECT {', '.join(EVENT_COLUMNS)} FROM events "
