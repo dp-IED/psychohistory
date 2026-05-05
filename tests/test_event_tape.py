@@ -77,14 +77,18 @@ def test_gdelt_row_normalization() -> None:
             Actor2Name="",
             Actor2CountryCode="",
             NumSources="",
-        )
+        ),
+        country_codes=FRANCE_PROTEST_GDELT_NORMALIZE.country_codes,
+        event_root_codes=FRANCE_PROTEST_GDELT_NORMALIZE.event_root_codes,
+        event_start=FRANCE_PROTEST_GDELT_NORMALIZE.event_start,
+        event_end=FRANCE_PROTEST_GDELT_NORMALIZE.event_end,
     )
 
     assert record is not None
     assert record.source_event_id == "gdelt:100"
     assert record.event_date.isoformat() == "2021-01-05"
     assert record.source_available_at.isoformat().startswith("2021-01-05T12:00:00")
-    assert record.event_class == "protest"
+    assert record.event_root_code == "14"
     assert record.admin1_code == "FR_UNKNOWN"
     assert record.num_sources is None
     assert record.actor2_name is None
@@ -102,7 +106,6 @@ def test_event_tape_record_accepts_acled_source() -> None:
         location_name="Ile-de-France",
         latitude=48.8566,
         longitude=2.3522,
-        event_class="protest",
         event_code="Protests",
         event_base_code="Protests",
         event_root_code="Protests",
@@ -123,6 +126,32 @@ def test_event_tape_record_accepts_acled_source() -> None:
     assert record.source_name == "acled"
 
 
+def test_gdelt_arab_spring_country_and_all_roots() -> None:
+    eg = normalize_raw_row(
+        _raw_row(
+            ActionGeo_CountryCode="EG",
+            ActionGeo_ADM1Code="EG11",
+            EventRootCode="18",
+            SQLDATE="20110115",
+        ),
+        country_codes=frozenset({"EG", "TU", "LY", "SY"}),
+        event_root_codes=None,
+        event_start=dt.date(2010, 1, 1),
+        event_end=dt.date(2013, 12, 31),
+    )
+    assert eg is not None
+    assert eg.country_code == "EG"
+    assert eg.event_root_code == "18"
+    blocked = normalize_raw_row(
+        _raw_row(ActionGeo_CountryCode="FR", SQLDATE="20110115"),
+        country_codes=frozenset({"EG", "TU", "LY", "SY"}),
+        event_root_codes=None,
+        event_start=dt.date(2010, 1, 1),
+        event_end=dt.date(2013, 12, 31),
+    )
+    assert blocked is None
+
+
 def test_event_tape_deduplicates_by_source_event_id(tmp_path: Path) -> None:
     raw_dir = tmp_path / "raw"
     out_path = tmp_path / "tape" / "events.jsonl"
@@ -134,7 +163,11 @@ def test_event_tape_deduplicates_by_source_event_id(tmp_path: Path) -> None:
         ],
     )
 
-    audit = write_event_tape(raw_dir=raw_dir, out_path=out_path)
+    audit = write_event_tape(
+        raw_dir=raw_dir,
+        out_path=out_path,
+        gdelt_normalize=FRANCE_PROTEST_GDELT_NORMALIZE,
+    )
     records = [EventTapeRecord.model_validate_json(line) for line in out_path.read_text().splitlines()]
 
     assert len(records) == 1
@@ -144,7 +177,11 @@ def test_event_tape_deduplicates_by_source_event_id(tmp_path: Path) -> None:
 
 def test_event_tape_missing_raw_dir_fails(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError, match="missing raw directory"):
-        write_event_tape(raw_dir=tmp_path / "missing", out_path=tmp_path / "events.jsonl")
+        write_event_tape(
+            raw_dir=tmp_path / "missing",
+            out_path=tmp_path / "events.jsonl",
+            gdelt_normalize=FRANCE_PROTEST_GDELT_NORMALIZE,
+        )
 
 
 def test_event_tape_reads_only_current_manifest_run(tmp_path: Path) -> None:
@@ -175,7 +212,11 @@ def test_event_tape_reads_only_current_manifest_run(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    write_event_tape(raw_dir=raw_dir, out_path=out_path)
+    write_event_tape(
+        raw_dir=raw_dir,
+        out_path=out_path,
+        gdelt_normalize=FRANCE_PROTEST_GDELT_NORMALIZE,
+    )
     records = [EventTapeRecord.model_validate_json(line) for line in out_path.read_text().splitlines()]
 
     assert [record.source_event_id for record in records] == ["gdelt:current"]
@@ -197,7 +238,11 @@ def test_event_tape_rejects_failed_fetch_without_allow_partial(tmp_path: Path) -
     )
 
     with pytest.raises(ValueError, match="raw fetch has failed files"):
-        write_event_tape(raw_dir=raw_dir, out_path=tmp_path / "events.jsonl")
+        write_event_tape(
+            raw_dir=raw_dir,
+            out_path=tmp_path / "events.jsonl",
+            gdelt_normalize=FRANCE_PROTEST_GDELT_NORMALIZE,
+        )
 
 
 def test_event_tape_allows_failed_fetch_when_partial_is_explicit(tmp_path: Path) -> None:
@@ -216,10 +261,88 @@ def test_event_tape_allows_failed_fetch_when_partial_is_explicit(tmp_path: Path)
         encoding="utf-8",
     )
 
-    audit = write_event_tape(raw_dir=raw_dir, out_path=out_path, allow_partial=True)
+    audit = write_event_tape(
+        raw_dir=raw_dir,
+        out_path=out_path,
+        gdelt_normalize=FRANCE_PROTEST_GDELT_NORMALIZE,
+        allow_partial=True,
+    )
 
     assert audit["output_row_count"] == 1
     assert out_path.exists()
+
+
+def test_normalize_acled_arab_spring_row() -> None:
+    row = {
+        "event_id_cnty": "EGY123",
+        "event_date": "2011-06-01",
+        "country": "Egypt",
+        "admin1": "Cairo",
+        "actor1": "Protesters",
+        "actor2": "Police",
+        "event_type": "Protests",
+        "sub_event_type": "Peaceful protest",
+        "fatalities": "0",
+        "notes": "",
+        "_retrieved_at": "2011-06-02T12:00:00Z",
+    }
+    rec = normalize_acled_arab_spring_row(row)
+    assert rec.source_name == "acled_v3"
+    assert rec.country_code == "EG"
+    assert rec.event_root_code == "Protests"
+    assert rec.source_available_at.isoformat().startswith("2011-06-01T23:59:59")
+
+
+def test_merge_arab_spring_tape_dedupes(tmp_path: Path) -> None:
+    gd = tmp_path / "gdelt"
+    ac = tmp_path / "acled"
+    gd.mkdir()
+    ac.mkdir()
+    gfrag = gd / "arab_spring_20110101_000000.jsonl"
+    shared_id = "999"
+    gfrag.write_text(
+        json.dumps(
+            _raw_row(
+                GLOBALEVENTID=shared_id,
+                SQLDATE="20110105",
+                ActionGeo_CountryCode="EG",
+                ActionGeo_ADM1Code="EG11",
+                DATEADDED="20110105120000",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    afrag = ac / "acled_arab_spring_page_0001.jsonl"
+    afrag.write_text(
+        json.dumps(
+            {
+                "event_id_cnty": "EGY999",
+                "event_date": "2011-01-05",
+                "country": "Egypt",
+                "admin1": "Cairo",
+                "actor1": "x",
+                "actor2": "",
+                "event_type": "Protests",
+                "sub_event_type": "Peaceful protest",
+                "fatalities": "0",
+                "notes": "",
+                "_retrieved_at": "2011-01-06T00:00:00Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    out = tmp_path / "events.jsonl"
+    write_arab_spring_merged_tape(
+        gdelt_raw_dir=gd,
+        acled_raw_dir=ac,
+        out_path=out,
+        gdelt_normalize=ARAB_SPRING_GDELT_NORMALIZE,
+        cleanup_fragments=False,
+    )
+    records = load_event_tape(out)
+    assert len(records) == 2
 
 
 def test_load_event_tape_reads_gzip(tmp_path: Path) -> None:
@@ -227,7 +350,11 @@ def test_load_event_tape_reads_gzip(tmp_path: Path) -> None:
     out_path = tmp_path / "events.jsonl.gz"
     _write_raw_fragment(raw_dir, [_raw_row()])
 
-    write_event_tape(raw_dir=raw_dir, out_path=out_path)
+    write_event_tape(
+        raw_dir=raw_dir,
+        out_path=out_path,
+        gdelt_normalize=FRANCE_PROTEST_GDELT_NORMALIZE,
+    )
 
     records = load_event_tape(out_path)
     assert len(records) == 1

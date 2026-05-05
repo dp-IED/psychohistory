@@ -25,6 +25,7 @@ SOURCE_LABELS = {
     "gdelt_v1_events": "GDELT 1.0 Events",
     "gdelt_v2_events": "GDELT 2.0 Events",
     "acled": "ACLED",
+    "acled_v3": "ACLED",
 }
 SourceIdentityMode = Literal["preserve", "collapse"]
 
@@ -284,7 +285,7 @@ def build_snapshot_payload(
         external_ids = {record.source_name: record.source_event_id}
         if record.source_name == "gdelt_v2_events":
             external_ids["gdelt"] = record.source_event_id
-        elif record.source_name == "acled":
+        elif record.source_name in {"acled", "acled_v3"}:
             external_ids["acled"] = record.source_event_id
         event_nodes.append(
             {
@@ -300,7 +301,6 @@ def build_snapshot_payload(
                     "source_available_at": _format_datetime_z(
                         record.source_available_at
                     ),
-                    "event_class": record.event_class,
                     "event_code": record.event_code,
                     "event_base_code": record.event_base_code,
                     "event_root_code": record.event_root_code,

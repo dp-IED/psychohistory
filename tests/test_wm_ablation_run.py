@@ -28,7 +28,6 @@ def _minimal_tape_record() -> EventTapeRecord:
         location_name="Paris",
         latitude=48.0,
         longitude=2.0,
-        event_class="protest",
         event_code="14",
         event_base_code="14",
         event_root_code="14",
