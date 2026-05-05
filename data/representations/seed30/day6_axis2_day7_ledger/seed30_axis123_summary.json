@@ -1,0 +1,172 @@
+{
+  "created_at": "2026-05-05T15:57:54Z",
+  "axis1_summary": {
+    "created_at": "2026-05-05T15:55:01Z",
+    "queries": 30,
+    "out_dir": "/Users/darenpalmer/conductor/workspaces/psychohistory-v2/philadelphia/data/representations/seed30/day4_deterministic",
+    "domain_means": {
+      "politics": {
+        "evidence_recall_at_k": 1.0,
+        "temporal_precision": 1.0,
+        "query_specificity": 0.605,
+        "assumption_coverage": 1.0,
+        "mean_evidence_ref_count": 12.1
+      },
+      "economics": {
+        "evidence_recall_at_k": 1.0,
+        "temporal_precision": 1.0,
+        "query_specificity": 1.0,
+        "assumption_coverage": 1.0,
+        "mean_evidence_ref_count": 20.0
+      },
+      "culture": {
+        "evidence_recall_at_k": 1.0,
+        "temporal_precision": 1.0,
+        "query_specificity": 0.695,
+        "assumption_coverage": 1.0,
+        "mean_evidence_ref_count": 13.9
+      }
+    }
+  },
+  "axis2_summary": {
+    "created_at": "2026-05-05T15:57:54Z",
+    "queries": 30,
+    "overall": {
+      "n": 30,
+      "invalid_citation_rate": 0.0,
+      "probability_moving_unsupported_rate": 0.0,
+      "unsupported_claim_count": 0.6666666666666666,
+      "sparse_flagged": 0.06666666666666667,
+      "abstained": 0.06666666666666667,
+      "abstention_trigger_ok": 1.0,
+      "fallback_used": 0.0,
+      "evidence_ref_count": 15.333333333333334,
+      "cited_ref_count": 3.3333333333333335
+    },
+    "by_domain": {
+      "culture": {
+        "n": 10,
+        "invalid_citation_rate": 0.0,
+        "probability_moving_unsupported_rate": 0.0,
+        "unsupported_claim_count": 1.0,
+        "sparse_flagged": 0.0,
+        "abstained": 0.0,
+        "abstention_trigger_ok": 1.0,
+        "fallback_used": 0.0,
+        "evidence_ref_count": 13.9,
+        "cited_ref_count": 3.0
+      },
+      "economics": {
+        "n": 10,
+        "invalid_citation_rate": 0.0,
+        "probability_moving_unsupported_rate": 0.0,
+        "unsupported_claim_count": 0.0,
+        "sparse_flagged": 0.0,
+        "abstained": 0.0,
+        "abstention_trigger_ok": 1.0,
+        "fallback_used": 0.0,
+        "evidence_ref_count": 20.0,
+        "cited_ref_count": 4.0
+      },
+      "politics": {
+        "n": 10,
+        "invalid_citation_rate": 0.0,
+        "probability_moving_unsupported_rate": 0.0,
+        "unsupported_claim_count": 1.0,
+        "sparse_flagged": 0.2,
+        "abstained": 0.2,
+        "abstention_trigger_ok": 1.0,
+        "fallback_used": 0.0,
+        "evidence_ref_count": 12.1,
+        "cited_ref_count": 3.0
+      }
+    },
+    "hard_gate": {
+      "invalid_citation_count": 0,
+      "probability_moving_unsupported_count": 0,
+      "abstention_trigger_failures": 0,
+      "pass": true
+    }
+  },
+  "axis3_summary": {
+    "created_at": "2026-05-05T15:57:54Z",
+    "queries": 30,
+    "overall": {
+      "n": 30,
+      "brier": 0.22394166666666668,
+      "abs_from_0_5": 0.04833333333333334,
+      "near_0_5": 0.6666666666666666,
+      "abstained": 0.06666666666666667
+    },
+    "by_domain": {
+      "culture": {
+        "n": 10,
+        "brier": 0.23022499999999999,
+        "abs_from_0_5": 0.03500000000000003,
+        "near_0_5": 1.0,
+        "abstained": 0.0
+      },
+      "economics": {
+        "n": 10,
+        "brier": 0.18610000000000002,
+        "abs_from_0_5": 0.08999999999999997,
+        "near_0_5": 0.0,
+        "abstained": 0.0
+      },
+      "politics": {
+        "n": 10,
+        "brier": 0.2555,
+        "abs_from_0_5": 0.020000000000000018,
+        "near_0_5": 1.0,
+        "abstained": 0.2
+      }
+    },
+    "calibration_note": "Abstentions are scored at 0.5 for terminal Brier; probabilities are heuristic trace-head outputs, not tuned forecasts."
+  },
+  "ablation_summary": {
+    "created_at": "2026-05-05T15:57:54Z",
+    "ablation": "same_domain_substitute_representation_ref_overlap",
+    "rows": 30,
+    "overall": {
+      "n": 30,
+      "jaccard_cited_vs_substitute_rep_refs": 0.09745660136964486,
+      "cited_refs_preserved_under_same_domain_substitute": 1.6333333333333333,
+      "substitute_rep_ref_count": 15.333333333333334
+    },
+    "by_domain": {
+      "culture": {
+        "n": 10,
+        "jaccard_cited_vs_substitute_rep_refs": 0.09230769230769231,
+        "cited_refs_preserved_under_same_domain_substitute": 1.2,
+        "substitute_rep_ref_count": 13.9
+      },
+      "economics": {
+        "n": 10,
+        "jaccard_cited_vs_substitute_rep_refs": 0.13577639751552795,
+        "cited_refs_preserved_under_same_domain_substitute": 2.8,
+        "substitute_rep_ref_count": 20.0
+      },
+      "politics": {
+        "n": 10,
+        "jaccard_cited_vs_substitute_rep_refs": 0.06428571428571428,
+        "cited_refs_preserved_under_same_domain_substitute": 0.9,
+        "substitute_rep_ref_count": 12.1
+      }
+    },
+    "interpretation": "Low overlap means traces cite query-specific evidence rather than refs that survive same-domain substitution. This is a representation-specificity proxy, not a semantic randomization test."
+  },
+  "week2_gate_decision": {
+    "decision": "proceed_to_calibration_and_selectivity_tuning_not_architecture_migration",
+    "rationale": [
+      "Axis 2 hard gate passes with zero invalid citations and zero probability-moving unsupported claims.",
+      "Axis 3 is weak/under-sharp because the trace-head is heuristic and many probabilities sit near 0.5.",
+      "Axis 1 coverage is usable but politics/culture specificity is weaker than economics; improve selectivity and culture tier grounding before scaling."
+    ],
+    "next_priorities": [
+      "Calibration/sharpness layer on non-abstained trace probabilities.",
+      "Politics specificity and official-source enrichment.",
+      "Culture source-tier quality and unsupported-background-claim suppression.",
+      "Representation selectivity ablations beyond same-domain substitution."
+    ]
+  }
+}

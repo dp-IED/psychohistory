@@ -1,0 +1,35 @@
+{
+  "created_at": "2026-05-05T15:57:54Z",
+  "queries": 30,
+  "overall": {
+    "n": 30,
+    "brier": 0.22394166666666668,
+    "abs_from_0_5": 0.04833333333333334,
+    "near_0_5": 0.6666666666666666,
+    "abstained": 0.06666666666666667
+  },
+  "by_domain": {
+    "culture": {
+      "n": 10,
+      "brier": 0.23022499999999999,
+      "abs_from_0_5": 0.03500000000000003,
+      "near_0_5": 1.0,
+      "abstained": 0.0
+    },
+    "economics": {
+      "n": 10,
+      "brier": 0.18610000000000002,
+      "abs_from_0_5": 0.08999999999999997,
+      "near_0_5": 0.0,
+      "abstained": 0.0
+    },
+    "politics": {
+      "n": 10,
+      "brier": 0.2555,
+      "abs_from_0_5": 0.020000000000000018,
+      "near_0_5": 1.0,
+      "abstained": 0.2
+    }
+  },
+  "calibration_note": "Abstentions are scored at 0.5 for terminal Brier; probabilities are heuristic trace-head outputs, not tuned forecasts."
+}

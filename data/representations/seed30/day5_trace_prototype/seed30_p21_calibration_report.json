@@ -1,0 +1,35 @@
+{
+  "baseline_brier": 0.22394166666666668,
+  "p21_brier": 0.20323466666666667,
+  "brier_delta": -0.020707000000000003,
+  "baseline_sharpness": {
+    "near_0_5_rate": 0.6428571428571429,
+    "mean_abs_from_0_5": 0.05178571428571429
+  },
+  "p21_sharpness": {
+    "near_0_5_rate": 0.2857142857142857,
+    "mean_abs_from_0_5": 0.10142857142857142
+  },
+  "baseline_calibration_buckets": [
+    {
+      "bucket": "[0.4,0.6)",
+      "n": 28,
+      "avg_pred": 0.5375,
+      "obs_rate": 0.7857142857142857
+    }
+  ],
+  "p21_calibration_buckets": [
+    {
+      "bucket": "[0.4,0.6)",
+      "n": 18,
+      "avg_pred": 0.5211111111111111,
+      "obs_rate": 0.7222222222222222
+    },
+    {
+      "bucket": "[0.6,0.8)",
+      "n": 10,
+      "avg_pred": 0.682,
+      "obs_rate": 0.9
+    }
+  ]
+}
