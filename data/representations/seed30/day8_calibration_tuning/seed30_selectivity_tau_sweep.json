@@ -1,0 +1,1699 @@
+{
+  "baseline_from_previous_step": {
+    "temperature_tau0": {
+      "tau": 0.0,
+      "coverage": 1.0,
+      "abstain_rate": 0.0,
+      "brier_answered": 0.18501350728818008,
+      "brier_with_abstain_0_5": 0.18501350728818008,
+      "answered_n": 30,
+      "n": 30,
+      "by_domain": {
+        "culture": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.17523518335336652,
+          "brier_with_abstain_0_5": 0.17523518335336652
+        },
+        "economics": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.09080384817745077,
+          "brier_with_abstain_0_5": 0.09080384817745077
+        },
+        "politics": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.289001490333723,
+          "brier_with_abstain_0_5": 0.289001490333723
+        }
+      }
+    },
+    "platt_tau0": {
+      "tau": 0.0,
+      "coverage": 1.0,
+      "abstain_rate": 0.0,
+      "brier_answered": 0.15207234098012987,
+      "brier_with_abstain_0_5": 0.15207234098012987,
+      "answered_n": 30,
+      "n": 30,
+      "by_domain": {
+        "culture": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.1600001248886593,
+          "brier_with_abstain_0_5": 0.1600001248886593
+        },
+        "economics": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.09104366181102135,
+          "brier_with_abstain_0_5": 0.09104366181102135
+        },
+        "politics": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.20517323624070896,
+          "brier_with_abstain_0_5": 0.20517323624070896
+        }
+      }
+    }
+  },
+  "recommendations": {
+    "temperature_best_answered_at_ge70pct_coverage": {
+      "tau": 0.01,
+      "coverage": 0.9333333333333333,
+      "abstain_rate": 0.06666666666666665,
+      "brier_answered": 0.18037161495162152,
+      "brier_with_abstain_0_5": 0.18501350728818008,
+      "answered_n": 28,
+      "n": 30,
+      "by_domain": {
+        "culture": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.17523518335336652,
+          "brier_with_abstain_0_5": 0.17523518335336652
+        },
+        "economics": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.09080384817745077,
+          "brier_with_abstain_0_5": 0.09080384817745077
+        },
+        "politics": {
+          "n": 10,
+          "coverage": 0.8,
+          "brier_answered": 0.2987518629171538,
+          "brier_with_abstain_0_5": 0.289001490333723
+        }
+      }
+    },
+    "temperature_best_terminal_brier": {
+      "tau": 0.13,
+      "coverage": 0.6666666666666666,
+      "abstain_rate": 0.33333333333333337,
+      "brier_answered": 0.13301951576540866,
+      "brier_with_abstain_0_5": 0.17201301051027243,
+      "answered_n": 20,
+      "n": 30,
+      "by_domain": {
+        "culture": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.17523518335336652,
+          "brier_with_abstain_0_5": 0.17523518335336652
+        },
+        "economics": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.09080384817745077,
+          "brier_with_abstain_0_5": 0.09080384817745077
+        },
+        "politics": {
+          "n": 10,
+          "coverage": 0.0,
+          "brier_answered": null,
+          "brier_with_abstain_0_5": 0.25
+        }
+      }
+    },
+    "platt_best_answered_at_ge70pct_coverage": {
+      "tau": 0.21,
+      "coverage": 0.7333333333333333,
+      "abstain_rate": 0.2666666666666667,
+      "brier_answered": 0.11995311218021897,
+      "brier_with_abstain_0_5": 0.15463228226549391,
+      "answered_n": 22,
+      "n": 30,
+      "by_domain": {
+        "culture": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.1600001248886593,
+          "brier_with_abstain_0_5": 0.1600001248886593
+        },
+        "economics": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.09104366181102135,
+          "brier_with_abstain_0_5": 0.09104366181102135
+        },
+        "politics": {
+          "n": 10,
+          "coverage": 0.2,
+          "brier_answered": 0.06426530048400551,
+          "brier_with_abstain_0_5": 0.2128530600968011
+        }
+      }
+    },
+    "platt_best_terminal_brier": {
+      "tau": 0.0,
+      "coverage": 1.0,
+      "abstain_rate": 0.0,
+      "brier_answered": 0.15207234098012987,
+      "brier_with_abstain_0_5": 0.15207234098012987,
+      "answered_n": 30,
+      "n": 30,
+      "by_domain": {
+        "culture": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.1600001248886593,
+          "brier_with_abstain_0_5": 0.1600001248886593
+        },
+        "economics": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.09104366181102135,
+          "brier_with_abstain_0_5": 0.09104366181102135
+        },
+        "politics": {
+          "n": 10,
+          "coverage": 1.0,
+          "brier_answered": 0.20517323624070896,
+          "brier_with_abstain_0_5": 0.20517323624070896
+        }
+      }
+    }
+  },
+  "notes": [
+    "Tau abstains near 0.5: if |p-0.5| < tau, return no-position.",
+    "Terminal Brier comparable to prior reports uses abstain scored at 0.5.",
+    "Answered-only Brier should be tracked with coverage to avoid cherry-picking low coverage."
+  ],
+  "sweep": {
+    "temperature": [
+      {
+        "tau": 0.0,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.18501350728818008,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.289001490333723,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.01,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.02,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.03,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.04,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.05,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.06,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.07,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.08,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.09,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.1,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.11,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.12,
+        "coverage": 0.9333333333333333,
+        "abstain_rate": 0.06666666666666665,
+        "brier_answered": 0.18037161495162152,
+        "brier_with_abstain_0_5": 0.18501350728818008,
+        "answered_n": 28,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.8,
+            "brier_answered": 0.2987518629171538,
+            "brier_with_abstain_0_5": 0.289001490333723
+          }
+        }
+      },
+      {
+        "tau": 0.13,
+        "coverage": 0.6666666666666666,
+        "abstain_rate": 0.33333333333333337,
+        "brier_answered": 0.13301951576540866,
+        "brier_with_abstain_0_5": 0.17201301051027243,
+        "answered_n": 20,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.14,
+        "coverage": 0.6666666666666666,
+        "abstain_rate": 0.33333333333333337,
+        "brier_answered": 0.13301951576540866,
+        "brier_with_abstain_0_5": 0.17201301051027243,
+        "answered_n": 20,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.15,
+        "coverage": 0.6666666666666666,
+        "abstain_rate": 0.33333333333333337,
+        "brier_answered": 0.13301951576540866,
+        "brier_with_abstain_0_5": 0.17201301051027243,
+        "answered_n": 20,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.16,
+        "coverage": 0.6666666666666666,
+        "abstain_rate": 0.33333333333333337,
+        "brier_answered": 0.13301951576540866,
+        "brier_with_abstain_0_5": 0.17201301051027243,
+        "answered_n": 20,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.17,
+        "coverage": 0.6666666666666666,
+        "abstain_rate": 0.33333333333333337,
+        "brier_answered": 0.13301951576540866,
+        "brier_with_abstain_0_5": 0.17201301051027243,
+        "answered_n": 20,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.17523518335336652,
+            "brier_with_abstain_0_5": 0.17523518335336652
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.18,
+        "coverage": 0.3333333333333333,
+        "abstain_rate": 0.6666666666666667,
+        "brier_answered": 0.09080384817745077,
+        "brier_with_abstain_0_5": 0.19693461605915025,
+        "answered_n": 10,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.19,
+        "coverage": 0.3333333333333333,
+        "abstain_rate": 0.6666666666666667,
+        "brier_answered": 0.09080384817745077,
+        "brier_with_abstain_0_5": 0.19693461605915025,
+        "answered_n": 10,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.2,
+        "coverage": 0.3333333333333333,
+        "abstain_rate": 0.6666666666666667,
+        "brier_answered": 0.09080384817745077,
+        "brier_with_abstain_0_5": 0.19693461605915025,
+        "answered_n": 10,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.21,
+        "coverage": 0.3333333333333333,
+        "abstain_rate": 0.6666666666666667,
+        "brier_answered": 0.09080384817745077,
+        "brier_with_abstain_0_5": 0.19693461605915025,
+        "answered_n": 10,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.22,
+        "coverage": 0.3333333333333333,
+        "abstain_rate": 0.6666666666666667,
+        "brier_answered": 0.09080384817745077,
+        "brier_with_abstain_0_5": 0.19693461605915025,
+        "answered_n": 10,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.23,
+        "coverage": 0.3333333333333333,
+        "abstain_rate": 0.6666666666666667,
+        "brier_answered": 0.09080384817745077,
+        "brier_with_abstain_0_5": 0.19693461605915025,
+        "answered_n": 10,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.24,
+        "coverage": 0.3333333333333333,
+        "abstain_rate": 0.6666666666666667,
+        "brier_answered": 0.09080384817745077,
+        "brier_with_abstain_0_5": 0.19693461605915025,
+        "answered_n": 10,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      },
+      {
+        "tau": 0.25,
+        "coverage": 0.3333333333333333,
+        "abstain_rate": 0.6666666666666667,
+        "brier_answered": 0.09080384817745077,
+        "brier_with_abstain_0_5": 0.19693461605915025,
+        "answered_n": 10,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09080384817745077,
+            "brier_with_abstain_0_5": 0.09080384817745077
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      }
+    ],
+    "platt": [
+      {
+        "tau": 0.0,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.01,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.02,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.03,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.04,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.05,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.06,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.07,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.08,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.09,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.1,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.11,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.12,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.13,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.14,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.15,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.16,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.17,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.18,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.19,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.2,
+        "coverage": 1.0,
+        "abstain_rate": 0.0,
+        "brier_answered": 0.15207234098012987,
+        "brier_with_abstain_0_5": 0.15207234098012987,
+        "answered_n": 30,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.20517323624070896,
+            "brier_with_abstain_0_5": 0.20517323624070896
+          }
+        }
+      },
+      {
+        "tau": 0.21,
+        "coverage": 0.7333333333333333,
+        "abstain_rate": 0.2666666666666667,
+        "brier_answered": 0.11995311218021897,
+        "brier_with_abstain_0_5": 0.15463228226549391,
+        "answered_n": 22,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.2,
+            "brier_answered": 0.06426530048400551,
+            "brier_with_abstain_0_5": 0.2128530600968011
+          }
+        }
+      },
+      {
+        "tau": 0.22,
+        "coverage": 0.7333333333333333,
+        "abstain_rate": 0.2666666666666667,
+        "brier_answered": 0.11995311218021897,
+        "brier_with_abstain_0_5": 0.15463228226549391,
+        "answered_n": 22,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.2,
+            "brier_answered": 0.06426530048400551,
+            "brier_with_abstain_0_5": 0.2128530600968011
+          }
+        }
+      },
+      {
+        "tau": 0.23,
+        "coverage": 0.7333333333333333,
+        "abstain_rate": 0.2666666666666667,
+        "brier_answered": 0.11995311218021897,
+        "brier_with_abstain_0_5": 0.15463228226549391,
+        "answered_n": 22,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.2,
+            "brier_answered": 0.06426530048400551,
+            "brier_with_abstain_0_5": 0.2128530600968011
+          }
+        }
+      },
+      {
+        "tau": 0.24,
+        "coverage": 0.7333333333333333,
+        "abstain_rate": 0.2666666666666667,
+        "brier_answered": 0.11995311218021897,
+        "brier_with_abstain_0_5": 0.15463228226549391,
+        "answered_n": 22,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.2,
+            "brier_answered": 0.06426530048400551,
+            "brier_with_abstain_0_5": 0.2128530600968011
+          }
+        }
+      },
+      {
+        "tau": 0.25,
+        "coverage": 0.6666666666666666,
+        "abstain_rate": 0.33333333333333337,
+        "brier_answered": 0.12552189334984032,
+        "brier_with_abstain_0_5": 0.1670145955665602,
+        "answered_n": 20,
+        "n": 30,
+        "by_domain": {
+          "culture": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.1600001248886593,
+            "brier_with_abstain_0_5": 0.1600001248886593
+          },
+          "economics": {
+            "n": 10,
+            "coverage": 1.0,
+            "brier_answered": 0.09104366181102135,
+            "brier_with_abstain_0_5": 0.09104366181102135
+          },
+          "politics": {
+            "n": 10,
+            "coverage": 0.0,
+            "brier_answered": null,
+            "brier_with_abstain_0_5": 0.25
+          }
+        }
+      }
+    ]
+  }
+}

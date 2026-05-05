@@ -1,0 +1,13 @@
+{
+  "mode": "production",
+  "calibrator": "temperature",
+  "tau": 0.13,
+  "n": 30,
+  "answered_n": 20,
+  "coverage": 0.6666666666666666,
+  "abstain_rate": 0.33333333333333337,
+  "brier_with_abstain": 0.17201301051027243,
+  "brier_answered_only": 0.13301951576540866,
+  "near_0_5_rate_scored": 0.3333333333333333,
+  "policy_path": "/Users/darenpalmer/conductor/workspaces/psychohistory-v2/philadelphia/data/representations/seed30/day8_calibration_tuning/seed30_calibration_policy.json"
+}
