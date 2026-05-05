@@ -1,0 +1,362 @@
+[
+  {
+    "article_id": "black-death",
+    "category": "cascade",
+    "pit_mode": "static",
+    "title": "Black Death",
+    "url": "https://en.wikipedia.org/wiki/Black_Death"
+  },
+  {
+    "article_id": "printing-press",
+    "category": "cascade",
+    "pit_mode": "static",
+    "title": "Printing press",
+    "url": "https://en.wikipedia.org/wiki/Printing_press"
+  },
+  {
+    "article_id": "revolutions-of-1848",
+    "category": "cascade",
+    "pit_mode": "static",
+    "title": "Revolutions of 1848",
+    "url": "https://en.wikipedia.org/wiki/Revolutions_of_1848"
+  },
+  {
+    "article_id": "spread-of-islam",
+    "category": "cascade",
+    "pit_mode": "static",
+    "title": "Spread of Islam",
+    "url": "https://en.wikipedia.org/wiki/Early_Muslim_conquests"
+  },
+  {
+    "article_id": "influenza-pandemic-1918",
+    "category": "cascade",
+    "pit_mode": "static",
+    "title": "Spanish flu",
+    "url": "https://en.wikipedia.org/wiki/Spanish_flu"
+  },
+  {
+    "article_id": "protestant-reformation",
+    "category": "cascade",
+    "pit_mode": "static",
+    "title": "Protestant Reformation",
+    "url": "https://en.wikipedia.org/wiki/Protestant_Reformation"
+  },
+  {
+    "article_id": "smallpox-in-the-americas",
+    "category": "cascade",
+    "pit_mode": "static",
+    "title": "Native American disease and epidemics",
+    "url": "https://en.wikipedia.org/wiki/Native_American_disease_and_epidemics"
+  },
+  {
+    "article_id": "mongol-conquests",
+    "category": "cascade",
+    "pit_mode": "static",
+    "title": "Mongol invasions and conquests",
+    "url": "https://en.wikipedia.org/wiki/Mongol_invasions_and_conquests"
+  },
+  {
+    "article_id": "arab-spring",
+    "as_of": "2010-01-01",
+    "category": "cascade",
+    "pit_mode": "arab_spring_overlap",
+    "title": "Arab Spring",
+    "url": "https://en.wikipedia.org/wiki/Arab_Spring"
+  },
+  {
+    "article_id": "tunisian-revolution-2010-2011",
+    "as_of": "2010-01-01",
+    "category": "cascade",
+    "pit_mode": "arab_spring_overlap",
+    "title": "Tunisian Revolution",
+    "url": "https://en.wikipedia.org/wiki/Tunisian_Revolution"
+  },
+  {
+    "article_id": "mccarthyism",
+    "category": "suppression",
+    "pit_mode": "static",
+    "title": "McCarthyism",
+    "url": "https://en.wikipedia.org/wiki/McCarthyism"
+  },
+  {
+    "article_id": "cultural-revolution",
+    "category": "suppression",
+    "pit_mode": "static",
+    "title": "Cultural Revolution",
+    "url": "https://en.wikipedia.org/wiki/Cultural_Revolution"
+  },
+  {
+    "article_id": "index-librorum-prohibitorum",
+    "category": "suppression",
+    "pit_mode": "static",
+    "title": "Index Librorum Prohibitorum",
+    "url": "https://en.wikipedia.org/wiki/Index_Librorum_Prohibitorum"
+  },
+  {
+    "article_id": "spanish-inquisition",
+    "category": "suppression",
+    "pit_mode": "static",
+    "title": "Spanish Inquisition",
+    "url": "https://en.wikipedia.org/wiki/Spanish_Inquisition"
+  },
+  {
+    "article_id": "tiananmen-square-protests-1989",
+    "category": "suppression",
+    "pit_mode": "static",
+    "title": "1989 Tiananmen Square protests and massacre",
+    "url": "https://en.wikipedia.org/wiki/1989_Tiananmen_Square_protests_and_massacre"
+  },
+  {
+    "article_id": "cointelpro",
+    "category": "suppression",
+    "pit_mode": "static",
+    "title": "COINTELPRO",
+    "url": "https://en.wikipedia.org/wiki/COINTELPRO"
+  },
+  {
+    "article_id": "great-purge",
+    "category": "suppression",
+    "pit_mode": "static",
+    "title": "Great Purge",
+    "url": "https://en.wikipedia.org/wiki/Great_Purge"
+  },
+  {
+    "article_id": "syrian-civil-war",
+    "as_of": "2010-01-01",
+    "category": "suppression",
+    "pit_mode": "arab_spring_overlap",
+    "title": "Syrian civil war",
+    "url": "https://en.wikipedia.org/wiki/Syrian_civil_war"
+  },
+  {
+    "article_id": "libyan-civil-war-2011",
+    "as_of": "2010-01-01",
+    "category": "suppression",
+    "pit_mode": "arab_spring_overlap",
+    "title": "First Libyan Civil War",
+    "url": "https://en.wikipedia.org/wiki/First_Libyan_Civil_War"
+  },
+  {
+    "article_id": "bahraini-uprising-2011",
+    "as_of": "2010-01-01",
+    "category": "suppression",
+    "pit_mode": "arab_spring_overlap",
+    "title": "Bahraini uprising of 2011",
+    "url": "https://en.wikipedia.org/wiki/Bahraini_uprising_of_2011"
+  },
+  {
+    "article_id": "marxism",
+    "category": "emergence",
+    "pit_mode": "static",
+    "title": "Marxism",
+    "url": "https://en.wikipedia.org/wiki/Marxism"
+  },
+  {
+    "article_id": "womens-suffrage",
+    "category": "emergence",
+    "pit_mode": "static",
+    "title": "Women's suffrage",
+    "url": "https://en.wikipedia.org/wiki/Women%27s_suffrage"
+  },
+  {
+    "article_id": "darwinism",
+    "category": "emergence",
+    "pit_mode": "static",
+    "title": "Darwinism",
+    "url": "https://en.wikipedia.org/wiki/Darwinism"
+  },
+  {
+    "article_id": "steam-engine",
+    "category": "emergence",
+    "pit_mode": "static",
+    "title": "Steam engine",
+    "url": "https://en.wikipedia.org/wiki/Steam_engine"
+  },
+  {
+    "article_id": "abolitionism",
+    "category": "emergence",
+    "pit_mode": "static",
+    "title": "Abolitionism",
+    "url": "https://en.wikipedia.org/wiki/Abolitionism"
+  },
+  {
+    "article_id": "civil-rights-movement",
+    "category": "emergence",
+    "pit_mode": "static",
+    "title": "Civil rights movement",
+    "url": "https://en.wikipedia.org/wiki/Civil_rights_movement"
+  },
+  {
+    "article_id": "green-revolution",
+    "category": "emergence",
+    "pit_mode": "static",
+    "title": "Green Revolution",
+    "url": "https://en.wikipedia.org/wiki/Green_Revolution"
+  },
+  {
+    "article_id": "open-source-software",
+    "category": "emergence",
+    "pit_mode": "static",
+    "title": "Open-source software",
+    "url": "https://en.wikipedia.org/wiki/Open-source_software"
+  },
+  {
+    "article_id": "occupy-wall-street",
+    "as_of": "2010-01-01",
+    "category": "emergence",
+    "pit_mode": "arab_spring_overlap",
+    "title": "Occupy Wall Street",
+    "url": "https://en.wikipedia.org/wiki/Occupy_Wall_Street"
+  },
+  {
+    "article_id": "egyptian-revolution-2011",
+    "as_of": "2010-01-01",
+    "category": "emergence",
+    "pit_mode": "arab_spring_overlap",
+    "title": "Egyptian revolution of 2011",
+    "url": "https://en.wikipedia.org/wiki/Egyptian_revolution_of_2011"
+  },
+  {
+    "article_id": "dust-bowl",
+    "category": "precursor",
+    "pit_mode": "static",
+    "title": "Dust Bowl",
+    "url": "https://en.wikipedia.org/wiki/Dust_Bowl"
+  },
+  {
+    "article_id": "sars",
+    "category": "precursor",
+    "pit_mode": "static",
+    "title": "Severe acute respiratory syndrome",
+    "url": "https://en.wikipedia.org/wiki/Severe_acute_respiratory_syndrome"
+  },
+  {
+    "article_id": "tulip-mania",
+    "category": "precursor",
+    "pit_mode": "static",
+    "title": "Tulip mania",
+    "url": "https://en.wikipedia.org/wiki/Tulip_mania"
+  },
+  {
+    "article_id": "french-revolution",
+    "category": "precursor",
+    "pit_mode": "static",
+    "title": "French Revolution",
+    "url": "https://en.wikipedia.org/wiki/French_Revolution"
+  },
+  {
+    "article_id": "weimar-hyperinflation",
+    "category": "precursor",
+    "pit_mode": "static",
+    "title": "Hyperinflation in the Weimar Republic",
+    "url": "https://en.wikipedia.org/wiki/Hyperinflation_in_the_Weimar_Republic"
+  },
+  {
+    "article_id": "financial-crisis-of-2007-2008",
+    "category": "precursor",
+    "pit_mode": "static",
+    "title": "Financial crisis of 2007-2008",
+    "url": "https://en.wikipedia.org/wiki/Financial_crisis_of_2007%E2%80%9308"
+  },
+  {
+    "article_id": "great-depression",
+    "category": "precursor",
+    "pit_mode": "static",
+    "title": "Great Depression",
+    "url": "https://en.wikipedia.org/wiki/Great_Depression"
+  },
+  {
+    "article_id": "irish-potato-famine",
+    "category": "precursor",
+    "pit_mode": "static",
+    "title": "Great Famine (Ireland)",
+    "url": "https://en.wikipedia.org/wiki/Great_Famine_(Ireland)"
+  },
+  {
+    "article_id": "yemeni-revolution",
+    "as_of": "2010-01-01",
+    "category": "precursor",
+    "pit_mode": "arab_spring_overlap",
+    "title": "Yemeni Revolution",
+    "url": "https://en.wikipedia.org/wiki/Yemeni_Revolution"
+  },
+  {
+    "article_id": "euromaidan",
+    "as_of": "2010-01-01",
+    "category": "precursor",
+    "pit_mode": "arab_spring_overlap",
+    "title": "Euromaidan",
+    "url": "https://en.wikipedia.org/wiki/Euromaidan"
+  },
+  {
+    "article_id": "bretton-woods-system",
+    "category": "cross_domain_wildcard",
+    "pit_mode": "static",
+    "title": "Bretton Woods system",
+    "url": "https://en.wikipedia.org/wiki/Bretton_Woods_system"
+  },
+  {
+    "article_id": "cotton-gin",
+    "category": "cross_domain_wildcard",
+    "pit_mode": "static",
+    "title": "Cotton gin",
+    "url": "https://en.wikipedia.org/wiki/Cotton_gin"
+  },
+  {
+    "article_id": "columbian-exchange",
+    "category": "cross_domain_wildcard",
+    "pit_mode": "static",
+    "title": "Columbian exchange",
+    "url": "https://en.wikipedia.org/wiki/Columbian_exchange"
+  },
+  {
+    "article_id": "germ-theory-of-disease",
+    "category": "cross_domain_wildcard",
+    "pit_mode": "static",
+    "title": "Germ theory of disease",
+    "url": "https://en.wikipedia.org/wiki/Germ_theory_of_disease"
+  },
+  {
+    "article_id": "space-race",
+    "category": "cross_domain_wildcard",
+    "pit_mode": "static",
+    "title": "Space Race",
+    "url": "https://en.wikipedia.org/wiki/Space_Race"
+  },
+  {
+    "article_id": "manhattan-project",
+    "category": "cross_domain_wildcard",
+    "pit_mode": "static",
+    "title": "Manhattan Project",
+    "url": "https://en.wikipedia.org/wiki/Manhattan_Project"
+  },
+  {
+    "article_id": "internet",
+    "category": "cross_domain_wildcard",
+    "pit_mode": "static",
+    "title": "Internet",
+    "url": "https://en.wikipedia.org/wiki/Internet"
+  },
+  {
+    "article_id": "transatlantic-slave-trade",
+    "category": "cross_domain_wildcard",
+    "pit_mode": "static",
+    "title": "Atlantic slave trade",
+    "url": "https://en.wikipedia.org/wiki/Atlantic_slave_trade"
+  },
+  {
+    "article_id": "meiji-restoration",
+    "category": "cross_domain_wildcard",
+    "pit_mode": "static",
+    "title": "Meiji Restoration",
+    "url": "https://en.wikipedia.org/wiki/Meiji_Restoration"
+  },
+  {
+    "article_id": "islamic-state",
+    "as_of": "2010-01-01",
+    "category": "cross_domain_wildcard",
+    "pit_mode": "arab_spring_overlap",
+    "title": "Islamic State",
+    "url": "https://en.wikipedia.org/wiki/Islamic_State"
+  }
+]
