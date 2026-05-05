@@ -161,11 +161,11 @@ def label_propagation_y(
 ) -> bool:
     """Positive iff protest-class propagation to an adjacent admin1 is observed.
 
-    Uses ``event_class`` on records for class equality. Let **F** be the
+    Uses ``event_root_code`` on records for class equality. Let **F** be the
     calendar date of the **first** tape event in ``target_admin1`` with
     ``event_date`` in ``[t, t+6]``. If none, **y=0**.
 
-    **y=1** iff there exists an event with the same ``event_class`` as an event
+    **y=1** iff there exists an event with the same ``event_root_code`` as an event
     on **F** in ``target_admin1``, in some admin1 **adjacent** to ``target_admin1``,
     with event date **D** such that ``1 <= (D - F).days <= 7`` and ``D <= t+6``
     (propagation stays inside the forecast week anchored at **t**).
@@ -180,7 +180,7 @@ def label_propagation_y(
     if not in_target:
         return False
     first_date = min(r.event_date for r in in_target)
-    classes_on_first = {r.event_class for r in in_target if r.event_date == first_date}
+    classes_on_first = {r.event_root_code for r in in_target if r.event_date == first_date}
     if not classes_on_first:
         return False
 
@@ -192,7 +192,7 @@ def label_propagation_y(
         for r in records:
             if r.admin1_code not in neighbors:
                 continue
-            if r.event_class != ref_class:
+            if r.event_root_code != ref_class:
                 continue
             lag = (r.event_date - first_date).days
             if 1 <= lag <= 7 and r.event_date <= horizon_end:
