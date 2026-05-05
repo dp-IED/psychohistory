@@ -1,0 +1,109 @@
+{
+  "pilot": "weimar_graph_jepa_tri_domain",
+  "train_years_as_of": [
+    1919,
+    1929
+  ],
+  "eval_years_as_of": [
+    1930,
+    1932
+  ],
+  "train_examples": 33,
+  "eval_examples": 9,
+  "domains": [
+    "economic",
+    "cultural",
+    "socio_political"
+  ],
+  "target_features_by_domain": {
+    "economic": [
+      "inflation_currency_stress",
+      "unemployment_industrial_stress",
+      "credit_fiscal_fragility"
+    ],
+    "cultural": [
+      "avant_garde_media_intensity",
+      "nationalist_cultural_backlash",
+      "public_sphere_polarization"
+    ],
+    "socio_political": [
+      "street_violence",
+      "coalition_fragility_emergency_rule",
+      "extremist_electoral_strength"
+    ]
+  },
+  "jepa_loss_trace": [
+    0.1796132651051411,
+    0.0027693178068664,
+    0.0022180238283595593,
+    0.0019150789819433025,
+    0.0017256968236004275,
+    0.0015990275131375507,
+    0.001510660916537733,
+    0.0014469722952811335,
+    0.00139955478205716,
+    0.0013629651478109437,
+    0.001333641817430595,
+    0.0013092666652595234,
+    0.0012883374015141735,
+    0.0012698751221967258,
+    0.0012532940563627598
+  ],
+  "overall": {
+    "jepa_cosine": 0.9814834744731744,
+    "ridge_cosine": 0.9890660524672695,
+    "persistence_cosine": 0.9984885344013448,
+    "jepa_regime_match_rate": 0.0
+  },
+  "by_domain": {
+    "cultural": {
+      "n": 3,
+      "jepa_cosine": 0.9533361400289286,
+      "ridge_cosine": 0.9701336362826579,
+      "persistence_cosine": 0.9960695300476466,
+      "jepa_regime_match_rate": 0.0
+    },
+    "economic": {
+      "n": 3,
+      "jepa_cosine": 0.9980512928122877,
+      "ridge_cosine": 0.9987630216394577,
+      "persistence_cosine": 0.9998842355929672,
+      "jepa_regime_match_rate": 0.0
+    },
+    "socio_political": {
+      "n": 3,
+      "jepa_cosine": 0.9930629905783069,
+      "ridge_cosine": 0.9983014994796932,
+      "persistence_cosine": 0.9995118375634201,
+      "jepa_regime_match_rate": 0.0
+    }
+  },
+  "by_target_year": {
+    "1931": {
+      "n": 3,
+      "jepa_cosine": 0.9914308724938751,
+      "ridge_cosine": 0.9958317584064508,
+      "persistence_cosine": 0.9992133363878594,
+      "jepa_regime_match_rate": 0.0
+    },
+    "1932": {
+      "n": 3,
+      "jepa_cosine": 0.985152423607694,
+      "ridge_cosine": 0.9930389425498581,
+      "persistence_cosine": 0.9992598805910348,
+      "jepa_regime_match_rate": 0.0
+    },
+    "1933": {
+      "n": 3,
+      "jepa_cosine": 0.9678671273179541,
+      "ridge_cosine": 0.9783274564454998,
+      "persistence_cosine": 0.99699238622514,
+      "jepa_regime_match_rate": 0.0
+    }
+  },
+  "notes": [
+    "Curated ordinal PIT states, not externally measured series.",
+    "Held-out period is 1931-1933 targets, so collapse cases are outside the training target bank.",
+    "Cosine is latent target-space alignment; regime-match uses nearest train target latent and is intentionally harsh for unseen collapse labels."
+  ]
+}
