@@ -60,7 +60,6 @@ def _fra_record(
             "location_name": "Paris",
             "latitude": 48.85,
             "longitude": 2.35,
-            "event_class": "protest",
             "event_code": "141",
             "event_base_code": "14",
             "event_root_code": event_root_code,

@@ -108,6 +108,10 @@ SOURCE_NAME = "gdelt_v2_events"
 ARAB_SPRING_GDELT_SOURCE_NAME = "gdelt_v1_events"
 DOMAIN = "france_protest"
 FRANCE_PROTEST_FILTERS = {"ActionGeo_CountryCode": "FR", "EventRootCode": "14"}
+ARAB_SPRING_CONTEXT = "arab_spring"
+ARAB_SPRING_COUNTRY_CODES = frozenset({"EG", "TU", "LY", "SY"})
+GDELT10_EVENTS_BASE_URL = "http://data.gdeltproject.org/events"
+MIN_DISK_FREE_BYTES_WARN = 20 * 1024 * 1024 * 1024
 UTC = dt.timezone.utc
 RawRetention = Literal["none", "compressed", "full"]
 

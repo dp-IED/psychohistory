@@ -7,6 +7,7 @@ import csv
 import datetime as dt
 import json
 import os
+import shutil
 import sys
 import time
 import urllib.error
@@ -25,7 +26,7 @@ from ingest.acled_tape import (
 )
 from ingest.event_tape import EventTapeRecord
 from ingest.event_warehouse import upsert_records
-from ingest.io_utils import open_text_auto
+from ingest.io_utils import open_text_auto, write_json_atomic
 from ingest.paths import (
     arab_spring_warehouse_path,
     resolve_data_root,
@@ -71,6 +72,10 @@ SOURCE_NAME = "acled"
 DOMAIN = "france_protest"
 TOKEN_URL = "https://acleddata.com/oauth/token"
 ACLED_READ_URL = "https://acleddata.com/api/acled/read"
+ARAB_SPRING_ACLED_COUNTRY_PARAM = "Egypt|Tunisia|Libya|Syria"
+ARAB_SPRING_ACLED_FIELDS = (
+    "event_id_cnty,event_date,country,admin1,actor1,actor2,event_type,sub_event_type,fatalities,notes"
+)
 UTC = dt.timezone.utc
 RawRetention = Literal["none", "compressed", "full"]
 
@@ -170,6 +175,7 @@ def _request_json(
         **(headers or {}),
     }
     last_error: Exception | None = None
+    last_http_body: str = ""
     for attempt in range(max_retries + 1):
         try:
             request = urllib.request.Request(
@@ -182,6 +188,10 @@ def _request_json(
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             last_error = exc
+            try:
+                last_http_body = exc.read().decode("utf-8", errors="replace")
+            except Exception:
+                last_http_body = ""
             if 400 <= exc.code < 500:
                 break
         except Exception as exc:  # pragma: no cover - exercised by integration use.
@@ -189,8 +199,12 @@ def _request_json(
         if attempt < max_retries:
             time.sleep(retry_backoff_seconds * (attempt + 1))
     if isinstance(last_error, urllib.error.HTTPError):
+        detail = last_http_body.strip()
+        if len(detail) > 800:
+            detail = f"{detail[:800]}…"
+        extra = f" body={detail}" if detail else ""
         raise RuntimeError(
-            f"ACLED request failed: status={last_error.code} endpoint={_endpoint_path(url)}"
+            f"ACLED request failed: status={last_error.code} endpoint={_endpoint_path(url)}{extra}"
         ) from last_error
     raise RuntimeError(f"ACLED request failed: endpoint={_endpoint_path(url)}") from last_error
 
@@ -202,6 +216,8 @@ def get_access_token(
     max_retries: int = 3,
     retry_backoff_seconds: float = 2.0,
 ) -> str:
+    """OAuth password grant per https://acleddata.com/api-documentation/getting-started"""
+
     form = urllib.parse.urlencode(
         {
             "username": credentials.username,
@@ -267,6 +283,27 @@ def _api_params(
         "event_date": f"{event_start.isoformat()}|{event_end.isoformat()}",
         "event_date_where": "BETWEEN",
         "fields": "|".join(ACLED_FIELDS),
+        "limit": str(limit),
+        "page": str(page),
+    }
+
+
+def _api_params_arab_spring_oauth(
+    *,
+    event_start: dt.date,
+    event_end: dt.date,
+    limit: int,
+    page: int,
+) -> dict[str, str]:
+    """OAuth read API: pipe-separated countries, date range, narrow field list (no event_type filter)."""
+
+    return {
+        "_format": "json",
+        "country": ARAB_SPRING_ACLED_COUNTRY_PARAM,
+        "country_where": "|",
+        "event_date": f"{event_start.isoformat()}|{event_end.isoformat()}",
+        "event_date_where": "BETWEEN",
+        "fields": ARAB_SPRING_ACLED_FIELDS,
         "limit": str(limit),
         "page": str(page),
     }
@@ -531,6 +568,128 @@ def fetch_france_protests(
     return metadata
 
 
+def fetch_arab_spring_acled(
+    *,
+    out_dir: Path,
+    event_start: dt.date,
+    event_end: dt.date,
+    token_url: str = TOKEN_URL,
+    api_url: str = ACLED_READ_URL,
+    limit: int = 5000,
+    max_pages: int = 10_000,
+    max_retries: int = 3,
+    retry_backoff_seconds: float = 2.0,
+    force: bool = False,
+    progress: bool = False,
+) -> dict[str, Any]:
+    """Fetch Arab Spring rows via ACLED OAuth + Bearer GET to /api/acled/read."""
+
+    if event_start > event_end:
+        raise ValueError("event_start must be on or before event_end")
+    credentials = credentials_from_env()
+    access_token = get_access_token(
+        credentials=credentials,
+        token_url=token_url,
+        max_retries=max_retries,
+        retry_backoff_seconds=retry_backoff_seconds,
+    )
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if force:
+        for path in out_dir.glob("acled_arab_spring_page_*.jsonl"):
+            path.unlink()
+
+    manifest_path = out_dir / "fetch_manifest.json"
+    rows_total = 0
+    pages_ok = 0
+
+    for page in range(1, max_pages + 1):
+        _warn_acled_disk_low(out_dir, label=f"before page {page}")
+        retrieved_at = format_datetime_z(utc_now())
+        params = _api_params_arab_spring_oauth(
+            event_start=event_start,
+            event_end=event_end,
+            limit=limit,
+            page=page,
+        )
+        payload = _fetch_page(
+            access_token=access_token,
+            api_url=api_url,
+            params=params,
+            max_retries=max_retries,
+            retry_backoff_seconds=retry_backoff_seconds,
+        )
+        data = payload.get("data") or []
+        if not isinstance(data, list):
+            raise RuntimeError("ACLED v3 response data is not a list")
+        fragment_name = f"acled_arab_spring_page_{page:04d}.jsonl"
+        fragment_path = out_dir / fragment_name
+        hydrated: list[dict[str, Any]] = []
+        for item in data:
+            if not isinstance(item, dict):
+                continue
+            hydrated.append({**item, "_retrieved_at": retrieved_at, "_api_page": page})
+        if hydrated:
+            temp_path = fragment_path.with_name(f".{fragment_path.name}.tmp")
+            with temp_path.open("w", encoding="utf-8") as handle:
+                for row in hydrated:
+                    handle.write(_json_dump_line(row))
+            temp_path.replace(fragment_path)
+        rows_total += len(data)
+        pages_ok += 1
+        manifest_body = {
+            "context": "arab_spring",
+            "countries": ["EG", "TU", "LY", "SY"],
+            "date_start": event_start.isoformat(),
+            "date_end": event_end.isoformat(),
+            "files_fetched": pages_ok,
+            "rows_written": rows_total,
+            "fetch_completed_at": None,
+            "acled_api": "oauth_read",
+        }
+        write_json_atomic(manifest_path, manifest_body)
+        _warn_acled_disk_low(out_dir, label=f"after page {page}")
+        if progress:
+            print(
+                f"[acled arab_spring] page={page} rows={len(data)} total_rows={rows_total}",
+                file=sys.stderr,
+                flush=True,
+            )
+        if len(data) == 0:
+            break
+    else:
+        raise RuntimeError(f"ACLED fetch exceeded max_pages={max_pages}")
+
+    manifest_final = {
+        "context": "arab_spring",
+        "countries": ["EG", "TU", "LY", "SY"],
+        "date_start": event_start.isoformat(),
+        "date_end": event_end.isoformat(),
+        "files_fetched": pages_ok,
+        "rows_written": rows_total,
+        "fetch_completed_at": format_datetime_z(utc_now()),
+        "acled_api": "oauth_read",
+    }
+    write_json_atomic(manifest_path, manifest_final)
+    return {
+        "out_dir": str(out_dir),
+        "manifest_path": str(manifest_path),
+        "row_count": rows_total,
+        "page_count": pages_ok,
+    }
+
+
+def _warn_acled_disk_low(path: Path, *, label: str) -> None:
+    free = int(shutil.disk_usage(path).free)
+    warn_below = 20 * 1024 * 1024 * 1024
+    if free < warn_below:
+        print(
+            f"[acled arab_spring] warning: free disk space {free / (1024**3):.1f} GB below 20 GB ({label})",
+            file=sys.stderr,
+            flush=True,
+        )
+
+
 CSV_PAGE_LIMIT = 5000
 
 
@@ -756,6 +915,29 @@ def _build_parser() -> argparse.ArgumentParser:
         default="event_date_lag",
     )
     fetch.add_argument("--availability-lag-days", type=int, default=7)
+
+    arab = subparsers.add_parser("fetch-arab-spring")
+    arab.add_argument("--out", default="data/acled/raw/arab_spring")
+    arab.add_argument(
+        "--event-start",
+        "--date-start",
+        default="2010-01-01",
+        help="Inclusive event_date filter start (ISO). Alias: --date-start.",
+    )
+    arab.add_argument(
+        "--event-end",
+        "--date-end",
+        default="2013-12-31",
+        help="Inclusive event_date filter end (ISO). Alias: --date-end.",
+    )
+    arab.add_argument("--token-url", default=TOKEN_URL)
+    arab.add_argument("--api-url", default=ACLED_READ_URL)
+    arab.add_argument("--limit", type=int, default=5000)
+    arab.add_argument("--max-pages", type=int, default=10_000)
+    arab.add_argument("--max-retries", type=int, default=3)
+    arab.add_argument("--retry-backoff-seconds", type=float, default=2.0)
+    arab.add_argument("--force", action="store_true")
+
     ing = subparsers.add_parser("ingest-csv")
     ing.add_argument("--input", type=Path, required=True)
     ing.add_argument("--out", type=Path, required=True)
@@ -817,6 +999,25 @@ def main(argv: Sequence[str] | None = None) -> int:
                 warehouse_path=Path(args.warehouse_path) if args.warehouse_path is not None else None,
                 availability_policy=args.availability_policy,
                 availability_lag_days=args.availability_lag_days,
+                progress=True,
+            )
+        except Exception as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
+    if args.command == "fetch-arab-spring":
+        try:
+            fetch_arab_spring_acled(
+                out_dir=Path(args.out),
+                event_start=dt.date.fromisoformat(args.event_start),
+                event_end=dt.date.fromisoformat(args.event_end),
+                token_url=args.token_url,
+                api_url=args.api_url,
+                limit=args.limit,
+                max_pages=args.max_pages,
+                max_retries=args.max_retries,
+                retry_backoff_seconds=args.retry_backoff_seconds,
+                force=args.force,
                 progress=True,
             )
         except Exception as exc:

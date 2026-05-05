@@ -39,7 +39,6 @@ def _record(
         location_name=None,
         latitude=None,
         longitude=None,
-        event_class="protest",
         event_code="141" if source_name == "gdelt_v2_events" else "Protests",
         event_base_code="14" if source_name == "gdelt_v2_events" else "Protests",
         event_root_code="14" if source_name == "gdelt_v2_events" else "Protests",

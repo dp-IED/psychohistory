@@ -132,6 +132,16 @@ def test_v1_pre_norm_guard_raises() -> None:
             build_arab_spring_node_matrix_v1(recs, as_of=as_of, window_days=365)
 
 
+def test_v1_requires_jsonl_unless_duckdb_fallback_explicit(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="allow_duckdb_fallback=True"):
+        build_arab_spring_node_warehouse_v1(
+            warehouse_path=tmp_path / "events.duckdb",
+            out_mmap=tmp_path / "node_warehouse_v1.mmap",
+            out_manifest=tmp_path / "node_warehouse_v1_manifest.json",
+            show_progress=False,
+        )
+
+
 def test_v1_manifest_embedding_version_and_dim(tmp_path: Path) -> None:
     as_of = date(2013, 12, 31)
     fake_matrix = np.ones((1, 128), dtype=np.float32)
@@ -155,6 +165,7 @@ def test_v1_manifest_embedding_version_and_dim(tmp_path: Path) -> None:
             out_mmap=tmp_path / "node_warehouse_v1.mmap",
             out_manifest=tmp_path / "node_warehouse_v1_manifest.json",
             show_progress=False,
+            allow_duckdb_fallback=True,
         )
 
     manifest = write_manifest_mock.call_args.args[1]
