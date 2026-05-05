@@ -35,7 +35,6 @@ def _record(
         location_name="Paris",
         latitude=48.8566,
         longitude=2.3522,
-        event_class="protest",
         event_code="141" if source_name == "gdelt_v2_events" else "Protests",
         event_base_code="14" if source_name == "gdelt_v2_events" else "Protests",
         event_root_code="14" if source_name == "gdelt_v2_events" else "Protests",

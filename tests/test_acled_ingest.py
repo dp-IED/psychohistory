@@ -68,7 +68,7 @@ def test_normalize_acled_row_outputs_event_tape_record() -> None:
     assert record.source_name == "acled"
     assert record.source_event_id == "acled:FRA123"
     assert record.admin1_code == "FRB7"
-    assert record.event_class == "protest"
+    assert record.event_root_code == "Protests"
     assert record.quad_class is None
     assert record.source_available_at == dt.datetime(2023, 4, 1, tzinfo=dt.timezone.utc)
 
@@ -227,7 +227,6 @@ def test_merge_event_jsonl_writes_source_counts(tmp_path: Path) -> None:
         location_name=None,
         latitude=None,
         longitude=None,
-        event_class="protest",
         event_code="141",
         event_base_code="14",
         event_root_code="14",

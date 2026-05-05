@@ -11,6 +11,7 @@ from ingest.gdelt_raw import (
     fetch_france_protests,
     parse_gdelt_zip_bytes,
     parse_masterfilelist,
+    row_matches_arab_spring,
     row_matches_france_protest,
 )
 
@@ -92,6 +93,24 @@ def test_gdelt_raw_csv_row_maps_61_columns() -> None:
     assert {column for column in GDELT_V2_EVENT_COLUMNS}.issubset(parsed[0])
     assert parsed[0]["Actor1Name"] == "Students"
     assert parsed[0]["_source_file_md5"] == "abc"
+
+
+def test_gdelt_raw_arab_spring_filter_keeps_countries_and_dates() -> None:
+    rows = [
+        _raw_row(GLOBALEVENTID="1", ActionGeo_CountryCode="EG", SQLDATE="20110115"),
+        _raw_row(GLOBALEVENTID="2", ActionGeo_CountryCode="EG", SQLDATE="20140101"),
+        _raw_row(GLOBALEVENTID="3", ActionGeo_CountryCode="US", SQLDATE="20110115"),
+    ]
+    kept = [
+        row
+        for row in rows
+        if row_matches_arab_spring(
+            row,
+            event_start=dt.date(2010, 1, 1),
+            event_end=dt.date(2013, 12, 31),
+        )
+    ]
+    assert [row["GLOBALEVENTID"] for row in kept] == ["1"]
 
 
 def test_gdelt_raw_filter_keeps_france_protests_only() -> None:

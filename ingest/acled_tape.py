@@ -286,7 +286,6 @@ def normalize_acled_row(
         or _none_if_blank(row.get("admin1")),
         latitude=_optional_float(row, "latitude"),
         longitude=_optional_float(row, "longitude"),
-        event_class="protest",
         event_code=_required_text(row, "event_type"),
         event_base_code=_required_text(row, "event_type"),
         event_root_code=_required_text(row, "event_type"),

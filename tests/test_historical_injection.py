@@ -22,7 +22,6 @@ def _record(source_event_id: str, available_at: str) -> EventTapeRecord:
         location_name="Paris",
         latitude=None,
         longitude=None,
-        event_class="protest",
         event_code="141",
         event_base_code="14",
         event_root_code="14",

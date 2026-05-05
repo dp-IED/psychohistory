@@ -9,8 +9,10 @@ import datetime as dt
 import hashlib
 import io
 import json
+import shutil
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
@@ -19,7 +21,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator, Literal, Sequence
 
-from ingest.io_utils import open_text_auto
+from ingest.io_utils import open_text_auto, write_json_atomic
 
 
 GDELT_V2_EVENT_COLUMNS = [
@@ -90,6 +92,10 @@ MASTERFILELIST_URL = "http://data.gdeltproject.org/gdeltv2/masterfilelist.txt"
 SOURCE_NAME = "gdelt_v2_events"
 DOMAIN = "france_protest"
 FRANCE_PROTEST_FILTERS = {"ActionGeo_CountryCode": "FR", "EventRootCode": "14"}
+ARAB_SPRING_CONTEXT = "arab_spring"
+ARAB_SPRING_COUNTRY_CODES = frozenset({"EG", "TU", "LY", "SY"})
+GDELT10_EVENTS_BASE_URL = "http://data.gdeltproject.org/events"
+MIN_DISK_FREE_BYTES_WARN = 20 * 1024 * 1024 * 1024
 UTC = dt.timezone.utc
 RawRetention = Literal["none", "compressed", "full"]
 
@@ -197,6 +203,178 @@ def row_matches_france_protest(
     except ValueError:
         return False
     return event_start <= event_date <= event_end
+
+
+def row_matches_arab_spring(
+    row: dict[str, str],
+    *,
+    event_start: dt.date,
+    event_end: dt.date,
+) -> bool:
+    cc = (row.get("ActionGeo_CountryCode") or "").strip()
+    if cc not in ARAB_SPRING_COUNTRY_CODES:
+        return False
+    try:
+        event_date = parse_sql_date(row.get("SQLDATE", ""))
+    except ValueError:
+        return False
+    return event_start <= event_date <= event_end
+
+
+def iter_gdelt10_daily_export_urls(
+    *,
+    event_start: dt.date,
+    event_end: dt.date,
+    events_base_url: str = GDELT10_EVENTS_BASE_URL,
+) -> Iterator[tuple[dt.date, str]]:
+    """Yield (calendar day, zip URL) for GDELT 1.0 daily event files (separate from gdeltv2 masterfile)."""
+
+    day = event_start
+    while day <= event_end:
+        yield day, f"{events_base_url.rstrip('/')}/{day:%Y%m%d}.export.CSV.zip"
+        day += dt.timedelta(days=1)
+
+
+def _arab_spring_fragment_filename(day: dt.date) -> str:
+    return f"arab_spring_{day:%Y%m%d}_000000.jsonl"
+
+
+def _disk_free_bytes(path: Path) -> int:
+    return int(shutil.disk_usage(path).free)
+
+
+def _warn_disk_low(path: Path, *, label: str) -> None:
+    free = _disk_free_bytes(path)
+    if free < MIN_DISK_FREE_BYTES_WARN:
+        print(
+            f"[gdelt arab_spring] warning: free disk space {free / (1024**3):.1f} GB "
+            f"below 20 GB ({label})",
+            file=sys.stderr,
+            flush=True,
+        )
+
+
+def _arab_spring_manifest_initial() -> dict[str, Any]:
+    return {
+        "context": ARAB_SPRING_CONTEXT,
+        "countries": sorted(ARAB_SPRING_COUNTRY_CODES),
+        "date_start": "2010-01-01",
+        "date_end": "2013-12-31",
+        "files_fetched": 0,
+        "rows_written": 0,
+        "fetch_completed_at": None,
+        "gdelt_version": "1.0",
+    }
+
+
+def fetch_arab_spring(
+    *,
+    out_dir: Path,
+    event_start: dt.date,
+    event_end: dt.date,
+    events_base_url: str = GDELT10_EVENTS_BASE_URL,
+    max_retries: int = 3,
+    retry_backoff_seconds: float = 2.0,
+    force: bool = False,
+    progress: bool = False,
+) -> dict[str, Any]:
+    """
+    Fetch GDELT 1.0 daily ``.export.CSV.zip`` files (historical URL pattern, not mixed with gdeltv2 masterfile).
+    Zip bytes are released immediately after parsing; only JSONL fragments remain on disk.
+    """
+
+    if event_start > event_end:
+        raise ValueError("event_start must be on or before event_end")
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = out_dir / "fetch_manifest.json"
+    if manifest_path.exists():
+        manifest: dict[str, Any] = json.loads(manifest_path.read_text(encoding="utf-8"))
+    else:
+        manifest = _arab_spring_manifest_initial()
+        manifest["date_start"] = event_start.isoformat()
+        manifest["date_end"] = event_end.isoformat()
+        write_json_atomic(manifest_path, manifest)
+
+    files_fetched = int(manifest.get("files_fetched") or 0)
+    rows_written = int(manifest.get("rows_written") or 0)
+
+    for day, url in iter_gdelt10_daily_export_urls(
+        event_start=event_start,
+        event_end=event_end,
+        events_base_url=events_base_url,
+    ):
+        fragment_name = _arab_spring_fragment_filename(day)
+        fragment_path = out_dir / fragment_name
+        if fragment_path.exists() and not force:
+            if progress:
+                print(f"[gdelt arab_spring] skip existing {fragment_name}", file=sys.stderr, flush=True)
+            continue
+
+        _warn_disk_low(out_dir, label=f"before {day.isoformat()}")
+        retrieved_at = format_datetime_z(utc_now())
+        metadata = {
+            "_source_file_url": url,
+            "_source_file_timestamp": f"{day:%Y-%m-%d}T00:00:00Z",
+            "_retrieved_at": retrieved_at,
+        }
+        zip_bytes: bytes | None = None
+        kept_count = 0
+        try:
+            try:
+                zip_bytes = _download_url(
+                    url,
+                    max_retries=max_retries,
+                    retry_backoff_seconds=retry_backoff_seconds,
+                )
+            except urllib.error.HTTPError as exc:
+                if exc.code == 404:
+                    if progress:
+                        print(f"[gdelt arab_spring] missing file (404): {url}", file=sys.stderr, flush=True)
+                    continue
+                raise
+            parsed_rows = parse_gdelt_zip_bytes(zip_bytes, metadata=metadata)
+            zip_bytes = None
+            kept = [
+                row
+                for row in parsed_rows
+                if row_matches_arab_spring(row, event_start=event_start, event_end=event_end)
+            ]
+            kept_count = len(kept)
+            if kept:
+                fragment_path.parent.mkdir(parents=True, exist_ok=True)
+                temp_path = fragment_path.with_name(f".{fragment_path.name}.tmp")
+                with temp_path.open("w", encoding="utf-8") as handle:
+                    for row in kept:
+                        handle.write(_json_dump_line(row))
+                temp_path.replace(fragment_path)
+            files_fetched += 1
+            rows_written += kept_count
+            manifest["files_fetched"] = files_fetched
+            manifest["rows_written"] = rows_written
+            manifest["fetch_completed_at"] = None
+            write_json_atomic(manifest_path, manifest)
+        finally:
+            zip_bytes = None
+
+        _warn_disk_low(out_dir, label=f"after {day.isoformat()}")
+        if progress:
+            print(
+                f"[gdelt arab_spring] {day.isoformat()} rows={kept_count}",
+                file=sys.stderr,
+                flush=True,
+            )
+
+    manifest["fetch_completed_at"] = format_datetime_z(utc_now())
+    write_json_atomic(manifest_path, manifest)
+    return {
+        "out_dir": str(out_dir),
+        "manifest_path": str(manifest_path),
+        "event_start": event_start.isoformat(),
+        "event_end": event_end.isoformat(),
+        "files_fetched": files_fetched,
+        "rows_written": rows_written,
+    }
 
 
 def parse_gdelt_zip_bytes(
@@ -658,6 +836,25 @@ def _build_parser() -> argparse.ArgumentParser:
         choices=["none", "compressed", "full"],
         default="none",
     )
+
+    arab = subparsers.add_parser("fetch-arab-spring")
+    arab.add_argument("--raw-dir", default="data/gdelt/raw/arab_spring")
+    arab.add_argument(
+        "--event-start",
+        "--date-start",
+        default="2010-01-01",
+        help="Inclusive event-date window start (ISO date). Alias: --date-start.",
+    )
+    arab.add_argument(
+        "--event-end",
+        "--date-end",
+        default="2013-12-31",
+        help="Inclusive event-date window end (ISO date). Alias: --date-end.",
+    )
+    arab.add_argument("--events-base-url", default=GDELT10_EVENTS_BASE_URL)
+    arab.add_argument("--max-retries", type=int, default=3)
+    arab.add_argument("--retry-backoff-seconds", type=float, default=2.0)
+    arab.add_argument("--force", action="store_true")
     return parser
 
 
@@ -684,6 +881,22 @@ def main(argv: Sequence[str] | None = None) -> int:
                 max_retries=args.max_retries,
                 retry_backoff_seconds=args.retry_backoff_seconds,
                 raw_retention=args.raw_retention,
+                progress=True,
+            )
+        except Exception as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
+    if args.command == "fetch-arab-spring":
+        try:
+            fetch_arab_spring(
+                out_dir=Path(args.raw_dir),
+                event_start=dt.date.fromisoformat(args.event_start),
+                event_end=dt.date.fromisoformat(args.event_end),
+                events_base_url=args.events_base_url,
+                max_retries=args.max_retries,
+                retry_backoff_seconds=args.retry_backoff_seconds,
+                force=args.force,
                 progress=True,
             )
         except Exception as exc:
