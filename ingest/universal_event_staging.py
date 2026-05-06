@@ -506,7 +506,12 @@ def upsert_universal_event_rows(
     values = [[row.get(column) for column in columns] for row in rows_list]
     with _duckdb().connect(str(db_path)) as con:
         con.executemany(sql, values)
-    return {"upserted_count": len(rows_list)}
+        total_row_count = int(con.execute("SELECT count(*) FROM universal_event_staging").fetchone()[0])
+    return {
+        "input_count": len(rows_list),
+        "upserted_count": len(rows_list),
+        "total_row_count": total_row_count,
+    }
 
 
 def load_predictions(

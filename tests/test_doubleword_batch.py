@@ -648,3 +648,60 @@ def test_ingest_results_parses_reasoning_content_shape(tmp_path: Path) -> None:
     assert summary["processed_lines"] == 1
     assert summary["parsed_records"] == 1
     assert summary["upserted_count"] == 1
+
+
+def test_ingest_results_counts_unknown_custom_id_and_invalid_record_as_dropped(tmp_path: Path) -> None:
+    manifest = [
+        {
+            "custom_id": "wiki-black-death-397-001",
+            "article_id": "black-death",
+            "model_id": "Qwen/Qwen3.5-397B-A17B-FP8-dottxt",
+            "source_url": "https://en.wikipedia.org/wiki/Black_Death",
+            "revision_id": "123",
+            "fetched_at": "2026-04-27T00:00:00Z",
+        }
+    ]
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    invalid_known = {
+        "custom_id": "wiki-black-death-397-001",
+        "response": {
+            "body": {
+                "choices": [
+                    {
+                        "message": {
+                            "tool_calls": [
+                                {
+                                    "function": {
+                                        "name": "emit_records",
+                                        "arguments": json.dumps(
+                                            {"records": [{"subject_id": "too_incomplete"}]}
+                                        ),
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+    }
+    unknown_custom_id = {
+        "custom_id": "wiki-not-in-manifest-397-999",
+        "response": {"body": {"choices": []}},
+    }
+    results_path = tmp_path / "output.jsonl"
+    write_jsonl_records(results_path, [invalid_known, unknown_custom_id])
+
+    summary = ingest_batch_results(
+        results_jsonl_path=results_path,
+        manifest_path=manifest_path,
+        db_path=tmp_path / "staging.duckdb",
+        batch_id="batch-1",
+    )
+
+    assert summary["processed_lines"] == 2
+    assert summary["parsed_records"] == 0
+    assert summary["dropped_records"] == 2
+    assert summary["upserted_count"] == 0
