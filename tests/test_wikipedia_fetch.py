@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from io import BytesIO
+from urllib.error import HTTPError
+
 from ingest.wikipedia_fetch import fetch_article
 
 
@@ -109,3 +112,43 @@ def test_static_fetch_retries_transient_api_failure(monkeypatch) -> None:
 
     assert out["revision_id"] == "100"
     assert len(calls) == 2
+
+
+def test_static_fetch_retries_http_429_rate_limit_after_retry_after_delay(monkeypatch) -> None:
+    calls = []
+    sleeps = []
+
+    def fake_api_get(params, *, timeout=30):
+        calls.append(dict(params))
+        if len(calls) == 1:
+            raise HTTPError(
+                url="https://en.wikipedia.org/w/api.php",
+                code=429,
+                msg="Too Many Requests",
+                hdrs={"Retry-After": "2"},
+                fp=BytesIO(b"rate limited"),
+            )
+        return _page_payload(
+            title="Black Death",
+            revisions=[
+                {
+                    "revid": 101,
+                    "timestamp": "2026-04-27T00:00:00Z",
+                    "slots": {"main": {"content": "Recovered after rate limit"}},
+                }
+            ],
+        )
+
+    monkeypatch.setattr("ingest.wikipedia_fetch._api_get", fake_api_get)
+    monkeypatch.setattr("ingest.wikipedia_fetch.time.sleep", sleeps.append)
+
+    out = fetch_article(
+        title="Black Death",
+        url="https://en.wikipedia.org/wiki/Black_Death",
+        pit_mode="static",
+        as_of=None,
+    )
+
+    assert out["revision_id"] == "101"
+    assert len(calls) == 2
+    assert sleeps == [2.0]
