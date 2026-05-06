@@ -38,9 +38,8 @@ def test_resolve_completion_window_aliases() -> None:
     assert resolve_completion_window("1h") == "1h"
 
 
-def test_model_lane_mapping_uses_dottxt_for_35b() -> None:
-    assert MODEL_BY_LANE["35"] == "Qwen/Qwen3.5-35B-A3B-FP8-dottxt"
-    assert MODEL_BY_LANE["397"] == "Qwen/Qwen3.5-397B-A17B-FP8-dottxt"
+def test_model_lane_mapping_uses_dottxt_for_397b() -> None:
+    assert MODEL_BY_LANE == {"397": "Qwen/Qwen3.5-397B-A17B-FP8-dottxt"}
 
 
 def test_emit_records_schema_enforces_non_empty_bounded_records() -> None:
@@ -167,7 +166,7 @@ def test_build_batch_jsonl_requests_limits_count_and_article_chars(tmp_path: Pat
     out_manifest = tmp_path / "manifest.json"
     summary = build_batch_jsonl_requests(
         fetched_articles_path=fetched_path,
-        model_lane="35",
+        model_lane="397",
         out_jsonl=out_jsonl,
         out_manifest=out_manifest,
         max_tokens=8192,
@@ -432,13 +431,12 @@ def test_run_realtime_shakeout_parses_function_tool_calls(monkeypatch, tmp_path:
 
     out = run_realtime_shakeout(
         fetched_articles_path=fetched_path,
-        model_lanes=["397", "35"],
+        model_lanes=["397"],
         sample_size=1,
         api_key="dummy",
     )
     assert out["sample_size"] == 1
     assert out["lanes"]["397"]["checked_articles"][0]["valid_record_count"] >= 1
-    assert out["lanes"]["35"]["checked_articles"][0]["valid_record_count"] >= 1
 
 
 def test_shakeout_cli_passes_max_tokens(monkeypatch, tmp_path: Path) -> None:

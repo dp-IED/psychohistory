@@ -60,7 +60,6 @@ WINDOW_MAP = {
 
 MODEL_BY_LANE = {
     "397": "Qwen/Qwen3.5-397B-A17B-FP8-dottxt",
-    "35": "Qwen/Qwen3.5-35B-A3B-FP8-dottxt",
 }
 
 DEFAULT_SYSTEM_PROMPT = (
@@ -994,11 +993,6 @@ def _score_model(
             recommendation = "Proceed after prompt revision; rerun pilot check on 397B."
         else:
             recommendation = "Do not proceed; revise prompt/schema and rerun pilot."
-    elif "35B" in model_id:
-        if overall >= 0.75:
-            recommendation = "Use 35B for non-wildcard articles; reserve 397B for hard set."
-        else:
-            recommendation = "Keep 397B as default lane; 35B not sufficient for pilot quality bar."
     else:
         recommendation = "Model threshold policy not defined for this model id."
 
@@ -1095,7 +1089,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     shakeout = sub.add_parser("shakeout")
     shakeout.add_argument("--fetched-articles", required=True)
-    shakeout.add_argument("--model-lanes", default="397,35", help="Comma-separated model lanes")
+    shakeout.add_argument("--model-lanes", default="397", help="Comma-separated model lanes")
     shakeout.add_argument("--sample-size", type=int, default=5)
     shakeout.add_argument("--api-key", default=None)
     shakeout.add_argument("--base-url", default=DOUBLEWORD_BASE_URL)
