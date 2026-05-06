@@ -101,3 +101,18 @@ def test_upsert_universal_event_rows_rejects_unknown_columns(tmp_path: Path) -> 
 
     with pytest.raises(ValueError, match="row 0 has unexpected staging columns"):
         upsert_universal_event_rows(db_path=db_path, rows=[row])
+
+
+def test_upsert_universal_event_rows_is_idempotent_for_same_event_model(tmp_path: Path) -> None:
+    db_path = tmp_path / "staging.duckdb"
+    row = _valid_row()
+
+    first = upsert_universal_event_rows(db_path=db_path, rows=[row])
+    second = upsert_universal_event_rows(db_path=db_path, rows=[row])
+
+    assert first["input_count"] == 1
+    assert first["upserted_count"] == 1
+    assert first["total_row_count"] == 1
+    assert second["input_count"] == 1
+    assert second["upserted_count"] == 1
+    assert second["total_row_count"] == 1

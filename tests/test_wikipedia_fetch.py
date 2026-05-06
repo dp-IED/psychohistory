@@ -77,3 +77,35 @@ def test_static_fetch_uses_latest_revision(monkeypatch) -> None:
     assert out["revision_id"] == "99"
     assert out["pit_status"] == "static_latest"
     assert out["pit_warning"] is None
+
+
+def test_static_fetch_retries_transient_api_failure(monkeypatch) -> None:
+    calls = []
+
+    def fake_api_get(params, *, timeout=30):
+        calls.append(dict(params))
+        if len(calls) == 1:
+            raise TimeoutError("temporary wikipedia timeout")
+        return _page_payload(
+            title="Black Death",
+            revisions=[
+                {
+                    "revid": 100,
+                    "timestamp": "2026-04-27T00:00:00Z",
+                    "slots": {"main": {"content": "Recovered Black Death article text"}},
+                }
+            ],
+        )
+
+    monkeypatch.setattr("ingest.wikipedia_fetch._api_get", fake_api_get)
+    monkeypatch.setattr("ingest.wikipedia_fetch.time.sleep", lambda _: None)
+
+    out = fetch_article(
+        title="Black Death",
+        url="https://en.wikipedia.org/wiki/Black_Death",
+        pit_mode="static",
+        as_of=None,
+    )
+
+    assert out["revision_id"] == "100"
+    assert len(calls) == 2

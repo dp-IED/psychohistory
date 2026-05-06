@@ -27,6 +27,30 @@ def _api_get(params: dict[str, Any], *, timeout: int = 30) -> dict[str, Any]:
         return json.loads(response.read().decode("utf-8"))
 
 
+def _api_get_with_retries(
+    params: dict[str, Any],
+    *,
+    timeout: int = 30,
+    max_attempts: int = 3,
+    backoff_seconds: float = 0.25,
+) -> dict[str, Any]:
+    """Fetch MediaWiki JSON with a small retry budget for transient transport failures."""
+
+    if max_attempts < 1:
+        raise ValueError("max_attempts must be >= 1")
+    last_exc: BaseException | None = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return _api_get(params, timeout=timeout)
+        except (TimeoutError, OSError) as exc:
+            last_exc = exc
+            if attempt == max_attempts:
+                break
+            time.sleep(backoff_seconds * attempt)
+    assert last_exc is not None  # for type checkers; loop always sets this before breaking
+    raise last_exc
+
+
 def _extract_page(payload: dict[str, Any]) -> dict[str, Any]:
     query = payload.get("query") or {}
     pages = query.get("pages") or []
@@ -95,7 +119,7 @@ def fetch_article(
         params_older = dict(params_base)
         params_older["rvdir"] = "older"
         params_older["rvstart"] = _as_of_timestamp(as_of)
-        payload = _api_get(params_older, timeout=timeout)
+        payload = _api_get_with_retries(params_older, timeout=timeout)
         page = _extract_page(payload)
         revisions = page.get("revisions") or []
         if revisions:
@@ -106,7 +130,7 @@ def fetch_article(
             params_newer = dict(params_base)
             params_newer["rvdir"] = "newer"
             params_newer["rvstart"] = _as_of_timestamp(as_of)
-            payload = _api_get(params_newer, timeout=timeout)
+            payload = _api_get_with_retries(params_newer, timeout=timeout)
             page = _extract_page(payload)
             revisions = page.get("revisions") or []
             if not revisions:
@@ -123,7 +147,7 @@ def fetch_article(
     elif pit_mode != "static":
         raise ValueError(f"unknown pit_mode: {pit_mode}")
     else:
-        payload = _api_get(params_base, timeout=timeout)
+        payload = _api_get_with_retries(params_base, timeout=timeout)
         page = _extract_page(payload)
         revision = _extract_revision(page)
         pit_status = "static_latest"
