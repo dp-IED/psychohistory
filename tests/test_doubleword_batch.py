@@ -5,6 +5,7 @@ from pathlib import Path
 
 from ingest.doubleword_batch import (
     MODEL_BY_LANE,
+    _normalize_record_payload_for_ingest,
     main,
     build_batch_jsonl_requests,
     emit_records_tool_schema,
@@ -146,6 +147,14 @@ def test_build_batch_jsonl_requests_includes_tool_schema(tmp_path: Path) -> None
     assert "layered time horizons" in prompt
     assert "slow-moving constraints" in prompt
     assert "not a short event caption" in prompt
+    assert "Article title: Black Death" in prompt
+    assert "emit exactly three anchor records" in prompt
+    assert "object_id=institutional_elites" in prompt
+    assert "object_id=civil_society" in prompt
+    assert "object_id=public_discourse" in prompt
+    assert "use subject_type=PHENOMENON" in prompt
+    assert "use location_type=GEOGRAPHIC" in prompt
+    assert "use lag_precision=SHORT and lag_years=2" in prompt
 
     manifest = json.loads(out_manifest.read_text(encoding="utf-8"))
     assert manifest[0]["article_id"] == "black-death"
@@ -712,6 +721,43 @@ def test_ingest_results_counts_unknown_custom_id_and_invalid_record_as_dropped(t
     assert summary["upserted_count"] == 0
 
 
+def test_normalize_record_payload_repairs_schema_bookkeeping_slips() -> None:
+    payload = {
+        "subject_id": "revolutionary_networks",
+        "subject_name": "Revolutionary networks",
+        "subject_type": "MOVEMENT",
+        "object_id": "public_discourse",
+        "object_name": "Public discourse",
+        "object_type": "IDEA",
+        "relation_type": "TRANSFORMS",
+        "relation_description": "Revolutionary networks transform public discourse.",
+        "braudel_layer": "conjonctures",
+        "structural_mechanism": (
+            "Activist organizations linked printed manifestos, public meetings, and urban associations "
+            "so claims about representation moved between local grievances and national political debate."
+        ),
+        "date_start": "1849-12-31",
+        "date_end": "1848-01-01",
+        "date_precision": "YEAR",
+        "location_type": "CONCEPTUAL",
+        "concept_domain": None,
+        "description": (
+            "Revolutionary networks transformed public discourse through printed manifestos, "
+            "association meetings, and public claims that connected local grievances to national debate."
+        ),
+        "lag_years": 18,
+        "lag_precision": "GENERATIONAL",
+        "source_confidence": 0.75,
+    }
+
+    normalized = _normalize_record_payload_for_ingest(payload, {"category": "emergence"})
+
+    assert normalized["concept_domain"] == "public_discourse"
+    assert normalized["date_start"] == "1848-01-01"
+    assert normalized["date_end"] == "1849-12-31"
+    UniversalEventRecord.model_validate(normalized)
+
+
 def test_ingest_results_writes_dropped_record_audit(tmp_path: Path) -> None:
     manifest = [
         {
@@ -743,7 +789,7 @@ def test_ingest_results_writes_dropped_record_audit(tmp_path: Path) -> None:
             "security channels, turning British feasibility calculations into American engineering urgency."
         ),
         "date_precision": "YEAR",
-        "location_type": "NETWORK",
+        "location_type": "BOGUS",
         "description": (
             "British feasibility calculations moved through scientist-to-scientist channels, giving American "
             "physicists concrete design targets and converting abstract fission research into coordinated program planning."
@@ -791,5 +837,5 @@ def test_ingest_results_writes_dropped_record_audit(tmp_path: Path) -> None:
     assert dropped[0]["article_id"] == "network-article"
     assert dropped[0]["title"] == "Network Article"
     assert dropped[0]["category"] == "cross_domain_wildcard"
-    assert "concept_domain is required" in dropped[0]["error"]
-    assert dropped[0]["raw_record"]["location_type"] == "NETWORK"
+    assert "invalid location_type" in dropped[0]["error"]
+    assert dropped[0]["raw_record"]["location_type"] == "BOGUS"
