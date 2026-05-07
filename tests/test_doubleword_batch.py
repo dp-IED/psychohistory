@@ -55,6 +55,9 @@ def test_emit_records_schema_enforces_non_empty_bounded_records() -> None:
     assert "object_id" in item["required"]
     assert "object_name" in item["required"]
     assert "object_type" in item["required"]
+    assert "concept_domain" in item["required"]
+    assert "Never omit" in item["properties"]["concept_domain"]["description"]
+    assert "NETWORK" in item["properties"]["location_type"]["description"]
     assert item["properties"]["object_id"]["type"] == "string"
     assert item["properties"]["object_name"]["type"] == "string"
     assert item["properties"]["object_type"]["type"] == "string"
@@ -139,6 +142,10 @@ def test_build_batch_jsonl_requests_includes_tool_schema(tmp_path: Path) -> None
     assert line["body"]["model"].endswith("dottxt")
     assert line["body"]["tools"][0]["type"] == "function"
     assert line["body"]["tool_choice"]["function"]["name"] == "emit_records"
+    prompt = line["body"]["messages"][1]["content"]
+    assert "layered time horizons" in prompt
+    assert "slow-moving constraints" in prompt
+    assert "not a short event caption" in prompt
 
     manifest = json.loads(out_manifest.read_text(encoding="utf-8"))
     assert manifest[0]["article_id"] == "black-death"
@@ -703,3 +710,86 @@ def test_ingest_results_counts_unknown_custom_id_and_invalid_record_as_dropped(t
     assert summary["parsed_records"] == 0
     assert summary["dropped_records"] == 2
     assert summary["upserted_count"] == 0
+
+
+def test_ingest_results_writes_dropped_record_audit(tmp_path: Path) -> None:
+    manifest = [
+        {
+            "custom_id": "wiki-network-397-001",
+            "article_id": "network-article",
+            "title": "Network Article",
+            "category": "cross_domain_wildcard",
+            "model_id": "Qwen/Qwen3.5-397B-A17B-FP8-dottxt",
+            "source_url": "https://example.test/network",
+            "revision_id": "123",
+            "fetched_at": "2026-04-27T00:00:00Z",
+        }
+    ]
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    invalid_record = {
+        "subject_id": "maud_committee",
+        "subject_name": "MAUD Committee",
+        "subject_type": "INSTITUTION",
+        "object_id": "us_atomic_program",
+        "object_name": "US atomic program",
+        "object_type": "INSTITUTION",
+        "relation_type": "INFLUENCES",
+        "relation_description": "MAUD findings influenced US atomic organization.",
+        "braudel_layer": "conjonctures",
+        "structural_mechanism": (
+            "Scientific findings crossed institutional boundaries through personal networks and wartime "
+            "security channels, turning British feasibility calculations into American engineering urgency."
+        ),
+        "date_precision": "YEAR",
+        "location_type": "NETWORK",
+        "description": (
+            "British feasibility calculations moved through scientist-to-scientist channels, giving American "
+            "physicists concrete design targets and converting abstract fission research into coordinated program planning."
+        ),
+        "lag_years": 2,
+        "lag_precision": "SHORT",
+        "source_confidence": 0.9,
+    }
+    result = {
+        "custom_id": "wiki-network-397-001",
+        "response": {
+            "body": {
+                "choices": [
+                    {
+                        "message": {
+                            "tool_calls": [
+                                {
+                                    "function": {
+                                        "name": "emit_records",
+                                        "arguments": json.dumps({"records": [invalid_record]}),
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+    }
+    results_path = tmp_path / "output.jsonl"
+    dropped_path = tmp_path / "dropped.jsonl"
+    write_jsonl_records(results_path, [result])
+
+    summary = ingest_batch_results(
+        results_jsonl_path=results_path,
+        manifest_path=manifest_path,
+        db_path=tmp_path / "staging.duckdb",
+        batch_id="batch-1",
+        dropped_records_path=dropped_path,
+    )
+
+    assert summary["dropped_records"] == 1
+    dropped = [json.loads(line) for line in dropped_path.read_text(encoding="utf-8").splitlines()]
+    assert len(dropped) == 1
+    assert dropped[0]["article_id"] == "network-article"
+    assert dropped[0]["title"] == "Network Article"
+    assert dropped[0]["category"] == "cross_domain_wildcard"
+    assert "concept_domain is required" in dropped[0]["error"]
+    assert dropped[0]["raw_record"]["location_type"] == "NETWORK"

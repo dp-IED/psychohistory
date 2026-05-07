@@ -82,6 +82,9 @@ EXTRACTION_USER_PREFIX = (
     "Extraction constraints: return 3 to 8 records; do not return an empty records array. "
     "If certainty is low, use ESTIMATED/UNKNOWN precision fields rather than omitting records. "
     "Every description must be a mechanism-rich causal explanation, not a short event caption. "
+    "Prefer layered time horizons: connect visible actions to medium-run institutional pressures "
+    "and slow-moving constraints such as demography, ecology, fiscal capacity, legitimacy, technology, "
+    "class coalitions, information networks, security capacity, or trade structure when the article supports them. "
     "For each description, explain why the relation happened and how it propagated or operated: "
     "name the relevant background conditions, transmission channel, relay actors or institutions, "
     "mobilized population, coercive/economic/ecological mechanism, and concrete quantities or dates "
@@ -89,10 +92,13 @@ EXTRACTION_USER_PREFIX = (
     "or transformed Y."
 )
 ENUM_AND_SCORING_GUIDANCE = (
-    "Enum guidance: choose the most specific relation_type. Avoid INFLUENCES unless no sharper "
-    "relation fits; prefer SPREADS_TO for propagation, SUPPRESSES for coercive containment, "
-    "LEGITIMISES for claims that alter authority, PRECEDES for enabling preconditions, and "
-    "TRANSFORMS for changed system state. Prefer date_precision=YEAR when year is known. "
+    "Enum guidance: choose the most specific relation_type. INFLUENCES is a last resort, not the default. "
+    "Use SPREADS_TO when a repertoire, pathogen, technique, institution, or information pattern propagates; "
+    "PRECEDES when a condition enables a later outcome without directly creating it; CREATES when a new "
+    "organization, policy, infrastructure, movement, or capacity comes into existence; TRANSFORMS when the "
+    "operating rules or composition of an existing system change; SUPPRESSES for coercive containment; "
+    "OPPOSES for resistance/conflict without clear containment; LEGITIMISES for authority or acceptability; "
+    "DESTROYS for elimination or termination. Prefer date_precision=YEAR when year is known. "
     "Use DAY/MONTH only when exact dates are explicitly present."
 )
 STRUCTURAL_EXTRACTION_GUIDANCE = (
@@ -102,19 +108,24 @@ STRUCTURAL_EXTRACTION_GUIDANCE = (
     "online video, and activist channels transmitted the example across urban youth publics.' "
     "Bad: 'The drought came in three waves.' Good: 'Repeated drought waves interacted with deep plowing "
     "and wheat monoculture to remove grassland soil anchors, so wind converted ordinary aridity into "
-    "regional farm abandonment and forced migration.'"
+    "regional farm abandonment and forced migration.' Before emitting records, prefer the highest-value "
+    "mechanisms over chronology: include triggers only when they reveal a channel, constraint, incentive, "
+    "coordination pathway, institutional bottleneck, ecological dependency, or population-scale vulnerability."
 )
 LAG_YEARS_GUIDANCE = (
     "Lag guidance: always emit lag_years. Use 0 for SYNCHRONOUS, null only for UNKNOWN, "
     "and an integer estimate for SHORT, MEDIUM, LONG, GENERATIONAL, or EPOCHAL. "
-    "Typical anchors: SHORT 1-5, MEDIUM 5-15, LONG 15-40, GENERATIONAL 20-80, EPOCHAL 80+."
+    "Choose the lag between the cause and represented outcome, not the pace of the article narrative: "
+    "SYNCHRONOUS=0, SHORT=1-5, MEDIUM=6-15, LONG=16-40, GENERATIONAL=41-80, EPOCHAL=80+. "
+    "Do not choose SHORT merely because the article describes a visible event."
 )
 OBJECT_AND_DOMAIN_GUIDANCE = (
     "Object/domain guidance: object_id, object_name, and object_type are mandatory for every relation, "
     "including CREATES and PRECEDES. For PRECEDES, use the downstream condition as the object "
-    "(for example political_instability, regime_collapse, labor_shortage). When location_type is "
-    "CONCEPTUAL or NETWORK, concept_domain must be a concrete non-null domain such as protest_coordination, "
-    "trade_network, disease_ecology, fiscal_order, legitimacy, or print_network."
+    "(for example political_instability, regime_collapse, labor_shortage). Never omit concept_domain: "
+    "set it to null for GEOGRAPHIC/UNKNOWN rows, and set a concrete lowercase snake_case domain for "
+    "CONCEPTUAL or NETWORK rows, such as protest_coordination, trade_network, disease_ecology, "
+    "fiscal_order, legitimacy, scientific_network, surveillance_state, or print_network."
 )
 DESCRIPTION_QUALITY_GUIDANCE = (
     f"Description quality: write {DESCRIPTION_MIN_CHARS}-{DESCRIPTION_MAX_CHARS} characters. "
@@ -288,7 +299,16 @@ def emit_records_tool_schema() -> dict[str, Any]:
                     "maxItems": 8,
                     "items": {
                         "type": "object",
-                        "required": list(REQUIRED_FIELDS),
+                        "required": list(REQUIRED_FIELDS)
+                        + [
+                            "date_start",
+                            "date_end",
+                            "geo_country",
+                            "geo_admin1",
+                            "concept_domain",
+                            "outcome",
+                            "outcome_date",
+                        ],
                         "additionalProperties": False,
                         "properties": {
                             "subject_id": {"type": "string"},
@@ -314,13 +334,43 @@ def emit_records_tool_schema() -> dict[str, Any]:
                                     "field for downstream 128-d UniversalEventRecord text embeddings."
                                 ),
                             },
-                            "date_start": {"type": ["string", "null"], "format": "date"},
-                            "date_end": {"type": ["string", "null"], "format": "date"},
+                            "date_start": {
+                                "type": ["string", "null"],
+                                "format": "date",
+                                "description": "Earliest supported date for the relation; use null if unavailable.",
+                            },
+                            "date_end": {
+                                "type": ["string", "null"],
+                                "format": "date",
+                                "description": "Latest supported date for the relation; use null if unavailable.",
+                            },
                             "date_precision": {"type": "string", "enum": list(DATE_PRECISIONS)},
-                            "location_type": {"type": "string", "enum": list(LOCATION_TYPES)},
-                            "geo_country": {"type": ["string", "null"]},
-                            "geo_admin1": {"type": ["string", "null"]},
-                            "concept_domain": {"type": ["string", "null"]},
+                            "location_type": {
+                                "type": "string",
+                                "enum": list(LOCATION_TYPES),
+                                "description": (
+                                    "GEOGRAPHIC for place-bound relations; NETWORK for transmission across "
+                                    "people/institutions/media/trade/science channels; CONCEPTUAL for abstract "
+                                    "domains such as legitimacy, ideology, fiscal order, or protest coordination."
+                                ),
+                            },
+                            "geo_country": {
+                                "type": ["string", "null"],
+                                "description": "Modern country name for GEOGRAPHIC rows when supported; otherwise null.",
+                            },
+                            "geo_admin1": {
+                                "type": ["string", "null"],
+                                "description": "First-level region/state/province for GEOGRAPHIC rows when supported; otherwise null.",
+                            },
+                            "concept_domain": {
+                                "type": ["string", "null"],
+                                "description": (
+                                    "Never omit. Use null for GEOGRAPHIC/UNKNOWN. For NETWORK or CONCEPTUAL, "
+                                    "use a concrete lowercase snake_case domain, e.g. protest_coordination, "
+                                    "trade_network, disease_ecology, fiscal_order, legitimacy, scientific_network, "
+                                    "surveillance_state, print_network."
+                                ),
+                            },
                             "description": {
                                 "type": "string",
                                 "minLength": DESCRIPTION_MIN_CHARS,
@@ -823,6 +873,7 @@ def ingest_batch_results(
     manifest_path: Path,
     db_path: Path,
     batch_id: str | None = None,
+    dropped_records_path: Path | None = None,
 ) -> dict[str, Any]:
     manifest_rows = _read_json(manifest_path)
     if not isinstance(manifest_rows, list):
@@ -830,6 +881,7 @@ def ingest_batch_results(
     by_custom_id = {str(row["custom_id"]): row for row in manifest_rows}
 
     staged_rows: list[dict[str, Any]] = []
+    dropped_rows: list[dict[str, Any]] = []
     dropped = 0
     processed = 0
     with open_text_auto(results_jsonl_path, "r") as handle:
@@ -842,6 +894,16 @@ def ingest_batch_results(
             meta = by_custom_id.get(custom_id)
             if meta is None:
                 dropped += 1
+                dropped_rows.append(
+                    {
+                        "custom_id": custom_id,
+                        "article_id": None,
+                        "title": None,
+                        "category": None,
+                        "error": "custom_id not found in manifest",
+                        "raw_record": result,
+                    }
+                )
                 continue
 
             records = _extract_records_from_result_line(result)
@@ -862,8 +924,24 @@ def ingest_batch_results(
                             article_id=str(meta["article_id"]),
                         )
                     )
-                except Exception:
+                except Exception as exc:
                     dropped += 1
+                    dropped_rows.append(
+                        {
+                            "custom_id": custom_id,
+                            "article_id": str(meta.get("article_id") or ""),
+                            "title": meta.get("title"),
+                            "category": meta.get("category"),
+                            "model_id": meta.get("model_id"),
+                            "source_url": meta.get("source_url"),
+                            "revision_id": meta.get("revision_id"),
+                            "error": str(exc),
+                            "raw_record": record_payload,
+                        }
+                    )
+
+    if dropped_records_path is not None and dropped_rows:
+        write_jsonl_records(dropped_records_path, dropped_rows)
 
     upsert_summary = upsert_universal_event_rows(db_path=db_path, rows=staged_rows)
     return {
@@ -1130,6 +1208,7 @@ def _build_parser() -> argparse.ArgumentParser:
     ingest.add_argument("--manifest", required=True)
     ingest.add_argument("--db-path", required=True)
     ingest.add_argument("--batch-id", default=None)
+    ingest.add_argument("--dropped-records-out", default=None)
     ingest.add_argument("--out", required=True)
 
     score = sub.add_parser("score-pilot")
@@ -1221,6 +1300,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 manifest_path=Path(args.manifest),
                 db_path=Path(args.db_path),
                 batch_id=args.batch_id,
+                dropped_records_path=Path(args.dropped_records_out) if args.dropped_records_out else None,
             )
             _write_json(Path(args.out), summary)
             print(json.dumps(summary, sort_keys=True))
