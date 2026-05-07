@@ -148,13 +148,11 @@ def test_build_batch_jsonl_requests_includes_tool_schema(tmp_path: Path) -> None
     assert "slow-moving constraints" in prompt
     assert "not a short event caption" in prompt
     assert "Article title: Black Death" in prompt
-    assert "emit exactly three anchor records" in prompt
-    assert "object_id=institutional_elites" in prompt
-    assert "object_id=civil_society" in prompt
-    assert "object_id=public_discourse" in prompt
-    assert "use subject_type=PHENOMENON" in prompt
-    assert "use location_type=GEOGRAPHIC" in prompt
-    assert "use lag_precision=SHORT and lag_years=2" in prompt
+    assert "prefer location_type=GEOGRAPHIC" in prompt
+    assert "prefer lag_precision=SHORT and lag_years around 2" in prompt
+    assert "Pilot scoring calibration" not in prompt
+    assert "emit exactly three anchor records" not in prompt
+    assert "object_id=institutional_elites" not in prompt
 
     manifest = json.loads(out_manifest.read_text(encoding="utf-8"))
     assert manifest[0]["article_id"] == "black-death"
