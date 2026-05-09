@@ -101,6 +101,33 @@ def infer_market_family(record: ResolvedMarketRecord) -> MarketFamily:
     """
 
     text = f"{record.question} {record.description} {record.category or ''} {record.slug}".lower()
+    # Institutional markers are more specific than country/conflict terms. Check
+    # them first so e.g. an "Iran sanctions vote in Senate" is routed as a
+    # formal process, not a generic Iran negotiation event.
+    if _contains_any(
+        text,
+        (
+            "inaugurat",
+            "congress",
+            "senate",
+            "parliament",
+            "court",
+            "supreme court",
+            "bill ",
+            "veto",
+            "impeach",
+            "confirmation",
+            "ballot",
+            "sec",
+            " ban ",
+            "trial",
+            "shutdown",
+            "sentenced",
+            "sentencing",
+            "deputies",
+        ),
+    ):
+        return MarketFamily.INSTITUTIONAL_PROCESS
     if _contains_any(
         text,
         (
@@ -130,25 +157,7 @@ def infer_market_family(record: ResolvedMarketRecord) -> MarketFamily:
         text,
         (
             "election",
-            "inaugurat",
-            "congress",
-            "senate",
-            "parliament",
-            "court",
-            "supreme court",
-            "bill ",
-            "veto",
-            "impeach",
             "nomination",
-            "confirmation",
-            "ballot",
-            "sec",
-            "ban",
-            "trial",
-            "shutdown",
-            "sentenced",
-            "sentencing",
-            "deputies",
             "presidential race",
         ),
     ):
@@ -233,25 +242,16 @@ def _with_content_specs(
     base: dict[BranchType, tuple[tuple[str, ElementRole, Direction, str], ...]],
     context_text: str,
 ) -> dict[BranchType, tuple[tuple[str, ElementRole, Direction, str], ...]]:
-    terms = _content_terms(context_text, limit=24)
-    if not terms:
-        return base
-    enriched: dict[BranchType, tuple[tuple[str, ElementRole, Direction, str], ...]] = {}
-    branch_order = list(base)
-    for index, branch_type in enumerate(branch_order):
-        start = index * 8
-        selected = terms[start : start + 8] or terms[:8]
-        extras = tuple(
-            (
-                f"context factor: {term}",
-                ElementRole.SIGNAL if i % 3 == 0 else ElementRole.CONSTRAINT if i % 3 == 1 else ElementRole.DRIVER,
-                Direction.MIXED if i % 2 == 0 else Direction.AGAINST,
-                f"Event-specific factor '{term}' anchors the semantic scaffold so the downstream GNN receives more than generic family structure.",
-            )
-            for i, term in enumerate(selected[:5])
-        )
-        enriched[branch_type] = base[branch_type] + extras
-    return enriched
+    """Return family scaffold specs without assigning content-derived semantics.
+
+    V1 deliberately avoids keyword/index-based enrichment: a generic but typed
+    scaffold is safer than assigning SIGNAL/DRIVER/CONSTRAINT roles to extracted
+    market terms by position. The downstream agent loop owns market-specific
+    expansion and should fill concrete PIT-backed factors into these branches.
+    """
+
+    _ = context_text  # Reserved for the agent-filled v2 enrichment interface.
+    return base
 
 
 def _family_branch_specs(family: MarketFamily, context_text: str = "") -> dict[BranchType, tuple[tuple[str, ElementRole, Direction, str], ...]]:
@@ -261,10 +261,20 @@ def _family_branch_specs(family: MarketFamily, context_text: str = "") -> dict[B
                 ("latest indicator path supports threshold", ElementRole.SIGNAL, Direction.FOR, "Local data can make the market criterion reachable."),
                 ("official communication resists threshold", ElementRole.CONSTRAINT, Direction.AGAINST, "Policy guidance or release details can block the path."),
                 ("scheduled data-release gate", ElementRole.INSTITUTIONAL_GATE, Direction.MIXED, "Release timing controls what can be known before close."),
+                ("cutoff-safe indicator freshness check", ElementRole.SIGNAL, Direction.MIXED, "The branch must distinguish latest PIT-observable data from post-cutoff revisions."),
+                ("threshold definition or bracket mapping", ElementRole.CONSTRAINT, Direction.AGAINST, "Resolution definitions can make a headline macro move insufficient for the market threshold."),
             ),
             BranchType.ANALOGUE: (
                 ("historical regime analogue", ElementRole.DRIVER, Direction.MIXED, "Comparable macro regimes define plausible threshold behavior."),
                 ("methodology or revision analogue", ElementRole.CONSTRAINT, Direction.AGAINST, "Revisions can make a naive indicator branch fragile."),
+                ("prior central-bank communication analogue", ElementRole.SIGNAL, Direction.MIXED, "Past statement-to-action patterns seed a comparable policy-communication branch."),
+                ("regime-break mismatch", ElementRole.CONSTRAINT, Direction.AGAINST, "Analogues must log when inflation, labor, or liquidity regimes differ from the current setup."),
+            ),
+            BranchType.DISRUPTOR: (
+                ("exogenous financial stress shock", ElementRole.SPOILER, Direction.AGAINST, "Banking or liquidity shocks can force a policy path outside the local indicator baseline."),
+                ("geopolitical price shock", ElementRole.SPOILER, Direction.MIXED, "Energy or conflict shocks can reverse the expected policy-print interpretation."),
+                ("surprise data revision", ElementRole.SIGNAL, Direction.MIXED, "Late revisions can change the information set that policymakers and markets react to."),
+                ("emergency policy communication", ElementRole.CONSTRAINT, Direction.AGAINST, "Unscheduled guidance can invalidate a planned-meeting-only scaffold."),
             ),
         }, context_text)
     if family == MarketFamily.INSTITUTIONAL_PROCESS:
@@ -273,10 +283,14 @@ def _family_branch_specs(family: MarketFamily, context_text: str = "") -> dict[B
                 ("formal process step completed", ElementRole.INSTITUTIONAL_GATE, Direction.FOR, "The institutional path requires explicit procedural completion."),
                 ("procedural blocker or legal challenge", ElementRole.CONSTRAINT, Direction.AGAINST, "Formal challenges can delay or prevent resolution."),
                 ("deadline pressure", ElementRole.SIGNAL, Direction.MIXED, "Deadlines shape strategic behavior and observability."),
+                ("actor authority verified", ElementRole.INSTITUTIONAL_GATE, Direction.FOR, "The relevant actor or body must actually control the formal step named by the market."),
+                ("current status uncertainty", ElementRole.SIGNAL, Direction.MIXED, "The scaffold leaves room for the agent to attach the latest PIT status rather than assuming completion."),
             ),
             BranchType.DISRUPTOR: (
                 ("agenda disruption", ElementRole.SPOILER, Direction.AGAINST, "Remote shocks can dominate a locally plausible process."),
                 ("coalition fracture risk", ElementRole.SPOILER, Direction.AGAINST, "Institutional coalitions can fail late."),
+                ("late procedural reinterpretation", ElementRole.CONSTRAINT, Direction.MIXED, "Rules, courts, or administrators can alter how a process counts for resolution."),
+                ("external scandal or crisis signal", ElementRole.SIGNAL, Direction.MIXED, "Non-local shocks can change incentives even when formal gates remain available."),
             ),
         }, context_text)
     return _with_content_specs({
@@ -284,19 +298,28 @@ def _family_branch_specs(family: MarketFamily, context_text: str = "") -> dict[B
             ("direct parties maintain bargaining channel", ElementRole.DRIVER, Direction.FOR, "The Yes path needs direct or mediated bargaining to remain open."),
             ("spoiler actor can break talks", ElementRole.SPOILER, Direction.AGAINST, "A local spoiler can invalidate a simple deal path."),
             ("timing constraint before resolution", ElementRole.CONSTRAINT, Direction.MIXED, "The deadline controls reachability."),
+            ("credible public signal of bargaining status", ElementRole.SIGNAL, Direction.MIXED, "The branch needs PIT-observable signals of process status without treating them as final evidence."),
+            ("implementation or definition gate", ElementRole.INSTITUTIONAL_GATE, Direction.AGAINST, "Resolution definitions can require an official/qualifying act rather than informal progress."),
         ),
         BranchType.ANALOGUE: (
             ("prior comparable negotiation", ElementRole.SIGNAL, Direction.MIXED, "Analogues test whether the mechanism has worked before."),
             ("failed-deal analogue", ElementRole.CONSTRAINT, Direction.AGAINST, "Negative analogues prevent one-sided optimism."),
+            ("successful mechanism analogue", ElementRole.DRIVER, Direction.MIXED, "Positive analogues seed a mechanism path the agent can verify against PIT evidence."),
+            ("analogue scope mismatch", ElementRole.CONSTRAINT, Direction.AGAINST, "Differences in actors, deadline, or enforcement prevent copying a historical case naively."),
         ),
         BranchType.DISRUPTOR: (
             ("unrelated escalation channel", ElementRole.SPOILER, Direction.AGAINST, "A remote escalation can flip the forecast despite local progress."),
             ("sponsor or domestic constraint", ElementRole.CONSTRAINT, Direction.AGAINST, "Backers and domestic audiences can veto compromise."),
+            ("third-party intervention signal", ElementRole.SIGNAL, Direction.MIXED, "External mediation or pressure can change bargaining incentives outside the local baseline."),
+            ("remote de-escalation surprise", ElementRole.DRIVER, Direction.MIXED, "Disruptors can also unexpectedly open a path that the local branch alone would miss."),
         ),
     }, context_text)
 
 
 def _prerequisites(family: MarketFamily, slug: str, side: HypothesisSide, evidence_ref: str) -> tuple[Prerequisite, ...]:
+    # These are scaffold-floor prerequisites. ``status`` and ``importance`` are
+    # placeholders for the downstream agent/GNN loop, not factual assessments of
+    # the live market state.
     if family == MarketFamily.MACRO_POLICY_PRINT:
         labels = (
             "cutoff-safe latest indicator coverage exists",
@@ -358,6 +381,8 @@ def _branch_for_spec(
             "Generated from market text only as a planning scaffold; PIT evidence is attached downstream."
         ),
         evidence_refs=(evidence_ref,),
+        # NOTE: expansion_budget is a planning hint for the agent loop; this
+        # deterministic scaffold builder stamps it but does not enforce expansion.
         expansion_budget=POLYMARKET_V1_POLICIES[infer_market_family(record)].max_nodes_by_branch.get(branch_type, 10),
     )
 
@@ -625,25 +650,38 @@ def evaluate_branch_builder_against_gold(path: str | Path, *, as_of_time: str = 
             failures.append(f"{case.case_id}: expected family {case.expected_family}, got {family}")
 
         portfolios = build_portfolios_from_resolved_record(case.record, as_of_time=as_of_time)
-        observed_side = case.record.resolved_outcome.upper()
-        observed = next(portfolio for portfolio in portfolios if portfolio.hypothesis.side.value == observed_side)
-        branches = {branch.branch_type.value for branch in observed.branches}
-        if branches >= set(case.expected_required_branches):
+        branch_ok = True
+        policy_ok = True
+        case_semantic_coverages: list[float] = []
+        case_branch_content_scores: list[float] = []
+        case_expressiveness_scores: list[float] = []
+        for portfolio in portfolios:
+            side = portfolio.hypothesis.side.value
+            branches = {branch.branch_type.value for branch in portfolio.branches}
+            if branches < set(case.expected_required_branches):
+                branch_ok = False
+                failures.append(
+                    f"{case.case_id} {side}-world: missing branches {set(case.expected_required_branches) - branches}"
+                )
+
+            issues = validate_portfolio_against_policy(portfolio)
+            if issues:
+                policy_ok = False
+                failures.append(f"{case.case_id} {side}-world: policy issues {issues}")
+
+            semantic_coverage, semantic_branch_recall, expressiveness, semantic_failures = _semantic_content_score(case, portfolio)
+            case_semantic_coverages.append(semantic_coverage)
+            case_branch_content_scores.append(semantic_branch_recall)
+            case_expressiveness_scores.append(expressiveness)
+            failures.extend(f"{case.case_id} {side}-world: {failure.split(': ', 1)[-1]}" for failure in semantic_failures)
+
+        if branch_ok:
             branch_hits += 1
-        else:
-            failures.append(f"{case.case_id}: missing branches {set(case.expected_required_branches) - branches}")
-
-        issues = validate_portfolio_against_policy(observed)
-        if not issues:
+        if policy_ok:
             policy_hits += 1
-        else:
-            failures.append(f"{case.case_id}: policy issues {issues}")
-
-        semantic_coverage, semantic_branch_recall, expressiveness, semantic_failures = _semantic_content_score(case, observed)
-        content_scores.append(semantic_coverage)
-        branch_content_scores.append(semantic_branch_recall)
-        expressiveness_scores.append(expressiveness)
-        failures.extend(semantic_failures)
+        content_scores.append(sum(case_semantic_coverages) / (len(case_semantic_coverages) or 1))
+        branch_content_scores.append(sum(case_branch_content_scores) / (len(case_branch_content_scores) or 1))
+        expressiveness_scores.append(sum(case_expressiveness_scores) / (len(case_expressiveness_scores) or 1))
 
         artifact = build_graph_artifact_from_record(case.record, as_of_time=as_of_time)
         target = next(item for item in artifact.target_table if item.name == "resolved_yes")

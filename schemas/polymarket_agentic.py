@@ -162,7 +162,16 @@ class RequirementStressTest:
     portfolio_id: str
     p_yes: float
     uncertainty: float
-    branch_contributions: dict[str, float] = field(default_factory=dict)
+    branch_contributions: dict[str, float] = field(
+        default_factory=dict,
+        metadata={
+            "key_contract": "branch_type.value",
+            "description": (
+                "Keys are BranchType.value strings (e.g. 'local', 'disruptor'); "
+                "values are marginal forecast contribution scores in [0, 1]."
+            ),
+        },
+    )
     missingness_risk: float = 0.0
     surfaced_prerequisites: tuple[Prerequisite, ...] = ()
     fragile_element_ids: tuple[str, ...] = ()
@@ -175,6 +184,10 @@ class RequirementStressTest:
             ("uncertainty", self.uncertainty),
             ("missingness_risk", self.missingness_risk),
             ("branch_disagreement_score", self.branch_disagreement_score),
+            *(
+                (f"branch_contributions[{branch_type}]", contribution)
+                for branch_type, contribution in self.branch_contributions.items()
+            ),
         ):
             if not 0.0 <= value <= 1.0:
                 raise ValueError(f"RequirementStressTest.{name} must be in [0, 1]")
@@ -273,7 +286,7 @@ POLYMARKET_V1_POLICIES: dict[MarketFamily, ConstructionPolicy] = {
     ),
     MarketFamily.MACRO_POLICY_PRINT: ConstructionPolicy(
         family=MarketFamily.MACRO_POLICY_PRINT,
-        required_branches=(BranchType.LOCAL, BranchType.ANALOGUE),
+        required_branches=(BranchType.LOCAL, BranchType.ANALOGUE, BranchType.DISRUPTOR),
         required_node_categories=(
             "indicator",
             "official_signal",

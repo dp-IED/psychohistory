@@ -113,8 +113,22 @@ def test_valid_event_negotiation_portfolio_passes_policy() -> None:
     assert validate_portfolio_against_policy(portfolio) == []
 
 
+def test_stress_test_branch_contribution_contract_is_explicit() -> None:
+    field_info = RequirementStressTest.__dataclass_fields__["branch_contributions"]
+
+    assert field_info.metadata["key_contract"] == "branch_type.value"
+    assert "local" in field_info.metadata["description"]
+    assert "[0, 1]" in field_info.metadata["description"]
+
+
 def test_stress_test_probabilities_are_bounded() -> None:
-    ok = RequirementStressTest(portfolio_id="p", p_yes=0.62, uncertainty=0.2, missingness_risk=0.4)
+    ok = RequirementStressTest(
+        portfolio_id="p",
+        p_yes=0.62,
+        uncertainty=0.2,
+        missingness_risk=0.4,
+        branch_contributions={"local": 0.3},
+    )
     assert ok.p_yes == 0.62
 
     try:
@@ -123,3 +137,12 @@ def test_stress_test_probabilities_are_bounded() -> None:
         assert "p_yes" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("expected bounded probability validation")
+
+
+def test_stress_test_branch_contributions_are_bounded() -> None:
+    try:
+        RequirementStressTest(portfolio_id="p", p_yes=0.5, uncertainty=0.2, branch_contributions={"local": 1.2})
+    except ValueError as exc:
+        assert "branch_contributions[local]" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("expected bounded branch contribution validation")
