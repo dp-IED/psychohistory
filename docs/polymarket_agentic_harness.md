@@ -64,6 +64,30 @@ Outputs:
 - `data/polymarket/resolved_binary_markets.json`
 - `data/polymarket/resolved_binary_markets.csv`
 
+## Resolved event branch/graph construction
+
+`ingest/polymarket_branch_builder.py` now materializes the missing bridge: each resolved binary event becomes two bounded `SubgraphPortfolio` objects, one Yes-world and one No-world, plus a `graph_artifact_v1` object with market, hypothesis, branch, element, prerequisite, and resolved-label target nodes.
+
+This follows the .md assumptions consistently:
+
+- start from binary Polymarket markets, not multi-outcome questions;
+- keep terminal resolution as a benchmark label only;
+- generate bounded local/analogue/disruptor branch scaffolds from family policy;
+- require local branches to include both `for` and `against` elements;
+- expose retrieval/GNN diagnostics through branch nodes, prerequisites, and target records rather than treating the graph as self-justifying.
+
+Run:
+
+```bash
+python scripts/build_polymarket_branch_graphs.py --as-of-time benchmark-cutoff-placeholder
+```
+
+Output:
+
+- `data/polymarket/resolved_branch_graphs.jsonl`
+
+The deterministic builder is tested against `data/polymarket/gold_branch_dataset.json`, a curated gold set covering event negotiation, macro policy print, and institutional process markets.
+
 ## Training labels enabled by this contract
 
 Resolved Polymarket questions can supervise:
