@@ -1,216 +1,340 @@
-# Next steps — execution plan (review handoff)
+# Next Steps — Agentic Reframe (review handoff)
 
-**Audience:** Reviewers and a future executor model with full-repo context.  
-**Status:** Planning document only; not a commitment to run every line in this session.  
-**Alignment:** [`project.md`](project.md), [`roadmap.md`](roadmap.md) Stages 4–6 (builder + assumptions **before** WM depth), **[`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md)** (locked builder + assumptions + contexts), [`forecast_charter.md`](forecast_charter.md), research synthesis [`docs/research/outputs/perplexity.md`](docs/research/outputs/perplexity.md).
-
----
-
-## 0. Realism and operating discipline
-
-The program thesis (relational encoder + latent dynamics + optional market supervision under **PIT**) is coherent and literature-grounded; the France benchmark **de-risked GNN vs baselines**. What remains is **hard research**, not only engineering. The full seven-layer **target** architecture in [`docs/research/architecture.md`](docs/research/architecture.md) is **ambitious** relative to the repo: **Layers 0–1** (warehouse, deterministic snapshot builder) and **Layer 3** (heterogeneous GNN) are in code; **Layer 5** is only **partially** realized (material backtests, not full multi-head product). **Highest execution risk** is now **Layer 2 (query lens / query-conditioned subgraph)** and the **gap between deterministic builder and learned retrieval**, plus an **assumption layer** between subgraph and forecast—**before** treating **Layer 4 (world model)** depth as the main sequencing spine. WM remains **mandatory** in the program but is **scheduled after** a pinned subgraph + assumption interface so temporal ablations are interpretable. **Track M** (markets) still needs the **event** training spine through **WM v0** (see §2) before it produces reliable claims.
-
-**Core discipline:** **get gradients flowing on real event data early**—a thin, correct training loop on existing snapshots beats a perfect design that never runs. The first “working loop” should validate **subgraph construction + assumptions + a minimal forecast head**; then grow **WM v0 (time-then-space)** and multi-step losses on that contract (`roadmap.md` execution reality). **Collapse** open-ended “Phase 0” charter work: **time-box** it and run it **in parallel** with a **dirty-but-runnable** training skeleton—not serial prerequisites that expand to fill the schedule.
+**Audience:** Reviewers and executor models (Hermes/Codex) with full-repo context.
+**Status:** Planning document; supersedes the GNN-pipeline sequencing in the previous `next_steps.md`.
+**Alignment:** [`project.md`](project.md), [`roadmap.md`](roadmap.md), [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md), [`forecast_charter.md`](forecast_charter.md), PR #30 (`dp/polymarket-agentic-harness`).
 
 ---
 
-## 1. Program goals (what this phase must achieve)
+## 0. Architectural reframe — what changed and why
+
+The previous `next_steps.md` sequenced work as a deterministic pipeline: graph builder → encoder → assumption layer → forecast head → world model → Polymarket. That framing treated Track M (markets) as a downstream product and gated it behind WM v0.
+
+This version reflects a fundamental reframe:
+
+**The system is a memory-driven analyst agent, not a GNN forecasting pipeline.** The graph builder, GNN encoder, and assumption layer are tools the agent can invoke — not the loop itself. Polymarket Brier scores are the primary feedback signal that drives self-improvement, not a late-stage validation artifact. The GNN is valuable not because neural message-passing is the right architecture for political forecasting, but because the graph is the right *representation* for compressing relational political history into agent-readable form.
+
+Three corollaries:
+
+1. **Track M moves up.** Markets are now parallel with Steps D–G, not gated behind H. The agent loop needs a scoring signal from day one.
+2. **Step D changes character.** The "training loop skeleton" is now the *agent loop state machine*, not a `train.py` with gradient flow. Brier score replaces loss as the primary feedback signal.
+3. **Memory is the core asset.** A cold-start agent that re-derives every pattern from scratch cannot build the kind of long-horizon analytical insight (Luxemburg's economic-political fusion thesis, etc.) that makes forecasts interesting. The memory system must be designed before the loop is implemented.
+
+What does *not* change: PIT discipline, cutoff policy, adversarial harness requirements, France as validation smoke, Iran as shadow/red-team only, and all risk mitigations from the previous version.
+
+---
+
+## 1. Program goals (this phase)
 
 ### 1.1 Primary outcomes
 
-1. **Graph builder + query-conditioned subgraph v0 (Stages 1–2 / 6)** — **first**  
-   Implement **[`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md)**: **retrieval unit** = three-tier hierarchy (**actor-state**, **trend thread**, **historical analogue**); **v1 = actor-states only** with graph **slots** for the other two. **Two-stage retriever:** ANN **top-100** → reranker + edge enricher → **top-50** nodes, **≤200** edges, **static shapes** at inference. **Supervision:** **Stage 1** self-supervised on **GDELT + ACLED** tape (co-evolution, persistence, lead–lag, cross-source corroboration); **Stage 2** weak labels from **forecast improvement** on held-out slices—**no human retrieval labels**. **Primary training** on contract contexts (Arab Spring, European sovereign debt crisis, Latin America TBD); **France = validation harness + smoke**, not primary builder training.
+1. **Memory system design and interface** — before any agent loop code.
+   Three-layer schema (`EpisodicRecord`, `ConceptualPattern`, `StructuralFact`) + typed `MemoryStore` protocol. Backend-agnostic. `NullMemoryStore` for stateless testing. `JsonlMemoryStore` as first real backend.
 
-2. **Assumption layer v0 (Stage 6)** — **second**  
-   Five **soft gates** in \([0,1]\) per contract—**Persistence**, **Propagation**, **Precursor**, **Suppression**, **Coordination**—from lightweight MLPs on the retrieved subgraph; **soft** in training, **hard-thresholded** at inference; **modulate forecaster attention**; **architectural priors** (not a hand label schema). Supervision = **forecast improvement when a gate fires**, jointly with the stack—not separate gate labels.
+2. **Agent loop — core state machine** — replaces the GNN pipeline as the central loop.
+   Orchestrates: memory read → planning → research loop (tool calls) → synthesis → memory write. GNN, graph builder, web search, and analogues are all *tools* this loop calls. Stop conditions driven by `ConstructionPolicy`.
 
-3. **World-model path (Stage 6) — after builder + assumption baseline**  
-   **Time-then-space:** per-node temporal core (**GRU/SSM**) over a short history of weekly snapshots, **then** heterogeneous message passing on the **pinned** subgraph interface—**not** an interleaved fusion where credit assignment is opaque. Add **multi-step auxiliary losses** (\(t{+}2\), \(t{+}4\) horizons) once the single-step loop works. Run **GRU-only vs GNN-only vs GRU+GNN** ablations to satisfy the **spirit of G5** for the **temporal + relational stack**, not as a substitute for builder/assumption ablations.
+3. **Blind spot → query mapper** — the narrowest entry point to retrieval.
+   Maps `blind_spot_check` strings + `MarketFrame` → `WebSearchRequest`. Template registry first; LLM fallback. Cutoff discipline enforced in tests.
 
-4. **Prediction-market track (Stage 5) — after §2 spine through WM v0 (`H`); contract Stage 3**  
-   Polymarket (etc.): **forecaster calibration** and late validation per [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md)—**not** supervision for the graph builder. Still a **label-contract and ingestion** problem: start with **terminal resolutions only**; short-horizon belief dynamics later. **Before** any model consumes real resolution labels: **adversarial PIT harness** on **synthetic tapes** (inject future labels/corrections; assert detectors fire). Treat resolution timestamps as **messy** (delayed reporting, retroactive fixes)—tests first.
+4. **Brier scoring + episode resolution** — closes the feedback loop.
+   On market resolution: find `EpisodicRecord`, compute Brier, infer which skipped checks would have helped, update memory. This is what enables Option C.
 
-5. **Engineering hygiene**  
-   Reproducibility (seeds, audits); **coverage audit** for market supervision—which domains have **zero** listed markets so the model must not silently fail there (`forecast_charter.md` markets tier). **Aggressive** minus-variants before new node types (`roadmap.md`).
+5. **Context compression skills** — graph and chart compression for agent context.
+   40 events → compact graph < 500 tokens. Fixed edge taxonomy. Deterministic. This is what lets long-running, long-context jobs stay token-efficient.
+
+6. **Policy self-improvement (Option C)** — after Brier scoring is live.
+   Bad Brier score + episode → `PolicyPatchProposal`. Gate: tests pass + Brier improves on held-out split + rationale references evidence episodes. Accepted patches write a `ConceptualPattern` with `source="policy_patch"`.
+
+7. **Graph builder + assumption layer** — steps E and F from the previous plan, now as agent tools.
+   Still valid work. Now wired as callables into `AgentToolset` rather than as standalone pipeline stages. Sequencing is unchanged: E before F.
 
 ### 1.2 Explicit non-goals for this phase
 
-- Blocking **builder / assumption** work on Polymarket ingestion; **event resolution** is the first label source for training loops on the scaffold.
-- **Over-optimizing the forecast head** (including France-only score chasing) **before** retrieval ontology and assumption interfaces are stable enough for **reproducible ablations**—France stays **smoke**, not the program center.
-- Blocking **WM v0** indefinitely on perfect builder specs; WM is **sequenced after** D–G (see §2.2) but remains **in scope**—ship a thin WM on a **pinned** subgraph contract rather than waiting for the final retriever.
-- Re-proving France on every unrelated change; France = **smoke** when shared ingestion/snapshot/backtest changes; do not use France as the **primary builder training** corpus (**contract**).
-- Using **Iran** (or similar contested, sparse domains) as the **primary** optimization benchmark or headline eval **before** stable baselines, held-out contracts, and ablations are frozen on the **France** (or agreed) scaffold—Iran is a **shadow / red-team** lane until a labeled eval contract exists (**§2.3**).
-- Productized constrained Q&A at scale before retrieval + assumption + forecast pieces exist.
+- Productising the agent as a user-facing API before memory + loop + scoring are stable.
+- Over-optimising the forecast head before retrieval and assumption interfaces are ablation-stable.
+- Using Iran as the primary benchmark before France smoke + held-out eval contracts exist.
+- Blocking WM v0 on perfect builder specs — WM is still in scope (Step H) but sequenced after the agent loop + memory system are green.
+- Re-proving France on every unrelated change.
 
-### 1.3 Success criteria (gates)
-
+### 1.3 Success criteria
 
 | Gate | Criterion |
 |------|-----------|
-| **G4** (markets) | Masked runs + **coverage reporting**; non-market slices explicit. |
-| **G5** (discovery) | Held-out time/region + **ablations** across **builder vs encoder vs WM** as credited—**retrieval/sparsity/stability** plus temporal vs MP vs both with **clean** structural variants—not one fused block that cannot be ablated. |
-| **Material tier** | Charter metrics; prevalence-aware scores where sparse. |
+| **Memory** | Three-layer schema committed, `JsonlMemoryStore` passing all protocol tests |
+| **Loop** | Agent loop runs end-to-end with stub tools, writes `EpisodicRecord` on exit |
+| **Scoring** | Brier computed and written to episode on resolution; miss inference runs without crash |
+| **G4** (markets) | Masked runs + coverage reporting; non-market slices explicit |
+| **G5** (discovery) | Held-out time/region + ablations across builder vs encoder vs WM as credited |
 
 ---
 
-## 2. Immediate path (minimal sequencing — start here)
+## 2. Memory system (start here)
 
-Only **blocking** data steps; then **model**. Target: **something trained end-to-end through subgraph + assumption + minimal forecast milestones (§2.2 `D`–`G`)**, then **WM v0 (`H`)** on the pinned interface—even if baselines are embarrassingly simple at first.
+Memory is the architectural primitive that separates a cold-start pipeline from a continuously learning analyst. Design it before the loop so hooks are built in, not retrofitted.
 
-### 2.1 Data prerequisites (blocking only)
+### 2.1 Three-layer schema
 
-| Step | Deliverable |
-|------|-------------|
-| **A** | **Snapshot / tensor audit:** DuckDB → time-ordered sequences \((S_t, \text{label}_{t+k})\) with **zero leakage**. Run [`evals/graph_artifact_contract.py`](evals/graph_artifact_contract.py); add **one adversarial test** that injects a future label and **asserts** the pipeline rejects or flags it. |
-| **B** | **Pin training + validation contexts:** per [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md), stand up **offline embedding stores** and splits for **primary builder training** (Arab Spring 2010–2013, European sovereign debt crisis 2009–2015, one Latin American commodity-politics sequence **TBD**). **France:** **validation harness + regression smoke** for the protest slice—not primary builder training. Fix **hold-out** rules per context. |
-| **C** | **Node feature contract:** enumerate per node type at snapshot \(t\) (degree, recency, type, optional **frozen** text embedding, etc.) so missing data is explicit **before** large training spend. |
-| **C′** | **Retrieval / supervision contract:** follow **[`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md)** (locked). Implementation TBD: node embedding scheme, ANN library, reranker/gate MLP shapes—**after** contract-stable ingest. |
+| Layer | Type | Written by | Read by | Purpose |
+|-------|------|-----------|---------|---------|
+| `EpisodicRecord` | Per-job record | Agent loop on exit; updated on resolution | Loop planning phase; policy patch evaluator | What happened in past runs; what was missed |
+| `ConceptualPattern` | Named analytical pattern | Hand-authored; policy patch on acceptance | Loop planning phase (context injection) | Patterns that proved predictive across jobs |
+| `StructuralFact` | Graph fact | Graph query tool | Graph builder; loop planning | Facts that don't need re-fetching |
 
-### 2.2 Model training (order)
+Key field on `ConceptualPattern`: `source: Literal["hand_authored", "agent_proposed", "policy_patch"]`. Do not collapse this — it is what distinguishes hand-authored `ConstructionPolicy` checks from agent-discovered patterns. The self-improvement loop depends on it.
 
-Sequence: **D → E → F → G → H**, then **I** (Iran shadow slice—**§2.3**), then **M** (Polymarket—**§4**). **World model** depth lands in **`H`** so builder and assumption interfaces are pinned first.
+### 2.2 Memory store protocol
 
-| Step | Deliverable |
-|------|-------------|
-| **D** | **Training loop skeleton** (e.g. `train.py` or module under `baselines/`): loader over \((S_t, \text{label}_{t+k})\), loss (Brier / BCE as appropriate), optimizer, **dummy linear** baseline. Surfaces batching, device, gradient bugs **before** model complexity. |
-| **E** | **Graph builder + query-conditioned subgraph v0:** implement **[`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md)** — ANN **top-100**, rerank to **≤50** nodes, **≤200** edges, precomputed **memory-mapped** embeddings (**dim 128 or 256**), **no** variable-size graph ops at query time; wire into [`baselines/gnn.py`](baselines/gnn.py) (or adapter). **Ablations** on subgraph policy vs encoder. **Open note:** ANN quality likely needs another iteration pass (recall/stability diagnostics + index/embedding tuning) before locking retrieval defaults. |
-| **F** | **Assumption layer v0:** five **soft gates** (Persistence, Propagation, Precursor, Suppression, Coordination) per contract; modulate forecaster **attention**; thresholds hard at inference. |
-| **G** | **Minimal forecast attachment:** lightweight head on **induced** subgraphs to validate upstream representations (Brier / BCE on event targets)—**forecast is the evaluator**, not the only training center. |
-| **H** | **WM v0 + multi-step + ablation matrix:** prepend per-node **GRU** (or SSM) over last \(k\) weekly snapshots, **then** message passing—**time then space**; add **multi-step** terms (\(t{+}2\), \(t{+}4\) or charter horizons); run **GRU-only vs GNN-only vs GRU+GNN** on the **same** subgraph contract from **E**. |
-| **I** | **Iran stress-test lane (shadow / red-team):** after **H** is green, stand up a parallel **Iran** dev slice per **§2.3**. Does **not** replace the **France** scaffold steps **D–G**; no headline forecasting claims without a labeled eval contract. |
-| **M** | **Then Polymarket:** ingest + resolution labels as **Track M** below; label contracts and masking—not parallel “build the world” from scratch. |
+`MemoryStore` is a typed Protocol. Backend is swappable. Required methods:
 
-### 2.3 Iran stress-test lane (parallel; after **H**)
+```python
+class MemoryStore(Protocol):
+    def write_episode(self, record: EpisodicRecord) -> None: ...
+    def update_episode_brier(self, job_id: str, brier_score: float, misses: list[str]) -> None: ...
+    def read_recent_episodes(self, market_family: str, n: int) -> list[EpisodicRecord]: ...
+    def write_pattern(self, pattern: ConceptualPattern) -> None: ...
+    def read_patterns(self, market_family: str) -> list[ConceptualPattern]: ...
+    def write_fact(self, fact: StructuralFact) -> None: ...
+    def read_facts(self, subject: str) -> list[StructuralFact]: ...
+```
 
-**Positioning:** Iran is a strong **product-style scenario** (sparse timestamped evidence, multi-domain reasoning, explicit uncertainty, epistemological tier—competing interpretations, evidence pointers, limits under cutoff discipline). It is a **poor primary development benchmark right now** because it stacks confounds (ingest gaps, ontology pressure, sparse labels, entity ambiguity, multi-community timelines, politically contested interpretation) and invites **compelling narratives without enough labeled outcomes** to validate cleanly. **Do not** replace **France** scaffold work (**D–G**: through minimal forecast attachment) or the **WM ablation spine (`H`)** with Iran as the primary driver.
+Provide `NullMemoryStore` (no-ops) immediately. `JsonlMemoryStore` (flat JSONL per layer) as first real backend — sufficient for local dev and Hermes runs.
 
-**Split:**
+### 2.3 Deliverables
 
-| Track | Role |
-|-------|------|
-| **France** | **Validation harness + regression smoke** on the protest slice; **not** primary **builder training** (`docs/graph-builder-contract-v0.1.md`). Engineering milestones **D–H** may still run on France **until** multi-context stores are wired—**tag runs** clearly. |
-| **Iran** | **System stress test**: failure modes—missing or contradictory sources, sparse temporal history, domain transfer, interpretive uncertainty, and reviewer inspection of ranked hypotheses + cited evidence + explicit limits. |
-
-**Explicit non-goals for the Iran slice:** no new ontology unless a **documented** failure mode demands it; no **regime-naming** claims as model outputs; no **headline forecasting** claims without a **labeled eval contract** aligned to `forecast_charter.md` / `evals/`.
-
-**Immediate audits (what to run, not what to optimize):**
-
-1. **Ingest audit:** Layers 0/1 represent evidence cleanly under frozen cutoffs.  
-2. **Lens / builder audit:** Subgraphs are **faithful** to \(S_t\) under the lens contract; retrieval is not silently inventing facts; **stability** across nearby timesteps or query variants where expected.  
-3. **Assumption audit:** Stated latent assumptions remain **tied to evidence** and inspectable—not unconstrained narrative.  
-4. **Transfer audit:** Models trained on existing scaffolds show **calibrated** uncertainty rather than overconfident behavior on sparse, out-of-scaffold geography.  
-5. **Reviewer workflow:** Humans can inspect ranked hypotheses, pointers to evidence, and stated limits in a domain where ambiguity is real (`docs/research/research.md`, epistemological tier).
-
-**Summary:** **Yes, use Iran—as a shadow evaluation / red-team slice, not the main benchmark that drives model iteration until** baselines, held-out evaluation, and ablations are stable on the primary harness.
+| File | Contents |
+|------|----------|
+| `harness/memory_schema.py` | Three frozen dataclasses, validated, with docstrings on every field |
+| `harness/memory_store.py` | `MemoryStore` Protocol + `NullMemoryStore` + `JsonlMemoryStore` |
+| `tests/test_memory_schema.py` | Construction, validation, serialisation round-trips |
+| `tests/test_memory_store.py` | Protocol conformance for both backends |
 
 ---
 
-## 3. Prerequisites (time-boxed, parallel with §2)
+## 3. Agent loop (after memory schema)
 
-**Goal:** Charter and PIT docs stay accurate, but **do not** balloon into a serial gate.
+The loop is the central loop the system runs per market question. It is not a training loop in the gradient-descent sense — it is a policy-driven research loop scored by Brier.
 
+### 3.1 Loop contract
 
-| Step | Deliverable | Notes |
-|------|-------------|--------|
-| P0.1 | **Charter slices** for WM + markets (horizons, tables) | Minimal edits to [`forecast_charter.md`](forecast_charter.md); revise when heads land. |
-| P0.2 | **PIT documentation** next to loaders | Especially market **resolution time** semantics. |
-| P0.3 | **Eval contracts** | `evals/`, `baselines/metrics.py` only as needed. |
+```python
+def run_agent_loop(
+    question: str,
+    cutoff_date: date,
+    resolution_date: date,
+    policy: ConstructionPolicy,
+    memory: MemoryStore,
+    tools: AgentToolset,
+) -> AgentLoopResult:
+    ...
+```
 
-**Touchpoints:** `ingest/`, `evals/`, `baselines/metrics.py`, `tests/`.
+`AgentToolset` is a dataclass of callables: `web_search`, `graph_query`, `gnn_score`, `analogues`, `market_context`. The loop calls them — it does not implement them.
 
----
+### 3.2 Loop phases
 
-## 4. Track M — Markets (after §2 H)
+1. **Load memory** — read recent episodes for this market family; read applicable `ConceptualPattern`s. Inject into planning context.
+2. **Plan** — given question + cutoff + patterns, determine which `blind_spot_checks` to run and in what order. LLM call here.
+3. **Research loop** — iterate over checks; call tools; update `AgentLoopState`. Stop when: Δ`gnn_score` < ε on last 2 calls, max steps reached, or planner declares convergence.
+4. **Synthesise** — reconcile competing hypotheses, apply calibration, produce final `p_yes` + confidence interval.
+5. **Write episode** — commit `EpisodicRecord`; `brier_score` field left `None` until resolution arrives.
 
-**Dependency:** Event-based training spine (**§2 D–H**: through **WM v0** + ablation matrix on the pinned subgraph contract) running; **adversarial PIT harness** green for synthetic market-like tapes.
+### 3.3 Blind spot → query mapper
 
+The narrowest entry point. Lives in `harness/query_mapper.py`. Template registry in `harness/query_templates.py` (at least 5 check strings with deterministic templates on first commit). LLM fallback for unrecognised checks. Cutoff discipline: tests must assert no query can be formulated that leaks post-cutoff information.
 
-| Phase | Deliverable |
-|-------|-------------|
-| **M1** | Schema + ingestion: quotes, resolutions, metadata; versioned raw; loader tests. |
-| **M2** | **Synthetic adversarial tests** before real labels: future resolution, retroactive correction—pipeline must fail closed or alarm. |
-| **M3** | **Coverage audit:** table or report of domains/eras with **no** market coverage vs eval geography—explicit “no silent failure.” |
-| **M4** | Label contracts: resolution head first; short-horizon later; masking ablations; baselines. |
+### 3.4 Deliverables
 
-**Touchpoints:** `schemas/`, `ingest/`, `baselines/`, `tests/`.
-
----
-
-## 5. Track W — Query lens / builder tooling (research-grade; parallel with §2 **E–F**)
-
-**Goal:** Faithful **query-conditioned subgraphs**—the same capability §2 step **E** must instantiate. This track is **not** deferred behind WM; it **feeds** the WM stage (`H`) with a stable \(S_t^{(q)}\) contract.
-
-
-| Phase | Deliverable |
-|-------|-------------|
-| W1 | Scored retrieval / GNN-RAG-style ranking + budget (`perplexity.md` §3). |
-| W2 | Mask / audit log vs full \(S_t\). |
-| W3 | Optional iterative expansion (flag-guarded). |
-
----
-
-## 6. Integration, reporting, smoke
-
-| Step | Deliverable |
-|------|-------------|
-| I1 | Runbooks: commands, data pins, seeds. |
-| I2 | France harness smoke when `ingest` / `snapshot_export` / `backtest` change. |
-| I3 | Cross-track: WM + market exogenous vs WM-only on agreed slice. |
-| I4 | **Iran shadow slice** (after step **H** in §2): run the **§2.3** audits (ingest, lens, assumptions, transfer, reviewer workflow)—**not** a primary metric gate or replacement for the France scaffold. |
+| File | Contents |
+|------|----------|
+| `harness/agent_loop.py` | Core state machine, `AgentLoopState`, `AgentLoopResult` |
+| `harness/agent_toolset.py` | `AgentToolset` dataclass with typed callable signatures |
+| `harness/query_mapper.py` | `blind_spot_to_query()`, `WebSearchRequest` |
+| `harness/query_templates.py` | Template registry (5+ deterministic templates) |
+| `tests/test_agent_loop.py` | End-to-end with `NullMemoryStore` + stub tools |
+| `tests/test_query_mapper.py` | Template matching, LLM fallback, cutoff assertion |
 
 ---
 
-## 7. Risks and mitigations
+## 4. Brier scoring + resolution listener
 
-### 7.1 Technical
+Closes the feedback loop. Implement after the loop runs end-to-end with stub tools.
+
+```python
+def resolve_market(
+    job_id: str,
+    outcome: bool,
+    memory: MemoryStore,
+    tools: AgentToolset,
+) -> BrierUpdateResult:
+    ...
+```
+
+Brier score: BS = (p_yes − outcome)². Miss inference: for each skipped check in the episode, test whether firing it would have shifted `p_yes` toward the correct answer by > 0.05. Log as heuristic — not ground truth. `update_episode_brier()` called exactly once per resolution.
+
+Deliverable: `harness/resolution.py` + `tests/test_resolution.py` (integration test: run loop → resolve → verify episode updated).
+
+---
+
+## 5. Context compression skills
+
+Long-running, long-context jobs require token efficiency. Compression skills convert raw evidence into agent-readable compact representations.
+
+### 5.1 Graph compression skill
+
+Input: `list[EventRecord]` (date, actors, event_type, description, source_url).
+Output: `CompressedGraph` — nodes (deduplicated actors/entities), edges (typed: `escalated`, `de-escalated`, `mediated`, `sanctioned`, `allied`, `opposed`), summary stats (event count, date range, dominant relation types, most central actors).
+
+Target: 40 events → < 500 tokens when serialised as structured text for agent context. Deterministic. Alias registry for name deduplication (not NER).
+
+### 5.2 Chart/timeline compression skill
+
+Temporal sequences → event timeline representation for agent context. Particularly for macro indicator history and base rate sequences. Output is structured text, not a rendered image.
+
+Deliverables: `harness/skills/graph_compression.py`, `harness/skills/timeline_compression.py`, tests.
+
+---
+
+## 6. Policy self-improvement (Option C)
+
+Implement after Brier scoring is live and at least 10 resolved episodes exist in memory.
+
+### 6.1 PolicyPatchProposal
+
+```python
+@dataclass
+class PolicyPatchProposal:
+    proposal_id: str
+    triggered_by_job_id: str
+    brier_score: float
+    proposed_check: str
+    proposed_family_scope: list[str]
+    rationale: str               # must reference at least one evidence_episode
+    evidence_episodes: list[str]
+    confidence: float
+    status: Literal["pending", "accepted", "rejected"]
+```
+
+### 6.2 Gate conditions (all must pass for acceptance)
+
+1. Full test suite passes (425+).
+2. Brier improves by > 0.02 on held-out validation split (last 10 resolved markets in family).
+3. `proposed_family_scope` is non-empty and specific — `["all"]` is rejected.
+4. `rationale` is > 50 words and references at least one `evidence_episode` job ID.
+
+Accepted patches write a `ConceptualPattern` with `source="policy_patch"`. Rejected patches are logged but not deleted.
+
+Deliverables: `harness/policy_patch.py`, `tests/test_policy_patch.py`.
+
+---
+
+## 7. Existing pipeline steps (D, E, F, G, H) — status and reframing
+
+These steps from the previous plan remain valid. Their character changes slightly: they now produce *agent tools*, not pipeline stages.
+
+| Step | Description | Reframe |
+|------|-------------|---------|
+| **D** | Training loop skeleton | Now: agent loop state machine (`harness/agent_loop.py`). Brier replaces loss. |
+| **E** | Graph builder v1 | Now: `graph_query` tool callable in `AgentToolset`. ANN top-100 → rerank ≤50 nodes. |
+| **F** | Assumption layer v0 | Now: soft gates modulate agent attention; callable as `assumption_check` tool. |
+| **G** | Forecast head | Now: `gnn_score` tool callable. Lightweight head on induced subgraph. |
+| **H** | WM v0 + multi-step | Unchanged. Sequenced after agent loop + memory are green on pinned subgraph contract. |
+
+Data prerequisites (A, B, C, C′) and world-model ablation matrix (GRU-only vs GNN-only vs GRU+GNN) from the previous plan remain unchanged.
+
+---
+
+## 8. Track M — Markets (now parallel with D–G, not gated behind H)
+
+The agentic reframe promotes Track M. Polymarket Brier scores are the primary feedback signal for the self-improvement loop — they cannot wait until after WM v0.
+
+| Phase | Deliverable | Timing |
+|-------|-------------|--------|
+| M1 | Schema + ingestion: quotes, resolutions, metadata; versioned raw; loader tests | Parallel with Steps D–E |
+| M2 | Synthetic adversarial tests before real labels: future resolution, retroactive correction — pipeline must fail closed or alarm | Before M3 |
+| M3 | Coverage audit: table of domains/eras with no market coverage vs eval geography | Before first real Brier computation |
+| M4 | Label contracts: resolution head first; short-horizon later; masking ablations; baselines | After M2 + M3 |
+
+PIT discipline unchanged: adversarial tape tests before trusting production labels.
+
+---
+
+## 9. Iran stress-test lane (unchanged from previous plan)
+
+Iran remains a shadow/red-team slice after Step H. Do not use as primary benchmark before France smoke + held-out eval contracts are stable. See §2.3 of the previous plan for full audit checklist — that section is still operative.
+
+---
+
+## 10. Sequencing summary
+
+```
+Memory schema          ──►  Memory store interface
+                                    │
+                                    ▼
+Blind spot mapper ──►  Agent loop state machine  ◄──  Graph builder (E)
+                                    │                  Assumption layer (F)
+                                    │                  GNN score tool (G)
+                                    ▼
+                          Brier scoring + resolution
+                                    │
+                     ┌──────────────┴──────────────┐
+                     ▼                             ▼
+           Context compression            Policy self-improvement
+           skills (graph, chart)          (Option C, after 10+ episodes)
+                                                   │
+                                                   ▼
+                                          WM v0 + ablation matrix (H)
+```
+
+Track M (markets) runs parallel to the agent loop, providing the resolution signals that feed Brier scoring.
+
+---
+
+## 11. Risks and mitigations
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| **Label leakage** (market resolutions, messy timestamps) | Invalidates metrics | **Synthetic adversarial harness before real labels**; separate label builders; review `forecast_charter.md`. |
-| **Credit assignment** (joint temporal + MP) | Unreviewable claims | **Time-then-space**, **separate** forward blocks for ablation; multi-step losses; multi-seed. **Do not** fuse recurrence and MP in one indistinguishable pass. |
-| **Builder supervision starvation** | Retrieval collapses to shortcuts | **Plural losses** per [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md) (Stage 1 SSL on tape, Stage 2 forecast-utility); staged training; **no** market signal in builder stages. |
-| **Contract drift** | Claims mix France training with validation-only rule | **Tag** runs by training corpus; builder **primary** training = contract contexts; France = **validation / smoke** unless explicitly bridging. |
-| **Short-horizon weak labels** | Misses long-lag precursors | Keep **long-horizon inductive bias** in retrieval targets and self-supervision; horizon-aware utility weighting. |
-| **Frozen snapshot / teacher staleness** | Builder overfits stale encoder | **Refresh** backbone or embedding snapshots on a schedule when using indirect signals. |
-| **Learned adjacency** shortcuts | Spurious structure | PIT on targets; bottlenecks / sparsity (`perplexity.md` §2). |
-| **Schema creep** | Unmaintainable graph | Minus-variants **mandatory** before new node types; measurement plan. |
-
-### 7.2 Data and operations
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| **Polymarket selection bias** | Overfitting to “interesting” topics | **Coverage audit**; domain/liquidity slices; masking; train-without-market (`perplexity.md` §4). |
-| **API/vendor churn** | Broken pipelines | Versioned snapshots; provider abstraction. |
-| **Entity resolution gaps** | Biased joins | Explicit `unknown`; metrics conditional on link confidence. |
-
-### 7.3 Evaluation and schedule
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| **Phase 0 expands forever** | No trained model | **Time-box**; parallel **§2** immediately. |
-| **Parallel tracks starve** | Nothing ships | Builder + assumptions on **events** do not wait for markets; **WM v0 (`H`)** does not wait for Polymarket. |
-| **Single headline metric** | Misleading story | Full charter table. |
+| Memory retrofitting | Hooks added late are brittle | Design schema before loop — mandatory sequencing |
+| Cold-start episodes | No Brier history → self-improvement cannot fire | Hand-author 5–10 synthetic `EpisodicRecord`s for early testing |
+| Policy patch overfitting | Patches tune to gold set, not generalisable patterns | Held-out split gate + family scope specificity requirement |
+| Context compression information loss | Compressed graph drops signal needed for forecast | Lossiness tests: compare `gnn_score` on raw vs compressed subgraph; flag divergence > 0.05 |
+| Label leakage | Invalidates Brier scores | Adversarial harness on synthetic tapes before real resolution labels |
+| Credit assignment (WM) | Temporal + MP fusion opaque | Time-then-space architecture; separate forward blocks; multi-seed ablations |
+| Contract drift | Runs mix training and validation corpora | Tag all runs by training corpus; France = validation/smoke unless explicitly bridged |
 
 ---
 
-## 8. Executor checklist
+## 12. Executor checklist
 
-- Re-read [`roadmap.md`](roadmap.md) gates for the current change.  
-- **Gradients-first:** prefer extending `schemas/`, `ingest/`, `baselines/`, `evals/`, `tests/` over spec-only work.  
-- Any material claim: **metrics**, **slices**, **seeds**, **ablation** or **mask**.  
-- **Subgraph / assumption contract** changes: update the **§2.2** milestone map and rerun **France smoke** when shared snapshot/backtest contracts change.  
-- **Markets:** adversarial tape tests **before** trusting production labels; **coverage** documented.  
-- France smoke when shared snapshot/backtest contracts change—not a gate on every builder tweak, but required when contracts move.  
-- **Iran** only as **§2.3** shadow / red-team after **H**; keep France (or agreed scaffold) as the ablation-controlled harness until eval contracts support stronger claims.
+- Re-read [`roadmap.md`](roadmap.md) gates for the current change.
+- Memory schema before loop — do not start `agent_loop.py` before `memory_schema.py` is committed and tested.
+- Any Brier claim: attach `job_id`, `market_id`, `cutoff_date`, `resolution_date`.
+- Compression skills: test lossiness against raw subgraph before deploying as default context representation.
+- Markets: adversarial tape tests before trusting production resolution labels.
+- Policy patches: all four gate conditions must pass; log rejections.
+- Iran: shadow/red-team only after Step H; keep France as ablation-controlled harness.
 
 ---
 
-## 9. References
+## 13. Motion task index (new tasks — agentic reframe)
 
-- [`roadmap.md`](roadmap.md) — stages, gates, execution reality  
-- [`forecast_charter.md`](forecast_charter.md) — metrics, markets tier  
-- [`docs/reviewers-guide.md`](docs/reviewers-guide.md)  
-- [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md) — locked builder, assumptions, supervision, compute, training contexts  
-- [`docs/research/architecture.md`](docs/research/architecture.md) — target layers + implementation status  
-- [`docs/research/outputs/perplexity.md`](docs/research/outputs/perplexity.md)  
-- [`docs/source_layer_experiments.md`](docs/source_layer_experiments.md)
+| Task | Suggested deadline | Priority | Dependencies |
+|------|--------------------|----------|--------------|
+| [Harness] Memory Schema — Three-Layer Design | 2026-05-22 | High | None |
+| [Harness] Memory Store Interface — Typed Protocol | 2026-05-23 | High | Memory Schema |
+| [Harness] Blind Spot → Query Mapper | 2026-05-28 | High | ConstructionPolicy |
+| [Harness] Agent Loop — Core State Machine | 2026-05-30 | High | Memory Schema, Memory Store, Query Mapper |
+| [Harness] Brier Scoring + Episode Update on Resolution | 2026-06-05 | Medium | Agent Loop, Memory Store |
+| [Memory] Context Compression — Graph Skill | 2026-06-10 | Medium | EventRecord schema |
+| [Policy] Self-Improvement — Policy Patch Protocol | 2026-06-25 | Low | Brier Scoring, Memory Store, Agent Loop |
+
+---
+
+## 14. References
+
+- [`roadmap.md`](roadmap.md) — stages, gates, execution reality
+- [`forecast_charter.md`](forecast_charter.md) — metrics, markets tier
+- [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md) — locked builder, assumptions, supervision, compute, training contexts
+- [`docs/research/architecture.md`](docs/research/architecture.md) — target layers + implementation status
+- [`docs/research/outputs/perplexity.md`](docs/research/outputs/perplexity.md)
+- PR #30 `dp/polymarket-agentic-harness` — agentic harness scaffold (typed contracts, 425 passing tests)
