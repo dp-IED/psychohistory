@@ -64,12 +64,15 @@ def test_graph_artifact_writer_materializes_jsonl(tmp_path: Path) -> None:
     assert '"artifact_format":"graph_artifact_v1"' in rows[0]
 
 
-def test_gold_dataset_evaluation_requires_perfect_structural_match() -> None:
+def test_gold_dataset_evaluation_requires_perfect_structural_and_semantic_match() -> None:
     report = evaluate_branch_builder_against_gold(GOLD_PATH)
 
-    assert report.case_count == 3
+    assert report.case_count == 30
     assert report.family_accuracy == 1.0
     assert report.branch_recall == 1.0
     assert report.target_accuracy == 1.0
     assert report.policy_pass_rate == 1.0
+    assert report.content_coverage == 1.0
+    assert report.branch_content_recall == 1.0
+    assert report.expressiveness_score == 1.0
     assert report.failures == []

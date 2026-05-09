@@ -86,7 +86,15 @@ Output:
 
 - `data/polymarket/resolved_branch_graphs.jsonl`
 
-The deterministic builder is tested against `data/polymarket/gold_branch_dataset.json`, a curated gold set covering event negotiation, macro policy print, and institutional process markets.
+The deterministic builder is tested against `data/polymarket/gold_branch_dataset.json`, a 30-case gold set of non-trivial resolved markets (ceasefire timing, elections/party-seat distributions, legal/institutional process questions, ETF approvals, Fed decisions, TikTok/Supreme Court, etc.). Each case stores the full Polymarket resolution text plus current Wikipedia context as a post-resolution reference document, while the resolved outcome remains a label only.
+
+Gold evaluation is now content/semantics-oriented rather than a word-overlap proxy. `evaluate_branch_builder_against_gold` checks:
+
+- family and required branch coverage;
+- terminal label wiring without resolution leakage into evidence refs;
+- family policy validity (`FOR`/`AGAINST` local duality, prerequisite gates, branch budgets);
+- semantic branch obligations by role and direction (drivers, spoilers, constraints, institutional gates, signals; `FOR`/`AGAINST`/`MIXED` orientations);
+- expressiveness of the generated branch portfolio (element count, role diversity, direction diversity, rationale depth).
 
 ## Training labels enabled by this contract
 
