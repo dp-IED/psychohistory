@@ -12,6 +12,7 @@ Temporally clean **graph forecasting** with **query-conditioned subgraphs + assu
 | [`forecast_charter.md`](forecast_charter.md) | Metrics, inputs, non-goals |
 | [`docs/reviewers-guide.md`](docs/reviewers-guide.md) | Reviews, discovery protocol, red flags |
 | [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md) | **Locked** graph builder, assumptions, supervision stages, compute & training contexts |
+| [`docs/polymarket_agentic_harness.md`](docs/polymarket_agentic_harness.md) | **Polymarket pivot:** agent-authored outcome-world portfolios + graph/GNN stress tests |
 | [`docs/research/architecture.md`](docs/research/architecture.md) | **Target** layered architecture (evidence → builder/lens → encoder/WM; not code-bound) |
 | [`docs/research/research.md`](docs/research/research.md) | Deep-research handoff + conversation summary |
 
