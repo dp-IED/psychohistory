@@ -130,11 +130,29 @@ def _country_ok(admin1_code: str | None, expected_country: str | None) -> bool |
 
 
 
-def _hint_hit(node_id: str, hints: list[str]) -> bool:
-    s = node_id.lower()
-    for h in hints:
-        if h.strip().lower() in s:
+def _hint_hit(node_id: str, row_extensions: dict | None, hints: list[str]) -> bool:
+    """Return True when any probe hint matches node_id or warehouse entity hint keys.
+
+    The warehouse stores semantic actor cues under row.extensions['entity_hint_keys'].
+    Matching only against node_id (e.g., "ar_v0|EG|slot3") can zero out hint metrics.
+    """
+    norm_hints = [h.strip().lower() for h in hints if h and h.strip()]
+    if not norm_hints:
+        return False
+
+    node_s = (node_id or "").lower()
+    ext = row_extensions or {}
+    ext_hints_raw = ext.get("entity_hint_keys") or []
+    ext_hints = [str(x).strip().lower() for x in ext_hints_raw if str(x).strip()]
+
+    for h in norm_hints:
+        # legacy fallback: sometimes node ids may include lexical content
+        if h in node_s:
             return True
+        # semantic match against explicit warehouse hint keys
+        for eh in ext_hints:
+            if h == eh or h in eh or eh in h:
+                return True
     return False
 
 
@@ -259,7 +277,7 @@ def _audit_probe(
         row = manifest.rows[int(idx)]
         fs = row.first_seen
         time_ok = bool(fs is not None and fs <= as_of)
-        hint_ok = _hint_hit(row.node_id, actor_state.entity_hints)
+        hint_ok = _hint_hit(row.node_id, row.extensions, actor_state.entity_hints)
         topk_time_ok.append(time_ok)
 
         c_ok = _country_ok(row.admin1_code, expected_country)
