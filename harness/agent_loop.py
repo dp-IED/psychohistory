@@ -1,200 +1,223 @@
-"""Typed agent-loop contracts for Polymarket branch expansion.
+"""Competition-ready agent loop core, with platform adapters kept out-of-band.
 
-This module is intentionally an interface stub: the deterministic branch builder
-creates bounded ``SubgraphPortfolio`` scaffolds, while this harness will own
-Steps 2-N of an agentic run: PIT-safe search, graph/warehouse retrieval, GNN
-stress scoring, branch expansion, and stop-condition evaluation.
+The loop stays pure: it returns structured results and writes episodic memory,
+while API posting (e.g., Metaculus) lives in separate client modules.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Protocol
+from datetime import date
+from typing import Callable
+from uuid import uuid4
 
-from schemas.polymarket_agentic import (
-    Branch,
-    EvidenceRef,
-    MarketFrame,
-    RequirementStressTest,
-    SubgraphPortfolio,
-)
+from harness.memory_schema import EpisodicRecord, ToolCallRecord
+from harness.memory_store import MemoryStore
+from harness.query_mapper import MarketFrame, blind_spot_to_query
 
 
 @dataclass(frozen=True)
-class WebSearchRequest:
-    """PIT-safe web-search request emitted by the agent loop."""
-
-    query: str
-    as_of_time: str
-    max_results: int = 5
-    branch_id: str | None = None
-
-
-@dataclass(frozen=True)
-class GraphQueryRequest:
-    """Warehouse/graph lookup request scoped to one market branch."""
-
-    market_frame: MarketFrame
-    branch: Branch
-    as_of_time: str
-    node_limit: int
+class MarketContext:
+    market_id: str
+    market_family: str
+    key_actors: list[str]
+    region: str | None
+    cutoff_date: date
+    resolution_date: date
 
 
 @dataclass(frozen=True)
-class GNNScoreRequest:
-    """Portfolio scoring request passed to the graph/GNN layer."""
-
-    portfolio: SubgraphPortfolio
-    evidence_refs: tuple[EvidenceRef, ...]
+class GraphQueryResult:
+    node_count: int
+    notes: str = ""
 
 
 @dataclass(frozen=True)
-class StopConditionReport:
-    """Why the current portfolio expansion should continue or stop."""
+class ConstructionPolicy:
+    blind_spot_checks: list[str]
+    max_steps: int = 4
+    convergence_epsilon: float = 0.01
 
-    should_stop: bool
-    reasons: tuple[str, ...] = ()
-    budget_exhausted_branch_ids: tuple[str, ...] = ()
-    unresolved_risks: tuple[str, ...] = ()
+    def __post_init__(self) -> None:
+        if self.max_steps < 1:
+            raise ValueError("max_steps must be >= 1")
+        if self.convergence_epsilon < 0:
+            raise ValueError("convergence_epsilon must be >= 0")
 
 
 @dataclass(frozen=True)
+class AgentToolset:
+    web_search: Callable[[str, date], list[ToolCallRecord]]
+    graph_query: Callable[[str, date], GraphQueryResult]
+    gnn_score: Callable[[int, int, int], float]
+    analogues: Callable[[str], list[str]]
+    market_context: Callable[[str, date, date], MarketContext]
+
+
+@dataclass
 class AgentLoopState:
-    """Mutable-run snapshot represented immutably for audit logging."""
-
-    portfolio: SubgraphPortfolio
-    iteration: int = 0
-    evidence_refs: tuple[EvidenceRef, ...] = ()
-    stress_tests: tuple[RequirementStressTest, ...] = ()
-    stop_report: StopConditionReport | None = None
-    notes: tuple[str, ...] = ()
+    job_id: str
+    checks_fired: list[str] = field(default_factory=list)
+    checks_skipped: list[str] = field(default_factory=list)
+    tool_calls: list[ToolCallRecord] = field(default_factory=list)
+    gnn_score_trajectory: list[float] = field(default_factory=list)
+    step: int = 0
 
 
 @dataclass(frozen=True)
 class AgentLoopResult:
-    """Final output of a bounded agentic expansion run."""
+    job_id: str
+    final_p_yes: float
+    confidence_interval: tuple[float, float] | None
+    reasoning_summary: str
+    blind_spot_checks_fired: list[str]
+    blind_spot_checks_skipped: list[str]
+    gnn_score_trajectory: list[float]
+    tool_call_count: int
 
-    final_state: AgentLoopState
-    expanded_portfolio: SubgraphPortfolio
-    audit_log: tuple[AgentLoopState, ...] = ()
-
-
-class WebSearchTool(Protocol):
-    """Tool contract for PIT-safe web evidence retrieval."""
-
-    def __call__(self, request: WebSearchRequest) -> tuple[EvidenceRef, ...]:
-        """Return evidence refs only; source bodies live outside the contract."""
-
-
-class GraphQueryTool(Protocol):
-    """Tool contract for graph/warehouse branch expansion."""
-
-    def __call__(self, request: GraphQueryRequest) -> tuple[EvidenceRef, ...]:
-        """Return PIT-compatible graph/warehouse evidence refs."""
-
-
-class GNNScoreTool(Protocol):
-    """Tool contract for scoring a portfolio after each expansion round."""
-
-    def __call__(self, request: GNNScoreRequest) -> RequirementStressTest:
-        """Return bounded stress-test diagnostics, not a terminal label."""
+    def __post_init__(self) -> None:
+        if not isinstance(self.reasoning_summary, str) or not self.reasoning_summary.strip():
+            raise ValueError("reasoning_summary must be a non-empty string")
+        _require_float01(self.final_p_yes, "final_p_yes")
+        if self.confidence_interval is not None:
+            lo, hi = self.confidence_interval
+            _require_float01(lo, "confidence_interval[0]")
+            _require_float01(hi, "confidence_interval[1]")
+            if lo > hi:
+                raise ValueError("confidence_interval lower bound must be <= upper bound")
 
 
-@dataclass(frozen=True)
-class AgentLoopTools:
-    """Concrete tools injected into ``run_agent_loop`` by the caller."""
-
-    web_search: WebSearchTool
-    graph_query: GraphQueryTool
-    gnn_score: GNNScoreTool
-
-
-def propose_tool_requests(state: AgentLoopState) -> tuple[WebSearchRequest | GraphQueryRequest, ...]:
-    """Plan the next PIT-safe expansion requests for a portfolio state.
-
-    TODO(agent-loop): Have the LLM inspect branch roles/directions, missingness,
-    and prior stress-test diagnostics, then emit bounded web/graph requests under
-    each branch's ``expansion_budget``.
-    """
-
-    raise NotImplementedError("agent-loop request planning is not implemented yet")
+def _require_float01(value: float, name: str) -> None:
+    if not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a float in [0, 1]")
+    fv = float(value)
+    if fv < 0.0 or fv > 1.0:
+        raise ValueError(f"{name} must be a float in [0, 1]")
 
 
-def apply_evidence_refs(state: AgentLoopState, evidence_refs: tuple[EvidenceRef, ...]) -> AgentLoopState:
-    """Attach newly discovered evidence refs to the run state.
-
-    TODO(agent-loop): materialize candidate portfolio elements/prerequisites from
-    PIT-backed refs while preserving the resolution-label separation contract.
-    """
-
-    return AgentLoopState(
-        portfolio=state.portfolio,
-        iteration=state.iteration,
-        evidence_refs=state.evidence_refs + evidence_refs,
-        stress_tests=state.stress_tests,
-        stop_report=state.stop_report,
-        notes=state.notes,
-    )
+def _planner_checks(policy: ConstructionPolicy) -> tuple[list[str], list[str]]:
+    if not policy.blind_spot_checks:
+        return [], []
+    # Minimal planner: execute all checks in v0.
+    return list(policy.blind_spot_checks), []
 
 
-def evaluate_stop_conditions(state: AgentLoopState) -> StopConditionReport:
-    """Evaluate branch budgets, missingness, disagreement, and policy stop rules.
-
-    TODO(agent-loop): enforce max iterations, expansion budgets, policy-specific
-    stop rules, and explicit logging for unresolved blind spots.
-    """
-
-    return StopConditionReport(
-        should_stop=True,
-        reasons=("stub: no expansion policy implemented",),
-    )
+def _converged(scores: list[float], eps: float) -> bool:
+    if len(scores) < 3:
+        return False
+    d1 = abs(scores[-1] - scores[-2])
+    d2 = abs(scores[-2] - scores[-3])
+    return d1 < eps and d2 < eps
 
 
 def run_agent_loop(
-    portfolio: SubgraphPortfolio,
-    tools: AgentLoopTools,
-    *,
-    max_iterations: int = 4,
+    question: str,
+    cutoff_date: date,
+    resolution_date: date,
+    policy: ConstructionPolicy,
+    memory: MemoryStore,
+    tools: AgentToolset,
 ) -> AgentLoopResult:
-    """Run bounded agentic expansion over a seed ``SubgraphPortfolio``.
+    """Run the five-phase v0 loop: load memory -> plan -> research -> synthesize -> write episode."""
+    if cutoff_date > resolution_date:
+        raise ValueError("cutoff_date must be <= resolution_date")
 
-    The implementation will eventually:
-    1. plan PIT-safe ``web_search``/``graph_query`` calls from branch structure;
-    2. attach evidence-backed elements/prerequisites;
-    3. call ``gnn_score`` for stress diagnostics;
-    4. stop when budgets/policy/missingness conditions are satisfied.
+    # 1) Load memory (read side kept lightweight for v0 wiring).
+    context = tools.market_context(question, cutoff_date, resolution_date)
+    _ = memory.read_recent_episodes(context.market_family, 5)
+    _ = memory.read_patterns(context.market_family)
 
-    This stub defines the integration seam without pretending the loop exists.
-    """
+    # 2) Plan.
+    fired, skipped = _planner_checks(policy)
+    state = AgentLoopState(job_id=f"job-{uuid4().hex[:12]}", checks_fired=fired, checks_skipped=skipped)
 
-    _ = tools
-    _ = max_iterations
-    initial = AgentLoopState(portfolio=portfolio)
-    stop_report = evaluate_stop_conditions(initial)
-    final = AgentLoopState(
-        portfolio=portfolio,
-        iteration=initial.iteration,
-        evidence_refs=initial.evidence_refs,
-        stress_tests=initial.stress_tests,
-        stop_report=stop_report,
-        notes=initial.notes,
+    frame = MarketFrame(
+        market_family=context.market_family,
+        question=question,
+        cutoff_date=cutoff_date,
+        key_actors=context.key_actors,
+        region=context.region,
     )
-    return AgentLoopResult(final_state=final, expanded_portfolio=portfolio, audit_log=(initial, final))
+
+    node_count = 0
+    # 3) Research loop.
+    for step in range(1, policy.max_steps + 1):
+        state.step = step
+
+        for check in state.checks_fired:
+            req = blind_spot_to_query(check, frame)
+            state.tool_calls.extend(tools.web_search(req.query, req.as_of_date))
+
+        graph_result = tools.graph_query(question, cutoff_date)
+        node_count = max(node_count, graph_result.node_count)
+
+        # Optional auxiliary signal (kept outside confidence math for now).
+        _ = tools.analogues(question)
+
+        score = tools.gnn_score(step, len(state.tool_calls), node_count)
+        _require_float01(score, "gnn_score")
+        state.gnn_score_trajectory.append(score)
+
+        if _converged(state.gnn_score_trajectory, policy.convergence_epsilon):
+            break
+
+    # 4) Synthesize.
+    if state.gnn_score_trajectory:
+        final_p_yes = state.gnn_score_trajectory[-1]
+        lo = max(0.0, final_p_yes - 0.08)
+        hi = min(1.0, final_p_yes + 0.08)
+        confidence_interval: tuple[float, float] | None = (lo, hi)
+    else:
+        final_p_yes = 0.5
+        confidence_interval = None
+
+    reasoning_summary = (
+        f"Assessed '{question}' as of {cutoff_date.isoformat()} using "
+        f"{len(state.tool_calls)} evidence calls, {node_count} retrieved nodes, and "
+        f"{len(state.gnn_score_trajectory)} scoring steps. Final p_yes={final_p_yes:.3f}."
+    )
+
+    result = AgentLoopResult(
+        job_id=state.job_id,
+        final_p_yes=final_p_yes,
+        confidence_interval=confidence_interval,
+        reasoning_summary=reasoning_summary,
+        blind_spot_checks_fired=list(state.checks_fired),
+        blind_spot_checks_skipped=list(state.checks_skipped),
+        gnn_score_trajectory=list(state.gnn_score_trajectory),
+        tool_call_count=len(state.tool_calls),
+    )
+
+    # 5) Write episode.
+    episode = EpisodicRecord(
+        job_id=state.job_id,
+        market_id=context.market_id,
+        market_family=context.market_family,
+        question=question,
+        resolution_date=resolution_date,
+        cutoff_date=cutoff_date,
+        blind_spot_checks_fired=list(state.checks_fired),
+        blind_spot_checks_skipped=list(state.checks_skipped),
+        tool_calls=list(state.tool_calls),
+        subgraph_node_count=node_count,
+        gnn_score_trajectory=list(state.gnn_score_trajectory),
+        final_p_yes=result.final_p_yes,
+        confidence_interval=result.confidence_interval,
+        brier_score=None,
+        misses=[],
+        notes=result.reasoning_summary,
+    )
+    memory.write_episode(episode)
+
+    return result
 
 
 __all__ = [
     "AgentLoopResult",
     "AgentLoopState",
-    "AgentLoopTools",
-    "GNNScoreRequest",
-    "GNNScoreTool",
-    "GraphQueryRequest",
-    "GraphQueryTool",
-    "StopConditionReport",
-    "WebSearchRequest",
-    "WebSearchTool",
-    "apply_evidence_refs",
-    "evaluate_stop_conditions",
-    "propose_tool_requests",
+    "AgentToolset",
+    "ConstructionPolicy",
+    "GraphQueryResult",
+    "MarketContext",
     "run_agent_loop",
 ]
