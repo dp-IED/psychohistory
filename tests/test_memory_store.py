@@ -97,6 +97,7 @@ def test_null_store_protocol_and_noop_behavior() -> None:
     store.write_fact(fact)
 
     assert store.read_recent_episodes("event_negotiation", 5) == []
+    assert store.read_episode_by_id("job-null") is None
     assert store.read_patterns("event_negotiation") == []
     assert store.read_facts("Mediator X") == []
 
@@ -135,6 +136,15 @@ def test_jsonl_update_episode_brier_missing_job_raises(tmp_store_dir: Path) -> N
 
     with pytest.raises(KeyError, match="job-missing"):
         store.update_episode_brier("job-missing", brier_score=0.5, misses=["x"])
+
+
+def test_jsonl_read_episode_by_id_returns_matching_episode(tmp_store_dir: Path) -> None:
+    store = JsonlMemoryStore(tmp_store_dir)
+    episode = _episode(job_id="job-lookup")
+    store.write_episode(episode)
+
+    assert store.read_episode_by_id("job-lookup") == episode
+    assert store.read_episode_by_id("job-absent") is None
 
 
 def test_jsonl_read_recent_episodes_filters_family_and_orders_recency(tmp_store_dir: Path) -> None:

@@ -20,6 +20,8 @@ class MemoryStore(Protocol):
 
     def read_recent_episodes(self, market_family: str, n: int) -> list[EpisodicRecord]: ...
 
+    def read_episode_by_id(self, job_id: str) -> EpisodicRecord | None: ...
+
     def write_pattern(self, pattern: ConceptualPattern) -> None: ...
 
     def read_patterns(self, market_family: str) -> list[ConceptualPattern]: ...
@@ -39,6 +41,10 @@ class NullMemoryStore:
     def read_recent_episodes(self, market_family: str, n: int) -> list[EpisodicRecord]:
         _ = (market_family, n)
         return []
+
+    def read_episode_by_id(self, job_id: str) -> EpisodicRecord | None:
+        _ = job_id
+        return None
 
     def write_pattern(self, pattern: ConceptualPattern) -> None:
         _ = pattern
@@ -93,6 +99,13 @@ class JsonlMemoryStore:
         filtered = [episode for episode in episodes if episode.market_family == market_family]
         filtered.sort(key=lambda episode: episode.resolution_date, reverse=True)
         return filtered[:n]
+
+    def read_episode_by_id(self, job_id: str) -> EpisodicRecord | None:
+        episodes = self._read_jsonl(self._episodes_path, EpisodicRecord.from_dict)
+        for episode in episodes:
+            if episode.job_id == job_id:
+                return episode
+        return None
 
     def write_pattern(self, pattern: ConceptualPattern) -> None:
         self._append_jsonl(self._patterns_path, pattern.to_dict())
