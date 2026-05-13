@@ -9,6 +9,7 @@ import sys
 import time
 from pathlib import Path
 from typing import Any, Sequence
+from urllib.error import HTTPError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
@@ -17,14 +18,33 @@ from baselines.node_warehouse_build_v0 import ARAB_SPRING_COUNTRY_RANGE_START
 
 UTC = dt.timezone.utc
 WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php"
+WIKIPEDIA_USER_AGENT = "psychohistory-v2/1.0 (https://github.com/dp-IED/psychohistory; research pilot)"
 PIT_ANCHOR_ISO = ARAB_SPRING_COUNTRY_RANGE_START.isoformat()
 
 
 def _api_get(params: dict[str, Any], *, timeout: int = 30) -> dict[str, Any]:
-    query = urlencode(params)
-    req = Request(f"{WIKIPEDIA_API_URL}?{query}", headers={"User-Agent": "psychohistory-v2/1.0"})
+    request_params = {"maxlag": "5", **params}
+    query = urlencode(request_params)
+    req = Request(
+        f"{WIKIPEDIA_API_URL}?{query}",
+        headers={
+            "User-Agent": WIKIPEDIA_USER_AGENT,
+            "Api-User-Agent": WIKIPEDIA_USER_AGENT,
+        },
+    )
     with urlopen(req, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
+
+
+def _retry_delay_seconds(exc: BaseException, *, attempt: int, backoff_seconds: float) -> float:
+    if isinstance(exc, HTTPError) and exc.code in {429, 503}:
+        retry_after = exc.headers.get("Retry-After") if exc.headers is not None else None
+        if retry_after is not None:
+            try:
+                return max(0.0, float(retry_after))
+            except ValueError:
+                pass
+    return backoff_seconds * attempt
 
 
 def _api_get_with_retries(
@@ -46,7 +66,7 @@ def _api_get_with_retries(
             last_exc = exc
             if attempt == max_attempts:
                 break
-            time.sleep(backoff_seconds * attempt)
+            time.sleep(_retry_delay_seconds(exc, attempt=attempt, backoff_seconds=backoff_seconds))
     assert last_exc is not None  # for type checkers; loop always sets this before breaking
     raise last_exc
 

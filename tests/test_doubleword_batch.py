@@ -5,6 +5,7 @@ from pathlib import Path
 
 from ingest.doubleword_batch import (
     MODEL_BY_LANE,
+    _normalize_record_payload_for_ingest,
     main,
     build_batch_jsonl_requests,
     emit_records_tool_schema,
@@ -38,9 +39,8 @@ def test_resolve_completion_window_aliases() -> None:
     assert resolve_completion_window("1h") == "1h"
 
 
-def test_model_lane_mapping_uses_dottxt_for_35b() -> None:
-    assert MODEL_BY_LANE["35"] == "Qwen/Qwen3.5-35B-A3B-FP8-dottxt"
-    assert MODEL_BY_LANE["397"] == "Qwen/Qwen3.5-397B-A17B-FP8-dottxt"
+def test_model_lane_mapping_uses_dottxt_for_397b() -> None:
+    assert MODEL_BY_LANE == {"397": "Qwen/Qwen3.5-397B-A17B-FP8-dottxt"}
 
 
 def test_emit_records_schema_enforces_non_empty_bounded_records() -> None:
@@ -56,6 +56,9 @@ def test_emit_records_schema_enforces_non_empty_bounded_records() -> None:
     assert "object_id" in item["required"]
     assert "object_name" in item["required"]
     assert "object_type" in item["required"]
+    assert "concept_domain" in item["required"]
+    assert "Never omit" in item["properties"]["concept_domain"]["description"]
+    assert "NETWORK" in item["properties"]["location_type"]["description"]
     assert item["properties"]["object_id"]["type"] == "string"
     assert item["properties"]["object_name"]["type"] == "string"
     assert item["properties"]["object_type"]["type"] == "string"
@@ -140,6 +143,16 @@ def test_build_batch_jsonl_requests_includes_tool_schema(tmp_path: Path) -> None
     assert line["body"]["model"].endswith("dottxt")
     assert line["body"]["tools"][0]["type"] == "function"
     assert line["body"]["tool_choice"]["function"]["name"] == "emit_records"
+    prompt = line["body"]["messages"][1]["content"]
+    assert "layered time horizons" in prompt
+    assert "slow-moving constraints" in prompt
+    assert "not a short event caption" in prompt
+    assert "Article title: Black Death" in prompt
+    assert "prefer location_type=GEOGRAPHIC" in prompt
+    assert "prefer lag_precision=SHORT and lag_years around 2" in prompt
+    assert "Pilot scoring calibration" not in prompt
+    assert "emit exactly three anchor records" not in prompt
+    assert "object_id=institutional_elites" not in prompt
 
     manifest = json.loads(out_manifest.read_text(encoding="utf-8"))
     assert manifest[0]["article_id"] == "black-death"
@@ -167,7 +180,7 @@ def test_build_batch_jsonl_requests_limits_count_and_article_chars(tmp_path: Pat
     out_manifest = tmp_path / "manifest.json"
     summary = build_batch_jsonl_requests(
         fetched_articles_path=fetched_path,
-        model_lane="35",
+        model_lane="397",
         out_jsonl=out_jsonl,
         out_manifest=out_manifest,
         max_tokens=8192,
@@ -432,13 +445,12 @@ def test_run_realtime_shakeout_parses_function_tool_calls(monkeypatch, tmp_path:
 
     out = run_realtime_shakeout(
         fetched_articles_path=fetched_path,
-        model_lanes=["397", "35"],
+        model_lanes=["397"],
         sample_size=1,
         api_key="dummy",
     )
     assert out["sample_size"] == 1
     assert out["lanes"]["397"]["checked_articles"][0]["valid_record_count"] >= 1
-    assert out["lanes"]["35"]["checked_articles"][0]["valid_record_count"] >= 1
 
 
 def test_shakeout_cli_passes_max_tokens(monkeypatch, tmp_path: Path) -> None:
@@ -705,3 +717,123 @@ def test_ingest_results_counts_unknown_custom_id_and_invalid_record_as_dropped(t
     assert summary["parsed_records"] == 0
     assert summary["dropped_records"] == 2
     assert summary["upserted_count"] == 0
+
+
+def test_normalize_record_payload_repairs_schema_bookkeeping_slips() -> None:
+    payload = {
+        "subject_id": "revolutionary_networks",
+        "subject_name": "Revolutionary networks",
+        "subject_type": "MOVEMENT",
+        "object_id": "public_discourse",
+        "object_name": "Public discourse",
+        "object_type": "IDEA",
+        "relation_type": "TRANSFORMS",
+        "relation_description": "Revolutionary networks transform public discourse.",
+        "braudel_layer": "conjonctures",
+        "structural_mechanism": (
+            "Activist organizations linked printed manifestos, public meetings, and urban associations "
+            "so claims about representation moved between local grievances and national political debate."
+        ),
+        "date_start": "1849-12-31",
+        "date_end": "1848-01-01",
+        "date_precision": "YEAR",
+        "location_type": "CONCEPTUAL",
+        "concept_domain": None,
+        "description": (
+            "Revolutionary networks transformed public discourse through printed manifestos, "
+            "association meetings, and public claims that connected local grievances to national debate."
+        ),
+        "lag_years": 18,
+        "lag_precision": "GENERATIONAL",
+        "source_confidence": 0.75,
+    }
+
+    normalized = _normalize_record_payload_for_ingest(payload, {"category": "emergence"})
+
+    assert normalized["concept_domain"] == "public_discourse"
+    assert normalized["date_start"] == "1848-01-01"
+    assert normalized["date_end"] == "1849-12-31"
+    UniversalEventRecord.model_validate(normalized)
+
+
+def test_ingest_results_writes_dropped_record_audit(tmp_path: Path) -> None:
+    manifest = [
+        {
+            "custom_id": "wiki-network-397-001",
+            "article_id": "network-article",
+            "title": "Network Article",
+            "category": "cross_domain_wildcard",
+            "model_id": "Qwen/Qwen3.5-397B-A17B-FP8-dottxt",
+            "source_url": "https://example.test/network",
+            "revision_id": "123",
+            "fetched_at": "2026-04-27T00:00:00Z",
+        }
+    ]
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    invalid_record = {
+        "subject_id": "maud_committee",
+        "subject_name": "MAUD Committee",
+        "subject_type": "INSTITUTION",
+        "object_id": "us_atomic_program",
+        "object_name": "US atomic program",
+        "object_type": "INSTITUTION",
+        "relation_type": "INFLUENCES",
+        "relation_description": "MAUD findings influenced US atomic organization.",
+        "braudel_layer": "conjonctures",
+        "structural_mechanism": (
+            "Scientific findings crossed institutional boundaries through personal networks and wartime "
+            "security channels, turning British feasibility calculations into American engineering urgency."
+        ),
+        "date_precision": "YEAR",
+        "location_type": "BOGUS",
+        "description": (
+            "British feasibility calculations moved through scientist-to-scientist channels, giving American "
+            "physicists concrete design targets and converting abstract fission research into coordinated program planning."
+        ),
+        "lag_years": 2,
+        "lag_precision": "SHORT",
+        "source_confidence": 0.9,
+    }
+    result = {
+        "custom_id": "wiki-network-397-001",
+        "response": {
+            "body": {
+                "choices": [
+                    {
+                        "message": {
+                            "tool_calls": [
+                                {
+                                    "function": {
+                                        "name": "emit_records",
+                                        "arguments": json.dumps({"records": [invalid_record]}),
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+    }
+    results_path = tmp_path / "output.jsonl"
+    dropped_path = tmp_path / "dropped.jsonl"
+    write_jsonl_records(results_path, [result])
+
+    summary = ingest_batch_results(
+        results_jsonl_path=results_path,
+        manifest_path=manifest_path,
+        db_path=tmp_path / "staging.duckdb",
+        batch_id="batch-1",
+        dropped_records_path=dropped_path,
+    )
+
+    assert summary["dropped_records"] == 1
+    dropped = [json.loads(line) for line in dropped_path.read_text(encoding="utf-8").splitlines()]
+    assert len(dropped) == 1
+    assert dropped[0]["article_id"] == "network-article"
+    assert dropped[0]["title"] == "Network Article"
+    assert dropped[0]["category"] == "cross_domain_wildcard"
+    assert "invalid location_type" in dropped[0]["error"]
+    assert dropped[0]["raw_record"]["location_type"] == "BOGUS"
