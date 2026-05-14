@@ -11,6 +11,7 @@ from datetime import date
 from typing import Callable
 from uuid import uuid4
 
+from harness.calibration import apply_shrinkage
 from harness.memory_schema import EpisodicRecord, ToolCallRecord
 from harness.memory_store import MemoryStore
 from harness.query_mapper import MarketFrame, blind_spot_to_query
@@ -37,12 +38,15 @@ class ConstructionPolicy:
     blind_spot_checks: list[str]
     max_steps: int = 4
     convergence_epsilon: float = 0.01
+    shrinkage: float | None = None
 
     def __post_init__(self) -> None:
         if self.max_steps < 1:
             raise ValueError("max_steps must be >= 1")
         if self.convergence_epsilon < 0:
             raise ValueError("convergence_epsilon must be >= 0")
+        if self.shrinkage is not None and not (0.0 <= self.shrinkage <= 1.0):
+            raise ValueError("shrinkage must be in [0, 1] when set")
 
 
 @dataclass(frozen=True)
@@ -164,11 +168,20 @@ def run_agent_loop(
     # 4) Synthesize.
     if state.gnn_score_trajectory:
         final_p_yes = state.gnn_score_trajectory[-1]
+    else:
+        final_p_yes = 0.5
+
+    final_p_yes = max(0.0, min(1.0, float(final_p_yes)))
+
+    if policy.shrinkage is not None:
+        final_p_yes = apply_shrinkage(final_p_yes, policy.shrinkage)
+        final_p_yes = max(0.0, min(1.0, float(final_p_yes)))
+
+    if state.gnn_score_trajectory:
         lo = max(0.0, final_p_yes - 0.08)
         hi = min(1.0, final_p_yes + 0.08)
         confidence_interval: tuple[float, float] | None = (lo, hi)
     else:
-        final_p_yes = 0.5
         confidence_interval = None
 
     reasoning_summary = (

@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
 
 [tool.setuptools.packages.find]
 include = ["evals*", "schemas*", "ingest*", "baselines*"]
@@ -27,6 +27,8 @@ include = ["evals*", "schemas*", "ingest*", "baselines*"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q -m 'not torch_train and not warehouse and not gdelt_live'"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 markers = [
   "torch_train: GNN training tests that require an isolated process (run with: pytest -m torch_train tests/test_gnn.py)",
   "warehouse: DuckDB warehouse integration (opt-in: pytest -m warehouse)",

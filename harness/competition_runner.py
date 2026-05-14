@@ -24,6 +24,7 @@ from harness.agent_loop import (
     MarketContext,
     run_agent_loop,
 )
+from harness.calibration import compute_calibration
 from harness.memory_schema import ToolCallRecord
 from harness.memory_store import JsonlMemoryStore, MemoryStore
 from harness.metaculus_client import MetaculusAPIError, MetaculusClient, MetaculusQuestion
@@ -84,7 +85,14 @@ def _default_tools(cutoff_date: date, resolution_date: date) -> AgentToolset:
 def _default_run_loop_factory(memory: MemoryStore, tools: AgentToolset) -> Callable[[str, date, date], AgentLoopResult]:
     def _run_loop(question: str, cutoff_date: date, resolution_date: date) -> AgentLoopResult:
         _ = (cutoff_date, resolution_date)
-        policy = ConstructionPolicy(blind_spot_checks=[], max_steps=3, convergence_epsilon=0.01)
+        report = compute_calibration(memory)
+        shrinkage = report.suggested_shrinkage if not report.insufficient_data else None
+        policy = ConstructionPolicy(
+            blind_spot_checks=[],
+            max_steps=3,
+            convergence_epsilon=0.01,
+            shrinkage=shrinkage,
+        )
         return run_agent_loop(question, cutoff_date, resolution_date, policy, memory, tools)
 
     return _run_loop

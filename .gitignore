@@ -47,3 +47,6 @@ autoresearch/experiments/agent_subprocess.log
 
 # Bundled upstream clone (separate repository)
 autoresearch-mlx/
+
+.env
+.hermes/
