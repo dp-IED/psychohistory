@@ -1,4 +1,4 @@
-"""Competition runner for Spring 2026 AIB.
+"""Competition runner for Summer 2026 AIB / MiniBench.
 
 Provides deterministic one-shot helpers and a minimal CLI:
 - python -m harness.competition_runner --question-id 12345
@@ -31,7 +31,10 @@ from harness.query_mapper import WebSearchRequest
 from harness.resolution import AlreadyResolvedError, BrierUpdateResult, resolve_market
 from harness.tools.web_search import AskNewsSearchTool
 
-SPRING_2026_AIB_PROJECT_ID = 32916
+SUMMER_2026_AIB_PROJECT_ID = 32966  # summer-futureeval-2026
+BOT_TESTING_AREA_ID = 32977         # bot-testing-area
+# Set when confirmed from https://www.metaculus.com/aib/minibench/
+MINIBENCH_PROJECT_ID: int | None = None
 
 
 @dataclass(frozen=True)
@@ -116,7 +119,7 @@ def run_one_question(
     *,
     client: MetaculusClient,
     run_loop: Callable[[str, date, date], AgentLoopResult],
-    project_id: int = SPRING_2026_AIB_PROJECT_ID,
+    project_id: int = SUMMER_2026_AIB_PROJECT_ID,
     question_id: int | None = None,
     resolve: bool = False,
     memory: MemoryStore | None = None,
@@ -163,7 +166,7 @@ def run_batch(
     client: MetaculusClient,
     run_loop: Callable[[str, date, date], AgentLoopResult],
     batch_size: int,
-    project_id: int = SPRING_2026_AIB_PROJECT_ID,
+    project_id: int = SUMMER_2026_AIB_PROJECT_ID,
 ) -> list[RunnerResult]:
     if batch_size < 1:
         raise ValueError("batch_size must be >= 1")
@@ -197,12 +200,12 @@ def main(
     mode.add_argument("--question-id", type=int, help="Target a specific question id")
     mode.add_argument("--batch", type=int, help="Forecast N open questions sequentially")
     parser.add_argument("--resolve", action="store_true", help="Try resolving posted forecast immediately")
-    parser.add_argument("--project-id", type=int, default=SPRING_2026_AIB_PROJECT_ID)
+    parser.add_argument("--project-id", type=int, default=SUMMER_2026_AIB_PROJECT_ID)
     args = parser.parse_args(argv)
 
-    token = os.environ.get("METACULUS_API_TOKEN", "").strip()
+    token = (os.environ.get("METACULUS_API_TOKEN", "").strip() or os.environ.get("METACULUS_TOKEN", "").strip())
     if not token:
-        print("Missing METACULUS_API_TOKEN", file=sys.stderr)
+        print("Missing METACULUS_API_TOKEN (or METACULUS_TOKEN)", file=sys.stderr)
         return 2
 
     if args.question_id is not None and args.question_id <= 0:
@@ -222,7 +225,8 @@ def main(
 
     try:
         if args.question_id is not None:
-            synthetic_tools = build_toolset(asknews_api_key=os.environ.get("ASKNEWS_API_KEY", "").strip() or None)
+            asknews_key = (os.environ.get("ASKNEWS_API_KEY", "").strip() or os.environ.get("ASKNEWS_SECRET", "").strip() or None)
+            synthetic_tools = build_toolset(asknews_api_key=asknews_key)
             active_run_loop = run_loop or _default_run_loop_factory(memory, synthetic_tools)
             result = run_one_question(
                 client=client,
@@ -242,7 +246,8 @@ def main(
                     f"outcome={result.resolution.outcome}"
                 )
         else:
-            synthetic_tools = build_toolset(asknews_api_key=os.environ.get("ASKNEWS_API_KEY", "").strip() or None)
+            asknews_key = (os.environ.get("ASKNEWS_API_KEY", "").strip() or os.environ.get("ASKNEWS_SECRET", "").strip() or None)
+            synthetic_tools = build_toolset(asknews_api_key=asknews_key)
             active_run_loop = run_loop or _default_run_loop_factory(memory, synthetic_tools)
             results = run_batch(
                 client=client,
@@ -265,7 +270,9 @@ if __name__ == "__main__":
 
 
 __all__ = [
-    "SPRING_2026_AIB_PROJECT_ID",
+    "SUMMER_2026_AIB_PROJECT_ID",
+    "BOT_TESTING_AREA_ID",
+    "MINIBENCH_PROJECT_ID",
     "RunnerResult",
     "run_one_question",
     "run_batch",
