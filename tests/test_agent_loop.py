@@ -15,16 +15,16 @@ from harness.agent_loop import (
 )
 from harness.memory_schema import ToolCallRecord
 from harness.memory_store import JsonlMemoryStore, NullMemoryStore
+from harness.query_mapper import WebSearchRequest
 
 
 def _stub_tools() -> AgentToolset:
-    def web_search(query: str, as_of_date: date) -> list[ToolCallRecord]:
-        _ = as_of_date
+    def web_search(req: WebSearchRequest) -> list[ToolCallRecord]:
         return [
             ToolCallRecord(
                 tool_name="web_search",
-                query=query,
-                as_of_time="2026-05-13T00:00:00Z",
+                query=req.query,
+                as_of_time=f"{req.as_of_date.isoformat()}T00:00:00Z",
                 evidence_count=2,
                 notes="stub web retrieval",
             )
