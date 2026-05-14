@@ -27,7 +27,9 @@ from harness.agent_loop import (
 from harness.memory_schema import ToolCallRecord
 from harness.memory_store import JsonlMemoryStore, MemoryStore
 from harness.metaculus_client import MetaculusAPIError, MetaculusClient, MetaculusQuestion
+from harness.query_mapper import WebSearchRequest
 from harness.resolution import AlreadyResolvedError, BrierUpdateResult, resolve_market
+from harness.tools.web_search import AskNewsSearchTool
 
 SPRING_2026_AIB_PROJECT_ID = 32916
 
@@ -40,18 +42,19 @@ class RunnerResult:
     resolution: BrierUpdateResult | None = None
 
 
-def _default_tools(cutoff_date: date, resolution_date: date) -> AgentToolset:
-    def web_search(query: str, as_of_date: date) -> list[ToolCallRecord]:
-        _ = as_of_date
+def build_toolset(*, asknews_api_key: str | None) -> AgentToolset:
+    def stub_web_search(req: WebSearchRequest) -> list[ToolCallRecord]:
         return [
             ToolCallRecord(
                 tool_name="web_search",
-                query=query,
-                as_of_time=f"{cutoff_date.isoformat()}T00:00:00Z",
-                evidence_count=1,
+                query=req.query,
+                as_of_time=f"{req.as_of_date.isoformat()}T00:00:00Z",
+                evidence_count=0,
                 notes="competition-runner stub",
             )
         ]
+
+    web_search = AskNewsSearchTool(api_key=asknews_api_key) if asknews_api_key else stub_web_search
 
     def graph_query(_question: str, _cutoff: date) -> GraphQueryResult:
         return GraphQueryResult(node_count=8, notes="competition-runner stub")
@@ -62,7 +65,7 @@ def _default_tools(cutoff_date: date, resolution_date: date) -> AgentToolset:
     def analogues(_question: str) -> list[str]:
         return []
 
-    def market_context(_question: str, _cutoff: date, _resolution: date) -> MarketContext:
+    def market_context(_question: str, cutoff_date: date, resolution_date: date) -> MarketContext:
         return MarketContext(
             market_id="metaculus-smoke",
             market_family="metaculus_binary",
@@ -219,7 +222,7 @@ def main(
 
     try:
         if args.question_id is not None:
-            synthetic_tools = _default_tools(date.today(), date.today())
+            synthetic_tools = build_toolset(asknews_api_key=os.environ.get("ASKNEWS_API_KEY", "").strip() or None)
             active_run_loop = run_loop or _default_run_loop_factory(memory, synthetic_tools)
             result = run_one_question(
                 client=client,
@@ -239,7 +242,8 @@ def main(
                     f"outcome={result.resolution.outcome}"
                 )
         else:
-            active_run_loop = run_loop or _default_run_loop_factory(memory, _default_tools(date.today(), date.today()))
+            synthetic_tools = build_toolset(asknews_api_key=os.environ.get("ASKNEWS_API_KEY", "").strip() or None)
+            active_run_loop = run_loop or _default_run_loop_factory(memory, synthetic_tools)
             results = run_batch(
                 client=client,
                 run_loop=active_run_loop,

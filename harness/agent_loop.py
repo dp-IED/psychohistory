@@ -13,7 +13,7 @@ from uuid import uuid4
 
 from harness.memory_schema import EpisodicRecord, ToolCallRecord
 from harness.memory_store import MemoryStore
-from harness.query_mapper import MarketFrame, blind_spot_to_query
+from harness.query_mapper import MarketFrame, WebSearchRequest, blind_spot_to_query
 
 
 @dataclass(frozen=True)
@@ -47,7 +47,7 @@ class ConstructionPolicy:
 
 @dataclass(frozen=True)
 class AgentToolset:
-    web_search: Callable[[str, date], list[ToolCallRecord]]
+    web_search: Callable[[WebSearchRequest], list[ToolCallRecord]]
     graph_query: Callable[[str, date], GraphQueryResult]
     gnn_score: Callable[[int, int, int], float]
     analogues: Callable[[str], list[str]]
@@ -146,7 +146,7 @@ def run_agent_loop(
 
         for check in state.checks_fired:
             req = blind_spot_to_query(check, frame)
-            state.tool_calls.extend(tools.web_search(req.query, req.as_of_date))
+            state.tool_calls.extend(tools.web_search(req))
 
         graph_result = tools.graph_query(question, cutoff_date)
         node_count = max(node_count, graph_result.node_count)
