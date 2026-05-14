@@ -6,7 +6,7 @@ import pytest
 
 from harness.agent_loop import AgentLoopResult
 from harness.competition_runner import (
-    SPRING_2026_AIB_PROJECT_ID,
+    SUMMER_2026_AIB_PROJECT_ID,
     main,
     run_batch,
     run_one_question,
@@ -64,7 +64,7 @@ def test_run_one_question_uses_default_aib_project_and_posts() -> None:
 
     out = run_one_question(client=client, run_loop=lambda *_: _result())
 
-    assert client.last_project_id == SPRING_2026_AIB_PROJECT_ID
+    assert client.last_project_id == SUMMER_2026_AIB_PROJECT_ID
     assert client.posted == [(1234, 0.61, "Evidence-backed summary.")]
     assert out.question_id == 1234
 

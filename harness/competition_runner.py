@@ -31,10 +31,9 @@ from harness.query_mapper import WebSearchRequest
 from harness.resolution import AlreadyResolvedError, BrierUpdateResult, resolve_market
 from harness.tools.web_search import AskNewsSearchTool
 
-SUMMER_2026_AIB_PROJECT_ID = 32966  # summer-futureeval-2026
-BOT_TESTING_AREA_ID = 32977         # bot-testing-area
-# Set when confirmed from https://www.metaculus.com/aib/minibench/
-MINIBENCH_PROJECT_ID: int | None = None
+SUMMER_2026_AIB_PROJECT_ID = 33022      # slug: summer-futureeval-2026
+BOT_TESTING_AREA_ID = 32977             # slug: bot-testing-area
+MINIBENCH_PROJECT_ID: int = 33023  # https://www.metaculus.com/aib/minibench/ (tournament_id=33023)
 
 
 @dataclass(frozen=True)
@@ -90,7 +89,17 @@ def build_toolset(*, asknews_api_key: str | None) -> AgentToolset:
 def _default_run_loop_factory(memory: MemoryStore, tools: AgentToolset) -> Callable[[str, date, date], AgentLoopResult]:
     def _run_loop(question: str, cutoff_date: date, resolution_date: date) -> AgentLoopResult:
         _ = (cutoff_date, resolution_date)
-        policy = ConstructionPolicy(blind_spot_checks=[], max_steps=3, convergence_epsilon=0.01)
+        policy = ConstructionPolicy(
+            blind_spot_checks=[
+                "base_rate_check",
+                "current_state_check",
+                "resolution_criteria_check",
+                "markets_price_check",
+                "policy_decision_check",
+            ],
+            max_steps=3,
+            convergence_epsilon=0.01,
+        )
         return run_agent_loop(question, cutoff_date, resolution_date, policy, memory, tools)
 
     return _run_loop
@@ -119,7 +128,7 @@ def run_one_question(
     *,
     client: MetaculusClient,
     run_loop: Callable[[str, date, date], AgentLoopResult],
-    project_id: int = SUMMER_2026_AIB_PROJECT_ID,
+    project_id: int | str = SUMMER_2026_AIB_PROJECT_ID,
     question_id: int | None = None,
     resolve: bool = False,
     memory: MemoryStore | None = None,
@@ -166,7 +175,7 @@ def run_batch(
     client: MetaculusClient,
     run_loop: Callable[[str, date, date], AgentLoopResult],
     batch_size: int,
-    project_id: int = SUMMER_2026_AIB_PROJECT_ID,
+    project_id: int | str = SUMMER_2026_AIB_PROJECT_ID,
 ) -> list[RunnerResult]:
     if batch_size < 1:
         raise ValueError("batch_size must be >= 1")
@@ -200,7 +209,7 @@ def main(
     mode.add_argument("--question-id", type=int, help="Target a specific question id")
     mode.add_argument("--batch", type=int, help="Forecast N open questions sequentially")
     parser.add_argument("--resolve", action="store_true", help="Try resolving posted forecast immediately")
-    parser.add_argument("--project-id", type=int, default=SUMMER_2026_AIB_PROJECT_ID)
+    parser.add_argument("--project-id", default=str(SUMMER_2026_AIB_PROJECT_ID))
     args = parser.parse_args(argv)
 
     token = (os.environ.get("METACULUS_API_TOKEN", "").strip() or os.environ.get("METACULUS_TOKEN", "").strip())

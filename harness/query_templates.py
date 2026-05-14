@@ -4,6 +4,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
+from harness.policy.blind_spot_checks import (
+    base_rate_check,
+    current_state_check,
+    markets_price_check,
+    policy_decision_check,
+    resolution_criteria_check,
+)
+
 if TYPE_CHECKING:
     from harness.query_mapper import MarketFrame, WebSearchRequest
 
@@ -99,4 +107,9 @@ TEMPLATE_REGISTRY: dict[str, Callable[["MarketFrame"], "WebSearchRequest"]] = {
     "sanctions_escalation_check": sanctions_escalation_template,
     "leadership_succession_check": leadership_succession_template,
     "treaty_compliance_check": treaty_compliance_template,
+    "base_rate_check": base_rate_check,
+    "current_state_check": current_state_check,
+    "resolution_criteria_check": resolution_criteria_check,
+    "markets_price_check": markets_price_check,
+    "policy_decision_check": policy_decision_check,
 }
