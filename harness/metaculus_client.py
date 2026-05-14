@@ -35,21 +35,26 @@ class MetaculusClient:
         self._api_token = api_token
         self._base_url = base_url.rstrip("/")
 
-    def get_open_questions(self, project_id: int) -> list[MetaculusQuestion]:
+    def get_open_questions(self, project_id: int | str) -> list[MetaculusQuestion]:
         query = urlencode({"project": project_id, "status": "open"})
         payload = self._request_json("GET", f"/api2/questions/?{query}")
 
         rows = payload.get("results", [])
         out: list[MetaculusQuestion] = []
         for row in rows:
+            resolve_raw = row.get("resolve_time") or row.get("scheduled_resolve_time") or row.get("resolution_date")
+            close_raw = row.get("close_time") or row.get("scheduled_close_time") or row.get("close_date")
+            if resolve_raw is None or close_raw is None:
+                raise MetaculusAPIError("Question payload missing resolve/close time fields")
+
             out.append(
                 MetaculusQuestion(
                     question_id=int(row["id"]),
                     title=str(row.get("title", "")),
                     description=str(row.get("description", "")),
                     resolution_criteria=str(row.get("resolution_criteria", "")),
-                    resolution_date=self._parse_api_date(str(row["resolve_time"])),
-                    close_date=self._parse_api_date(str(row["close_time"])),
+                    resolution_date=self._parse_api_date(str(resolve_raw)),
+                    close_date=self._parse_api_date(str(close_raw)),
                 )
             )
         return out
@@ -62,9 +67,17 @@ class MetaculusClient:
 
         body = {
             "prediction": float(p_yes),
-            "comment": comment,
+            "explanation": comment,
         }
-        self._request_json("POST", f"/api/v2/questions/{question_id}/forecast/", body)
+
+        # Current Metaculus posting path (accepts post-id slugs/ids).
+        try:
+            self._request_json("POST", f"/api2/questions/{question_id}/predict/", body)
+            return
+        except MetaculusAPIError:
+            # Backward-compatible fallback for older endpoint contracts.
+            legacy_body = {"prediction": float(p_yes), "comment": comment}
+            self._request_json("POST", f"/api/v2/questions/{question_id}/forecast/", legacy_body)
 
     def get_resolution(self, question_id: int) -> bool | None:
         payload = self._request_json("GET", f"/api/v2/questions/{question_id}/")
@@ -96,6 +109,8 @@ class MetaculusClient:
                 "Authorization": f"Token {self._api_token}",
                 "Content-Type": "application/json",
                 "Accept": "application/json",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                "Accept-Language": "en-US,en;q=0.9",
             },
         )
 

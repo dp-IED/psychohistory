@@ -6,15 +6,17 @@ while API posting (e.g., Metaculus) lives in separate client modules.
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Callable
 from uuid import uuid4
 
-from harness.calibration import apply_shrinkage
 from harness.memory_schema import EpisodicRecord, ToolCallRecord
 from harness.memory_store import MemoryStore
-from harness.query_mapper import MarketFrame, blind_spot_to_query
+from harness.policy.evidence_synthesis import synthesise_evidence
+from harness.query_mapper import MarketFrame, WebSearchRequest, blind_spot_to_query
+from harness.tools.web_search import SearchResult
 
 
 @dataclass(frozen=True)
@@ -38,20 +40,17 @@ class ConstructionPolicy:
     blind_spot_checks: list[str]
     max_steps: int = 4
     convergence_epsilon: float = 0.01
-    shrinkage: float | None = None
 
     def __post_init__(self) -> None:
         if self.max_steps < 1:
             raise ValueError("max_steps must be >= 1")
         if self.convergence_epsilon < 0:
             raise ValueError("convergence_epsilon must be >= 0")
-        if self.shrinkage is not None and not (0.0 <= self.shrinkage <= 1.0):
-            raise ValueError("shrinkage must be in [0, 1] when set")
 
 
 @dataclass(frozen=True)
 class AgentToolset:
-    web_search: Callable[[str, date], list[ToolCallRecord]]
+    web_search: Callable[[WebSearchRequest], list[ToolCallRecord]]
     graph_query: Callable[[str, date], GraphQueryResult]
     gnn_score: Callable[[int, int, int], float]
     analogues: Callable[[str], list[str]]
@@ -64,6 +63,7 @@ class AgentLoopState:
     checks_fired: list[str] = field(default_factory=list)
     checks_skipped: list[str] = field(default_factory=list)
     tool_calls: list[ToolCallRecord] = field(default_factory=list)
+    raw_search_results: list[SearchResult] = field(default_factory=list)
     gnn_score_trajectory: list[float] = field(default_factory=list)
     step: int = 0
 
@@ -104,6 +104,18 @@ def _planner_checks(policy: ConstructionPolicy) -> tuple[list[str], list[str]]:
         return [], []
     # Minimal planner: execute all checks in v0.
     return list(policy.blind_spot_checks), []
+
+
+def _dedupe_search_results(items: list[SearchResult]) -> list[SearchResult]:
+    seen: set[str] = set()
+    out: list[SearchResult] = []
+    for item in items:
+        key = item.url.strip() if item.url.strip() else f"{item.title}|{item.summary}"
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(item)
+    return out
 
 
 def _converged(scores: list[float], eps: float) -> bool:
@@ -148,9 +160,31 @@ def run_agent_loop(
     for step in range(1, policy.max_steps + 1):
         state.step = step
 
-        for check in state.checks_fired:
-            req = blind_spot_to_query(check, frame)
-            state.tool_calls.extend(tools.web_search(req.query, req.as_of_date))
+        web = tools.web_search
+        async_raw = getattr(web, "async_search_raw", None)
+        pack = getattr(web, "to_tool_records", None)
+        raw_fetch = getattr(web, "search_raw", None)
+
+        if state.checks_fired and callable(async_raw) and callable(pack):
+            all_reqs = [blind_spot_to_query(check, frame) for check in state.checks_fired]
+
+            async def _fetch_all():
+                return await asyncio.gather(*(async_raw(req) for req in all_reqs))
+
+            all_parsed_batches = asyncio.run(_fetch_all())
+            for req, parsed in zip(all_reqs, all_parsed_batches):
+                state.raw_search_results.extend(parsed)
+                state.tool_calls.extend(pack(req, parsed))
+        elif state.checks_fired and callable(raw_fetch) and callable(pack):
+            for check in state.checks_fired:
+                req = blind_spot_to_query(check, frame)
+                parsed = raw_fetch(req)
+                state.raw_search_results.extend(parsed)
+                state.tool_calls.extend(pack(req, parsed))
+        else:
+            for check in state.checks_fired:
+                req = blind_spot_to_query(check, frame)
+                state.tool_calls.extend(web(req))
 
         graph_result = tools.graph_query(question, cutoff_date)
         node_count = max(node_count, graph_result.node_count)
@@ -166,28 +200,25 @@ def run_agent_loop(
             break
 
     # 4) Synthesize.
-    if state.gnn_score_trajectory:
-        final_p_yes = state.gnn_score_trajectory[-1]
-    else:
-        final_p_yes = 0.5
-
+    prior = state.gnn_score_trajectory[-1] if state.gnn_score_trajectory else 0.5
+    deduped_evidence = _dedupe_search_results(state.raw_search_results)
+    assessment, final_p_yes = synthesise_evidence(
+        results=deduped_evidence,
+        question=question,
+        prior=prior,
+    )
     final_p_yes = max(0.0, min(1.0, float(final_p_yes)))
-
-    if policy.shrinkage is not None:
-        final_p_yes = apply_shrinkage(final_p_yes, policy.shrinkage)
-        final_p_yes = max(0.0, min(1.0, float(final_p_yes)))
-
-    if state.gnn_score_trajectory:
-        lo = max(0.0, final_p_yes - 0.08)
-        hi = min(1.0, final_p_yes + 0.08)
-        confidence_interval: tuple[float, float] | None = (lo, hi)
-    else:
-        confidence_interval = None
+    lo = max(0.0, final_p_yes - 0.10)
+    hi = min(1.0, final_p_yes + 0.10)
+    confidence_interval: tuple[float, float] | None = (lo, hi)
 
     reasoning_summary = (
         f"Assessed '{question}' as of {cutoff_date.isoformat()} using "
-        f"{len(state.tool_calls)} evidence calls, {node_count} retrieved nodes, and "
-        f"{len(state.gnn_score_trajectory)} scoring steps. Final p_yes={final_p_yes:.3f}."
+        f"{len(state.tool_calls)} evidence calls. "
+        f"Evidence strength: {assessment.evidence_strength}. "
+        f"Supports YES: {len(assessment.supports_yes)}, "
+        f"Supports NO: {len(assessment.supports_no)}. "
+        f"Final p_yes={final_p_yes:.3f}."
     )
 
     result = AgentLoopResult(

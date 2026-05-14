@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import threading
 from collections.abc import Callable
 from pathlib import Path
 from typing import Protocol, TypeVar, runtime_checkable
@@ -20,8 +19,6 @@ class MemoryStore(Protocol):
     def update_episode_brier(self, job_id: str, brier_score: float, misses: list[str]) -> None: ...
 
     def read_recent_episodes(self, market_family: str, n: int) -> list[EpisodicRecord]: ...
-
-    def read_all_episodes(self) -> list[EpisodicRecord]: ...
 
     def read_episode_by_id(self, job_id: str) -> EpisodicRecord | None: ...
 
@@ -43,9 +40,6 @@ class NullMemoryStore:
 
     def read_recent_episodes(self, market_family: str, n: int) -> list[EpisodicRecord]:
         _ = (market_family, n)
-        return []
-
-    def read_all_episodes(self) -> list[EpisodicRecord]:
         return []
 
     def read_episode_by_id(self, job_id: str) -> EpisodicRecord | None:
@@ -74,75 +68,62 @@ class JsonlMemoryStore:
         self._episodes_path = self._base_dir / "episodes.jsonl"
         self._patterns_path = self._base_dir / "patterns.jsonl"
         self._facts_path = self._base_dir / "facts.jsonl"
-        self._store_lock = threading.RLock()
 
     def write_episode(self, record: EpisodicRecord) -> None:
-        with self._store_lock:
-            self._append_jsonl(self._episodes_path, record.to_dict())
+        self._append_jsonl(self._episodes_path, record.to_dict())
 
     def update_episode_brier(self, job_id: str, brier_score: float, misses: list[str]) -> None:
-        with self._store_lock:
-            episodes = self._read_jsonl(self._episodes_path, EpisodicRecord.from_dict)
-            found = False
-            updated: list[EpisodicRecord] = []
+        episodes = self._read_jsonl(self._episodes_path, EpisodicRecord.from_dict)
+        found = False
+        updated: list[EpisodicRecord] = []
 
-            for episode in episodes:
-                if episode.job_id == job_id:
-                    payload = episode.to_dict()
-                    payload["brier_score"] = brier_score
-                    payload["misses"] = list(misses)
-                    updated.append(EpisodicRecord.from_dict(payload))
-                    found = True
-                else:
-                    updated.append(episode)
+        for episode in episodes:
+            if episode.job_id == job_id:
+                payload = episode.to_dict()
+                payload["brier_score"] = brier_score
+                payload["misses"] = list(misses)
+                updated.append(EpisodicRecord.from_dict(payload))
+                found = True
+            else:
+                updated.append(episode)
 
-            if not found:
-                raise KeyError(f"episode with job_id '{job_id}' not found")
+        if not found:
+            raise KeyError(f"episode with job_id '{job_id}' not found")
 
-            # TODO(memory-store): consider append-only JSONL patch records for brier updates
-            # to avoid full-file rewrites once write volume grows.
-            self._rewrite_jsonl(self._episodes_path, [episode.to_dict() for episode in updated])
+        # TODO(memory-store): consider append-only JSONL patch records for brier updates
+        # to avoid full-file rewrites once write volume grows.
+        self._rewrite_jsonl(self._episodes_path, [episode.to_dict() for episode in updated])
 
     def read_recent_episodes(self, market_family: str, n: int) -> list[EpisodicRecord]:
-        with self._store_lock:
-            episodes = self._read_jsonl(self._episodes_path, EpisodicRecord.from_dict)
-            filtered = [episode for episode in episodes if episode.market_family == market_family]
-            filtered.sort(key=lambda episode: episode.resolution_date, reverse=True)
-            return filtered[:n]
-
-    def read_all_episodes(self) -> list[EpisodicRecord]:
-        with self._store_lock:
-            return self._read_jsonl(self._episodes_path, EpisodicRecord.from_dict)
+        episodes = self._read_jsonl(self._episodes_path, EpisodicRecord.from_dict)
+        filtered = [episode for episode in episodes if episode.market_family == market_family]
+        filtered.sort(key=lambda episode: episode.resolution_date, reverse=True)
+        return filtered[:n]
 
     def read_episode_by_id(self, job_id: str) -> EpisodicRecord | None:
-        with self._store_lock:
-            episodes = self._read_jsonl(self._episodes_path, EpisodicRecord.from_dict)
-            for episode in episodes:
-                if episode.job_id == job_id:
-                    return episode
-            return None
+        episodes = self._read_jsonl(self._episodes_path, EpisodicRecord.from_dict)
+        for episode in episodes:
+            if episode.job_id == job_id:
+                return episode
+        return None
 
     def write_pattern(self, pattern: ConceptualPattern) -> None:
-        with self._store_lock:
-            self._append_jsonl(self._patterns_path, pattern.to_dict())
+        self._append_jsonl(self._patterns_path, pattern.to_dict())
 
     def read_patterns(self, market_family: str) -> list[ConceptualPattern]:
-        with self._store_lock:
-            patterns = self._read_jsonl(self._patterns_path, ConceptualPattern.from_dict)
-            return [
-                pattern
-                for pattern in patterns
-                if market_family in pattern.applicable_market_families
-            ]
+        patterns = self._read_jsonl(self._patterns_path, ConceptualPattern.from_dict)
+        return [
+            pattern
+            for pattern in patterns
+            if market_family in pattern.applicable_market_families
+        ]
 
     def write_fact(self, fact: StructuralFact) -> None:
-        with self._store_lock:
-            self._append_jsonl(self._facts_path, fact.to_dict())
+        self._append_jsonl(self._facts_path, fact.to_dict())
 
     def read_facts(self, subject: str) -> list[StructuralFact]:
-        with self._store_lock:
-            facts = self._read_jsonl(self._facts_path, StructuralFact.from_dict)
-            return [fact for fact in facts if fact.subject == subject]
+        facts = self._read_jsonl(self._facts_path, StructuralFact.from_dict)
+        return [fact for fact in facts if fact.subject == subject]
 
     @staticmethod
     def _append_jsonl(path: Path, payload: dict[str, object]) -> None:

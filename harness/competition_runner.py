@@ -1,4 +1,4 @@
-"""Competition runner for Spring 2026 AIB.
+"""Competition runner for Summer 2026 AIB / MiniBench.
 
 Provides deterministic one-shot helpers and a minimal CLI:
 - python -m harness.competition_runner --question-id 12345
@@ -24,13 +24,16 @@ from harness.agent_loop import (
     MarketContext,
     run_agent_loop,
 )
-from harness.calibration import compute_calibration
 from harness.memory_schema import ToolCallRecord
 from harness.memory_store import JsonlMemoryStore, MemoryStore
 from harness.metaculus_client import MetaculusAPIError, MetaculusClient, MetaculusQuestion
+from harness.query_mapper import WebSearchRequest
 from harness.resolution import AlreadyResolvedError, BrierUpdateResult, resolve_market
+from harness.tools.web_search import AskNewsSearchTool
 
-SPRING_2026_AIB_PROJECT_ID = 32916
+SUMMER_2026_AIB_PROJECT_ID = 33022      # slug: summer-futureeval-2026
+BOT_TESTING_AREA_ID = 32977             # slug: bot-testing-area
+MINIBENCH_PROJECT_ID: int = 33023  # https://www.metaculus.com/aib/minibench/ (tournament_id=33023)
 
 
 @dataclass(frozen=True)
@@ -41,18 +44,19 @@ class RunnerResult:
     resolution: BrierUpdateResult | None = None
 
 
-def _default_tools(cutoff_date: date, resolution_date: date) -> AgentToolset:
-    def web_search(query: str, as_of_date: date) -> list[ToolCallRecord]:
-        _ = as_of_date
+def build_toolset(*, asknews_api_key: str | None) -> AgentToolset:
+    def stub_web_search(req: WebSearchRequest) -> list[ToolCallRecord]:
         return [
             ToolCallRecord(
                 tool_name="web_search",
-                query=query,
-                as_of_time=f"{cutoff_date.isoformat()}T00:00:00Z",
-                evidence_count=1,
+                query=req.query,
+                as_of_time=f"{req.as_of_date.isoformat()}T00:00:00Z",
+                evidence_count=0,
                 notes="competition-runner stub",
             )
         ]
+
+    web_search = AskNewsSearchTool(api_key=asknews_api_key) if asknews_api_key else stub_web_search
 
     def graph_query(_question: str, _cutoff: date) -> GraphQueryResult:
         return GraphQueryResult(node_count=8, notes="competition-runner stub")
@@ -63,7 +67,7 @@ def _default_tools(cutoff_date: date, resolution_date: date) -> AgentToolset:
     def analogues(_question: str) -> list[str]:
         return []
 
-    def market_context(_question: str, _cutoff: date, _resolution: date) -> MarketContext:
+    def market_context(_question: str, cutoff_date: date, resolution_date: date) -> MarketContext:
         return MarketContext(
             market_id="metaculus-smoke",
             market_family="metaculus_binary",
@@ -85,13 +89,16 @@ def _default_tools(cutoff_date: date, resolution_date: date) -> AgentToolset:
 def _default_run_loop_factory(memory: MemoryStore, tools: AgentToolset) -> Callable[[str, date, date], AgentLoopResult]:
     def _run_loop(question: str, cutoff_date: date, resolution_date: date) -> AgentLoopResult:
         _ = (cutoff_date, resolution_date)
-        report = compute_calibration(memory)
-        shrinkage = report.suggested_shrinkage if not report.insufficient_data else None
         policy = ConstructionPolicy(
-            blind_spot_checks=[],
+            blind_spot_checks=[
+                "base_rate_check",
+                "current_state_check",
+                "resolution_criteria_check",
+                "markets_price_check",
+                "policy_decision_check",
+            ],
             max_steps=3,
             convergence_epsilon=0.01,
-            shrinkage=shrinkage,
         )
         return run_agent_loop(question, cutoff_date, resolution_date, policy, memory, tools)
 
@@ -121,7 +128,7 @@ def run_one_question(
     *,
     client: MetaculusClient,
     run_loop: Callable[[str, date, date], AgentLoopResult],
-    project_id: int = SPRING_2026_AIB_PROJECT_ID,
+    project_id: int | str = SUMMER_2026_AIB_PROJECT_ID,
     question_id: int | None = None,
     resolve: bool = False,
     memory: MemoryStore | None = None,
@@ -168,7 +175,7 @@ def run_batch(
     client: MetaculusClient,
     run_loop: Callable[[str, date, date], AgentLoopResult],
     batch_size: int,
-    project_id: int = SPRING_2026_AIB_PROJECT_ID,
+    project_id: int | str = SUMMER_2026_AIB_PROJECT_ID,
 ) -> list[RunnerResult]:
     if batch_size < 1:
         raise ValueError("batch_size must be >= 1")
@@ -202,12 +209,12 @@ def main(
     mode.add_argument("--question-id", type=int, help="Target a specific question id")
     mode.add_argument("--batch", type=int, help="Forecast N open questions sequentially")
     parser.add_argument("--resolve", action="store_true", help="Try resolving posted forecast immediately")
-    parser.add_argument("--project-id", type=int, default=SPRING_2026_AIB_PROJECT_ID)
+    parser.add_argument("--project-id", default=str(SUMMER_2026_AIB_PROJECT_ID))
     args = parser.parse_args(argv)
 
-    token = os.environ.get("METACULUS_API_TOKEN", "").strip()
+    token = (os.environ.get("METACULUS_API_TOKEN", "").strip() or os.environ.get("METACULUS_TOKEN", "").strip())
     if not token:
-        print("Missing METACULUS_API_TOKEN", file=sys.stderr)
+        print("Missing METACULUS_API_TOKEN (or METACULUS_TOKEN)", file=sys.stderr)
         return 2
 
     if args.question_id is not None and args.question_id <= 0:
@@ -227,7 +234,8 @@ def main(
 
     try:
         if args.question_id is not None:
-            synthetic_tools = _default_tools(date.today(), date.today())
+            asknews_key = (os.environ.get("ASKNEWS_API_KEY", "").strip() or os.environ.get("ASKNEWS_SECRET", "").strip() or None)
+            synthetic_tools = build_toolset(asknews_api_key=asknews_key)
             active_run_loop = run_loop or _default_run_loop_factory(memory, synthetic_tools)
             result = run_one_question(
                 client=client,
@@ -247,7 +255,9 @@ def main(
                     f"outcome={result.resolution.outcome}"
                 )
         else:
-            active_run_loop = run_loop or _default_run_loop_factory(memory, _default_tools(date.today(), date.today()))
+            asknews_key = (os.environ.get("ASKNEWS_API_KEY", "").strip() or os.environ.get("ASKNEWS_SECRET", "").strip() or None)
+            synthetic_tools = build_toolset(asknews_api_key=asknews_key)
+            active_run_loop = run_loop or _default_run_loop_factory(memory, synthetic_tools)
             results = run_batch(
                 client=client,
                 run_loop=active_run_loop,
@@ -269,7 +279,9 @@ if __name__ == "__main__":
 
 
 __all__ = [
-    "SPRING_2026_AIB_PROJECT_ID",
+    "SUMMER_2026_AIB_PROJECT_ID",
+    "BOT_TESTING_AREA_ID",
+    "MINIBENCH_PROJECT_ID",
     "RunnerResult",
     "run_one_question",
     "run_batch",
