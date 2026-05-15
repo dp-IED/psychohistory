@@ -194,12 +194,9 @@ def llm_synthesize_forecast(
     except Exception:
         pit_context = "(PIT search failed)"
 
-    prompt = f"""You are a careful forecaster. Produce a calibrated probability for a binary resolution question.
+    prompt = f"""You are a forecasting agent. Produce a calibrated probability.
 
-## Question
-
-{question}
-
+Question: {question}
 Cutoff date: {cutoff_date.isoformat()}
 
 ## PIT-filtered Research (knowable as of cutoff)
@@ -208,33 +205,30 @@ Cutoff date: {cutoff_date.isoformat()}
 
 ## Evidence Graph
 
-Graph summary: {evidence_graph.summary}
+{evidence_graph.summary}
 
-Articles/snippets:
+Articles:
 {articles_txt}
 
-Entities/nodes: {", ".join(n.label for n in evidence_graph.nodes if n.node_type == "entity")[:800]}
+Entities: {", ".join(n.label for n in evidence_graph.nodes if n.node_type == "entity")[:800]}
 
-Past similar resolved episodes (may be empty):
+## Past Similar Questions
+
 {analog_txt}
 
-## Vault
+## Vault Context
 
 {vault_context.strip()[:12000] if vault_context.strip() else "(no vault context loaded)"}
 
-## Policy
+## Policy Notes
 
 {policy_body[:2500] if policy_body.strip() else "(read .harness/policy.md for the machine policy)"}
 
-Tools available:
-  python -m harness.tools.pit_search "query" --cutoff YYYY-MM-DD  (PIT-enforced — only results ≤ cutoff)
-  python -m harness.tools.dataview_query --vault vault --category {category} --horizon {horizon_days}
-  cat .harness/policy.md
-
 {shrink_note}
 
-Output exactly one JSON object on a single line:
-{{"p_yes": 0.XX, "reasoning": "brief"}}"""
+Be creative about how you gather evidence. Try angles others wouldn't think of.
+Output one JSON line:
+{{"p_yes": 0.XX, "reasoning": "one sentence"}}"""
 
     model = (
         os.environ.get("CURSOR_FORECAST_MODEL", DEFAULT_CURSOR_MODEL).strip()

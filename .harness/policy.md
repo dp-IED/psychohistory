@@ -1,6 +1,6 @@
 ---
 blind_spot_checks: []
-max_steps: 1
+max_steps: 3
 convergence_epsilon: 0.015
 shrinkage: 0.0397
 ---

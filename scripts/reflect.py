@@ -25,6 +25,7 @@ from harness.tools.strategy_runtime import STRATEGY_FILENAME, load_strategy_mark
 
 WORST_EPISODE_COUNT = 3
 BATCH_WORST_WINDOW = 20  # how many recent episodes to consider the "current batch"
+RECENT_EPISODE_COUNT = 30  # how many recent scored episodes to include in reflection context
 
 
 def _call_llm_cursor(prompt: str, model: str = "composer-2-fast") -> str:
@@ -193,14 +194,23 @@ def build_open_reflection_prompt(
     overall_brier: float,
     by_category: dict[str, float],
     shrinkage: str,
+    recent_episodes_block: str = "",
 ) -> str:
     cat_lines = "\n".join(f"  {k}: {v:.4f}" for k, v in sorted(by_category.items()))
-    return f"""You are a forecasting agent's knowledge base — an Obsidian vault containing your
-complete memory of past predictions. You have just completed a batch of forecasts.
-Some succeeded, some failed. Your job is to reorganize this vault so you become a
-better forecaster.
+    recent_fallback = f"(fewer than {RECENT_EPISODE_COUNT} episodes available)"
+    return f"""You are a forecasting agent reviewing your recent performance. Your goal: make better forecasts next time.
 
-## Current vault contents
+## Performance summary
+
+- Overall Brier: {overall_brier:.4f}
+- By category: {cat_lines or '  (none)'}
+- Shrinkage: {shrinkage}
+
+## Recent episodes (last {RECENT_EPISODE_COUNT} scored)
+
+{recent_episodes_block or recent_fallback}
+
+## Vault contents
 
 ### Runs (in runs/)
 {runs_digest}
@@ -211,23 +221,16 @@ better forecaster.
 ### Strategy (in {STRATEGY_FILENAME})
 {strategy_content}
 
-### Policy (machine file; keep configuration-only YAML when you rewrite it)
-{policy_file_raw}
+## Policy (YAML frontmatter + markdown body)
 
-## Performance summary
-- Overall Brier: {overall_brier:.4f}
-- By category: {cat_lines or '  (none)'}
-- Shrinkage: {shrinkage}
+{policy_file_raw}
 
 ## What to do
 
-You have full creative control over the vault. The only rule: every change should make the agent more likely to produce accurate,
-well-reasoned forecasts next time. You are a coding agent so you may modify the code, but can also leverage it to explain the outcome.
+Identify 1-2 concrete failure patterns. Propose specific changes to policy or vault that would fix them.
+Suggest one new information-gathering approach the agent hasn't tried yet.
 
-Importantly, the .md files should always be updated. Significant new architecture is delegated to another background coding agent.
-
-Return JSON only with keys policy_markdown, strategy_markdown, vault_files (see system schema).
-"""
+Return JSON only with keys: policy_markdown, strategy_markdown, vault_files (see system schema)."""
 
 
 def apply_reflection_payload(
@@ -400,6 +403,10 @@ def run_reflection(
         approaches_digest = _gather_markdown_dir(vr, approaches_subdir)
         strategy_content = load_strategy_markdown(vr) or "(file missing — create it)\n"
 
+    # Build recent episodes block (last RECENT_EPISODE_COUNT scored episodes in detail)
+    recent_window = resolved[-RECENT_EPISODE_COUNT:] if len(resolved) > RECENT_EPISODE_COUNT else resolved
+    recent_episodes_block = "\n".join(_format_episode_excerpt(ep) for ep in recent_window) if recent_window else "(none)"
+
     prompt_core = build_open_reflection_prompt(
         runs_digest=runs_digest,
         approaches_digest=approaches_digest,
@@ -408,20 +415,15 @@ def run_reflection(
         overall_brier=overall_brier,
         by_category=by_category,
         shrinkage=shrinkage_line,
+        recent_episodes_block=recent_episodes_block,
     )
     worst = _select_worst_episodes(resolved, WORST_EPISODE_COUNT)
     worst_block = "\n".join(_format_episode_excerpt(ep) for ep in worst)
 
-    # Also show worst from recent batch
-    recent = resolved[-BATCH_WORST_WINDOW:] if len(resolved) > BATCH_WORST_WINDOW else resolved
-    batch_worst = _select_worst_episodes(recent, WORST_EPISODE_COUNT)
-    batch_worst_block = "\n".join(_format_episode_excerpt(ep) for ep in batch_worst) if batch_worst else "(none)"
-
     checks_summary = _checks_rollup(episodes)
     tail = (
-        f"\n## Recent check usage\n{checks_summary}\n"
+        f"\n## Check usage\n{checks_summary}\n"
         f"\n## All-time worst episodes\n{worst_block}\n"
-        f"\n## Current-batch worst episodes (last {min(len(recent), BATCH_WORST_WINDOW)} episodes)\n{batch_worst_block}\n"
     )
     prompt = prompt_core + tail + "\nOutput JSON only.\n"
 

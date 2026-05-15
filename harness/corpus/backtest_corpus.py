@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import time
 import urllib.parse
 import urllib.request
@@ -706,6 +707,24 @@ def build_manifold_corpus(min_date: date, max_questions: int) -> list[BacktestQu
     return corpus[:max_questions]
 
 
+CP_META_PATTERNS = [
+    r"community prediction.*>\s*\d+%",
+    r"community prediction.*higher than",
+    r"CP.*>\s*\d+%",
+]
+
+
+def is_cp_meta_question(question_text: str) -> bool:
+    """Detect meta-questions about Metaculus community prediction thresholds.
+
+    These are unanswerable because Metaculus doesn't expose CP history
+    through the public API.  The agent has no way to know what the CP
+    was at any past date, so these questions are excluded from OOD
+    validation corpora.
+    """
+    return any(re.search(p, question_text, re.IGNORECASE) for p in CP_META_PATTERNS)
+
+
 def build_metaculus_corpus(corpus_path: str | Path = ".hermes/minibench_corpus.jsonl") -> list[BacktestQuestion]:
     """Load pre-resolved Metaculus MiniBench validation corpus from JSONL.
 
@@ -726,6 +745,10 @@ def build_metaculus_corpus(corpus_path: str | Path = ".hermes/minibench_corpus.j
         for line in f:
             raw = json.loads(line)
             if raw.get("confidence") not in ("confirmed", "estimated"):
+                continue
+            # Skip CP meta-questions — Metaculus API doesn't expose community
+            # prediction history, so the agent cannot answer these.
+            if is_cp_meta_question(str(raw.get("question_text", ""))):
                 continue
             corpus.append(
                 BacktestQuestion(
@@ -749,6 +772,7 @@ __all__ = [
     "build_manifold_corpus",
     "build_metaculus_corpus",
     "build_polymarket_corpus",
+    "is_cp_meta_question",
     "normalize_manifold_market",
     "normalize_polymarket_market",
 ]
