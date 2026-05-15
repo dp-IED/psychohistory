@@ -19,16 +19,14 @@ from typing import Any, Callable
 from harness.agent_loop import (
     AgentLoopResult,
     AgentToolset,
-    ConstructionPolicy,
-    GraphQueryResult,
-    MarketContext,
     run_agent_loop,
 )
 from harness.calibration import compute_calibration
-from harness.memory_schema import ToolCallRecord
 from harness.memory_store import JsonlMemoryStore, MemoryStore
-from harness.metaculus_client import MetaculusAPIError, MetaculusClient, MetaculusQuestion
+from harness.metaculus_client import MetaculusAPIError, MetaculusClient
+from harness.policy_loader import load_policy
 from harness.resolution import AlreadyResolvedError, BrierUpdateResult, resolve_market
+from harness.tools.real_toolset import build_real_toolset
 
 SPRING_2026_AIB_PROJECT_ID = 32916
 
@@ -41,59 +39,19 @@ class RunnerResult:
     resolution: BrierUpdateResult | None = None
 
 
-def _default_tools(cutoff_date: date, resolution_date: date) -> AgentToolset:
-    def web_search(query: str, as_of_date: date) -> list[ToolCallRecord]:
-        _ = as_of_date
-        return [
-            ToolCallRecord(
-                tool_name="web_search",
-                query=query,
-                as_of_time=f"{cutoff_date.isoformat()}T00:00:00Z",
-                evidence_count=1,
-                notes="competition-runner stub",
-            )
-        ]
-
-    def graph_query(_question: str, _cutoff: date) -> GraphQueryResult:
-        return GraphQueryResult(node_count=8, notes="competition-runner stub")
-
-    def gnn_score(step: int, _evidence: int, _nodes: int) -> float:
-        return min(0.9, 0.52 + 0.01 * step)
-
-    def analogues(_question: str) -> list[str]:
-        return []
-
-    def market_context(_question: str, _cutoff: date, _resolution: date) -> MarketContext:
-        return MarketContext(
-            market_id="metaculus-smoke",
-            market_family="metaculus_binary",
-            key_actors=[],
-            region=None,
-            cutoff_date=cutoff_date,
-            resolution_date=resolution_date,
-        )
-
-    return AgentToolset(
-        web_search=web_search,
-        graph_query=graph_query,
-        gnn_score=gnn_score,
-        analogues=analogues,
-        market_context=market_context,
-    )
-
-
-def _default_run_loop_factory(memory: MemoryStore, tools: AgentToolset) -> Callable[[str, date, date], AgentLoopResult]:
+def _default_run_loop_factory(
+    memory: MemoryStore,
+    tools: AgentToolset,
+    *,
+    vault_dir: Path | None = None,
+) -> Callable[[str, date, date], AgentLoopResult]:
     def _run_loop(question: str, cutoff_date: date, resolution_date: date) -> AgentLoopResult:
         _ = (cutoff_date, resolution_date)
         report = compute_calibration(memory)
-        shrinkage = report.suggested_shrinkage if not report.insufficient_data else None
-        policy = ConstructionPolicy(
-            blind_spot_checks=[],
-            max_steps=3,
-            convergence_epsilon=0.01,
-            shrinkage=shrinkage,
-        )
-        return run_agent_loop(question, cutoff_date, resolution_date, policy, memory, tools)
+        policy = load_policy()
+        if policy.shrinkage is None and not report.insufficient_data:
+            policy.shrinkage = report.suggested_shrinkage
+        return run_agent_loop(question, cutoff_date, resolution_date, policy, memory, tools, vault_dir=vault_dir)
 
     return _run_loop
 
@@ -224,11 +182,14 @@ def main(
 
     # shared runtime deps for default path (episode persistence required for resolve).
     memory = JsonlMemoryStore(Path(os.environ.get("HARNESS_MEMORY_DIR", ".harness_memory")))
+    vraw = os.environ.get("HARNESS_VAULT_DIR", "").strip()
+    vault_path = Path(vraw).expanduser() if vraw else None
+    planner = load_policy()
+    harness_tools = build_real_toolset(memory, planner, vault_dir=vault_path)
 
     try:
         if args.question_id is not None:
-            synthetic_tools = _default_tools(date.today(), date.today())
-            active_run_loop = run_loop or _default_run_loop_factory(memory, synthetic_tools)
+            active_run_loop = run_loop or _default_run_loop_factory(memory, harness_tools, vault_dir=vault_path)
             result = run_one_question(
                 client=client,
                 run_loop=active_run_loop,
@@ -236,7 +197,7 @@ def main(
                 question_id=args.question_id,
                 resolve=args.resolve,
                 memory=memory,
-                tools=synthetic_tools,
+                tools=harness_tools,
             )
             print(f"posted question_id={result.question_id} p_yes={result.posted_probability:.4f}")
             if result.resolution is not None:
@@ -247,7 +208,7 @@ def main(
                     f"outcome={result.resolution.outcome}"
                 )
         else:
-            active_run_loop = run_loop or _default_run_loop_factory(memory, _default_tools(date.today(), date.today()))
+            active_run_loop = run_loop or _default_run_loop_factory(memory, harness_tools, vault_dir=vault_path)
             results = run_batch(
                 client=client,
                 run_loop=active_run_loop,

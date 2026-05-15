@@ -6,15 +6,28 @@ while API posting (e.g., Metaculus) lives in separate client modules.
 
 from __future__ import annotations
 
+import contextvars
 from dataclasses import dataclass, field
 from datetime import date
+from pathlib import Path
 from typing import Callable
 from uuid import uuid4
 
 from harness.calibration import apply_shrinkage
 from harness.memory_schema import EpisodicRecord, ToolCallRecord
 from harness.memory_store import MemoryStore
-from harness.query_mapper import MarketFrame, blind_spot_to_query
+from harness.policy_loader import PolicyConfig
+from harness.query_mapper import MarketFrame, UnknownCheckError, blind_spot_to_query
+from harness.tools.loop_context import (
+    agent_research_context,
+    reset_market_family,
+    reset_step_tool_calls,
+    reset_vault_synthesis_context,
+    set_market_family_for_research,
+    set_step_tool_calls,
+    set_vault_synthesis_context,
+)
+from harness.tools.strategy_runtime import build_vault_synthesis_bundle, load_strategy_markdown
 
 
 @dataclass(frozen=True)
@@ -34,7 +47,7 @@ class GraphQueryResult:
 
 
 @dataclass(frozen=True)
-class ConstructionPolicy:
+class ConstructionPolicy:  # Deprecated: prefer PolicyConfig from harness.policy_loader
     blind_spot_checks: list[str]
     max_steps: int = 4
     convergence_epsilon: float = 0.01
@@ -99,6 +112,21 @@ def _require_float01(value: float, name: str) -> None:
         raise ValueError(f"{name} must be a float in [0, 1]")
 
 
+def _skip_unknown_blind_spot_checks_for_config(frame: MarketFrame, state: AgentLoopState) -> list[str]:
+    """For markdown-authored checks without templates, skip instead of raising."""
+    skipped: list[str] = []
+    new_fired: list[str] = []
+    for check in state.checks_fired:
+        try:
+            blind_spot_to_query(check, frame)
+            new_fired.append(check)
+        except UnknownCheckError:
+            skipped.append(check)
+            state.checks_skipped.append(check)
+    state.checks_fired = new_fired
+    return skipped
+
+
 def _planner_checks(policy: ConstructionPolicy) -> tuple[list[str], list[str]]:
     if not policy.blind_spot_checks:
         return [], []
@@ -118,52 +146,93 @@ def run_agent_loop(
     question: str,
     cutoff_date: date,
     resolution_date: date,
-    policy: ConstructionPolicy,
+    policy: ConstructionPolicy | PolicyConfig,
     memory: MemoryStore,
     tools: AgentToolset,
+    vault_dir: Path | None = None,
 ) -> AgentLoopResult:
     """Run the five-phase v0 loop: load memory -> plan -> research -> synthesize -> write episode."""
     if cutoff_date > resolution_date:
         raise ValueError("cutoff_date must be <= resolution_date")
 
-    # 1) Load memory (read side kept lightweight for v0 wiring).
-    context = tools.market_context(question, cutoff_date, resolution_date)
-    _ = memory.read_recent_episodes(context.market_family, 5)
-    _ = memory.read_patterns(context.market_family)
+    policy_body_preamble = ""
+    if isinstance(policy, PolicyConfig):
+        policy_body_preamble = policy.body.strip()
+        policy = ConstructionPolicy(
+            blind_spot_checks=list(policy.blind_spot_checks),
+            max_steps=policy.max_steps,
+            convergence_epsilon=policy.convergence_epsilon,
+            shrinkage=policy.shrinkage,
+        )
+        from_markdown_policy = True
+    else:
+        from_markdown_policy = False
 
-    # 2) Plan.
-    fired, skipped = _planner_checks(policy)
-    state = AgentLoopState(job_id=f"job-{uuid4().hex[:12]}", checks_fired=fired, checks_skipped=skipped)
+    vault_root = vault_dir.expanduser().resolve() if vault_dir is not None else None
+    horizon_days = max(0, (resolution_date - cutoff_date).days)
 
-    frame = MarketFrame(
-        market_family=context.market_family,
-        question=question,
-        cutoff_date=cutoff_date,
-        key_actors=context.key_actors,
-        region=context.region,
-    )
+    with agent_research_context(question, cutoff_date, resolution_date):
+        # 1) Load memory (read side kept lightweight for v0 wiring).
+        context = tools.market_context(question, cutoff_date, resolution_date)
+        family_token = set_market_family_for_research(context.market_family)
+        vault_syn_token: contextvars.Token[str | None] | None = None
+        if vault_root is not None:
+            bundle = build_vault_synthesis_bundle(
+                vault_root,
+                category=context.market_family,
+                horizon_days=horizon_days,
+            )
+            vault_syn_token = set_vault_synthesis_context(bundle if bundle else None)
+        try:
+            _ = memory.read_recent_episodes(context.market_family, 5)
+            _ = memory.read_patterns(context.market_family)
 
-    node_count = 0
-    # 3) Research loop.
-    for step in range(1, policy.max_steps + 1):
-        state.step = step
+            # 2) Plan.
+            fired, skipped = _planner_checks(policy)
+            state = AgentLoopState(job_id=f"job-{uuid4().hex[:12]}", checks_fired=fired, checks_skipped=skipped)
 
-        for check in state.checks_fired:
-            req = blind_spot_to_query(check, frame)
-            state.tool_calls.extend(tools.web_search(req.query, req.as_of_date))
+            frame = MarketFrame(
+                market_family=context.market_family,
+                question=question,
+                cutoff_date=cutoff_date,
+                key_actors=context.key_actors,
+                region=context.region,
+            )
 
-        graph_result = tools.graph_query(question, cutoff_date)
-        node_count = max(node_count, graph_result.node_count)
+            unknown_skipped: list[str] = []
+            if from_markdown_policy:
+                unknown_skipped = _skip_unknown_blind_spot_checks_for_config(frame, state)
 
-        # Optional auxiliary signal (kept outside confidence math for now).
-        _ = tools.analogues(question)
+            node_count = 0
+            # 3) Research loop.
+            for step in range(1, policy.max_steps + 1):
+                state.step = step
 
-        score = tools.gnn_score(step, len(state.tool_calls), node_count)
-        _require_float01(score, "gnn_score")
-        state.gnn_score_trajectory.append(score)
+                for check in state.checks_fired:
+                    req = blind_spot_to_query(check, frame)
+                    state.tool_calls.extend(tools.web_search(req.query, req.as_of_date))
 
-        if _converged(state.gnn_score_trajectory, policy.convergence_epsilon):
-            break
+                step_token = set_step_tool_calls(list(state.tool_calls))
+                try:
+                    graph_result = tools.graph_query(question, cutoff_date)
+                    node_count = max(node_count, graph_result.node_count)
+
+                    # Optional auxiliary signal (kept outside confidence math for now).
+                    _ = tools.analogues(question)
+
+                    score = tools.gnn_score(step, len(state.tool_calls), node_count)
+                finally:
+                    reset_step_tool_calls(step_token)
+                _require_float01(score, "gnn_score")
+                state.gnn_score_trajectory.append(score)
+
+                if _converged(state.gnn_score_trajectory, policy.convergence_epsilon):
+                    break
+
+        finally:
+            reset_market_family(family_token)
+            if vault_syn_token is not None:
+                reset_vault_synthesis_context(vault_syn_token)
 
     # 4) Synthesize.
     if state.gnn_score_trajectory:
@@ -184,11 +253,35 @@ def run_agent_loop(
     else:
         confidence_interval = None
 
-    reasoning_summary = (
-        f"Assessed '{question}' as of {cutoff_date.isoformat()} using "
+    skip_clause = ""
+    if unknown_skipped:
+        skip_clause = (
+            "Unknown blind_spot checks skipped (no template): "
+            + ", ".join(unknown_skipped)
+            + ". "
+        )
+
+    core_summary = (
+        f"{skip_clause}Assessed '{question}' as of {cutoff_date.isoformat()} using "
         f"{len(state.tool_calls)} evidence calls, {node_count} retrieved nodes, and "
         f"{len(state.gnn_score_trajectory)} scoring steps. Final p_yes={final_p_yes:.3f}."
     )
+
+    extras: list[str] = []
+    if policy_body_preamble.strip():
+        extras.append(f"Policy context:\n{policy_body_preamble.strip()}")
+    if vault_root is not None:
+        strat = load_strategy_markdown(vault_root).strip()
+        if strat:
+            cap = strat[:6000]
+            if len(strat) > 6000:
+                cap += "\n…"
+            extras.append(f"Vault strategy (_strategy.md):\n{cap}")
+
+    if extras:
+        reasoning_summary = "\n\n".join(extras) + f"\n\n{core_summary}"
+    else:
+        reasoning_summary = core_summary
 
     result = AgentLoopResult(
         job_id=state.job_id,

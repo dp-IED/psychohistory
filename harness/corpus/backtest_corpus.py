@@ -9,6 +9,7 @@ import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Any, Literal, cast
 
 GAMMA_MARKETS_URL = "https://gamma-api.polymarket.com/markets"
@@ -705,11 +706,48 @@ def build_manifold_corpus(min_date: date, max_questions: int) -> list[BacktestQu
     return corpus[:max_questions]
 
 
+def build_metaculus_corpus(corpus_path: str | Path = ".hermes/minibench_corpus.jsonl") -> list[BacktestQuestion]:
+    """Load pre-resolved Metaculus MiniBench validation corpus from JSONL.
+
+    The corpus file contains BacktestQuestion-compatible dicts with an
+    additional ``confidence`` field.  Only entries with ``confidence`` in
+    ``("confirmed", "estimated")`` are loaded — pending/future questions
+    are skipped.
+
+    PIT cutoff is ``open_date`` (the question's scheduled close time,
+    i.e. the last moment forecasts were accepted).
+    """
+    path = Path(corpus_path).expanduser().resolve()
+    if not path.exists():
+        raise FileNotFoundError(f"Metaculus corpus not found: {path}")
+
+    corpus: list[BacktestQuestion] = []
+    with path.open() as f:
+        for line in f:
+            raw = json.loads(line)
+            if raw.get("confidence") not in ("confirmed", "estimated"):
+                continue
+            corpus.append(
+                BacktestQuestion(
+                    question_id=str(raw["question_id"]),
+                    source="metaculus",
+                    question_text=str(raw["question_text"]),
+                    open_date=date.fromisoformat(raw["open_date"]),
+                    close_date=date.fromisoformat(raw["close_date"]),
+                    resolution=bool(raw["resolution"]),
+                    market_price_at_open=raw.get("market_price_at_open"),
+                    category=str(raw.get("category", "metaculus")),
+                )
+            )
+    return corpus
+
+
 __all__ = [
     "BacktestQuestion",
     "GAMMA_MARKETS_URL",
     "MANIFOLD_MARKETS_URL",
     "build_manifold_corpus",
+    "build_metaculus_corpus",
     "build_polymarket_corpus",
     "normalize_manifold_market",
     "normalize_polymarket_market",

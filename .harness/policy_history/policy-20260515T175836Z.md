@@ -1,0 +1,79 @@
+---
+blind_spot_checks: []
+max_steps: 1
+convergence_epsilon: 0.015
+shrinkage: 0.0397
+---
+
+# Forecasting Policy
+
+## Role
+
+Machine-readable limits and human heuristics. YAML is authoritative for runtime; body text guides reasoning.
+
+## Operational YAML profiles
+
+`blind_spot_checks` is **configuration-only** (list of registry IDs). Default `[]` avoids firing unrelated web-search templates on non-fixture questions under tight `max_steps`. **Before sports-heavy evaluation batches**, temporarily set `blind_spot_checks` to the sports trio (exact IDs below) so telemetry records **fired** checks instead of silent omission; restore `[]` for mixed-category runs unless the harness gains family-conditional injection (recommended coding follow-up).
+
+## Synthesis heuristics
+
+- **Minimum evidence gate**: Do not treat a forecast as settled when `evidence_items < 3` *or* when no source gives a quantitative base rate (implied odds, market, model, or historical frequency). Escalate uncertainty instead of converging. **stub_family** (~0.27 Brier) and **crypto** (~0.24–0.25 Brier) deserve extra scrutiny: widen verbal uncertainty or raise `shrinkage` temporarily if category loss persists.
+- **Family routing (hard override)**: Scheduled **sports fixtures** (*named club/nation + win/lose/draw + calendar date*, league/cup context) are **sports** for synthesis purposes even if `market_family=general` upstream. Before `final_p_yes`, complete the sports blind-spot triad **in prose** (calendar, league base rates, material team news). **Telemetry is not a substitute**: when checks appear as *skipped* in logs or episodes show empty fired/skipped because YAML was empty, the triad must still appear in the written forecast; skipping text because the harness skipped a hook is a defect.
+- **Sports match outcomes**: Anchor on (1) market-implied win probability when liquid, (2) Elo/rating gap + home field, (3) recent form and rest, (4) known absences. State explicitly why probability is not 0.5. Prefer wide intervals when lineups or motivation are unclear. **Misrouted `market_family`** (e.g. sports labeled `general`) often drags p_yes toward the global shrinkage attractor (~0.53–0.57) without fixture-specific signals — override that by anchoring to **role-specific** league marginals (home win vs away win vs draw) for the team named in the question, then adjust with evidence.
+- **Quantitative sports anchor**: Prefer at least one of: implied probability from stated decimal odds, consensus book odds, published power ranking / Elo win expectancy, or historical league position-vs-result table. If after search you still have **no** numeric anchor, do not present a tight point estimate; express wide uncertainty and center closer to the **appropriate 1X2 marginal** (per home/away and league) than to 0.5 or the generic model default.
+- **Lexical / exact-phrase predictions** (will a named public figure use an exact word or short phrase by a deadline?): Treat as **sparse discrete-event** forecasting. Require a **quantitative anchor**: documented frequency of the exact token or close variants in speeches/transcripts/interviews **before** cutoff (PIT-respecting), analogous resolved markets, or a prediction-market price if available. Time remaining × expected public-speaking exposure should enter the reasoning explicitly. **Do not** justify a confident low or high `p_yes` from generic personality priors alone — wide intervals unless corpus search supports a tight rate. **Epithet markets** often resolve on volatile rhetoric; missing usage counts usually means you should widen upward (avoid overconfident *low* p). See episodic lesson **job-690d574883df** (Trump “Sleazebag”, Brier ~0.75 at low *p*).
+- **Twin-run coherence**: Multiple draws on the same question/market without a locked external line tend to scatter `p_yes`; cite the numeric anchor explicitly or flag structural uncertainty (see Man U 2025-05-25 twin failures **job-aa1fb95dd0e5 / job-61b67fb6ab37**).
+- **Check hygiene**: Only reference check names that exist in `TEMPLATE_REGISTRY` in `harness/query_templates.py`. Never configure or tolerate placeholder names like `nonexistent_check_*` — remove from all registries, policy YAML, and memory fixtures when they appear so telemetry stays interpretable.
+- **Shrinkage**: Posterior mean pulls toward 0.5 by `shrinkage`. After poor calibration in a family, temporarily increase shrinkage or widen explicit verbal uncertainty until base rates improve. Latest aggregate suggests **~0.0397–0.0398**; YAML tracks **`shrinkage: 0.0397`** — revisit upward if **stub_family** or **crypto** category means or tails worsen (~0.24–0.27 Brier in recent batches).
+- **Step budget**: `max_steps` includes retrieval, tool, and refinement hops. With `max_steps: 1`, you get at most one refinement loop — fixture and lexical questions still need parity **in prose**: if odds, lineups, or phrase-frequency evidence are missing after the loop, say so explicitly and deflate confidence instead of tightening around a speculative point estimate.
+
+## Blind-spot prompts (registry names; optional in YAML when list is empty)
+
+When `blind_spot_checks` is empty, these are still **mandatory reasoning sections** for fixture questions (same content, prose-only):
+
+- **sports_match_calendar_check**: Confirm date, competition, home/away, and that the fixture is not postponed or a friendly unless the question specifies.
+- **base_rate_league_prior_check**: State typical home-win / draw / away baselines for the league or format; justify deviation.
+- **injury_suspension_lineup_check**: List material availability constraints that move probability meaningfully; if unknown, state uncertainty and widen intervals.
+
+`harness/query_templates.py` defines WebSearch templates for the three names above; listing them in YAML `blind_spot_checks` **fires retrieval** and prevents “silent skipped” aggregates on sports-heavy batches. Prose coverage remains mandatory even when the list is empty.
+
+## Valid `blind_spot_checks` identifiers (from `TEMPLATE_REGISTRY`)
+
+`coalition_stability_check`, `default_prior_check`, `economic_condition_check`, `electoral_legitimacy_check`, `geopolitical_stability_check`, `insufficient_evidence_check`, `leadership_succession_check`, `sanctions_escalation_check`, `sports_match_calendar_check`, `base_rate_league_prior_check`, `injury_suspension_lineup_check`, `treaty_compliance_check`. Anything else is skipped at runtime and pollutes dashboards if it appears in historical rows.
+
+## Latest batch — calibration and telemetry
+
+### Performance summary
+
+| | Brier |
+|---|--:|
+| **Overall** | **0.2529** |
+| crypto | 0.2435 |
+| general | 0.1795 |
+| politics | 0.0032 |
+| sports | 0.0758 |
+| stub_family | 0.2713 |
+
+Sports **mean** looks good but **tails** dominate loss (misrouted `general` fixtures, missing numeric anchors). **stub_family** and **crypto** are the weakest category means — demand more evidence and explicit uncertainty there.
+
+**Shrinkage**: aggregate suggested **~0.0398** — YAML **`shrinkage: 0.0397`** (rounded/trust anchor).
+
+### Per-check counts (fired / skipped)
+
+| check | fired | skipped |
+|-------|------:|--------:|
+| sports_match_calendar_check | 0 | 16 |
+| base_rate_league_prior_check | 0 | 16 |
+| injury_suspension_lineup_check | 0 | 16 |
+| economic_condition_check | 6 | 0 |
+| geopolitical_stability_check | 6 | 0 |
+| electoral_legitimacy_check | 1 | 0 |
+
+Sports trio at **fired=0 / skipped=16** signals fixture batches ran without sports checks in the planner (empty YAML and/or legacy aggregation). **Interpretation**: routing/config signal — never omit the triad in prose. Episodes with **both** fired and skipped empty usually mean `blind_spot_checks` was never populated for that harness profile; treat that like skipped telemetry for reflection purposes.
+
+**Invalid check IDs** in historical memory (`nonexistent_check_*`, typos) are **data hygiene bugs** — scrub from `episodes.jsonl` and policy; they are not evidence about model quality.
+
+## Worst episodes (signal extraction)
+
+- **job-690d574883df** — `Will Trump say “Sleazebag” by February 28?` — **Brier ~0.748** at `p_yes≈0.135`: **underprediction on sparse lexical events** without corpus-based usage anchors. Next time: phrase-frequency evidence + wide interval unless markets quote odds; do not let “rare word” intuition drive a very low point estimate.
+- **job-aa1fb95dd0e5 / job-61b67fb6ab37** — Man U win 2025-05-25 mislabeled `general`, mid–low `p_yes` with large error: **fixture routing + odds-anchored prior** failure; unstable `p_yes` between twins implies no locked external line. Always resolve opponent, venue, and competition before anchoring; if `market_family` is wrong upstream, override mentally to the sports workflow.

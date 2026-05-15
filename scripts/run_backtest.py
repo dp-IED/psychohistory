@@ -9,12 +9,20 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+from scripts.export_to_obsidian import export_resolved_episodes
 from harness.agent_loop import AgentToolset, ConstructionPolicy, GraphQueryResult, MarketContext, run_agent_loop
 from harness.calibration import compute_calibration
-from harness.corpus.backtest_corpus import BacktestQuestion, build_manifold_corpus, build_polymarket_corpus
+from harness.policy_loader import PolicyConfig, load_policy
+from harness.corpus.backtest_corpus import (
+    BacktestQuestion,
+    build_manifold_corpus,
+    build_metaculus_corpus,
+    build_polymarket_corpus,
+)
 from harness.memory_schema import ToolCallRecord
 from harness.memory_store import JsonlMemoryStore, MemoryStore
 from harness.resolution import BrierUpdateResult, resolve_market
+from harness.tools.real_toolset import build_real_toolset
 
 
 def _market_family_for_episode(question: BacktestQuestion) -> str:
@@ -107,8 +115,9 @@ def build_stub_toolset() -> AgentToolset:
 def run_single_backtest(
     question: BacktestQuestion,
     memory: MemoryStore,
-    policy: ConstructionPolicy,
+    policy: ConstructionPolicy | PolicyConfig,
     tools: AgentToolset,
+    vault_dir: Path | None = None,
 ) -> BrierUpdateResult:
     episode_outcome = run_agent_loop(
         question.question_text,
@@ -117,6 +126,7 @@ def run_single_backtest(
         policy=policy,
         memory=memory,
         tools=tools,
+        vault_dir=vault_dir,
     )
 
     resolved = resolve_market(
@@ -188,10 +198,11 @@ def _rollup_summary(*, corpus: list[BacktestQuestion], observations: list[object
 async def run_backtest_batch(
     corpus: list[BacktestQuestion],
     memory: MemoryStore,
-    policy: ConstructionPolicy,
+    policy: ConstructionPolicy | PolicyConfig,
     tools: AgentToolset,
     *,
     concurrency: int = 3,
+    vault_dir: Path | None = None,
 ) -> BacktestSummary:
     if concurrency < 1:
         raise ValueError("concurrency must be >= 1")
@@ -201,7 +212,9 @@ async def run_backtest_batch(
     async def process_candidate(candidate: BacktestQuestion) -> BrierUpdateResult:
         async with semaphore:
             scoped_tools = _toolset_with_question_family(tools, candidate)
-            return await asyncio.to_thread(run_single_backtest, candidate, memory, policy, scoped_tools)
+            return await asyncio.to_thread(
+                run_single_backtest, candidate, memory, policy, scoped_tools, vault_dir,
+            )
 
     observations = await asyncio.gather(
         *[process_candidate(question_payload) for question_payload in corpus],
@@ -213,12 +226,19 @@ async def run_backtest_batch(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Batch backtest harness over Polymarket or Manifold corpora.")
-    parser.add_argument("--source", choices=("polymarket", "manifold"), default="polymarket")
+    parser.add_argument("--source", choices=("polymarket", "manifold", "metaculus"), default="polymarket")
     parser.add_argument("--min-date", type=date.fromisoformat, default=date(2024, 6, 1))
     parser.add_argument("--min-volume", type=float, default=5000.0)
     parser.add_argument("--max-questions", type=int, default=200)
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument("--memory-dir", type=Path, default=Path(".harness_memory"))
+    default_vault = Path.home() / "vaults" / "harness-journal"
+    parser.add_argument("--vault-dir", type=Path, default=default_vault, help="Obsidian vault for exports + runtime context")
+    parser.add_argument(
+        "--no-vault",
+        action="store_true",
+        help="Do not use a vault for this batch (no export / no runtime vault reads)",
+    )
 
     cli_args = parser.parse_args(argv)
 
@@ -227,20 +247,34 @@ def main(argv: list[str] | None = None) -> int:
 
     memory_store = JsonlMemoryStore(cli_args.memory_dir.expanduser().resolve())
 
-    stub_tools = build_stub_toolset()
-
     calibration = compute_calibration(memory_store)
-    shrinkage = calibration.suggested_shrinkage if not calibration.insufficient_data else None
 
-    planner = ConstructionPolicy(blind_spot_checks=[], max_steps=3, shrinkage=shrinkage)
+    planner = load_policy()
+    if planner.shrinkage is None and not calibration.insufficient_data:
+        planner.shrinkage = calibration.suggested_shrinkage
+
+    vault_path: Path | None = None
+    if not cli_args.no_vault:
+        vault_path = cli_args.vault_dir.expanduser().resolve()
+
+    harness_tools = build_real_toolset(memory_store, planner, vault_dir=vault_path)
 
     if cli_args.source == "polymarket":
         dataset = build_polymarket_corpus(cli_args.min_date, cli_args.min_volume, cli_args.max_questions)
-    else:
+    elif cli_args.source == "manifold":
         dataset = build_manifold_corpus(cli_args.min_date, cli_args.max_questions)
+    else:
+        dataset = build_metaculus_corpus()
 
     aggregated = asyncio.run(
-        run_backtest_batch(dataset, memory_store, planner, stub_tools, concurrency=cli_args.concurrency),
+        run_backtest_batch(
+            dataset,
+            memory_store,
+            planner,
+            harness_tools,
+            concurrency=cli_args.concurrency,
+            vault_dir=vault_path,
+        ),
     )
     print(aggregated)
 
@@ -249,6 +283,12 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("agent_edge=N/A (no priced+completed questions)")
 
+    if vault_path is not None:
+        export_resolved_episodes(
+            cli_args.memory_dir,
+            vault_path,
+            market_label=cli_args.source,
+        )
     return 0
 
 

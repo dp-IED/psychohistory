@@ -1,3 +1,1 @@
-# Install dev deps: pip install -e ".[dev]"
-pydantic>=2.5
-pytest>=8.0
+python-dotenv>=1.0.0

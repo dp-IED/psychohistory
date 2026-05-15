@@ -8,6 +8,7 @@ from harness.agent_loop import AgentToolset, ConstructionPolicy, GraphQueryResul
 from harness.corpus.backtest_corpus import BacktestQuestion
 from harness.memory_schema import ToolCallRecord
 from harness.memory_store import JsonlMemoryStore
+from harness.policy_loader import PolicyConfig
 from harness.resolution import BrierUpdateResult
 from scripts.run_backtest import _market_family_for_episode, _rollup_summary, _toolset_with_question_family, run_backtest_batch, run_single_backtest
 
@@ -201,6 +202,19 @@ def test_episode_market_family_flows_from_question_category(tmp_path) -> None:
     episode = memory.read_episode_by_id(resolved.job_id)
     assert episode is not None
     assert episode.market_family == "crypto"
+
+
+def test_single_backtest_with_policy_config(tmp_path) -> None:
+    memory = JsonlMemoryStore(tmp_path / "memory")
+    tools = _constant_probability_toolset(0.62)
+    policy = PolicyConfig(blind_spot_checks=[], max_steps=3)
+    question = _sample_question("pcfg", price=0.5, resolution=True)
+
+    resolved = run_single_backtest(question, memory, policy, tools)
+
+    stored = memory.read_episode_by_id(resolved.job_id)
+    assert stored is not None
+    assert stored.question == question.question_text
 
 
 def test_market_family_for_episode_fallback() -> None:

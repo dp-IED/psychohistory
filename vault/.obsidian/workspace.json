@@ -1,0 +1,214 @@
+{
+  "main": {
+    "id": "e6339d0068a781ea",
+    "type": "split",
+    "children": [
+      {
+        "id": "c7b57c241071fb84",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1c3ca25c8473543d",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "04e64e988eb57514",
+    "type": "split",
+    "children": [
+      {
+        "id": "5ab8c90126b0aa0a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "34e01b0430b7d83c",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "251d87fcb3995c9f",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "bb88484dd3ef5de7",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "5bbf4d0c100479bb",
+    "type": "split",
+    "children": [
+      {
+        "id": "51e4a9dfc025b6ae",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "20b472d85791526a",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "63e1d915f69c5e7e",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "83b41db923d52de9",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "e2575b3363f83f4a",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "863c582ec18b0b94",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "1c3ca25c8473543d",
+  "lastOpenFiles": [
+    "_strategy.md",
+    "reflection_bundle.json",
+    "_reflection_bundle_meta.json",
+    "runs/batch-postmortem-2026-05.md",
+    "approaches/sports-fixtures.md",
+    "Untitled.base",
+    "Untitled 1.canvas",
+    "Untitled.canvas",
+    "approaches/long_horizon_path_dependency.md",
+    "approaches/match_and_quote_events.md",
+    "runs/job-065883c872a2.md",
+    "runs/job-61b67fb6ab37.md",
+    "runs/job-aa1fb95dd0e5.md",
+    "approaches/stub_family forecasting.md",
+    "approaches/stub family forecasting.md",
+    "approaches/outside_view_priors.md",
+    "approaches/evidence_floor.md",
+    "runs/job-6e9edcbbdfe1.md",
+    "runs/job-d38ca27ee523.md",
+    "runs/job-9644eaa9a69f.md",
+    "runs/job-1ce51e6cfc2b.md",
+    "runs/job-dbb9922e83f3.md",
+    "approaches/stub_family_forecasting.md",
+    "approaches",
+    "runs/job-abe3b6ff2621.md",
+    "runs/job-5995161ffc85.md",
+    "runs/job-828639bc1641.md",
+    "runs/job-26060e8e87b1.md",
+    "runs/job-3a5c041bff06.md",
+    "runs/job-25ce627940f4.md",
+    "runs/job-e104273da065.md",
+    "runs"
+  ]
+}

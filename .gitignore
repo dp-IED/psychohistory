@@ -50,3 +50,7 @@ autoresearch-mlx/
 
 .env
 .hermes/
+
+# Runtime state
+.harness_memory/
+.harness_memory
