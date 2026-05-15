@@ -44,7 +44,7 @@ def _call_cursor_agent(prompt: str, *, model: str, workspace: Path) -> str:
         "--force",
         prompt,
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300, cwd=str(ws))
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600, cwd=str(ws))
     if result.returncode != 0:
         err = (result.stderr or "")[:500]
         raise RuntimeError(f"cursor-agent call failed (exit {result.returncode}): {err}")
