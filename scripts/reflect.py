@@ -25,7 +25,7 @@ from harness.tools.strategy_runtime import STRATEGY_FILENAME, load_strategy_mark
 
 WORST_EPISODE_COUNT = 3
 BATCH_WORST_WINDOW = 20  # how many recent episodes to consider the "current batch"
-RECENT_EPISODE_COUNT = 30  # how many recent scored episodes to include in reflection context
+RECENT_EPISODE_COUNT = 10  # how many recent scored episodes to include in reflection context
 
 
 def _call_llm_cursor(prompt: str, model: str = "composer-2-fast") -> str:
