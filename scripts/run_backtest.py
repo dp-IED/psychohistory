@@ -1,264 +1,78 @@
-"""CLI + async orchestration harness for corpus-scale backtests."""
+#!/usr/bin/env python3
+"""Backtest runner -- loads questions, runs forecasts, writes runs to vault."""
 
 from __future__ import annotations
 
 import argparse
-import asyncio
-from collections import defaultdict
-from dataclasses import dataclass
-from datetime import date
+import sys
+from datetime import date, timedelta
 from pathlib import Path
 
-from harness.agent_loop import AgentToolset, ConstructionPolicy, GraphQueryResult, MarketContext, run_agent_loop
-from harness.calibration import compute_calibration
-from harness.corpus.backtest_corpus import BacktestQuestion, build_manifold_corpus, build_polymarket_corpus
-from harness.memory_schema import ToolCallRecord
-from harness.memory_store import JsonlMemoryStore, MemoryStore
-from harness.resolution import BrierUpdateResult, resolve_market
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from harness.orchestrator import run_structured
+from harness.runs import runs_count, mean_brier
+from harness.config import load_policy
+from harness.corpus import build_polymarket_corpus, build_metaculus_corpus
 
 
-def _market_family_for_episode(question: BacktestQuestion) -> str:
-    cat_cell = question.category
-    if isinstance(cat_cell, str):
-        trimmed = cat_cell.strip().lower()
-        if trimmed:
-            return trimmed
-    return "general"
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run forecasting backtest.")
+    parser.add_argument("--source", choices=["polymarket", "metaculus"], default="polymarket")
+    parser.add_argument("--max-questions", type=int, default=10)
+    parser.add_argument("--vault", default="vault", help="Vault directory (writes to vault/runs/)")
+    parser.add_argument("--policy", default="vault/policy.md", help="Policy file path")
+    args = parser.parse_args()
 
+    # Load policy
+    cfg = load_policy(args.policy)
+    policy_body = cfg.body
 
-def _toolset_with_question_family(base: AgentToolset, question: BacktestQuestion) -> AgentToolset:
-    episode_family = _market_family_for_episode(question)
-    inner_context = base.market_context
-
-    def wrapped_market_context(question_text: str, cutoff: date, resolution_date: date) -> MarketContext:
-        prior_cell = inner_context(question_text, cutoff, resolution_date)
-        return MarketContext(
-            market_id=prior_cell.market_id,
-            market_family=episode_family,
-            key_actors=prior_cell.key_actors,
-            region=prior_cell.region,
-            cutoff_date=prior_cell.cutoff_date,
-            resolution_date=prior_cell.resolution_date,
+    # Load corpus
+    if args.source == "polymarket":
+        corpus = build_polymarket_corpus(
+            min_date=date.today() - timedelta(days=180),
+            min_volume=100.0,
+            max_questions=args.max_questions,
         )
+    else:
+        corpus = build_metaculus_corpus()
 
-    return AgentToolset(
-        web_search=base.web_search,
-        graph_query=base.graph_query,
-        gnn_score=base.gnn_score,
-        analogues=base.analogues,
-        market_context=wrapped_market_context,
-    )
+    print(f"Loaded {len(corpus)} {args.source} questions.")
 
-
-@dataclass
-class BacktestSummary:
-    total: int
-    completed: int
-    failed: int
-    mean_brier: float
-    mean_market_baseline_brier: float | None
-    agent_edge: float | None
-    by_source: dict[str, float]
-
-
-def build_stub_toolset() -> AgentToolset:
-    def web_search(query: str, as_of_date: date) -> list[ToolCallRecord]:
-        return [
-            ToolCallRecord(
-                tool_name="web_search",
-                query=query,
-                as_of_time=f"{as_of_date.isoformat()}T00:00:00Z",
-                evidence_count=1,
-                notes="backtest-stub-search",
-            )
-        ]
-
-    def graph_query(question: str, cutoff: date) -> GraphQueryResult:
-        _ = (question, cutoff)
-        return GraphQueryResult(node_count=8, notes="backtest-stub-graph")
-
-    def gnn_score(step: int, evidence_count: int, nodes: int) -> float:
-        _ = nodes
-        return min(0.95, 0.52 + 0.015 * step + 0.0005 * evidence_count)
-
-    def analogues(question_text: str) -> list[str]:
-        _ = question_text
-        return []
-
-    def market_context(question_text: str, cutoff: date, resolution: date) -> MarketContext:
-        return MarketContext(
-            market_id="stub-market-id",
-            market_family="stub_family",
-            key_actors=[],
-            region=None,
-            cutoff_date=cutoff,
-            resolution_date=resolution,
-        )
-
-    return AgentToolset(
-        web_search=web_search,
-        graph_query=graph_query,
-        gnn_score=gnn_score,
-        analogues=analogues,
-        market_context=market_context,
-    )
-
-
-def run_single_backtest(
-    question: BacktestQuestion,
-    memory: MemoryStore,
-    policy: ConstructionPolicy,
-    tools: AgentToolset,
-) -> BrierUpdateResult:
-    episode_outcome = run_agent_loop(
-        question.question_text,
-        cutoff_date=question.open_date,
-        resolution_date=question.close_date,
-        policy=policy,
-        memory=memory,
-        tools=tools,
-    )
-
-    resolved = resolve_market(
-        job_id=episode_outcome.job_id,
-        outcome=question.resolution,
-        memory=memory,
-        tools=tools,
-    )
-    return resolved
-
-
-
-def _rollup_summary(*, corpus: list[BacktestQuestion], observations: list[object]) -> BacktestSummary:
-    if len(observations) != len(corpus):
-        raise ValueError("corpus and observation vectors must align")
-
-    successes: list[tuple[BacktestQuestion, BrierUpdateResult]] = []
+    # Before count
+    before = runs_count(args.vault)
+    successes = 0
     failures = 0
-    for question, observation in zip(corpus, observations, strict=True):
-        if isinstance(observation, BrierUpdateResult):
-            successes.append((question, observation))
-        else:
+
+    for q in corpus:
+        try:
+            p_yes, reasoning = run_structured(
+                q.question_text,
+                cutoff=q.open_date,
+                vault_dir=args.vault,
+                policy_body=policy_body,
+                question_id=str(q.question_id),
+                source=args.source,
+                category=getattr(q, "category", "general"),
+                resolution=q.resolution,
+            )
+            successes += 1
+            brier_str = f" brier={(p_yes - (1.0 if q.resolution else 0.0)) ** 2:.4f}" if q.resolution is not None else ""
+            print(f"  \u2713 {q.question_text[:60]} p_yes={p_yes:.3f}{brier_str}")
+        except Exception as e:
             failures += 1
+            print(f"  \u2717 {q.question_text[:60]} -- {e}")
 
-    mean_brier = (
-        sum(result.brier_score for _, result in successes) / len(successes) if successes else 0.0
-    )
+    after = runs_count(args.vault)
+    total = successes + failures
+    mb = mean_brier(args.vault)
+    print(f"\nDone: {successes}/{total} completed, {failures} failed.")
+    print(f"Runs in vault: {before} -> {after}")
+    if mb is not None:
+        print(f"Mean Brier: {mb:.4f}")
 
-    # Priced AND completed — the correct denominator for both baseline and edge.
-    priced_completed = [
-        (question, obs.brier_score)
-        for question, obs in successes
-        if question.market_price_at_open is not None
-    ]
-
-    if priced_completed:
-        mean_market_baseline_brier: float | None = (
-            sum((question.market_price_at_open - float(question.resolution)) ** 2
-                for question, _ in priced_completed)
-            / len(priced_completed)
-        )
-        agent_brier_on_priced = (
-            sum(score for _, score in priced_completed) / len(priced_completed)
-        )
-        agent_edge: float | None = mean_market_baseline_brier - agent_brier_on_priced
-    else:
-        mean_market_baseline_brier = None
-        agent_edge = None
-
-    grouped_scores: defaultdict[str, list[float]] = defaultdict(list)
-    for question, observation in successes:
-        grouped_scores[question.source].append(observation.brier_score)
-
-    by_source_snapshot = {
-        bucket: sum(values) / len(values) if values else 0.0 for bucket, values in grouped_scores.items()
-    }
-
-    return BacktestSummary(
-        total=len(corpus),
-        completed=len(successes),
-        failed=failures,
-        mean_brier=mean_brier,
-        mean_market_baseline_brier=mean_market_baseline_brier,
-        agent_edge=agent_edge,
-        by_source=dict(sorted(by_source_snapshot.items())),
-    )
-
-
-async def run_backtest_batch(
-    corpus: list[BacktestQuestion],
-    memory: MemoryStore,
-    policy: ConstructionPolicy,
-    tools: AgentToolset,
-    *,
-    concurrency: int = 3,
-) -> BacktestSummary:
-    if concurrency < 1:
-        raise ValueError("concurrency must be >= 1")
-
-    semaphore = asyncio.Semaphore(concurrency)
-
-    async def process_candidate(candidate: BacktestQuestion) -> BrierUpdateResult:
-        async with semaphore:
-            scoped_tools = _toolset_with_question_family(tools, candidate)
-            return await asyncio.to_thread(run_single_backtest, candidate, memory, policy, scoped_tools)
-
-    observations = await asyncio.gather(
-        *[process_candidate(question_payload) for question_payload in corpus],
-        return_exceptions=True,
-    )
-
-    return _rollup_summary(corpus=corpus, observations=list(observations))
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Batch backtest harness over Polymarket or Manifold corpora.")
-    parser.add_argument("--source", choices=("polymarket", "manifold"), default="polymarket")
-    parser.add_argument("--min-date", type=date.fromisoformat, default=date(2024, 6, 1))
-    parser.add_argument("--min-volume", type=float, default=5000.0)
-    parser.add_argument("--max-questions", type=int, default=200)
-    parser.add_argument("--concurrency", type=int, default=3)
-    parser.add_argument("--memory-dir", type=Path, default=Path(".harness_memory"))
-
-    cli_args = parser.parse_args(argv)
-
-    if cli_args.min_volume < 0:
-        parser.error("--min-volume must be non-negative")
-
-    memory_store = JsonlMemoryStore(cli_args.memory_dir.expanduser().resolve())
-
-    stub_tools = build_stub_toolset()
-
-    calibration = compute_calibration(memory_store)
-    shrinkage = calibration.suggested_shrinkage if not calibration.insufficient_data else None
-
-    planner = ConstructionPolicy(blind_spot_checks=[], max_steps=3, shrinkage=shrinkage)
-
-    if cli_args.source == "polymarket":
-        dataset = build_polymarket_corpus(cli_args.min_date, cli_args.min_volume, cli_args.max_questions)
-    else:
-        dataset = build_manifold_corpus(cli_args.min_date, cli_args.max_questions)
-
-    aggregated = asyncio.run(
-        run_backtest_batch(dataset, memory_store, planner, stub_tools, concurrency=cli_args.concurrency),
-    )
-    print(aggregated)
-
-    if aggregated.agent_edge is not None:
-        print(f"agent_edge={aggregated.agent_edge:+.4f}")
-    else:
-        print("agent_edge=N/A (no priced+completed questions)")
-
-    return 0
-
-
-__all__ = [
-    "BacktestSummary",
-    "build_stub_toolset",
-    "main",
-    "run_backtest_batch",
-    "run_single_backtest",
-]
+    return 0 if failures == 0 else 1
 
 
 if __name__ == "__main__":
