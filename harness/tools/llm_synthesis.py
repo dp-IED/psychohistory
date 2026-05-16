@@ -17,90 +17,41 @@ from harness.tools.pit_search import search as pit_search, results_to_prompt_blo
 
 DEFAULT_CURSOR_MODEL = "composer-2-fast"
 
+# ---------------------------------------------------------------------------
+# Hermes profile‑based forecast synthesis (replaces cursor‑agent).
+# ---------------------------------------------------------------------------
 
-def _agent_available() -> bool:
-    return shutil.which("agent") is not None or shutil.which("cursor-agent") is not None
+_HERMES_PROFILE = "forecasting"
+_HERMES_TIMEOUT = 300  # seconds per call
 
 
-def _agent_bin_path() -> str | None:
-    return shutil.which("agent") or shutil.which("cursor-agent")
+def _call_hermes(prompt: str, *, timeout: int = _HERMES_TIMEOUT) -> str:
+    """Call hermes with the forecasting profile in one‑shot mode.
 
-
-def _call_cursor_agent(prompt: str, *, model: str, workspace: Path) -> str:
-    agent_bin = _agent_bin_path()
-    if not agent_bin:
-        raise RuntimeError("cursor-agent CLI not found on PATH")
-    ws = workspace.resolve()
+    Returns: stdout text (stripped).
+    Raises RuntimeError on failure.
+    """
     cmd = [
-        agent_bin,
-        "--model",
-        model,
-        "--print",
-        "--output-format",
-        "json",
-        "--trust",
-        "--workspace",
-        str(ws),
-        "--force",
-        prompt,
+        "hermes",
+        "-z", prompt,
+        "--profile", _HERMES_PROFILE,
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600, cwd=str(ws))
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+    )
     if result.returncode != 0:
-        err = (result.stderr or "")[:500]
-        raise RuntimeError(f"cursor-agent call failed (exit {result.returncode}): {err}")
-    out = result.stdout or ""
-    if not out.strip():
-        raise RuntimeError("cursor-agent returned empty stdout")
+        err = (result.stderr or result.stdout or "")[:500]
+        raise RuntimeError(
+            f"hermes (profile={_HERMES_PROFILE}) failed "
+            f"(exit {result.returncode}): {err}"
+        )
+    out = (result.stdout or "").strip()
+    if not out:
+        raise RuntimeError("hermes returned empty stdout")
     return out
-
-
-def _assistant_content_to_text(content: object) -> str:
-    if isinstance(content, str):
-        return content
-    if isinstance(content, dict):
-        t = content.get("text")
-        if isinstance(t, str):
-            return t
-        return ""
-    if isinstance(content, list):
-        parts: list[str] = []
-        for block in content:
-            if isinstance(block, dict):
-                t = block.get("text")
-                if isinstance(t, str):
-                    parts.append(t)
-            elif isinstance(block, str):
-                parts.append(block)
-        return "\n".join(parts)
-    return ""
-
-
-def _extract_text_from_agent_json_stdout(stdout: str) -> str:
-    raw = stdout.strip()
-    if not raw:
-        raise RuntimeError("cursor-agent returned empty stdout")
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        return raw
-
-    # cursor-agent native format: {"type":"result","result":"..."}
-    if payload.get("type") == "result" and isinstance(payload.get("result"), str):
-        return payload["result"]
-
-    # OpenAI messages format: {"messages":[{"role":"assistant","content":"..."}]}
-    msgs = payload.get("messages")
-    if not isinstance(msgs, list):
-        return raw
-    for msg in reversed(msgs):
-        if not isinstance(msg, dict):
-            continue
-        if msg.get("role") != "assistant":
-            continue
-        text = _assistant_content_to_text(msg.get("content"))
-        if text.strip():
-            return text
-    return raw
 
 
 def _forecast_workspace() -> Path:
@@ -111,8 +62,8 @@ def _forecast_workspace() -> Path:
 
 
 def _call_forecast_agent(prompt: str, *, model: str, workspace: Path) -> str:
-    raw_json = _call_cursor_agent(prompt, model=model, workspace=workspace)
-    return _extract_text_from_agent_json_stdout(raw_json)
+    """Call hermes with the forecasting profile for forecast synthesis."""
+    return _call_hermes(prompt, timeout=_HERMES_TIMEOUT)
 
 
 _JSON_FENCE = re.compile(r"\{[\s\S]*\}")
@@ -155,10 +106,10 @@ def llm_synthesize_forecast(
 ) -> tuple[float, str]:
     """Synthesize p_yes via cursor-agent. Raises RuntimeError if the CLI is missing or the call fails."""
 
-    if not _agent_available():
+    if not shutil.which("hermes"):
         raise RuntimeError(
-            "cursor-agent CLI not found on PATH. "
-            "Install cursor-agent (agent / cursor-agent) for forecast synthesis."
+            "hermes CLI not found on PATH. "
+            "Install hermes-agent for forecast synthesis."
         )
 
     lines = [
@@ -194,7 +145,7 @@ def llm_synthesize_forecast(
     except Exception:
         pit_context = "(PIT search failed)"
 
-    prompt = f"""You are a forecasting agent. Produce a calibrated probability.
+    prompt = f"""Produce a calibrated probability.
 
 Question: {question}
 Cutoff date: {cutoff_date.isoformat()}
@@ -226,7 +177,6 @@ Entities: {", ".join(n.label for n in evidence_graph.nodes if n.node_type == "en
 
 {shrink_note}
 
-Be creative about how you gather evidence. Try angles others wouldn't think of.
 Output one JSON line:
 {{"p_yes": 0.XX, "reasoning": "one sentence"}}"""
 
