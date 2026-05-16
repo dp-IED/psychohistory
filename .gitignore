@@ -50,3 +50,4 @@ autoresearch-mlx/
 
 .env
 .hermes/
+.harness_memory/
