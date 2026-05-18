@@ -1,0 +1,15 @@
+{
+  "slug": "romania-pm-basescu",
+  "question": "Will Traian Basescu be the next Prime Minister of Romania?",
+  "market_price_pct": 0.5,
+  "volume": 9993.14,
+  "end_date": "2026-05-31",
+  "prediction": "NO",
+  "confidence": 95,
+  "vault_usage": "LOW",
+  "reasoning": "Basescu (75, former president 2004-2014) is a long shot in a crowded 49-candidate field. Top contenders include Serban Matei (16.5%), Sorin Grindeanu (9.5%), Delia Velculescu (9%). No recent political momentum for a comeback. Market pricing of 0.5% appears efficient.",
+  "forecast_instructions_applied": [
+    "Rule 4: Geographic Coverage Gap Check \u2014 vault has zero Romania content, flagged and created entity stub"
+  ],
+  "scanned_at": "2026-05-18T16:11:00Z"
+}

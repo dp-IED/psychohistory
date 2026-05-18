@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_15_trump-sentenced-to-between-24-and-35-months-pris",
+  "expected": 0.0,
+  "prediction": "NO",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3",
+    "2023-Q2"
+  ],
+  "question": "Trump sentenced to between 24 and 35 months prison time?\n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if Donald Trump is sentenced to spend between 24 (inclusive) months and 35 month",
+  "raw_output": "Now I have a comprehensive picture. Let me synthesize my forecast.\n\nBased on the Q1 2024 context (the latest available point-in-time):\n\n1. **Trial not yet started**: The NY hush-money trial was scheduled for April 15, 2024 \u2014 the clock hadn't even begun.\n2. **November 4 hard deadline**: If no sentence at all by that date, market resolves No. Even with a swift conviction (~late May), sentencing would face procedural delays, pre-sentence reports, and inevitable postponement motions.\n3. **NY Class E"
+}

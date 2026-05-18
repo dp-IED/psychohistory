@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_10_tiktok-banned-in-the-us-before-may-2025",
+  "expected": 1.0,
+  "prediction": "YES",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q2",
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3"
+  ],
+  "question": "TikTok banned in the US before May 2025?\n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if the TikTok app is banned for download and/or use by the majority of Americans in the United S",
+  "raw_output": "Based on the timeline files and Wikipedia context provided, here's my analysis:\n\nThe Wikipedia current context explicitly states the outcome:\n\n1. **PAFACA** was passed by Congress and signed by President Biden (law existed)\n2. **Supreme Court upheld** the law after TikTok's legal challenge\n3. **ByteDance refused to sell** before the deadline\n4. The ban **took effect on January 19, 2025** \u2014 described as a \"de jure nationwide ban\"\n\nThe Polymarket resolution criteria say: \"For this market to resolv"
+}

@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_14_trump-sentenced-to-between-12-and-23-months-pris",
+  "expected": 0.0,
+  "prediction": "NO",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3",
+    "2023-Q2"
+  ],
+  "question": "Trump sentenced to between 12 and 23 months prison time?\n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if Donald Trump is sentenced to spend between 12 (inclusive) months and 23 month",
+  "raw_output": "Now I have a complete picture from all the vault files. Let me produce the forecast.\n\n---\nFINAL ANSWER:\nPrediction: NO\nConfidence: 0.99\nRationale: By September 2024, Trump's NY sentencing had already been delayed from July 11 to September 18, and after the September 15 assassination attempt, was further postponed to November 26, 2024 \u2014 well past the market's November 4 resolution deadline, guaranteeing a \"No\" resolution regardless of the eventual sentence length."
+}

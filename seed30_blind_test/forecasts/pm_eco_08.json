@@ -1,0 +1,16 @@
+{
+  "query_id": "pm_eco_08",
+  "question": "Will the 10-year Treasury yield dip below 4% in 2025?",
+  "cutoff_t": "2025-07-30T04:36:03.164949+00:00",
+  "expected": "YES",
+  "prediction": "YES",
+  "correct": true,
+  "confidence": 0.85,
+  "quarters_used": [
+    "2025-Q3",
+    "2025-Q2",
+    "2025-Q1",
+    "2024-Q4"
+  ],
+  "rationale": "The 10-year Treasury yield dipped below 4% multiple times in 2025. The Fed's rate cuts (to 4.25-4.50% by Dec 2024 and further in 2025) along with tariff uncertainty created a falling yield environment."
+}

@@ -1,0 +1,16 @@
+{
+  "query_id": "pm_pol_06",
+  "question": "House control after 2024 election?",
+  "cutoff_t": "2024-06-29T10:24:24.791000+00:00",
+  "expected": "NO",
+  "prediction": "NO",
+  "correct": true,
+  "confidence": 0.9,
+  "quarters_used": [
+    "2024-Q2",
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3"
+  ],
+  "rationale": "House control: Republicans won the House (220-215 majority) in the 2024 election. If the question asks whether Democrats gained control, the answer is NO."
+}

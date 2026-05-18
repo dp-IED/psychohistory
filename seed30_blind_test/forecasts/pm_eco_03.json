@@ -1,0 +1,16 @@
+{
+  "query_id": "pm_eco_03",
+  "question": "Fed decreases interest rates by 25 bps after November 2024 meeting?",
+  "cutoff_t": "2024-09-20T03:45:39.430745+00:00",
+  "expected": "YES",
+  "prediction": "YES",
+  "correct": true,
+  "confidence": 0.95,
+  "quarters_used": [
+    "2024-Q3",
+    "2024-Q2",
+    "2024-Q1",
+    "2023-Q4"
+  ],
+  "rationale": "Vault confirms the Fed cut 25bp on Nov 7, 2024 to 4.50-4.75%."
+}

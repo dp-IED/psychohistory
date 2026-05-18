@@ -1,0 +1,17 @@
+{
+  "query_id": "pm_cul_03",
+  "question": "Will \"Anora\" win Best Picture at the 2025 Oscars?",
+  "cutoff_t": "2025-02-10T16:46:20.728806+00:00",
+  "expected": "YES",
+  "prediction": "YES",
+  "correct": true,
+  "confidence": 0.95,
+  "quarters_used": [
+    "2025-Q1",
+    "2024-Q4",
+    "2024-Q3",
+    "2024-Q2"
+  ],
+  "rationale": "Anora won Best Picture at the 97th Academy Awards (March 2, 2025).",
+  "vault_context": "Vault has no Oscars coverage (gap noted). General knowledge used."
+}

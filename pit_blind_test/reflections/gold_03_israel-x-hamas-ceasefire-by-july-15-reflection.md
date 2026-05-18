@@ -1,0 +1,1 @@
+All 7 tasks complete. The vault is now better positioned for the remaining 27 questions — particularly for any ceasefire-by-deadline or Middle East conflict questions.

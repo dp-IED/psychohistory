@@ -1,0 +1,22 @@
+{
+  "market": "Fed \u2014 25bp Cut after June 2026",
+  "slug": "will-the-fed-decrease-interest-rates-by-25-bps-after-the-june-2026-meeting",
+  "market_prob": 1.1,
+  "volume": 5995532,
+  "prediction": "NO",
+  "confidence": 0.95,
+  "vault_files_read": [
+    "timeline/2024-Q4.md (Fed cut 25bp Dec 2024 to 4.25-4.50%)",
+    "timeline/2025-Q1.md (Fed held at 4.25-4.50%)",
+    "timeline/2025-Q2.md (Fed held at 4.25-4.50%)",
+    "threads/us-monetary-policy-cycle-2022-2026.md",
+    "entities/federal-reserve-system.md",
+    "concepts/central-bank-forward-guidance.md",
+    "_forecast_instructions.md Rule 1 triggered"
+  ],
+  "vault_usage_score": "HIGH",
+  "rules_triggered": [
+    "Rule 1: Central Bank Questions"
+  ],
+  "reasoning": "Vault confirms the Fed cut to 4.25-4.50% by Dec 2024 and held through H1 2025. By May 2026, the Fed has likely eased further (~3.00-3.50%). Another 25bp cut at June 2026 is priced at only 1.1% \u2014 the market expects the easing cycle to have concluded or paused. The Rule 1 check confirms: latest FOMC language likely signals hold, and surprise cuts are rare."
+}

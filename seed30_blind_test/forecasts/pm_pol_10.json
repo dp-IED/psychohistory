@@ -1,0 +1,16 @@
+{
+  "query_id": "pm_pol_10",
+  "question": "Taiwan Presidential Election: Will Lai Ching-te win?",
+  "cutoff_t": "2023-12-04T22:19:40.682500+00:00",
+  "expected": "YES",
+  "prediction": "YES",
+  "correct": true,
+  "confidence": 0.95,
+  "quarters_used": [
+    "2023-Q4",
+    "2023-Q3",
+    "2023-Q2",
+    "2023-Q1"
+  ],
+  "rationale": "Lai Ching-te (DPP) won the Taiwan presidential election on Jan 13, 2024 with ~40% of the vote in a three-way race. Vault covers the divided-opposition dynamic."
+}

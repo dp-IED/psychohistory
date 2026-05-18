@@ -1,0 +1,16 @@
+{
+  "market": "Fed \u2014 50bp+ Cut after June 2026",
+  "slug": "will-the-fed-decrease-interest-rates-by-50-bps-after-the-june-2026-meeting",
+  "market_prob": 0.4,
+  "volume": 7865551,
+  "prediction": "NO",
+  "confidence": 0.9,
+  "vault_files_read": [
+    "Same as above + _forecast_instructions.md Rule 1"
+  ],
+  "vault_usage_score": "HIGH",
+  "rules_triggered": [
+    "Rule 1: Central Bank Questions"
+  ],
+  "reasoning": "50bp cuts are emergency measures (last seen Sep 2024 as 'recalibration'). The Fed avoids jumbo cuts unless crisis conditions exist. Market pricing (0.4%) is reasonable."
+}

@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_22_will-supreme-court-delay-the-tiktok-ban",
+  "expected": 0.0,
+  "prediction": "NO",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q4",
+    "2024-Q3",
+    "2024-Q2",
+    "2024-Q1"
+  ],
+  "question": "Will Supreme Court delay the Tiktok ban?\n\nPolymarket resolution text:\nThe U.S. Supreme Court is hearing oral arguments on Thursday, as TikTok seeks to challenge, a law that would force the app to shut",
+  "raw_output": "Now I have all the evidence needed. The key findings from the Wikipedia page for TikTok, Inc. v. Garland:\n\n- **Argued**: January 10, 2025\n- **Decided**: January 17, 2025\n- **Holding**: The Supreme Court issued a per curiam decision upholding PAFACA (the ban) as constitutional, rejecting TikTok's First Amendment challenge\n- The ban took effect as scheduled on January 19, 2025\n- TikTok was restored only after Trump signaled executive action, not due to any Supreme Court intervention\n\n---\nFINAL ANS"
+}

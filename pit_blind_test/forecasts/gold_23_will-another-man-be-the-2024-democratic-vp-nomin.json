@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_23_will-another-man-be-the-2024-democratic-vp-nomin",
+  "expected": 0.0,
+  "prediction": "NO",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q2",
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3"
+  ],
+  "question": "Will another man be the 2024 Democratic VP nominee?\n\nPolymarket resolution text:\nThis market will resolve to \u201cYes\u201d if a man other than Mark Kelly, Josh Shapiro, Roy Cooper, Andy Beshear, Tim Walz, Pet",
+  "raw_output": "Now I have the full picture. Let me synthesize what the vault tells us.\n\nFrom the vault's timeline and thread files:\n\n- **Q2 2024 (up to June 30)**: Biden suffered a disastrous June 27 debate performance, sparking Democratic panic and calls for him to withdraw.\n- **Q3 2024**: On July 21, Biden withdrew from the race and endorsed Kamala Harris. Harris secured the nomination by August 5, and on August 6 she selected **Tim Walz** as her running mate.\n\nThe Polymarket resolution asks: \"Will another m"
+}

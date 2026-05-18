@@ -1,0 +1,16 @@
+{
+  "query_id": "pm_cul_08",
+  "question": "GRAMMYs 2024: Will \u2018Midnights\u2019 by Taylor Swift win Album of the Year?",
+  "cutoff_t": "2024-01-29T19:39:11.606500+00:00",
+  "expected": "YES",
+  "prediction": "YES",
+  "correct": true,
+  "confidence": 0.95,
+  "quarters_used": [
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3",
+    "2023-Q2"
+  ],
+  "rationale": "Taylor Swift's 'Midnights' won Album of the Year at the 66th Grammy Awards (Feb 4, 2024). It was the best-selling album of 2023."
+}

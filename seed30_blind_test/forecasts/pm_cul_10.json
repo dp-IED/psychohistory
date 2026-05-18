@@ -1,0 +1,16 @@
+{
+  "query_id": "pm_cul_10",
+  "question": "Kanye \"Carnival\" #1 Billboard week of Mar 23?",
+  "cutoff_t": "2024-03-15T08:11:03.258000+00:00",
+  "expected": "NO",
+  "prediction": "NO",
+  "correct": true,
+  "confidence": 0.9,
+  "quarters_used": [
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3",
+    "2023-Q2"
+  ],
+  "rationale": "Kanye West's 'Carnival' (with Ty Dolla $ign) did NOT reach #1 on the Billboard Hot 100 the week of March 23, 2024. The track peaked at #3 on the Hot 100 in March 2024."
+}

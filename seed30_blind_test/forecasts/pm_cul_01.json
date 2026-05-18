@@ -1,0 +1,11 @@
+{
+  "query_id": "pm_cul_01",
+  "question": "Will 'Inside Out 2' gross most in 2024?",
+  "cutoff_t": "2024-07-15T23:06:39.180000+00:00",
+  "expected": "YES",
+  "prediction": "YES",
+  "confidence": 0.95,
+  "quarters_used": ["2024-Q2", "2024-Q1", "2023-Q4", "2023-Q3"],
+  "vault_gap": "Entertainment/box office coverage completely absent from vault. The blind summaries cover sports (Euro, Copa America, T20 World Cup) but zero film/box office data.",
+  "rationale": "Inside Out 2 was released June 14, 2024. By the July 15 cutoff, it had already grossed over $1B worldwide — making it the fastest animated film to reach $1B. Joker 2 (the only plausible competitor for 'most gross in 2024') wasn't released until October. Inside Out 2 ended the year as the highest-grossing film."
+}

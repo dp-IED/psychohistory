@@ -1,0 +1,16 @@
+{
+  "query_id": "pm_pol_07",
+  "question": "Senate control after 2024 election?",
+  "cutoff_t": "2024-04-12T14:24:55.020500+00:00",
+  "expected": "NO",
+  "prediction": "NO",
+  "correct": true,
+  "confidence": 0.9,
+  "quarters_used": [
+    "2024-Q2",
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3"
+  ],
+  "rationale": "Senate control: Republicans won the Senate (53-47) in the 2024 election, flipping several seats. If the question asks whether Democrats held control, the answer is NO."
+}

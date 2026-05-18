@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_09_us-government-shutdown-before-2025",
+  "expected": 1.0,
+  "prediction": "NO",
+  "correct": false,
+  "quarters_used": [
+    "2024-Q2",
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3"
+  ],
+  "question": "Will there be a US Government shutdown? \n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if the U.S government shut down occurs between August 30, and December 31, 2024, 11:59 PM ET. Ot",
+  "raw_output": "Based on the vault timeline files (2023-Q3 through 2024-Q2), I have the following relevant context for forecasting whether a US government shutdown occurs between Aug 30 - Dec 31, 2024.\n\n**Key structural factors from the vault:**\n\n- **Deeply fractured House Republican majority**: The 2023-Q4 file documents the historic ouster of Speaker McCarthy (Oct 3) and 22 days without a Speaker before Mike Johnson was elected. This demonstrates an unusually factionalized House GOP conference where a small n"
+}

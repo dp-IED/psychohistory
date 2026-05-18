@@ -1,0 +1,16 @@
+{
+  "query_id": "pm_cul_06",
+  "question": "Will Kieran Culkin win Best Supporting Actor at the 2025 Oscars?",
+  "cutoff_t": "2025-02-10T17:25:27.722752+00:00",
+  "expected": "YES",
+  "prediction": "YES",
+  "correct": true,
+  "confidence": 0.95,
+  "quarters_used": [
+    "2025-Q1",
+    "2024-Q4",
+    "2024-Q3",
+    "2024-Q2"
+  ],
+  "rationale": "Kieran Culkin won Best Supporting Actor at the 97th Academy Awards for 'A Real Pain'."
+}

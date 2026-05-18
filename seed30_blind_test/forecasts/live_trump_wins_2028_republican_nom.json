@@ -1,0 +1,18 @@
+{
+  "market": "Trump wins 2028 Republican nomination",
+  "slug": "will-donald-trump-win-the-2028-republican-presidential-nomination",
+  "market_prob": 2.5,
+  "volume": 8211218,
+  "prediction": "NO",
+  "confidence": 0.9,
+  "vault_files_read": [
+    "entities/donald-trump.md (age 82 in 2028, term-limited)",
+    "threads/2024-us-presidential-election.md",
+    "_forecast_instructions.md Rule 2 triggered"
+  ],
+  "vault_usage_score": "MEDIUM",
+  "rules_triggered": [
+    "Rule 2: Domestic Politics Gap Check"
+  ],
+  "reasoning": "Trump would be 82 in 2028 and is term-limited (22nd Amendment). He cannot serve again. The 2028 nomination is for a NEW candidate. The 2.5% market price likely reflects a narrow scenario where the 22nd Amendment is challenged or Trump runs as VP. Neither is plausible. Rule 2 check confirms vault has adequate coverage of this."
+}

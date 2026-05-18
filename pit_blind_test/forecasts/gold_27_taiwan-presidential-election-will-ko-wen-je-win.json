@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_27_taiwan-presidential-election-will-ko-wen-je-win",
+  "expected": 0.0,
+  "prediction": "NO",
+  "correct": true,
+  "quarters_used": [
+    "2023-Q3",
+    "2023-Q2",
+    "2023-Q1",
+    "2022-Q4"
+  ],
+  "question": "Taiwan Presidential Election: Will Ko Wen-je win?\n\nPolymarket resolution text:\nThe 2024 Taiwanese presidential election is scheduled to take place on January 13, 2024.\n\nThis market will resolve to \"Ye",
+  "raw_output": "Now I have a clear picture of the situation. Let me produce my forecast based on the vault's historical context.\n\n---\n\nFINAL ANSWER:\nPrediction: NO\nConfidence: 0.88\nRationale: In Taiwan's single-round plurality system, the DPP candidate benefits greatly when the opposition splits between KMT and TPP. As of Q3 2023, Ko Wen-je was running in a three-way race against Lai Ching-te (DPP) and Hou Yu-ih (KMT) with no sign of opposition coordination, making it structurally very difficult for Ko \u2014 who wa"
+}

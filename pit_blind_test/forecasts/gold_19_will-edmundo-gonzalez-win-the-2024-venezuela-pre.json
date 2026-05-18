@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_19_will-edmundo-gonzalez-win-the-2024-venezuela-pre",
+  "expected": 1.0,
+  "prediction": "NO",
+  "correct": false,
+  "quarters_used": [
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3",
+    "2023-Q2"
+  ],
+  "question": "Will Edmundo Gonz\u00e1lez win the 2024 Venezuela presidential election?\n\nPolymarket resolution text:\nThe 2024 Venezuela presidential election is scheduled to take place on July 28, 2024.\n\nThis market will",
+  "raw_output": "Now I have sufficient context from the vault and Wikipedia. Let me synthesize my analysis.\n\nFrom the vault timelines (all pre-election):\n- **2024-Q2**: US reimposed oil sanctions on Venezuela (Apr 17, 2024), signaling deteriorating relations with Maduro\n- **2023-Q4**: Maduro used the Essequibo nationalist referendum (Dec 3, 2023) with 95% approval, showing his playbook of nationalist appeals\n- **No pre-election Venezuela coverage in earlier quarters**\n\nKey pre-election findings:\n- The opposition"
+}

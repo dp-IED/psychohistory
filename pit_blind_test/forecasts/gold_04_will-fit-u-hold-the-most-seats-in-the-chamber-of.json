@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_04_will-fit-u-hold-the-most-seats-in-the-chamber-of",
+  "expected": 0.0,
+  "prediction": "NO",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q4",
+    "2024-Q3",
+    "2024-Q2",
+    "2024-Q1"
+  ],
+  "question": "Will FIT-U hold the most seats in the Chamber of Deputies following the 2025 Argentina election?\n\nPolymarket resolution text:\nThe 2025 election for half of the seats in Argentina's Chamber of Deputies",
+  "raw_output": "Now I have a comprehensive picture of the historical context. Here's my analysis:\n\n**Context from the vault:**\n- Nov 2023: Javier Milei (libertarian right-wing) won the presidency with 56%, defeating Peronist Sergio Massa\n- Jan 2025: Milei was still actively governing, attending Trump's inauguration as a notable foreign leader\n- No mention of any Argentine political crisis through Q2 2025\n\n**FIT-U (Frente de Izquierda y de Trabajadores - Unidad)** is a far-left Trotskyist coalition that has hist"
+}

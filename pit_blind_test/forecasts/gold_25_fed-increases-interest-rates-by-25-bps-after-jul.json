@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_25_fed-increases-interest-rates-by-25-bps-after-jul",
+  "expected": 0.0,
+  "prediction": "NO",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3",
+    "2023-Q2"
+  ],
+  "question": "Fed increases interest rates by 25+ bps after July 2024 meeting?\n\nPolymarket resolution text:\nThe FED interest rates are defined in this market by the upper bound of the target federal funds range. Th",
+  "raw_output": "Based on the vault's historical records, the answer is clear.\n\nFrom the timeline files and entity records:\n\n- The Fed hiked rates through 2022-2023, reaching 5.25-5.50% by July 2023\n- From July 2023 through H1 2024, rates were held steady at this level (the \"plateau\")\n- The entity file for the Federal Reserve explicitly states the hiking cycle ended at 5.25-5.50%, followed by a plateau and then the beginning of an easing cycle with a 50bp cut in September 2024\n- The December 2023 FOMC dot-plot s"
+}

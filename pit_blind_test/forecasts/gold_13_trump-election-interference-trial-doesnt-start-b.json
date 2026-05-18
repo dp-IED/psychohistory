@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_13_trump-election-interference-trial-doesnt-start-b",
+  "expected": 1.0,
+  "prediction": "YES",
+  "correct": true,
+  "quarters_used": [
+    "2023-Q4",
+    "2023-Q3",
+    "2023-Q2",
+    "2023-Q1"
+  ],
+  "question": "Trump election interference trial doesn't start before November?\n\nPolymarket resolution text:\nTrump's election interference trial was initially set to begin on March 4, but the judge postponed it with",
+  "raw_output": "Now I have a thorough understanding of the vault context. Let me produce the forecast.\n\nBased on the vault's historical context for 2023, here's my synthesis:\n\n**Key facts from the vault:**\n- By Q4 2023, Trump had been indicted in four criminal cases including the DC election interference case (the January 6 case, document at `threads/2024-us-presidential-election.md` line 21)\n- The trial was initially set for March 4, 2024, but Judge Chutkan indefinitely postponed it due to Trump's presidential"
+}

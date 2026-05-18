@@ -1,0 +1,11 @@
+{
+  "query_id": "pm_eco_05",
+  "question": "U.S. Recession in 2024?",
+  "cutoff_t": "2024-08-18T04:56:53.542370+00:00",
+  "expected": "NO",
+  "prediction": "NO",
+  "correct": true,
+  "confidence": 0.95,
+  "quarters_used": ["2024-Q2", "2024-Q1", "2023-Q4", "2023-Q3"],
+  "rationale": "US economy grew through H1 2024 — S&P 500 hit record highs, employment strong, GDP positive, no recession indicators. The Fed's rate-hold at 5.25-5.50% reflected persistent inflation and stable employment, not recession risk. Soft landing narrative was dominant."
+}
