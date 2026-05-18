@@ -1,7 +1,4 @@
-"""Policy config loaded from vault/policy.md YAML frontmatter.
-
-Everything lives in the Obsidian vault — no separate XML files.
-"""
+"""Policy config loaded from graph-vault markdown with optional YAML frontmatter."""
 
 from __future__ import annotations
 
@@ -11,6 +8,10 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+
+# Canonical vault root — all harness scripts read/write here.
+VAULT_DIR = Path(__file__).resolve().parent.parent / "graph-vault"
+DEFAULT_POLICY_PATH = VAULT_DIR / "_forecast_instructions.md"
 
 
 @dataclass
@@ -26,7 +27,7 @@ _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?\n)---\s*\n", re.DOTALL)
 
 
 def load_policy(path: str | Path) -> PolicyConfig:
-    """Load policy from vault/policy.md YAML frontmatter + markdown body."""
+    """Load policy from a graph-vault markdown file (YAML frontmatter + body)."""
     p = Path(path).resolve()
     if not p.exists():
         return PolicyConfig()
@@ -60,7 +61,7 @@ def load_policy(path: str | Path) -> PolicyConfig:
 
 
 def save_policy(cfg: PolicyConfig, path: str | Path) -> None:
-    """Write policy config + body to vault/policy.md."""
+    """Write policy config + body to a graph-vault markdown file."""
     frontmatter = {
         "shrinkage": cfg.shrinkage,
         "max_steps": cfg.max_steps,

@@ -272,6 +272,7 @@ class BacktestQuestion:
     resolution: bool
     market_price_at_open: float | None
     category: str | None  # human-readable taxonomy (Polymarket: mapped labels; Manifold: first tag slug)
+    volume: float = 0.0  # total volume in USDC (higher = more liquid)
 
     def __post_init__(self) -> None:
         if not (self.open_date < self.close_date):
@@ -288,7 +289,6 @@ def normalize_polymarket_market(
     raw: dict[str, object],
     *,
     min_close_date: date,
-    min_volume: float,
 ) -> BacktestQuestion | None:
     # Use outcomePrices (not resolutionPrice) to detect terminal resolution,
     # matching the existing ingest/polymarket_resolved.py convention.
@@ -300,8 +300,9 @@ def normalize_polymarket_market(
     resolution_flag = prices[0] > prices[1]  # True if YES price > NO price
 
     volumes = _volume_float(raw)
-    if volumes is None or volumes < min_volume:
+    if volumes is None:
         return None
+    question_volume = volumes
 
     close_date_value = _iso_date_only(raw.get("endDate"))
     if close_date_value is None:
@@ -345,6 +346,7 @@ def normalize_polymarket_market(
         resolution=resolution_flag,
         market_price_at_open=market_open,
         category=category,
+        volume=question_volume,
     )
 
 
@@ -583,15 +585,18 @@ def _coerce_manifold_markets_page(
     return parsed_rows, cursor_candidate, halted
 
 
-def build_polymarket_corpus(min_date: date, min_volume: float, max_questions: int) -> list[BacktestQuestion]:
+def build_polymarket_corpus(min_date: date, max_questions: int) -> list[BacktestQuestion]:
     if max_questions < 1:
         return []
 
     corpus: list[BacktestQuestion] = []
     offset = 0
     seen_ids: set[str] = set()
+    max_offset = 1000  # cap pagination to prevent infinite loops
 
     while len(corpus) < max_questions:
+        if offset >= max_offset:
+            break
         page_limit = min(100, max(max_questions - len(corpus), 1))
 
         params = urllib.parse.urlencode(
@@ -613,7 +618,7 @@ def build_polymarket_corpus(min_date: date, min_volume: float, max_questions: in
         offset += stride
 
         for typed_row in typed_rows:
-            record = normalize_polymarket_market(typed_row, min_close_date=min_date, min_volume=min_volume)
+            record = normalize_polymarket_market(typed_row, min_close_date=min_date)
 
             if record is None:
                 continue
