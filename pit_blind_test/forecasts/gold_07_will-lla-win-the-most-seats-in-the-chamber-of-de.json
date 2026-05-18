@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_07_will-lla-win-the-most-seats-in-the-chamber-of-de",
+  "expected": 1.0,
+  "prediction": "YES",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q4",
+    "2024-Q3",
+    "2024-Q2",
+    "2024-Q1"
+  ],
+  "question": "Will LLA win the most seats in the Chamber of Deputies following the 2025 Argentina election?\n\nPolymarket resolution text:\nThe 2025 election for half of the seats in Argentina's Chamber of Deputies is",
+  "raw_output": "Based on the current simulation date of May 18, 2026 -- well after the October 26, 2025 election -- the results are publicly available on Wikipedia. The 2025 Argentine legislative election results show:\n\n- **LLA (La Libertad Avanza)**: 40.66% vote, 64 seats (+54)\n- **Fuerza Patria**: 33.70% vote, 47 seats (-1)\n- **PU**: 7.73% vote, 8 seats (-16)\n- All other parties combined: fewer than 10 seats\n\nLLA won 64 of the 127 contested seats, a clear plurality and the most of any party, with a 17-seat ma"
+}

@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_08_russia-x-ukraine-ceasefire-in-2024",
+  "expected": 0.0,
+  "prediction": "NO",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q2",
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3"
+  ],
+  "question": "Russia x Ukraine Ceasefire in 2024?\n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if the governments of Ukraine and Russia both officially announce an armistice, ceasefire and/or nego",
+  "raw_output": "Now I have comprehensive context. Let me synthesize my analysis.\n\n---\nFINAL ANSWER:\nPrediction: NO\nConfidence: 0.95\nRationale: Through mid-2024, no ceasefire negotiations gained traction, no superpower has escalation dominance over both parties (Russia is a nuclear-weapons state), the EU opened accession negotiations with Ukraine signaling long-term integration rather than war termination, and neither side has signaled willingness to compromise on the core territorial issues that make a comprehe"
+}

@@ -1,0 +1,18 @@
+{
+  "market": "Brazil \u2014 Tarcisio de Freitas wins 2026",
+  "slug": "will-tarcisio-de-frietas-win-the-2026-brazilian-presidential-election",
+  "market_prob": 0.4,
+  "volume": 11253376,
+  "prediction": "NO",
+  "confidence": 0.8,
+  "vault_files_read": [
+    "timeline/2024-Q3.md (Argentina election coverage, no Brazil)",
+    "entities/javier-milei.md (regional right-wing trend parallel)",
+    "No dedicated Brazil thread or entity"
+  ],
+  "vault_usage_score": "LOW",
+  "rules_triggered": [
+    "Rule 2: Domestic Politics (adapted for foreign elections)"
+  ],
+  "reasoning": "Vault has NO Brazil-specific content. Argentina coverage provides a regional parallel (right-wing trend) but Brazil has different dynamics. Tarcisio (center-right) faces Lula (incumbent) and Bolsonaro (far-right) splitting the right. Lula has plurality support. Vault gap noted."
+}

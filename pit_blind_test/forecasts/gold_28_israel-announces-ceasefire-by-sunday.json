@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_28_israel-announces-ceasefire-by-sunday",
+  "expected": 1.0,
+  "prediction": "YES",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q4",
+    "2024-Q3",
+    "2024-Q2",
+    "2024-Q1"
+  ],
+  "question": "Israel announces ceasefire by Sunday?\n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if Israel announces it has agreed to a ceasefire agreement, defined as a publicly announced and mut",
+  "raw_output": "I now have all the context needed. Let me provide the forecast.\n\n---\nFINAL ANSWER:\nPrediction: YES\nConfidence: 0.95\nRationale: Multiple converging forces made a ceasefire highly likely in this window: Yahya Sinwar's death on October 16 created a decapitation-negotiation window (60-120 days) right when January 16 falls (~92 days later); Hezbollah's November 26 ceasefire and Assad's December 8 fall isolated Hamas strategically; and Trump's January 20 inauguration created an irresistible deadline e"
+}

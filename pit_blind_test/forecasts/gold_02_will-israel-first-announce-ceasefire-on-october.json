@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_02_will-israel-first-announce-ceasefire-on-october",
+  "expected": 1.0,
+  "prediction": "NO",
+  "correct": false,
+  "quarters_used": [
+    "2025-Q3",
+    "2025-Q2",
+    "2025-Q1",
+    "2024-Q4"
+  ],
+  "question": "Will Israel first announce ceasefire on October 8?\n\nPolymarket resolution text:\nThis market will resolve according to the next date (ET) that Israel officially announces it has agreed to a ceasefire a",
+  "raw_output": "Now I have a thorough picture. Let me analyze the forecast.\n\n## Analysis\n\n**The situation as of end of Q3 2025 (Sep 30):**\n\nThe Israel-Gaza war resumed on March 18, 2025 after the January ceasefire collapsed. Through Q3, Israel continued active military operations. Key developments:\n\n- **Pressure building**: Famine confirmed (Aug 22), UN genocide finding (Sep 16), 28-nation call to end war (Jul 21), UK/Canada/Australia/France recognize Palestine (Sep 21-22)\n- **But Israel escalated**: Strike on "
+}

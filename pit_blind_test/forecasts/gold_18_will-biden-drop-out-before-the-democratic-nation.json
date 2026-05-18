@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_18_will-biden-drop-out-before-the-democratic-nation",
+  "expected": 1.0,
+  "prediction": "YES",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3",
+    "2023-Q2"
+  ],
+  "question": "Biden drops out before the Democratic convention?\n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if President Joe Biden officially announces his withdrawal or is confirmed to have with",
+  "raw_output": "Based on all the vault context I've reviewed, here is the complete picture:\n\nFrom the Q2 2024 timeline, the key event was Biden's disastrous June 27 CNN debate performance, which immediately sparked \"widespread concerns about his age and cognitive fitness, leading to calls from Democrats for him to suspend his campaign.\"\n\nThe Q3 2024 timeline records the outcome: \"July 21 \u2014 President Joe Biden withdraws from the 2024 presidential race following intense pressure from Democratic leaders after a di"
+}

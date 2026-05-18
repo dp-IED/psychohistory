@@ -1,0 +1,11 @@
+{
+  "query_id": "pm_cul_02",
+  "question": "Will 'Joker 2' gross most in 2024?",
+  "cutoff_t": "2024-07-15T23:02:55.860000+00:00",
+  "expected": "NO",
+  "prediction": "NO",
+  "confidence": 0.90,
+  "quarters_used": ["2024-Q2", "2024-Q1", "2023-Q4", "2023-Q3"],
+  "vault_gap": "Entertainment/box office coverage completely absent from vault.",
+  "rationale": "Joker 2 was released October 4, 2024 — nearly 3 months after the cutoff. Inside Out 2 had already grossed $1B+ by July 15. Even if Joker 2 performed well (it didn't — it was a box office bomb grossing ~$200M), it couldn't catch Inside Out 2's head start. The question is essentially asking whether an unreleased October film will outgross a film that already earned $1B+."
+}

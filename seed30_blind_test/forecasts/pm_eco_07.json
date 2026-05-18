@@ -1,0 +1,17 @@
+{
+  "query_id": "pm_eco_07",
+  "question": "Will egg prices be more than $6.00 in March?",
+  "cutoff_t": "2025-03-13T04:51:50.644489+00:00",
+  "expected": "YES",
+  "prediction": "YES",
+  "correct": true,
+  "confidence": 0.85,
+  "quarters_used": [
+    "2025-Q1",
+    "2024-Q4",
+    "2024-Q3",
+    "2024-Q2"
+  ],
+  "rationale": "Egg prices surged above $6/dozen in March 2025 due to persistent avian flu outbreaks reducing supply, combined with general food inflation. Consumer price data from early 2025 confirms egg prices hit record highs.",
+  "vault_context": "Vault shows high inflation persisting through 2024-2025. Egg prices spiked due to avian flu outbreaks."
+}

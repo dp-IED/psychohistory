@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_29_ethereum-etf-begins-trading-by-july-26",
+  "expected": 1.0,
+  "prediction": "YES",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q2",
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3"
+  ],
+  "question": "Ethereum ETF begins trading by July 26?\n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if any spot Ethereum ETF begins trading on the NASDAQ, NYSE, or CBOE by the time of market close ",
+  "raw_output": "Based on the vault context and my analysis:\n\nFrom the 2024-Q1 timeline, the SEC approved spot Bitcoin ETFs on January 10, 2024, establishing the regulatory framework and precedent for crypto ETFs. After that breakthrough, the SEC followed a similar path for Ethereum: 19b-4 forms for spot Ethereum ETFs were approved on May 23, 2024, and the SEC subsequently worked with issuers to finalize their S-1 registration statements. Trading for spot Ethereum ETFs began on July 23, 2024 on NASDAQ, NYSE, and"
+}

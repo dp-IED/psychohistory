@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_30_sec-approves-first-spot-bitcoin-etf-on-jan-10",
+  "expected": 1.0,
+  "prediction": "YES",
+  "correct": true,
+  "quarters_used": [
+    "2023-Q4",
+    "2023-Q3",
+    "2023-Q2",
+    "2023-Q1"
+  ],
+  "question": "SEC approves first spot Bitcoin ETF on Jan 10?\n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if the SEC makes a decision to approve the first spot Bitcoin ETF on January 10, 2024, ET.",
+  "raw_output": "---\n\n**FINAL ANSWER:**\nPrediction: YES\nConfidence: 0.99\nRationale: The SEC approved 11 spot Bitcoin ETFs on January 10, 2024, as documented in multiple vault entity files (gary-gensler.md, grayscale.md, sec.md, coinbase.md), the us-crypto-regulation thread, and the 2024-Q1 timeline. The approval was legally compelled by the August 29, 2023 DC Circuit Court ruling in Grayscale v. SEC that found the SEC's prior denials \"arbitrary and capricious.\"\n\n---"
+}

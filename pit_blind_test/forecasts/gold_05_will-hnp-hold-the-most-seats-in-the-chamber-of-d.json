@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_05_will-hnp-hold-the-most-seats-in-the-chamber-of-d",
+  "expected": 0.0,
+  "prediction": "NO",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q4",
+    "2024-Q3",
+    "2024-Q2",
+    "2024-Q1"
+  ],
+  "question": "Will HNP hold the most seats in the Chamber of Deputies following the 2025 Argentina election?\n\nPolymarket resolution text:\nThe 2025 election for half of the seats in Argentina's Chamber of Deputies i",
+  "raw_output": "Now I have all the information needed. Let me synthesize.\n\nFrom the vault timeline files (Q1-Q4 2024), I know the Argentine political context:\n- **Javier Milei** won the presidency in Nov 2023 with 56% of the vote as an anti-system libertarian outsider\n- His coalition **La Libertad Avanza (LLA)** initially held only 10 of 257 Chamber seats - a minority presidency\n- Milei implemented severe austerity (50% peso devaluation, massive spending cuts) and inflation dropped from 211% annual to ~2.5% mon"
+}

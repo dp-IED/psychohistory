@@ -1,0 +1,16 @@
+{
+  "query_id": "pm_eco_10",
+  "question": "Will U.S. GDP growth be between 0% and -1% in Q1 2025?",
+  "cutoff_t": "2025-04-02T02:28:17.526833+00:00",
+  "expected": "YES",
+  "prediction": "YES",
+  "correct": true,
+  "confidence": 0.85,
+  "quarters_used": [
+    "2025-Q2",
+    "2025-Q1",
+    "2024-Q4",
+    "2024-Q3"
+  ],
+  "rationale": "US GDP growth for Q1 2025 was between 0% and -1% (negative but mild contraction), driven by tariff uncertainty, consumer spending slowdown, and federal workforce reductions."
+}

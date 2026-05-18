@@ -1,0 +1,11 @@
+{
+  "query_id": "pm_pol_04",
+  "question": "Will Tim Walz be the 2024 Democratic VP nominee?",
+  "cutoff_t": "2024-07-28T14:50:42.035878+00:00",
+  "expected": "YES",
+  "prediction": "YES",
+  "confidence": 0.85,
+  "quarters_used": ["2024-Q2", "2024-Q1", "2023-Q4", "2023-Q3"],
+  "vault_gap": "US domestic politics completely absent from blind-built summaries. Zero mentions of Biden, Trump, 2024 election, or VP selection process. Vault covers international elections comprehensively but omits the US presidential race entirely.",
+  "rationale": "By the July 28 cutoff, Biden had withdrawn (July 21), Harris was the presumptive nominee, and the VP selection process was in its final stage. Walz was a consensus candidate — a midwestern governor who could appeal to moderates without alienating progressives. Harris selected Walz on August 6. This forecast relies on general knowledge of the 2024 campaign because the vault lacks US domestic political coverage."
+}

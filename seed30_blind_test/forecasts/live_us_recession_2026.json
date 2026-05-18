@@ -1,0 +1,20 @@
+{
+  "market": "US recession by end of 2026",
+  "slug": "us-recession-by-end-of-2026",
+  "market_prob": 25.5,
+  "volume": 1469040,
+  "prediction": "NO",
+  "confidence": 0.65,
+  "vault_files_read": [
+    "threads/us-macro-economic-indicators.md (GDP, employment, inflation trends)",
+    "threads/us-monetary-policy-cycle-2022-2026.md (Fed rate path, tariff-induced paralysis)",
+    "entities/federal-reserve-system.md",
+    "entities/jerome-powell.md",
+    "concepts/central-bank-forward-guidance.md"
+  ],
+  "vault_usage_score": "MEDIUM",
+  "rules_triggered": [
+    "Rule 1: Central Bank Forward Guidance Analysis — applied to assess Fed rate path and recession risk"
+  ],
+  "reasoning": "Market at 25.5% YES ($1.5M volume). The vault's monetary policy thread shows the Fed cut 100bp in late 2024 and held through H1 2025 due to tariff uncertainty. By May 2026, additional cuts are expected (Fed rate cut by Sep 18 market at 100%/$20M). Key factors: (1) the inverted yield curve 2023-2024 was a classic recession signal that never materialized — suggesting structural economic changes (post-COVID fiscal, labor tightness) altered transmission; (2) consumer balance sheets remain strong though lower-income households show strain; (3) tariff uncertainty created manufacturing risk but services resilient. Base case: continued 1.5-2.5% growth with gradual Fed normalization. The 25.5% price appropriately reflects tail risk but recession is not the base case. Vault gap: no 2026 timeline coverage limits confidence."
+}

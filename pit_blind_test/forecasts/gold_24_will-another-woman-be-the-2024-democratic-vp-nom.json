@@ -1,0 +1,14 @@
+{
+  "case_id": "gold_24_will-another-woman-be-the-2024-democratic-vp-nom",
+  "expected": 0.0,
+  "prediction": "NO",
+  "correct": true,
+  "quarters_used": [
+    "2024-Q2",
+    "2024-Q1",
+    "2023-Q4",
+    "2023-Q3"
+  ],
+  "question": "Will another woman be the 2024 Democratic VP nominee?\n\nPolymarket resolution text:\nThis market will resolve to \u201cYes\u201d if a woman other than Gretchen Whitmer, Michelle Obama, Hillary Clinton, Kamala Har",
+  "raw_output": "Based on the vault context, I have a definitive historical answer. The election thread records that on **August 6, 2024**, Harris selected **Tim Walz** (Governor of Minnesota) as her running mate. The Democratic VP nominee was a man, not a woman. The finalist pool was entirely male (Shapiro, Kelly, Beshear, Walz, Buttigieg, Pritzker, Cooper), and none of the women named in the market exclusion list were selected.\n\n---\nFINAL ANSWER:\nPrediction: NO\nConfidence: 1.00\nRationale: Kamala Harris selecte"
+}

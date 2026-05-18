@@ -1,0 +1,16 @@
+{
+  "market": "Brazil \u2014 Bolsonaro wins 2026",
+  "slug": "will-jair-bolsonaro-win-the-2026-brazilian-presidential-election",
+  "market_prob": 0.8,
+  "volume": 3452453,
+  "prediction": "NO",
+  "confidence": 0.95,
+  "vault_files_read": [
+    "No Brazil-specific content"
+  ],
+  "vault_usage_score": "LOW",
+  "rules_triggered": [
+    "None"
+  ],
+  "reasoning": "Bolsonaro is ineligible (convicted, barred from office). Market pricing this at 0.8% is correct \u2014 only possible via a court overturn or legal maneuver."
+}

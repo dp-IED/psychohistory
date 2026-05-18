@@ -1,0 +1,15 @@
+{
+  "slug": "la-mayoral-adam-miller",
+  "question": "Will Adam Miller finish second in the first round of the 2026 Los Angeles mayoral election?",
+  "market_price_pct": 0.4,
+  "volume": 995.16,
+  "end_date": "2026-06-02",
+  "prediction": "NO",
+  "confidence": 98,
+  "vault_usage": "MEDIUM",
+  "reasoning": "Adam Miller is a relatively unknown candidate. Spencer Pratt (70.5%) and Nithya Raman (19%) are the heavy favorites for second place. Miller at 0.4% in a 31-candidate field is appropriately priced. Vault has CA governor thread but no LA-specific election content.",
+  "forecast_instructions_applied": [
+    "Rule 2: Domestic Politics Gap Check \u2014 vault has CA governor coverage but no LA mayoral thread; gap noted for reflection"
+  ],
+  "scanned_at": "2026-05-18T16:11:00Z"
+}

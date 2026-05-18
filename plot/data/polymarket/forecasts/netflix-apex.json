@@ -1,0 +1,15 @@
+{
+  "slug": "netflix-apex",
+  "question": "Will 'Apex' be the top global Netflix movie this week?",
+  "market_price_pct": 0.4,
+  "volume": 986.54,
+  "end_date": "2026-05-19",
+  "prediction": "NO",
+  "confidence": 90,
+  "vault_usage": "LOW",
+  "reasoning": "Same event as Black Phone 2. The unnamed/'Other' outcome is the heavy favorite. Both named options are at 0.4%, suggesting the market expects a different film to top the charts.",
+  "forecast_instructions_applied": [
+    "Rule 3: Culture/Entertainment Domain Gap Check"
+  ],
+  "scanned_at": "2026-05-18T16:11:00Z"
+}
