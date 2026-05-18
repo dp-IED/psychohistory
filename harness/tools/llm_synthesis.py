@@ -22,7 +22,7 @@ DEFAULT_CURSOR_MODEL = "composer-2-fast"
 # ---------------------------------------------------------------------------
 
 _HERMES_PROFILE = "forecasting"
-_HERMES_TIMEOUT = 300  # seconds per call
+_HERMES_TIMEOUT = 1200
 
 
 def _call_hermes(prompt: str, *, timeout: int = _HERMES_TIMEOUT) -> str:
