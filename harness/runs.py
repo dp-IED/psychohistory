@@ -1,4 +1,4 @@
-"""Episode runs stored as timestamped markdown files in vault/runs/.
+"""Episode runs stored as timestamped markdown files in graph-vault/runs/.
 
 Each run is a `.md` file with YAML frontmatter containing all fields.
 No SQLite — everything is in Obsidian.
@@ -38,7 +38,7 @@ class RunNote:
 
 
 def write_run(vault_dir: str | Path, note: RunNote) -> Path:
-    """Write a run note to vault/runs/ as a markdown file with YAML frontmatter."""
+    """Write a run note to graph-vault/runs/ as a markdown file with YAML frontmatter."""
     runs_dir = Path(vault_dir).resolve() / "runs"
     runs_dir.mkdir(parents=True, exist_ok=True)
 
@@ -92,7 +92,7 @@ def _parse_frontmatter(text: str) -> tuple[dict[str, Any], str]:
 
 
 def read_all_runs(vault_dir: str | Path) -> list[dict[str, Any]]:
-    """Read all run files from vault/runs/, parse frontmatter, return sorted by timestamp."""
+    """Read all run files from graph-vault/runs/, parse frontmatter, return sorted by timestamp."""
     runs_dir = Path(vault_dir).resolve() / "runs"
     if not runs_dir.exists():
         return []
