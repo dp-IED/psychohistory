@@ -585,7 +585,26 @@ def _coerce_manifold_markets_page(
     return parsed_rows, cursor_candidate, halted
 
 
-def build_polymarket_corpus(min_date: date, max_questions: int) -> list[BacktestQuestion]:
+def build_polymarket_corpus(
+    min_date: date,
+    max_questions: int,
+    *,
+    allowed_categories: frozenset[str] | None = None,
+) -> list[BacktestQuestion]:
+    """
+    Build a backtest corpus from resolved Polymarket markets.
+
+    Parameters
+    ----------
+    min_date:
+        Earliest close date to include.
+    max_questions:
+        Maximum number of questions to return.
+    allowed_categories:
+        If set, only include questions whose category is in this set.
+        Useful for filtering out sports/culture/weather markets.
+        Set to ``None`` to include all categories (default).
+    """
     if max_questions < 1:
         return []
 
@@ -623,6 +642,8 @@ def build_polymarket_corpus(min_date: date, max_questions: int) -> list[Backtest
             if record is None:
                 continue
             if record.question_id in seen_ids:
+                continue
+            if allowed_categories is not None and (record.category is None or record.category not in allowed_categories):
                 continue
             corpus.append(record)
             seen_ids.add(record.question_id)
