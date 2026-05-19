@@ -77,7 +77,7 @@ def _truncate(text: str, max_len: int = 55) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run forecasting backtest (parallel).")
     parser.add_argument("--source", choices=["polymarket"], default="polymarket")
-    parser.add_argument("--max-questions", type=int, default=10)
+    parser.add_argument("--max-questions", type=int, default=15)
     parser.add_argument("--vault", default=str(VAULT_DIR), help="Vault directory (writes to graph-vault/runs/)")
     parser.add_argument("--policy", default=str(DEFAULT_POLICY_PATH), help="Forecast rules file in graph-vault")
     parser.add_argument("--skip-existing", action="store_true",
@@ -86,6 +86,21 @@ def main() -> None:
                         help="Number of questions to forecast in parallel (default 1)")
     parser.add_argument("--orchestrate", action="store_true",
                         help="Use multi-agent orchestration (sub-agents via delegate_task)")
+    parser.add_argument(
+        "--enforce-pit",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Materialize a PIT-filtered vault snapshot at each question's open_date (default: on)",
+    )
+    parser.add_argument(
+        "--lookback-days",
+        type=int,
+        default=730,
+        help="Only include resolved markets closed within this many days (default 730)",
+    )
+    parser.add_argument("--allow-categories", nargs="+", default=["politics", "economics", "crypto"],
+                        help="Only forecast on these categories (default: politics economics crypto). "
+                             "Pass 'all' to include every category.")
     args = parser.parse_args()
 
     # Load existing vault questions if skipping
@@ -95,10 +110,19 @@ def main() -> None:
         existing_ids, existing_texts = _load_existing_ids_and_texts(args.vault)
         print(f"Vault has {runs_count(args.vault)} runs ({len(existing_ids)} unique IDs, {len(existing_texts)} unique texts).")
 
+    # Determine category filter
+    ALLOWED = frozenset(args.allow_categories) if "all" not in args.allow_categories else None
+    if ALLOWED:
+        print(f"Filtering to categories: {sorted(ALLOWED)}")
+
+    min_close = date.today() - timedelta(days=args.lookback_days)
+    print(f"PIT enforcement: {'on' if args.enforce_pit else 'off'} | resolved markets since {min_close}")
+
     # Load corpus
     corpus = build_polymarket_corpus(
-        min_date=date.today() - timedelta(days=180),
-        max_questions=(args.max_questions + 10) * 3,  # over-fetch for dedup, but cap to prevent slow pagination
+        min_date=min_close,
+        max_questions=(args.max_questions + 10) * 3,  # over-fetch for dedup, but cap
+        allowed_categories=ALLOWED,
     )
 
     # Filter out existing questions
@@ -210,7 +234,12 @@ def main() -> None:
         with ThreadPoolExecutor(max_workers=args.concurrency) as pool:
             fut_to_idx = {
                 pool.submit(
-                    _forecast_one, q, args.vault, args.source, args.orchestrate
+                    _forecast_one,
+                    q,
+                    args.vault,
+                    args.source,
+                    args.orchestrate,
+                    args.enforce_pit,
                 ): i
                 for i, q in enumerate(corpus)
             }
@@ -253,7 +282,13 @@ def main() -> None:
     return 0 if failures == 0 else 1
 
 
-def _forecast_one(q: object, vault_dir: str, source: str, orchestrate: bool = False) -> tuple[str, float | None, str | None, float | str, str]:
+def _forecast_one(
+    q: object,
+    vault_dir: str,
+    source: str,
+    orchestrate: bool = False,
+    enforce_pit: bool = True,
+) -> tuple[str, float | None, str | None, float | str, str]:
     """Run a single forecast. Returns (text, p_yes, error, brier, elapsed_str)."""
     import time
     t0 = time.time()
@@ -268,6 +303,7 @@ def _forecast_one(q: object, vault_dir: str, source: str, orchestrate: bool = Fa
                 category=getattr(q, "category", "general"),
                 resolution=q.resolution,
                 volume=getattr(q, "volume", None),
+                enforce_pit=enforce_pit,
             )
         else:
             p_yes, reasoning = run_structured(
@@ -279,6 +315,7 @@ def _forecast_one(q: object, vault_dir: str, source: str, orchestrate: bool = Fa
                 category=getattr(q, "category", "general"),
                 resolution=q.resolution,
                 volume=getattr(q, "volume", None),
+                enforce_pit=enforce_pit,
             )
         elapsed = time.time() - t0
         brier = (p_yes - (1.0 if q.resolution else 0.0)) ** 2 if q.resolution is not None else None
