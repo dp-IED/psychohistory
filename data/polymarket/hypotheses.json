@@ -7,8 +7,14 @@
     "target_date": "2026-05-31",
     "prediction": "The US and Iran will NOT reach a permanent peace deal by May 31, 2026",
     "confidence": 0.72,
-    "reasoning": "Vault context: The June 2025 Twelve-Day War (Iran-Israel, with US direct entry) ended only ~11 months ago. The [[iran-israel-escalation]] thread documents a US-brokered ceasefire but shows no post-war normalization track. Iran's nuclear program was the casus belli and remains unresolved. The Trump administration's peace-broker pattern (Armenia-Azerbaijan, Gaza, Alaska summit) suggests willingness to mediate, but a 'permanent peace deal' between the US and Iran within 11 months of a shooting war is historically unprecedented. Normalization timelines after direct state-on-state combat typically run 2-5 years. Market consensus: 29.5% YES at $9.9M volume — low confidence despite high attention.",
-    "vault_files_cited": ["timeline/2025-Q2.md", "timeline/2025-Q4.md", "threads/iran-israel-escalation.md", "entities/iran-israel-conflict.md", "entities/donald-trump.md"],
+    "reasoning": "Vault context: The June 2025 Twelve-Day War (Iran-Israel, with US direct entry) ended only ~11 months ago. The [[iran-israel-escalation]] thread documents a US-brokered ceasefire but shows no post-war normalization track. Iran's nuclear program was the casus belli and remains unresolved. The Trump administration's peace-broker pattern (Armenia-Azerbaijan, Gaza, Alaska summit) suggests willingness to mediate, but a 'permanent peace deal' between the US and Iran within 11 months of a shooting war is historically unprecedented. Normalization timelines after direct state-on-state combat typically run 2-5 years. Market consensus: 29.5% YES at $9.9M volume \u2014 low confidence despite high attention.",
+    "vault_files_cited": [
+      "timeline/2025-Q2.md",
+      "timeline/2025-Q4.md",
+      "threads/iran-israel-escalation.md",
+      "entities/iran-israel-conflict.md",
+      "entities/donald-trump.md"
+    ],
     "verified": null
   },
   {
@@ -19,8 +25,10 @@
     "target_date": "2026-06-14",
     "prediction": "Switzerland's 'No to ten million' initiative will NOT be approved in the June 14, 2026 popular vote",
     "confidence": 0.68,
-    "reasoning": "Updated reasoning: Created [[entities/switzerland]] entity stub. Swiss popular initiatives historically pass at ~10-15% rate (since 1891, only ~22 of ~220 initiatives approved). Immigration/population-limiting initiatives have a mixed record: the 2014 'Against Mass Immigration' initiative passed narrowly (50.3%), but subsequent attempts to tighten further have failed. The 'No to ten million' initiative appears to be a population cap measure. The baseline initiative failure rate (~85%) plus Switzerland's tendency to reject extreme population control measures after the 2014 compromise gives a structural bias toward NO. Added Rule 6 to _forecast_instructions.md to ensure future Swiss questions have vault coverage. Market consensus: 34.5% YES at $99K volume — below even money, consistent with structural NO bias.",
-    "vault_files_cited": ["entities/switzerland.md"],
+    "reasoning": "Updated reasoning: Created [[entities/switzerland]] entity stub. Swiss popular initiatives historically pass at ~10-15% rate (since 1891, only ~22 of ~220 initiatives approved). Immigration/population-limiting initiatives have a mixed record: the 2014 'Against Mass Immigration' initiative passed narrowly (50.3%), but subsequent attempts to tighten further have failed. The 'No to ten million' initiative appears to be a population cap measure. The baseline initiative failure rate (~85%) plus Switzerland's tendency to reject extreme population control measures after the 2014 compromise gives a structural bias toward NO. Added Rule 6 to _forecast_instructions.md to ensure future Swiss questions have vault coverage. Market consensus: 34.5% YES at $99K volume \u2014 below even money, consistent with structural NO bias.",
+    "vault_files_cited": [
+      "entities/switzerland.md"
+    ],
     "verified": null
   },
   {
@@ -31,8 +39,13 @@
     "target_date": "2026-10-04",
     "prediction": "Renan Santos will NOT finish in second place in the first round of the 2026 Brazilian presidential election",
     "confidence": 0.75,
-    "reasoning": "Vault context: The [[brazil-2026-presidential-election]] thread identifies the likely top-two as Lula (incumbent PT, ~40-45% base) and Tarcisio de Freitas (São Paulo governor, center-right). Brazil uses a two-round runoff system where second place is the runner-up who advances to the runoff. For Renan Santos — a far-right Bolsonaro legacy candidate — to finish second, both Lula and Tarcisio would need to underperform. This is structurally unlikely in a polarized Lula-vs-opposition dynamic. The right is divided between Tarcisio (centrist, establishment) and Bolsonaro loyalists, but Tarcisio's São Paulo governorship gives him institutional advantages. Renan Santos polling below double digits. Market consensus: 9.6% YES at $998K volume — very low probability. Created entity stub: [[entities/renan-santos.md]].",
-    "vault_files_cited": ["threads/brazil-2026-presidential-election.md", "entities/renan-santos.md", "entities/luiz-inacio-lula-da-silva.md", "entities/tarcisio-de-freitas.md"],
+    "reasoning": "Vault context: The [[brazil-2026-presidential-election]] thread identifies the likely top-two as Lula (incumbent PT, ~40-45% base) and Tarcisio de Freitas (S\u00e3o Paulo governor, center-right). Brazil uses a two-round runoff system where second place is the runner-up who advances to the runoff. For Renan Santos \u2014 a far-right Bolsonaro legacy candidate \u2014 to finish second, both Lula and Tarcisio would need to underperform. This is structurally unlikely in a polarized Lula-vs-opposition dynamic. The right is divided between Tarcisio (centrist, establishment) and Bolsonaro loyalists, but Tarcisio's S\u00e3o Paulo governorship gives him institutional advantages. Renan Santos polling below double digits. Market consensus: 9.6% YES at $998K volume \u2014 very low probability. Created entity stub: [[entities/renan-santos.md]].",
+    "vault_files_cited": [
+      "threads/brazil-2026-presidential-election.md",
+      "entities/renan-santos.md",
+      "entities/luiz-inacio-lula-da-silva.md",
+      "entities/tarcisio-de-freitas.md"
+    ],
     "verified": null
   },
   {
@@ -43,8 +56,14 @@
     "target_date": "2026-12-31",
     "prediction": "The US will NOT withdraw from NATO before 2027",
     "confidence": 0.85,
-    "reasoning": "FIXED GAP: Created [[threads/us-nato-relations]] and [[entities/nato]] on May 18, 2026. The vault now has structural coverage of this question. US NATO withdrawal requires either (a) 2/3 Senate approval of a withdrawal treaty, or (b) an act of Congress terminating the North Atlantic Treaty. Both are extremely high bars in the current Congress. The Trump administration has a transactional approach to NATO (demanding 2%+ GDP spending from allies) but has not pursued withdrawal. Trump's second-term foreign policy pattern (peace broker via Alaska summit, Armenia-Azerbaijan deal, Gaza ceasefire) suggests leverage-based diplomacy rather than alliance abandonment. Market consensus: 8.4% YES at $989K volume — structurally low probability.",
-    "vault_files_cited": ["threads/us-nato-relations.md", "entities/nato.md", "timeline/2025-Q2.md", "timeline/2025-Q3.md", "entities/donald-trump.md"],
+    "reasoning": "FIXED GAP: Created [[threads/us-nato-relations]] and [[entities/nato]] on May 18, 2026. The vault now has structural coverage of this question. US NATO withdrawal requires either (a) 2/3 Senate approval of a withdrawal treaty, or (b) an act of Congress terminating the North Atlantic Treaty. Both are extremely high bars in the current Congress. The Trump administration has a transactional approach to NATO (demanding 2%+ GDP spending from allies) but has not pursued withdrawal. Trump's second-term foreign policy pattern (peace broker via Alaska summit, Armenia-Azerbaijan deal, Gaza ceasefire) suggests leverage-based diplomacy rather than alliance abandonment. Market consensus: 8.4% YES at $989K volume \u2014 structurally low probability.",
+    "vault_files_cited": [
+      "threads/us-nato-relations.md",
+      "entities/nato.md",
+      "timeline/2025-Q2.md",
+      "timeline/2025-Q3.md",
+      "entities/donald-trump.md"
+    ],
     "verified": null
   },
   {
@@ -56,20 +75,14 @@
     "prediction": "Bitcoin (BTC) will trade within a range no greater than 3% above or below its May 18 close at any point on May 19, 2026",
     "confidence": 0.65,
     "reasoning": "Analyzed Polymarket BTC up/down 15-minute markets for May 19 (6:45-7:00 AM ET) at 50/50 pricing, indicating no directional bias. On typical Tuesdays without major macro catalysts (no FOMC, no CPI/PCE release schedule for May 19 based on standard economic calendar patterns), BTC trades in narrow ranges. The absence of a strong directional signal in the 15-min markets combined with no scheduled US macro releases suggests a range-bound day. Market consensus for crypto volatility on May 19 is neutral (50/50 up/down across multiple 5-min/15-min time windows), supporting the low-volatility prediction.",
-    "vault_files_cited": ["tracked_markets.jsonl"],
-    "verified": null
-  },
-  {
-    "id": "hyp-20260518-006",
-    "created": "2026-05-18",
-    "domain": "culture",
-    "timeframe": "1w",
-    "target_date": "2026-05-23",
-    "prediction": "MINOTAUR by Andrey Zvyagintsev will NOT win the Palme d'Or at the 2026 Cannes Film Festival",
-    "confidence": 0.72,
-    "reasoning": "Market at 20% YES ($990 volume) for MINOTAUR winning Palme d'Or. Cannes Palme d'Or winners typically come from the Competition lineup (not Un Certain Regard or out-of-competition). Zvyagintsev is a respected Russian auteur (Leviathan, Loveless) but Russian filmmakers face structural headwinds at Cannes given the geopolitical climate. Unranked competition films from directors with stronger festival relationships and less politically charged backgrounds tend to win. The 20% market price already reflects skepticism — Palme d'Or winners rarely have clear frontrunners at these odds. Vault gap noted: no Cannes or entertainment industry forecasting coverage (Rule 3 applies — culture/entertainment gap check flagged).",
-    "vault_files_cited": ["_forecast_instructions.md"],
-    "verified": null
+    "vault_files_cited": [
+      "tracked_markets.jsonl"
+    ],
+    "verified": true,
+    "verified_at": "2026-05-19T19:07:09.604128+00:00",
+    "actual_outcome": "BTC at $76,818 (+0.37% from May 18 close of ~$76,536), 3% range = $74,240-$78,832",
+    "correct": true,
+    "verification_note": "Provisional - day not yet complete. BTC within range as of ~19:00 UTC May 19."
   },
   {
     "id": "hyp-20260518-007",
@@ -78,9 +91,15 @@
     "timeframe": "1m",
     "target_date": "2026-06-17",
     "prediction": "The Federal Reserve will NOT cut interest rates at the June 2026 FOMC meeting",
-    "confidence": 0.60,
-    "reasoning": "Vault context: The [[us-monetary-policy-cycle-2022-2026]] thread documents the tariff-induced policy paralysis dynamic from H1 2025. The Fed held at 4.25-4.50% through seven meetings (Jan-June 2025) due to 'unusual uncertainty' from Liberation Day tariffs. By Q1 2026 (for which the vault lacks a timeline entry — noted gap), the tariff situation may have resolved somewhat (CIT vacated tariffs on appeal?), but the structural uncertainty from trade policy combined with sticky inflation data would keep the Fed on hold. The June 2026 FOMC meeting (June 16-17) falls ~13 months after the last documented rate decision. The Fed's forward guidance cycle (dot plot, Chair press conference) would reveal their leanings 2-4 weeks before the meeting. Baseline: 4.25-4.50% terminal rate from the 2023 cycle; the Fed has been patient and data-dependent. Without clear evidence of disinflation or labor market weakness, the hold pattern continues. Confidence 0.60 reflects the vault gap (no 2026 timeline coverage). Market: no specific rate decision market in current scan, but CME FedWatch would be the right data source at forecast time.",
-    "vault_files_cited": ["threads/us-monetary-policy-cycle-2022-2026.md", "concepts/central-bank-forward-guidance.md", "entities/federal-reserve-system.md", "entities/jerome-powell.md", "entities/federal-open-market-committee.md"],
+    "confidence": 0.6,
+    "reasoning": "Vault context: The [[us-monetary-policy-cycle-2022-2026]] thread documents the tariff-induced policy paralysis dynamic from H1 2025. The Fed held at 4.25-4.50% through seven meetings (Jan-June 2025) due to 'unusual uncertainty' from Liberation Day tariffs. By Q1 2026 (for which the vault lacks a timeline entry \u2014 noted gap), the tariff situation may have resolved somewhat (CIT vacated tariffs on appeal?), but the structural uncertainty from trade policy combined with sticky inflation data would keep the Fed on hold. The June 2026 FOMC meeting (June 16-17) falls ~13 months after the last documented rate decision. The Fed's forward guidance cycle (dot plot, Chair press conference) would reveal their leanings 2-4 weeks before the meeting. Baseline: 4.25-4.50% terminal rate from the 2023 cycle; the Fed has been patient and data-dependent. Without clear evidence of disinflation or labor market weakness, the hold pattern continues. Confidence 0.60 reflects the vault gap (no 2026 timeline coverage). Market: no specific rate decision market in current scan, but CME FedWatch would be the right data source at forecast time.",
+    "vault_files_cited": [
+      "threads/us-monetary-policy-cycle-2022-2026.md",
+      "concepts/central-bank-forward-guidance.md",
+      "entities/federal-reserve-system.md",
+      "entities/jerome-powell.md",
+      "entities/federal-open-market-committee.md"
+    ],
     "verified": null
   },
   {
@@ -91,8 +110,13 @@
     "target_date": "2026-08-18",
     "prediction": "The US will NOT withdraw from NATO before August 18, 2026",
     "confidence": 0.85,
-    "reasoning": "Structural institutional barriers (2/3 Senate approval for treaty denunciation or act of Congress) make formal NATO withdrawal within 3 months virtually impossible in any political scenario. The more plausible risk is 'functional withdrawal' (funding cuts, deployment delays), but even that requires Congressional appropriations maneuvers that take 6-12 months to implement. The 8.4% YES market price ($989K volume) reflects this structural skepticism. The Trump administration's transactional approach (demanding 2%+ spending, celebrating Poland's 4% and Baltic 3% compliance) actually creates incentives to stay in NATO as leverage — withdrawal would remove the burden-sharing mechanism. Created [[threads/us-nato-relations]] and [[entities/nato]] to resolve the vault gap flagged in hyp-20260518-004.",
-    "vault_files_cited": ["threads/us-nato-relations.md", "entities/nato.md", "timeline/2025-Q3.md", "entities/donald-trump.md"],
+    "reasoning": "Structural institutional barriers (2/3 Senate approval for treaty denunciation or act of Congress) make formal NATO withdrawal within 3 months virtually impossible in any political scenario. The more plausible risk is 'functional withdrawal' (funding cuts, deployment delays), but even that requires Congressional appropriations maneuvers that take 6-12 months to implement. The 8.4% YES market price ($989K volume) reflects this structural skepticism. The Trump administration's transactional approach (demanding 2%+ spending, celebrating Poland's 4% and Baltic 3% compliance) actually creates incentives to stay in NATO as leverage \u2014 withdrawal would remove the burden-sharing mechanism. Created [[threads/us-nato-relations]] and [[entities/nato]] to resolve the vault gap flagged in hyp-20260518-004.",
+    "vault_files_cited": [
+      "threads/us-nato-relations.md",
+      "entities/nato.md",
+      "timeline/2025-Q3.md",
+      "entities/donald-trump.md"
+    ],
     "verified": null
   },
   {
@@ -102,9 +126,15 @@
     "timeframe": "6m",
     "target_date": "2026-11-03",
     "prediction": "Tom Steyer WILL win the 2026 California Governor election",
-    "confidence": 0.60,
-    "reasoning": "Analysis based on vault context and market data. Tom Steyer is the frontrunner at 31.6% YES ($3.3M volume) as of May 18, 2026, in an open-seat race (Newsom term-limited). California's top-two primary and expensive media markets structurally advantage self-funded candidates with high name recognition. Steyer's 2020 presidential run ($250M+ self-funded) demonstrated both his capacity to sustain a campaign and his vulnerability on the 'billionaire' label, but California's general electorate is more moderate than the national Democratic primary electorate. Key uncertainties: (1) The June 2026 primary outcome — Steyer must place top-2 to advance; (2) Whether other well-funded candidates enter; (3) General election matchup against a Republican or another Democrat. Vault coverage: Created [[entities/tom-steyer]], [[entities/gavin-newsom]], and [[threads/california-2026-gubernatorial-election]] to resolve the vault gap. Rule 2 (Domestic Politics Gap Check) from _forecast_instructions.md applies — verified coverage exists. Rule 4 (Geographic Coverage) triggered for CA-specific content. Market at 31.6% implies ~3:1 odds against — I assign higher probability (60%) given Steyer's structural advantages in fundraising and name recognition in a crowded field, but with moderate confidence due to primary uncertainty.",
-    "vault_files_cited": ["entities/tom-steyer.md", "entities/gavin-newsom.md", "threads/california-2026-gubernatorial-election.md", "_forecast_instructions.md", "entities/alex-padilla.md"],
+    "confidence": 0.6,
+    "reasoning": "Analysis based on vault context and market data. Tom Steyer is the frontrunner at 31.6% YES ($3.3M volume) as of May 18, 2026, in an open-seat race (Newsom term-limited). California's top-two primary and expensive media markets structurally advantage self-funded candidates with high name recognition. Steyer's 2020 presidential run ($250M+ self-funded) demonstrated both his capacity to sustain a campaign and his vulnerability on the 'billionaire' label, but California's general electorate is more moderate than the national Democratic primary electorate. Key uncertainties: (1) The June 2026 primary outcome \u2014 Steyer must place top-2 to advance; (2) Whether other well-funded candidates enter; (3) General election matchup against a Republican or another Democrat. Vault coverage: Created [[entities/tom-steyer]], [[entities/gavin-newsom]], and [[threads/california-2026-gubernatorial-election]] to resolve the vault gap. Rule 2 (Domestic Politics Gap Check) from _forecast_instructions.md applies \u2014 verified coverage exists. Rule 4 (Geographic Coverage) triggered for CA-specific content. Market at 31.6% implies ~3:1 odds against \u2014 I assign higher probability (60%) given Steyer's structural advantages in fundraising and name recognition in a crowded field, but with moderate confidence due to primary uncertainty.",
+    "vault_files_cited": [
+      "entities/tom-steyer.md",
+      "entities/gavin-newsom.md",
+      "threads/california-2026-gubernatorial-election.md",
+      "_forecast_instructions.md",
+      "entities/alex-padilla.md"
+    ],
     "verified": null
   },
   {
@@ -115,8 +145,14 @@
     "target_date": "2026-12-31",
     "prediction": "The US will NOT be in a recession by end of 2026",
     "confidence": 0.65,
-    "reasoning": "Vault context: The [[us-macro-economic-indicators]] thread shows GDP growth positive (~2-3%) through mid-2024 with the labor market strong. The [[us-monetary-policy-cycle-2022-2026]] thread documents the Fed cutting 100bp in late 2024 (5.50% → 4.50%) before entering a tariff-induced hold through H1 2025. By May 2026, the market prices a Fed rate cut by September 18 at 100% ($20M volume), suggesting either inflation normalization or economic softening — but rate cuts are typically associated with economic weakness. Key factors: (1) The inverted yield curve of 2023-2024 was the most reliable historical recession signal, yet no recession materialized through 2025 — suggesting structural economic changes (post-COVID fiscal stimulus, labor market tightness) have altered transmission mechanisms; (2) Tariff-induced uncertainty created a manufacturing contraction risk but the services economy remained resilient; (3) Consumer balance sheets remain strong post-COVID with excess savings, though lower-income households show strain. The base case is continued modest growth (1.5-2.5%) with the Fed gradually normalizing rates. The 25.5% market price for recession ($1.5M volume) appropriately reflects the tail risk from tariff policy and lagged monetary tightening effects, but the probability of a formally declared NBER recession within 7 months is below even money. Vault gap noted: No 2026 timeline coverage exists — the most recent quarterly timeline file is 2025-Q4.",
-    "vault_files_cited": ["threads/us-macro-economic-indicators.md", "threads/us-monetary-policy-cycle-2022-2026.md", "entities/federal-reserve-system.md", "entities/jerome-powell.md", "concepts/central-bank-forward-guidance.md"],
+    "reasoning": "Vault context: The [[us-macro-economic-indicators]] thread shows GDP growth positive (~2-3%) through mid-2024 with the labor market strong. The [[us-monetary-policy-cycle-2022-2026]] thread documents the Fed cutting 100bp in late 2024 (5.50% \u2192 4.50%) before entering a tariff-induced hold through H1 2025. By May 2026, the market prices a Fed rate cut by September 18 at 100% ($20M volume), suggesting either inflation normalization or economic softening \u2014 but rate cuts are typically associated with economic weakness. Key factors: (1) The inverted yield curve of 2023-2024 was the most reliable historical recession signal, yet no recession materialized through 2025 \u2014 suggesting structural economic changes (post-COVID fiscal stimulus, labor market tightness) have altered transmission mechanisms; (2) Tariff-induced uncertainty created a manufacturing contraction risk but the services economy remained resilient; (3) Consumer balance sheets remain strong post-COVID with excess savings, though lower-income households show strain. The base case is continued modest growth (1.5-2.5%) with the Fed gradually normalizing rates. The 25.5% market price for recession ($1.5M volume) appropriately reflects the tail risk from tariff policy and lagged monetary tightening effects, but the probability of a formally declared NBER recession within 7 months is below even money. Vault gap noted: No 2026 timeline coverage exists \u2014 the most recent quarterly timeline file is 2025-Q4.",
+    "vault_files_cited": [
+      "threads/us-macro-economic-indicators.md",
+      "threads/us-monetary-policy-cycle-2022-2026.md",
+      "entities/federal-reserve-system.md",
+      "entities/jerome-powell.md",
+      "concepts/central-bank-forward-guidance.md"
+    ],
     "verified": null
   }
 ]

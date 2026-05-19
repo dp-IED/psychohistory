@@ -20,11 +20,13 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
 from harness.runs import RunNote, write_run
+from harness.vault_pit import format_admissible_block, list_admissible_paths, materialize_pit_snapshot
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -63,12 +65,19 @@ _JSON_FENCE = re.compile(r"\{[\s\S]*\}")
 
 def _extract_json(text: str) -> dict[str, Any] | None:
     m = _JSON_FENCE.search(text)
-    if not m:
-        return None
+    blob = m.group(0) if m else text
     try:
-        payload = json.loads(m.group(0))
+        payload = json.loads(blob)
     except json.JSONDecodeError:
-        return None
+        # Hermes sometimes truncates mid-string; recover p_yes + partial reasoning.
+        py_m = re.search(r'"p_yes"\s*:\s*([\d.]+)', blob)
+        if not py_m:
+            return None
+        reason_m = re.search(r'"reasoning"\s*:\s*"([^"]*)', blob)
+        payload = {
+            "p_yes": float(py_m.group(1)),
+            "reasoning": reason_m.group(1) if reason_m else "",
+        }
     return payload if isinstance(payload, dict) else None
 
 
@@ -113,6 +122,9 @@ def _build_structured_prompt(
     *,
     vault_dir: str | Path | None = None,
     volume: float | None = None,
+    pit_manifest: list[str] | None = None,
+    graph_only: bool = False,
+    pit_brief_block: str = "",
 ) -> str:
     """Build a prompt that requires the agent to research using its own tools.
 
@@ -141,23 +153,46 @@ def _build_structured_prompt(
         "",
         "Step 3 - CONCEPTS: Search graph-vault/concepts/ for playbooks relevant",
         "  to this question type (politics, macro, culture, etc.).",
-        '',
-        "Step 4 - PAST RUNS: Use search_files to find analogous questions in",
-        "  graph-vault/runs/. Compare predictions, outcomes, and what worked.",
+        "  For historical analogs only, read graph-vault/history/ — do not use root timeline/ for pre-2022.",
         "",
-        "Step 5 - KNOWLEDGE GRAPH: Read graph-vault/timeline/ for temporal context,",
+        "Step 4 - KNOWLEDGE GRAPH: Read graph-vault/timeline/ for temporal context,",
         "  and graph-vault/entities/ for entity nodes relevant to this question (people, places,",
         "  organizations, domains). Search graph-vault/ for threads and related nodes.",
-        "  Only read nodes relevant to the question — don't browse the whole vault.",
+        "  Only read nodes listed in the PIT manifest when one is provided.",
         "",
-        "Step 6 - WEB RESEARCH: Use web_search and browser_navigate to research",
-        f"  current context. You MUST respect the cutoff date ({cutoff_str})",
-        "  and never use information from after that date.",
-        "",
+    ]
+    if graph_only:
+        lines += [
+            "Step 5 - GRAPH ONLY: Do NOT use web_search or browser_navigate.",
+            "  Infer only from files in the PIT manifest (and their wikilinks within the manifest).",
+            "",
+        ]
+    else:
+        lines += [
+            "Step 5 - WEB RESEARCH: Use web_search and browser_navigate to research",
+            f"  current context. You MUST respect the cutoff date ({cutoff_str})",
+            "  and never use information from after that date.",
+            "",
+        ]
+
+    if pit_brief_block:
+        lines += [
+            "A PIT research librarian sub-agent has already extracted knowable facts (below).",
+            "Prefer this brief over re-reading vault files that may contain post-cutoff narrative.",
+            "",
+            pit_brief_block,
+            "",
+        ]
+
+    if pit_manifest is not None and vault_dir is not None:
+        lines.append(format_admissible_block(pit_manifest, vault_dir=vault_dir))
+        lines.append("")
+
+    lines += [
         "=== OUTPUT FORMAT (MANDATORY) ===",
         "After completing your research, respond with ONLY a single JSON object.",
         "No explanations, no markdown, no other text before or after.",
-        '{"p_yes": 0.XX, "reasoning": "one-sentence summary"}',
+        '{"p_yes": 0.XX, "reasoning": "one-sentence summary; include implied timing if the question asks when"}',
         "p_yes must be a float between 0.0 and 1.0.",
         "",
     ]
@@ -174,6 +209,7 @@ def _build_orchestrator_prompt(
     *,
     vault_dir: str | Path | None = None,
     volume: float | None = None,
+    pit_manifest: list[str] | None = None,
 ) -> str:
     """Build a prompt that instructs the agent to orchestrate sub-agents via delegate_task.
 
@@ -202,36 +238,48 @@ def _build_orchestrator_prompt(
         "Step 1 - READ YOUR PREROGATIVES: Read graph-vault/agent-roles/_orchestrator_prerogatives.md",
         "  This defines your meta-workflow. Follow it.",
         "",
-        "Step 2 - SCAN THE AGENT ROSTER: Use search_files to list graph-vault/agent-roles/*.md",
-        "  Read each role file's frontmatter (domain tags, region tags, trigger conditions).",
-        "  Select 2-4 agents whose domain/region/triggers match the question.",
+        "Step 2 - PIT LIBRARIAN (if cutoff is historical):",
+        "  If cutoff is before today, spawn pit-research-librarian FIRST (read-only).",
+        "  Pass question + cutoff; it returns a PIT brief (no p_yes). Give that brief to",
+        "  all later sub-agents. Domain agents may use current vault for gaps — label which",
+        "  facts come from the PIT brief vs live reads.",
+        "",
+        "Step 3 - SCAN THE AGENT ROSTER: Use search_files to list graph-vault/agent-roles/*.md",
+        "  Skip pit-research-librarian for selection counts. Select 2-4 domain agents.",
         "  CRITICAL: At minimum include an actor-simulation or regional specialist for the",
         "  relevant geography AND an analyst/theorist for the question's domain.",
         "",
-        "Step 3 - SPAWN SUB-AGENTS (parallel):",
+        "Step 4 - SPAWN SUB-AGENTS (parallel):",
         "  Use delegate_task for each selected agent.",
         "  Each sub-agent receives: the full role file content, the question, the cutoff,",
         "  and vault access. Sub-agents are READ-WRITE — they create entity stubs, threads,",
         "  and concept files as their methodology prescribes.",
         "  Run them IN PARALLEL by passing all tasks in a single delegate_task call.",
         "",
-        "Step 4 - COLLECT OUTPUTS: Each sub-agent returns its analysis (p_yes, reasoning)",
+        "Step 5 - COLLECT OUTPUTS: Each sub-agent returns its analysis (p_yes, reasoning)",
         "  and a log of vault edits (files created/modified).",
         "",
-        "Step 5 - SPAWN CONTRARIAN: If you used 3+ sub-agents, spawn the contrarian-debater",
+        "Step 6 - SPAWN CONTRARIAN: If you used 3+ sub-agents, spawn the contrarian-debater",
         "  with the sub-agents' outputs as context. The contrarian stress-tests assumptions",
         "  but does NOT produce its own forecast.",
         "",
-        "Step 6 - SYNTHESIZE: Extract p_yes values, identify consensus/divergence,",
+        "Step 7 - SYNTHESIZE: Extract p_yes values, identify consensus/divergence,",
         "  apply the contrarian critique. Produce your final weighted estimate.",
         "",
-        "Step 7 - REVIEW VAULT EDITS: Check what each sub-agent wrote to the vault.",
+        "Step 8 - REVIEW VAULT EDITS: Check what each sub-agent wrote to the vault.",
         "  Resolve conflicts (overlapping entity stubs, conflicing claims).",
         "  Approve good edits, fix bad ones.",
         "",
-        "Step 8 - CHECK ROSTER GAPS: If no agent role exists for the question's domain",
+        "Step 9 - CHECK ROSTER GAPS: If no agent role exists for the question's domain",
         "  or region, create a minimal agent-role stub file.",
         "",
+    ]
+
+    if pit_manifest is not None and vault_dir is not None:
+        lines.append(format_admissible_block(pit_manifest, vault_dir=vault_dir))
+        lines.append("")
+
+    lines += [
         "=== OUTPUT FORMAT (MANDATORY) ===",
         "After completing all 8 steps, respond with ONLY a single JSON object.",
         "No explanations, no markdown, no other text before or after.",
@@ -315,6 +363,25 @@ def _write_orch_log(entry: dict[str, Any]) -> None:
 
 
 # ---------------------------------------------------------------------------
+# PIT vault snapshot (calibration runs)
+# ---------------------------------------------------------------------------
+
+
+def _prepare_pit_vault(
+    source_vault: Path,
+    cutoff: date,
+) -> tuple[Path, list[str], tempfile.TemporaryDirectory[str] | None]:
+    """Return (research_vault_path, manifest, temp_dir_holder)."""
+    manifest = list_admissible_paths(source_vault, cutoff)
+    if not manifest:
+        return source_vault, [], None
+    tmp = tempfile.TemporaryDirectory(prefix="pit-vault-")
+    dest = Path(tmp.name)
+    copied = materialize_pit_snapshot(source_vault, dest, cutoff)
+    return dest, copied, tmp
+
+
+# ---------------------------------------------------------------------------
 # Main entry points
 # ---------------------------------------------------------------------------
 
@@ -331,6 +398,7 @@ def run_orchestrated(
     category: str = "",
     resolution: bool | None = None,
     volume: float | None = None,
+    enforce_pit: bool = False,
 ) -> tuple[float, str, dict[str, Any]]:
     """Run an orchestrated forecast using multi-agent sub-delegation.
 
@@ -342,21 +410,33 @@ def run_orchestrated(
     metadata_dict contains: agents_used, vault_edits_summary, key_assumptions,
     roster_gaps_identified, sub_agent_forecasts.
     """
-    prompt = _build_orchestrator_prompt(
-        question_text, cutoff,
-        vault_dir=vault_dir,
-        volume=volume,
-    )
+    source_vault = Path(vault_dir).resolve() if vault_dir else None
+    pit_tmp: tempfile.TemporaryDirectory[str] | None = None
+    research_vault = source_vault
+    pit_manifest: list[str] | None = None
+    if enforce_pit and cutoff is not None and source_vault is not None:
+        research_vault, pit_manifest, pit_tmp = _prepare_pit_vault(source_vault, cutoff)
 
-    raw = _call_hermes(prompt, timeout=_ORCHESTRATOR_TIMEOUT)
-    p_yes, reasoning, metadata, errors = validate_orchestrated(raw)
-
-    if errors:
-        raise RuntimeError(
-            f"Orchestrated output validation failed for {question_text[:60]}...\n"
-            + "\n".join(errors)
-            + f"\nRaw (first 500): {raw[:500]}"
+    try:
+        prompt = _build_orchestrator_prompt(
+            question_text, cutoff,
+            vault_dir=research_vault,
+            volume=volume,
+            pit_manifest=pit_manifest,
         )
+
+        raw = _call_hermes(prompt, timeout=_ORCHESTRATOR_TIMEOUT)
+        p_yes, reasoning, metadata, errors = validate_orchestrated(raw)
+
+        if errors:
+            raise RuntimeError(
+                f"Orchestrated output validation failed for {question_text[:60]}...\n"
+                + "\n".join(errors)
+                + f"\nRaw (first 500): {raw[:500]}"
+            )
+    finally:
+        if pit_tmp is not None:
+            pit_tmp.cleanup()
 
     # Compute Brier if resolution known
     brier = None
@@ -416,28 +496,62 @@ def run_structured(
     category: str = "",
     resolution: bool | None = None,
     volume: float | None = None,
+    enforce_pit: bool = False,
+    graph_only: bool = False,
+    use_pit_librarian: bool = True,
+    pit_brief_block: str = "",
 ) -> tuple[float, str]:
     """Run a structured forecast (question + cutoff).
 
     The agent researches autonomously using its tools. No context is pre-baked
     except the question and cutoff. graph-vault is the agent's reference library.
     Writes run note to graph-vault/runs/ on completion.
+
+    When ``enforce_pit`` is True and ``cutoff`` is set, a filtered vault snapshot
+    is materialized so the agent cannot read post-cutoff timeline, entities, or runs.
     """
-    prompt = _build_structured_prompt(
-        question_text, cutoff,
-        vault_dir=vault_dir,
-        volume=volume,
-    )
+    source_vault = Path(vault_dir).resolve() if vault_dir else None
+    pit_tmp: tempfile.TemporaryDirectory[str] | None = None
+    research_vault = source_vault
+    pit_manifest: list[str] | None = None
+    pit_research_tmp: tempfile.TemporaryDirectory[str] | None = None
+    if enforce_pit and cutoff is not None and source_vault is not None:
+        research_vault, pit_manifest, pit_tmp = _prepare_pit_vault(source_vault, cutoff)
+        if use_pit_librarian and not pit_brief_block:
+            from harness.pit_research import run_pit_research
 
-    raw = _call_hermes(prompt)
-    p_yes, reasoning, errors = validate_structured(raw)
+            brief, pit_research_tmp = run_pit_research(
+                question_text,
+                cutoff,
+                vault_dir=source_vault,
+                use_snapshot=True,
+            )
+            pit_brief_block = brief.to_prompt_block()
 
-    if errors:
-        raise RuntimeError(
-            f"Structured output validation failed for {question_text[:60]}...\n"
-            + "\n".join(errors)
-            + f"\nRaw (first 500): {raw[:500]}"
+    try:
+        prompt = _build_structured_prompt(
+            question_text, cutoff,
+            vault_dir=research_vault,
+            volume=volume,
+            pit_manifest=pit_manifest,
+            graph_only=graph_only,
+            pit_brief_block=pit_brief_block,
         )
+
+        raw = _call_hermes(prompt)
+        p_yes, reasoning, errors = validate_structured(raw)
+
+        if errors:
+            raise RuntimeError(
+                f"Structured output validation failed for {question_text[:60]}...\n"
+                + "\n".join(errors)
+                + f"\nRaw (first 500): {raw[:500]}"
+            )
+    finally:
+        if pit_tmp is not None:
+            pit_tmp.cleanup()
+        if pit_research_tmp is not None:
+            pit_research_tmp.cleanup()
 
     # Compute Brier if resolution known
     brier = None
@@ -456,6 +570,7 @@ def run_structured(
             brier=brier,
             resolution=resolution,
             question_id=question_id,
+            pit_context=pit_brief_block[:4000] if pit_brief_block else pit_context,
         )
         write_run(vault_dir, note)
 

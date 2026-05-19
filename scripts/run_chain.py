@@ -100,11 +100,12 @@ def main() -> int:
         batch_cmd = [
             sys.executable, "-m", "scripts.run_backtest",
             "--source", "polymarket",
-            "--max-questions", "5",
+            "--max-questions", "10",
             "--vault", str(VAULT),
             "--policy", str(DEFAULT_POLICY_PATH),
             "--concurrency", "5",
             "--skip-existing",
+            "--allow-categories", "politics", "economics", "crypto",
         ]
         if args.orchestrate:
             batch_cmd.append("--orchestrate")
