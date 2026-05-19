@@ -3,8 +3,8 @@
 
 Processes N quarters at a time in parallel, then runs pit_reflect.py,
 then the next N quarters. Each quarter agent writes only its
-quarters/ file (no shared entity/spec conflicts during parallel work).
-Reflection handles cross-quarter thread/concept/entity creation.
+timeline/ file (no shared entity/spec conflicts during parallel work).
+Reflection extends threads/concepts/conjunctures from predictive feedback.
 """
 
 from __future__ import annotations
@@ -17,6 +17,8 @@ import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from harness.config import VAULT_DIR
 
@@ -63,38 +65,53 @@ def build_quarter_prompt(y: int, q: int) -> str:
 You are at the end of {label}. Research what happened during this period
 using ONLY information available up to {end.isoformat()}. No future knowledge.
 
+=== ONTOLOGY (read this first) ===
+
+History here is **conjunctural**, not a catalog of proper nouns.
+The quarter is a configuration: forces meeting, contradicting, producing something new.
+Primary nodes are **threads** (ongoing dynamics) and **concepts** (recurring patterns).
+Do NOT turn every person, city, or ministry into a wikilink or entity — that fragments the graph.
+
 === YOUR TOOLS ===
 
-- Read_file/search_files to read prior context from {vault}/quarters/, {vault}/threads/, {vault}/concepts/
+- Read_file/search_files: {vault}/timeline/, {vault}/threads/, {vault}/concepts/
 - Web search at {end.isoformat()} (PIT-constrained)
-- Write_file to create/update files (you can write as many as you like)
+- Write_file under timeline/, threads/, concepts/ only
 
-=== VAULT STRUCTURE ===
+=== REQUIRED FILE ===
 
-The vault uses a Thread-as-Primary-Node model:
+Write: {vault}/timeline/{label}.md
 
-  quarters/   — one file per quarter (e.g. 1922-Q3.md). Write your quarter summary here.
-  threads/    — ongoing narratives (e.g. threads/cold-war-nuclear-arms-race.md). Threads span
-                multiple quarters and represent causal chains, movements, or long-running dynamics.
-  concepts/   — recurring ideas and frameworks (e.g. concepts/balance-of-power.md).
+Use this structure (in order):
 
-Write at minimum: {vault}/quarters/{label}.md
-You may also create or update thread stubs in threads/ and concept stubs in concepts/ if
-obvious candidates emerge. Use wikilinks ([[EntityName]]) to link across all three.
+## Conjuncture
+3–6 paragraphs: what this quarter *is* as a whole — the dominant contradictions,
+what combined (war + rates + energy + politics, etc.), what turned. No bullet lists here.
+Wikilink only [[threads/...]] and [[concepts/...]] when naming an ongoing dynamic.
 
-=== YOUR TASK ===
+## Threads (this quarter)
+For each active thread touched this quarter: one subsection with the delta since last quarter.
+Wikilink the thread file. Describe interactions between forces, not biographies.
 
-Write a PIT-constrained summary for {label}. Make it rich and detailed.
-Focus on events, decisions, turning points, and emerging patterns.
-When you identify a causal chain or recurring dynamic, note it — reflection will
-promote it to a thread file if warranted.
+## Chronicle (evidence)
+Dated bullets supporting the conjuncture and thread deltas. Plain text for most actors and places.
+Wikilink sparingly — prefer threads/concepts over people and cities.
 
-Write your files using absolute paths under {vault}/.
-For example: write_file(path="{vault}/quarters/{label}.md", content="...").
-Do NOT write to _spec.md, _procedure.md, or any file outside quarters/, threads/, concepts/.
+## Cross-domain interactions
+2–4 items: where two or more domains (macro, war, energy, courts, tech, etc.) fed each other
+this quarter. Name the *interaction*, not a list of entities.
 
-You can read _spec.md and prior quarters/ files for context (relative paths
-resolve to {vault}). Schema and cross-quarter entity management is handled by reflection.
+Optional: short thread or concept stubs in threads/ or concepts/ if a dynamic clearly spans quarters.
+Reflection will extend conjunctures using forecast scores — your job is to make interactions legible.
+
+=== FORBIDDEN ===
+
+- No "Wikilinks Created" index or phone-book sections (People, Places, …)
+- No wikilink on every proper noun
+- No entities/ files (reflection does not expect entity stubs from training)
+- No edits to _spec.md, _procedure.md, meta/, runs/, forecasts/
+
+Write using absolute paths, e.g. write_file(path="{vault}/timeline/{label}.md", content="...").
 
 === PIT CONSTRAINT ===
 
