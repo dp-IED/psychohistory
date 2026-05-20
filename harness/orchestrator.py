@@ -81,11 +81,16 @@ def _extract_json(text: str) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
-def validate_structured(raw: str) -> tuple[float, str, list[str]]:
-    """Validate structured output: must contain JSON with p_yes. Returns (p_yes, reasoning, errors)."""
+def validate_structured(raw: str) -> tuple[float, str, list[str], dict[str, Any]]:
+    """Validate structured output: must contain JSON with p_yes.
+
+    Returns (p_yes, reasoning, errors, instrumented_dict).
+    instrumented_dict contains optional fields: vault_files_read, rules_checked,
+    rules_triggered, deliberation — all defaulting to empty values.
+    """
     payload = _extract_json(raw)
     if payload is None:
-        return (0.5, "", ["No valid JSON object found in output."])
+        return (0.5, "", ["No valid JSON object found in output."], {})
 
     errors: list[str] = []
     py = payload.get("p_yes")
@@ -102,7 +107,16 @@ def validate_structured(raw: str) -> tuple[float, str, list[str]]:
         p = max(0.0, min(1.0, p))
 
     reason = str(payload.get("reasoning", "")).strip() or "synthesis"
-    return (p, reason, errors)
+
+    # Extract optional instrumented fields — all default to empty values
+    instrumented: dict[str, Any] = {
+        "vault_files_read": payload.get("vault_files_read", []),
+        "rules_checked": payload.get("rules_checked", []),
+        "rules_triggered": payload.get("rules_triggered", []),
+        "deliberation": str(payload.get("deliberation", "")),
+    }
+
+    return (p, reason, errors, instrumented)
 
 
 def validate_freeform(raw: str) -> tuple[str, list[str]]:
@@ -193,6 +207,11 @@ def _build_structured_prompt(
         "After completing your research, respond with ONLY a single JSON object.",
         "No explanations, no markdown, no other text before or after.",
         '{"p_yes": 0.XX, "reasoning": "one-sentence summary; include implied timing if the question asks when"}',
+        "Optionally include (RECOMMENDED):",
+        '  "vault_files_read": ["_forecast_instructions.md", "concepts/foo.md", ...]',
+        '  "rules_checked": ["Rule 1: Central Bank Questions", "Rule 2: Domestic Politics Gap Check", ...]',
+        '  "rules_triggered": ["Rule 2: Domestic Politics Gap Check", ...]',
+        '  "deliberation": "2-3 sentences explaining key reasoning steps and which vault evidence most influenced the forecast"',
         "p_yes must be a float between 0.0 and 1.0.",
         "",
     ]
@@ -500,12 +519,16 @@ def run_structured(
     graph_only: bool = False,
     use_pit_librarian: bool = True,
     pit_brief_block: str = "",
-) -> tuple[float, str]:
+) -> tuple[float, str, dict[str, Any]]:
     """Run a structured forecast (question + cutoff).
 
     The agent researches autonomously using its tools. No context is pre-baked
     except the question and cutoff. graph-vault is the agent's reference library.
     Writes run note to graph-vault/runs/ on completion.
+
+    Returns (p_yes, reasoning, metadata_dict) where metadata_dict contains
+    instrumented fields (vault_files_read, rules_checked, rules_triggered, deliberation)
+    if the agent provided them.
 
     When ``enforce_pit`` is True and ``cutoff`` is set, a filtered vault snapshot
     is materialized so the agent cannot read post-cutoff timeline, entities, or runs.
@@ -539,7 +562,7 @@ def run_structured(
         )
 
         raw = _call_hermes(prompt)
-        p_yes, reasoning, errors = validate_structured(raw)
+        p_yes, reasoning, errors, metadata = validate_structured(raw)
 
         if errors:
             raise RuntimeError(
@@ -574,7 +597,7 @@ def run_structured(
         )
         write_run(vault_dir, note)
 
-    return p_yes, reasoning
+    return p_yes, reasoning, metadata
 
 
 def run_freeform(analysis_request: str) -> str:

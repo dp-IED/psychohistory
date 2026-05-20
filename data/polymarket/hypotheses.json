@@ -79,10 +79,10 @@
       "tracked_markets.jsonl"
     ],
     "verified": true,
-    "verified_at": "2026-05-19T19:07:09.604128+00:00",
+    "verified_at": "2026-05-20T01:17:00+00:00",
     "actual_outcome": "BTC at $76,818 (+0.37% from May 18 close of ~$76,536), 3% range = $74,240-$78,832",
     "correct": true,
-    "verification_note": "Provisional - day not yet complete. BTC within range as of ~19:00 UTC May 19."
+    "verification_note": "Confirmed: BTC stayed within 3% range for full May 19 trading day. Final verification May 20."
   },
   {
     "id": "hyp-20260518-007",

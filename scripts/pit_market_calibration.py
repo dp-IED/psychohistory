@@ -22,15 +22,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from harness.config import VAULT_DIR
 from harness.pit_market_probe import (
+    DEFAULT_ABLATED_RESULTS,
     DEFAULT_CATALOG,
     DEFAULT_MARKET_CALIBRATION_BAND,
     DEFAULT_RESULTS,
     MarketProbeSpec,
     completed_probe_ids,
+    format_ablation_comparison,
     format_market_calibration_feedback,
     load_catalog,
     load_results,
     run_market_probe,
+    score_ablation,
     seed_from_gold_dataset,
     summarize_results,
     write_catalog,
@@ -77,7 +80,19 @@ def cmd_seed(args: argparse.Namespace) -> int:
             added += 1
 
     if args.from_gold:
-        for spec in seed_from_gold_dataset(GOLD_PATH, max_probes=args.max_gold):
+        # Map --domain argument to domain_filter
+        domain_map = {
+            "geopolitics": "geopolitics",
+            "economics": "economics",
+            "culture": "culture",
+            "all": None,
+        }
+        domain_filter = domain_map.get(args.domain, None)
+        for spec in seed_from_gold_dataset(
+            GOLD_PATH,
+            max_probes=args.max_gold,
+            domain_filter=domain_filter,
+        ):
             if spec.probe_id not in existing:
                 existing[spec.probe_id] = spec
                 added += 1
@@ -198,23 +213,96 @@ def cmd_score(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_ablate(args: argparse.Namespace) -> int:
+    """Re-run all completed probes in no-vault (ablated) mode."""
+    catalog_path = Path(args.catalog)
+    results_path = Path(args.results)
+    ablated_path = Path(args.ablated_results)
+
+    specs = load_catalog(catalog_path)
+    if not specs:
+        print("Empty catalog.")
+        return 1
+
+    # Only re-run probes that have vault-augmented results
+    vault_rows = {r["probe_id"] for r in load_results(results_path) if r.get("probe_id")}
+    if not vault_rows:
+        print(f"No vault-augmented results found in {results_path}. Run probes first with `run`.")
+        return 1
+
+    # Check which ablated results we already have
+    skip_ids = completed_probe_ids(ablated_path) if args.skip_existing else set()
+    todo = [s for s in specs if s.probe_id in vault_rows and s.probe_id not in skip_ids]
+
+    if args.domain:
+        todo = [s for s in todo if s.domain in args.domain]
+    if args.max_probes:
+        todo = todo[: args.max_probes]
+
+    print(f"Ablating {len(todo)} probe(s) (no-vault mode)...")
+    vault = Path(args.vault).resolve()
+
+    for i, spec in enumerate(todo, 1):
+        print(f"[{i}/{len(todo)}] {spec.probe_id} @ {spec.cutoff} (no-vault)...", flush=True)
+        result = run_market_probe(spec, vault_dir=vault, band=args.band, no_vault=True)
+        row = result.to_dict()
+        _append_result(ablated_path, row)
+        mae = row.get("market_abs_error")
+        mstr = f" mae={mae:.3f}" if mae is not None else " (no market price)"
+        print(f"  p_yes={row['p_yes']:.3f}{mstr}  within_band={row.get('within_band')}", flush=True)
+
+    print(f"Appended {len(todo)} ablated probe(s) → {ablated_path}")
+    return 0
+
+
+def cmd_compare(args: argparse.Namespace) -> int:
+    """Compare vault-augmented vs vault-ablated results."""
+    results_path = Path(args.results)
+    ablated_path = Path(args.ablated_results)
+
+    vault_rows = load_results(results_path)
+    ablated_rows = load_results(ablated_path)
+
+    if not vault_rows:
+        print(f"No vault-augmented results found in {results_path}.")
+        return 1
+    if not ablated_rows:
+        print(f"No ablated results found in {ablated_path}. Run `ablate` first.")
+        return 1
+
+    band = getattr(args, "band", DEFAULT_MARKET_CALIBRATION_BAND)
+    ablation = score_ablation(vault_rows, ablated_rows, band=band)
+    print(format_ablation_comparison(ablation))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="PIT vs Polymarket price calibration probes.")
     parser.add_argument("--vault", default=str(VAULT_DIR))
     parser.add_argument("--catalog", default=str(DEFAULT_CATALOG))
     parser.add_argument("--results", default=str(DEFAULT_RESULTS))
+    parser.add_argument("--ablated-results", default=str(DEFAULT_ABLATED_RESULTS))
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_seed = sub.add_parser("seed", help="Build catalog from builtins + optional gold PM")
     p_seed.add_argument("--from-gold", action="store_true")
-    p_seed.add_argument("--max-gold", type=int, default=12)
+    p_seed.add_argument("--max-gold", type=int, default=30)
+    p_seed.add_argument(
+        "--domain", choices=["geopolitics", "economics", "culture", "all"],
+        default="geopolitics",
+        help="Domain filter for gold seeding (default: geopolitics; use 'all' for no filter)",
+    )
 
     sub.add_parser("catalog", help="List catalog probes")
 
     p_run = sub.add_parser("run", help="Run graph-only PIT forecasts vs market price")
     p_run.add_argument("--max-probes", type=int, default=0, help="0 = all pending")
     p_run.add_argument("--skip-existing", action="store_true")
-    p_run.add_argument("--domain", nargs="+", default=None)
+    p_run.add_argument(
+        "--domain", nargs="+", default=None,
+        choices=["geopolitics", "economics", "culture", "other"],
+        help="Filter probes by domain(s) to run (e.g. --domain economics)",
+    )
     p_run.add_argument(
         "--band", type=float, default=DEFAULT_MARKET_CALIBRATION_BAND,
         help="± band for within_band (default 0.05 = 5pt)",
@@ -239,6 +327,20 @@ def main() -> int:
     p_score = sub.add_parser("score", help="Aggregate calibration metrics")
     p_score.add_argument("--band", type=float, default=DEFAULT_MARKET_CALIBRATION_BAND)
 
+    p_ablate = sub.add_parser("ablate", help="Re-run completed probes without vault (ablated)")
+    p_ablate.add_argument("--max-probes", type=int, default=0, help="0 = all pending")
+    p_ablate.add_argument("--skip-existing", action="store_true", help="Skip probes already in ablated_results.jsonl")
+    p_ablate.add_argument("--domain", nargs="+", default=None)
+    p_ablate.add_argument(
+        "--band", type=float, default=DEFAULT_MARKET_CALIBRATION_BAND,
+        help="± band for within_band (default 0.05 = 5pt)",
+    )
+
+    p_compare = sub.add_parser("compare", help="Compare vault-augmented vs vault-ablated results")
+    p_compare.add_argument(
+        "--band", type=float, default=DEFAULT_MARKET_CALIBRATION_BAND,
+    )
+
     p_cal = sub.add_parser(
         "calibrate",
         help="retake (librarian+forecaster) → score → reflect",
@@ -260,6 +362,10 @@ def main() -> int:
         return cmd_reflect(args)
     if args.command == "score":
         return cmd_score(args)
+    if args.command == "ablate":
+        return cmd_ablate(args)
+    if args.command == "compare":
+        return cmd_compare(args)
     if args.command == "calibrate":
         return cmd_calibrate(args)
     return 1

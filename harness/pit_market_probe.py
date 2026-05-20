@@ -95,6 +95,14 @@ class MarketProbeResult:
     librarian_excluded: list[str] = field(default_factory=list)
     librarian_sources: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    # Instrumented fields (optional — agent may omit them)
+    vault_files_read: list[str] = field(default_factory=list)
+    rules_checked: list[str] = field(default_factory=list)
+    rules_triggered: list[str] = field(default_factory=list)
+    deliberation: str = ""
+    # Vault-ablated control (no_vault mode)
+    vault_ablated_p_yes: float | None = None
+    vault_ablated_reasoning: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -119,6 +127,12 @@ class MarketProbeResult:
             "librarian_sources": self.librarian_sources,
             "reasoning": self.reasoning,
             "errors": self.errors,
+            "vault_files_read": self.vault_files_read,
+            "rules_checked": self.rules_checked,
+            "rules_triggered": self.rules_triggered,
+            "deliberation": self.deliberation,
+            "vault_ablated_p_yes": self.vault_ablated_p_yes,
+            "vault_ablated_reasoning": self.vault_ablated_reasoning,
         }
 
 
@@ -169,6 +183,40 @@ def _is_geopolitics_slug(slug: str, question: str) -> bool:
     if any(x in blob for x in _EXCLUDE_SLUG_HINTS):
         return False
     return any(x in blob for x in _GEO_SLUG_HINTS)
+
+
+_ECON_KEYWORDS = (
+    "fed", "fomc", "interest", "bps", "rate decision", "rate cut", "rate hike",
+    "gdp", "inflation", "unemployment", "deficit", "debt ceiling", "shutdown",
+    "bitcoin", "ethereum", "etf", "sec",
+)
+_GEO_KEYWORDS = (
+    "ceasefire", "war", "strike", "sanction", "election", "president",
+    "invasion", "conflict", "taiwan", "venezuela", "argentina",
+    "trump", "biden", "senate", "congress", "supreme court",
+    "nato", "hezbollah", "houthi", "gaza", "ukraine", "russia", "iran", "israel",
+    "democratic", "republican", "vp nominee", "governor",
+)
+_CULTURE_KEYWORDS = (
+    "grammy", "billboard", "netflix", "oscar", "academy award",
+    "tennis", "nba", "nfl", "ufc", "box office", "spotify",
+    "musk-post", "tweet", "tiktok",
+)
+
+
+def _classify_domain(slug: str, question_text: str) -> str:
+    """Heuristic domain classifier based on keywords in slug and question text."""
+    blob = f"{slug} {question_text}".lower()
+    # Check economics first (more specific)
+    if any(kw in blob for kw in _ECON_KEYWORDS):
+        return "economics"
+    # Then geopolitics
+    if any(kw in blob for kw in _GEO_KEYWORDS):
+        return "geopolitics"
+    # Then culture
+    if any(kw in blob for kw in _CULTURE_KEYWORDS):
+        return "culture"
+    return "other"
 
 
 def _quarter_end_before(dt: datetime, n: int = 1) -> date:
@@ -232,7 +280,8 @@ def graph_question_from_market(question: str) -> str:
 def seed_from_gold_dataset(
     gold_path: Path,
     *,
-    max_probes: int = 12,
+    max_probes: int = 30,
+    domain_filter: str | None = None,
 ) -> list[MarketProbeSpec]:
     payload = json.loads(gold_path.read_text(encoding="utf-8"))
     cases = payload.get("cases") or []
@@ -245,7 +294,10 @@ def seed_from_gold_dataset(
         question = str(record.get("question") or "").strip()
         if not slug or not question:
             continue
-        if not _is_geopolitics_slug(slug, question):
+        # Classify domain
+        domain = _classify_domain(slug, question)
+        # Optionally filter by domain
+        if domain_filter is not None and domain != domain_filter:
             continue
         cutoff = market_calibration_cutoff(record)
         if cutoff is None:
@@ -262,7 +314,7 @@ def seed_from_gold_dataset(
                 question=question,
                 graph_question=graph_question_from_market(question),
                 kind="market_anchor",
-                domain="geopolitics",
+                domain=domain,
                 polymarket_slug=slug,
                 clob_yes_token_id=token_id,
                 notes=f"Seeded from {case_id}; cutoff=mid-market sample for CLOB alignment",
@@ -353,18 +405,96 @@ def build_forecast_prompt(
     return "\n".join(lines)
 
 
+def build_no_vault_forecast_prompt(
+    spec: MarketProbeSpec,
+    market_yes: float | None,
+    *,
+    band: float = DEFAULT_MARKET_CALIBRATION_BAND,
+) -> str:
+    """Build a prompt for the no-vault (ablated) mode.
+
+    The agent does NOT have access to the graph-vault knowledge base.
+    It must forecast using only general knowledge and web search,
+    while respecting the cutoff date.
+    """
+    lines = [
+        f"Question: {spec.effective_question()}",
+        f"Cutoff (strict PIT): {spec.cutoff.isoformat()}",
+        "",
+        "NO VAULT MODE: You do NOT have access to the graph-vault knowledge base.",
+        "Forecast using ONLY general knowledge and web search.",
+        "You MUST respect the cutoff date — no post-cutoff information.",
+        "Web search IS allowed.",
+    ]
+    if market_yes is not None:
+        lines += [
+            f"Polymarket YES at cutoff: {market_yes:.4f}",
+            "",
+            f"Target: p_yes within ±{band:.2f} of {market_yes:.4f} based on public knowledge.",
+        ]
+    lines += [
+        "",
+        'Output JSON: {{"p_yes": 0.XX, "reasoning": "..."}}',
+    ]
+    return "\n".join(lines)
+
+
 def run_market_probe(
     spec: MarketProbeSpec,
     *,
     vault_dir: Path,
     band: float = DEFAULT_MARKET_CALIBRATION_BAND,
     use_pit_librarian: bool = True,
+    no_vault: bool = False,
 ) -> MarketProbeResult:
-    """Two-step calibration: PIT librarian brief, then forecaster (both logged for reflect)."""
+    """Two-step calibration: PIT librarian brief, then forecaster (both logged for reflect).
+
+    When ``no_vault=True``, the PIT librarian is skipped entirely and the agent
+    forecasts without any vault context (only general knowledge + web search).
+    """
     from harness.orchestrator import run_structured
     from harness.pit_research import run_pit_research
 
     market_yes, price_errors = resolve_market_price(spec)
+
+    if no_vault:
+        # --- Ablated mode: no vault, no librarian, web search allowed ---
+        question = build_no_vault_forecast_prompt(spec, market_yes, band=band)
+        try:
+            p_yes, reasoning, metadata = run_structured(
+                question,
+                cutoff=spec.cutoff,
+                vault_dir=vault_dir,
+                enforce_pit=False,
+                graph_only=False,
+                use_pit_librarian=False,
+                pit_brief_block="",
+                category=spec.domain,
+                question_id=spec.probe_id,
+                resolution=spec.resolution,
+            )
+        except Exception as exc:
+            result = score_probe(0.5, spec, market_yes, band=band)
+            result.errors = price_errors + [f"forecaster: {exc}"]
+            result.vault_ablated_p_yes = 0.5
+            result.vault_ablated_reasoning = ""
+            return result
+
+        result = score_probe(p_yes, spec, market_yes, band=band)
+        result.reasoning = reasoning
+        result.errors = price_errors
+        result.vault_ablated_p_yes = p_yes
+        result.vault_ablated_reasoning = reasoning
+        # Store instrumented fields from agent metadata
+        result.vault_files_read = metadata.get("vault_files_read", [])
+        result.rules_checked = metadata.get("rules_checked", [])
+        result.rules_triggered = metadata.get("rules_triggered", [])
+        result.deliberation = metadata.get("deliberation", "")
+        if result.market_abs_error is not None:
+            result.within_band = result.market_abs_error <= band
+        return result
+
+    # --- Normal (vault-augmented) mode ---
     question = build_forecast_prompt(spec, market_yes, band=band)
 
     brief_block = ""
@@ -395,7 +525,7 @@ def run_market_probe(
                 pit_tmp.cleanup()
 
     try:
-        p_yes, reasoning = run_structured(
+        p_yes, reasoning, metadata = run_structured(
             question,
             cutoff=spec.cutoff,
             vault_dir=vault_dir,
@@ -423,6 +553,11 @@ def run_market_probe(
     result.librarian_uncertainties = lib_uncertainties
     result.librarian_excluded = lib_excluded
     result.librarian_sources = lib_sources
+    # Store instrumented fields from agent metadata
+    result.vault_files_read = metadata.get("vault_files_read", [])
+    result.rules_checked = metadata.get("rules_checked", [])
+    result.rules_triggered = metadata.get("rules_triggered", [])
+    result.deliberation = metadata.get("deliberation", "")
     if result.market_abs_error is not None:
         result.within_band = result.market_abs_error <= band
     return result
@@ -498,6 +633,19 @@ def format_market_calibration_feedback(
             lines.append(f"    question: {q}")
         if for_reflect:
             lines.append(f"    diagnosis: {_classify_calibration_miss(r, band=band)}")
+            # Include instrumented fields if present
+            vfr = r.get("vault_files_read")
+            if vfr:
+                lines.append(f"    vault_files_read: {', '.join(str(f) for f in vfr[:8])}")
+            rt = r.get("rules_triggered")
+            if rt:
+                lines.append(f"    rules_triggered: {', '.join(str(x) for x in rt[:8])}")
+            rc = r.get("rules_checked")
+            if rc:
+                lines.append(f"    rules_checked: {', '.join(str(x) for x in rc[:8])}")
+            delib = r.get("deliberation")
+            if delib:
+                lines.append(f"    deliberation: {str(delib)[:300]}")
             unc = r.get("librarian_uncertainties") or []
             if unc:
                 lines.append(f"    librarian_uncertainties: {'; '.join(str(u) for u in unc[:4])}")
@@ -548,6 +696,21 @@ def summarize_results(
         return sum(vals) / len(vals) if vals else None
 
     within = [r for r in market_rows if r.get("within_band")]
+
+    # Per-domain breakdown
+    domains = sorted({r.get("domain", "other") for r in rows})
+    by_domain: dict[str, dict[str, Any]] = {}
+    for d in domains:
+        d_rows = [r for r in rows if r.get("domain") == d]
+        d_market = [r for r in market_rows if r.get("domain") == d]
+        d_within = [r for r in within if r.get("domain") == d]
+        by_domain[d] = {
+            "n": len(d_rows),
+            "n_with_market": len(d_market),
+            "mean_mae": _mean("market_abs_error", d_market),
+            "pct_within_band": (len(d_within) / len(d_market) * 100) if d_market else None,
+        }
+
     return {
         "n_total": len(rows),
         "n_with_market": len(market_rows),
@@ -558,8 +721,141 @@ def summarize_results(
         "pct_within_band": (len(within) / len(market_rows) * 100) if market_rows else None,
         "mean_vault_abs_error": _mean("vault_abs_error", vault_rows),
         "mean_resolution_brier": _mean("resolution_brier", res_rows),
+        "by_domain": by_domain,
     }
 
 
 DEFAULT_CATALOG = Path("data/pit_market_probes/catalog.jsonl")
 DEFAULT_RESULTS = Path("data/pit_market_probes/results.jsonl")
+DEFAULT_ABLATED_RESULTS = Path("data/pit_market_probes/ablated_results.jsonl")
+
+
+def score_ablation(
+    vault_rows: list[dict[str, Any]],
+    ablated_rows: list[dict[str, Any]],
+    *,
+    band: float = DEFAULT_MARKET_CALIBRATION_BAND,
+) -> dict[str, Any]:
+    """Compare vault-augmented vs vault-ablated results per probe.
+
+    Returns aggregate stats and per-probe comparison data.
+    """
+    # Index ablated by probe_id
+    ablated_by_id: dict[str, dict[str, Any]] = {}
+    for r in ablated_rows:
+        pid = r.get("probe_id")
+        if pid:
+            ablated_by_id[pid] = r
+
+    comparisons: list[dict[str, Any]] = []
+    total_vault_mae: list[float] = []
+    total_ablated_mae: list[float] = []
+    vault_helped = 0
+    vault_hurt = 0
+    vault_no_diff = 0
+
+    for vr in vault_rows:
+        pid = vr.get("probe_id")
+        ar = ablated_by_id.get(pid)
+        if ar is None:
+            continue
+
+        v_mae = vr.get("market_abs_error")
+        a_mae = ar.get("market_abs_error")
+        if v_mae is None or a_mae is None:
+            continue
+
+        v_mae_f = float(v_mae)
+        a_mae_f = float(a_mae)
+        delta = a_mae_f - v_mae_f  # negative = ablated better (vault hurt)
+        vault_hurt_flag = delta < -0.001
+        vault_helped_flag = delta > 0.001
+
+        comparisons.append({
+            "probe_id": pid,
+            "domain": vr.get("domain"),
+            "vault_p_yes": vr.get("p_yes"),
+            "ablated_p_yes": ar.get("p_yes"),
+            "market_yes_at_cutoff": vr.get("market_yes_at_cutoff"),
+            "vault_mae": v_mae_f,
+            "ablated_mae": a_mae_f,
+            "delta": delta,
+            "vault_helped": vault_helped_flag,
+            "vault_hurt": vault_hurt_flag,
+        })
+        total_vault_mae.append(v_mae_f)
+        total_ablated_mae.append(a_mae_f)
+        if vault_helped_flag:
+            vault_helped += 1
+        elif vault_hurt_flag:
+            vault_hurt += 1
+        else:
+            vault_no_diff += 1
+
+    n = len(comparisons)
+    mean_vault_mae = sum(total_vault_mae) / n if n > 0 else None
+    mean_ablated_mae = sum(total_ablated_mae) / n if n > 0 else None
+
+    return {
+        "n_probes": n,
+        "mean_vault_mae": mean_vault_mae,
+        "mean_ablated_mae": mean_ablated_mae,
+        "mean_delta": (mean_ablated_mae - mean_vault_mae) if (mean_vault_mae is not None and mean_ablated_mae is not None) else None,
+        "vault_helped": vault_helped,
+        "vault_hurt": vault_hurt,
+        "vault_no_diff": vault_no_diff,
+        "pct_vault_helped": (vault_helped / n * 100) if n > 0 else None,
+        "comparisons": comparisons,
+    }
+
+
+def format_ablation_comparison(
+    ablation: dict[str, Any],
+    *,
+    max_rows: int = 50,
+) -> str:
+    """Format ablation comparison as a readable table."""
+    lines: list[str] = []
+    lines.append("Vault-Ablation Comparison")
+    lines.append("=" * 80)
+    lines.append("")
+
+    comparisons = ablation.get("comparisons", [])
+    if not comparisons:
+        lines.append("No matching probes to compare.")
+        return "\n".join(lines)
+
+    # Header
+    lines.append(
+        f"{'Probe':50s} | {'Vault MAE':>10s} | {'Ablated MAE':>11s} | {'Delta':>7s} | Vault Helped?"
+    )
+    lines.append("-" * 80)
+
+    for c in comparisons[:max_rows]:
+        pid = c["probe_id"][:48]
+        v_mae = f"{c['vault_mae']:.3f}"
+        a_mae = f"{c['ablated_mae']:.3f}"
+        delta = f"{c['delta']:+.3f}"
+        helped = "✅ YES" if c["vault_helped"] else ("❌ NO" if c["vault_hurt"] else "— same")
+        lines.append(
+            f"{pid:50s} | {v_mae:>10s} | {a_mae:>11s} | {delta:>7s} | {helped}"
+        )
+
+    lines.append("")
+    lines.append("-" * 80)
+    lines.append("")
+
+    # Aggregate stats
+    n = ablation["n_probes"]
+    mean_v = f"{ablation['mean_vault_mae']:.4f}" if ablation["mean_vault_mae"] is not None else "N/A"
+    mean_a = f"{ablation['mean_ablated_mae']:.4f}" if ablation["mean_ablated_mae"] is not None else "N/A"
+    mean_d = f"{ablation['mean_delta']:+.4f}" if ablation["mean_delta"] is not None else "N/A"
+    lines.append(f"Total probes compared: {n}")
+    lines.append(f"Mean vault MAE:   {mean_v}")
+    lines.append(f"Mean ablated MAE: {mean_a}")
+    lines.append(f"Mean delta:       {mean_d}  (positive = vault helped, negative = vault hurt)")
+    lines.append(f"Vault helped:     {ablation['vault_helped']}/{n} ({ablation['pct_vault_helped']:.1f}%)" if ablation['pct_vault_helped'] is not None else "")
+    lines.append(f"Vault hurt:       {ablation['vault_hurt']}/{n}")
+    lines.append(f"No difference:    {ablation['vault_no_diff']}/{n}")
+
+    return "\n".join(lines)

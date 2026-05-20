@@ -1,0 +1,137 @@
+# PIT Phrasing Scan — Pattern Configuration
+# ===========================================
+# Patterns that may indicate retrocausal leakage or post-cutoff knowledge
+# smuggled into vault markdown files.
+#
+# severity levels: high (likely leakage), medium (suspicious), low (informational)
+#
+# To add/remove patterns, edit this file. No code changes needed.
+
+patterns:
+
+  # ------------------------------------------------------------------
+  # Category 1: Explicit retrocausal framing
+  # Phrases that imply knowledge of future outcomes from the author's
+  # post-hoc vantage point.
+  # ------------------------------------------------------------------
+  retrocausal:
+    - phrase: "ultimately led to"
+      severity: high
+      description: "Direct retrocausal framing — X ultimately led to Y implies Y was inevitable"
+    - phrase: "ultimately lead to"
+      severity: high
+    - phrase: "ultimately proved"
+      severity: high
+    - phrase: "would later"
+      severity: high
+      description: "Retrocausal projection — 'would later become/prove' smuggles post-cutoff knowledge"
+    - phrase: "would go on to"
+      severity: high
+      description: "Retrocausal framing — implies a known future trajectory"
+    - phrase: "in hindsight"
+      severity: medium
+      description: "Hindsight bias framing — evaluates events from post-hoc position"
+    - phrase: "in retrospect"
+      severity: medium
+    - phrase: "looking back"
+      severity: medium
+    - phrase: "set the stage for"
+      severity: medium
+      description: "Teleological framing — suggests events served a future purpose"
+    - phrase: "paved the way for"
+      severity: medium
+    - phrase: "laid the groundwork for"
+      severity: medium
+    - phrase: "foreshadowed"
+      severity: medium
+      description: "Literary retrocausal framing — treats past events as omens of the future"
+    - phrase: "presaged"
+      severity: medium
+    - phrase: "portended"
+      severity: medium
+
+  # ------------------------------------------------------------------
+  # Category 2: Conclusion/outcome framing in resolved threads
+  # Phrases that present the conclusion of a conflict or thread as
+  # predetermined or inevitable. Scanned only in files with both
+  # `conclusion` date and `status: resolved` in frontmatter.
+  # ------------------------------------------------------------------
+  conclusion_framing:
+    - phrase: "ended with"
+      severity: medium
+      description: "Presents outcome as narrative conclusion rather than contingent result"
+    - phrase: "concluded with"
+      severity: medium
+    - phrase: "The thread concluded"
+      severity: medium
+    - phrase: "ultimately resulted in"
+      severity: high
+    - phrase: "ended inevitably with"
+      severity: high
+      description: "Explicitly frames outcome as inevitable"
+    - phrase: "the inevitable outcome was"
+      severity: high
+    - phrase: "was finally resolved when"
+      severity: medium
+    - phrase: "in the end"
+      severity: low
+      description: "Narrative closure language — often innocuous but can signal post-hoc framing"
+    - phrase: "the arc demonstrates"
+      severity: low
+      description: "Retrospective narrative framing of a thread's trajectory"
+
+  # ------------------------------------------------------------------
+  # Category 3: Temporal inconsistency with cutoff
+  # References to dates that fall after the file's pit_cutoff,
+  # pit_body_cutoff, or conclusion date. For timeline files, the
+  # pit_cutoff defines the quarter boundary. Thread files may also
+  # have pit_body_cutoff or conclusion dates.
+  # ------------------------------------------------------------------
+  temporal_inconsistency:
+    enabled: true
+    severity: high
+    description: >
+      Lines containing year or date references after the file's cutoff.
+      E.g., mentioning '2025' in a file with pit_cutoff: 2024-03-31.
+
+  # ------------------------------------------------------------------
+  # Category 4: Predictive certainty about the future
+  # Phrases that express certainty about outcomes that were not yet
+  # determinable at the cutoff date. These smuggle post-hoc knowledge
+  # by presenting contingent futures as foregone conclusions.
+  # ------------------------------------------------------------------
+  predictive_certainty:
+    - phrase: "was certain to"
+      severity: high
+      description: "Expresses false certainty about a contingent outcome"
+    - phrase: "was inevitable that"
+      severity: high
+      description: "Expresses certainty about a future outcome"
+    - phrase: "was inevitable"
+      severity: high
+      description: "Expresses certainty about a past outcome being unavoidable (e.g. 'withdrawal was inevitable')"
+    - phrase: "clearly heading toward"
+      severity: high
+      description: "Presents one trajectory as obviously inevitable"
+    - phrase: "the only possible outcome was"
+      severity: high
+    - phrase: "increasingly clear that"
+      severity: medium
+      description: "Suggests a future event was knowably approaching"
+    - phrase: "was bound to"
+      severity: high
+    - phrase: "was destined to"
+      severity: high
+    - phrase: "could only end in"
+      severity: high
+    - phrase: "was a foregone conclusion"
+      severity: high
+
+  # Additional patterns that can be mixed across categories
+  # For more precise matching, these use slightly different phrasing
+  additional:
+    - phrase: "turned out to be"
+      severity: low
+      description: "Post-hoc evaluation framing"
+    - phrase: "as it turned out"
+      severity: low

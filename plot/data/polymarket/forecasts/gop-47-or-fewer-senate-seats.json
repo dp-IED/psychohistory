@@ -1,0 +1,20 @@
+{
+  "slug": "gop-47-or-fewer-senate-seats",
+  "question": "Will the Republican Party hold 47 or fewer Senate seats after the 2026 midterm elections?",
+  "market_price_pct": 29.5,
+  "volume": 99746.08,
+  "end_date": "2026-11-03",
+  "prediction": "NO",
+  "confidence": 65,
+  "vault_usage": "HIGH",
+  "reasoning": "The vault's [[threads/us-2026-senate-elections]] thread covers seat math: GOP currently has 53 seats (incl. 2 independents caucusing with Dems → effective 53-47 GOP). Seats up: 20 Dem + 2 independent, 13 GOP. Dems need +4 net for control. The Republican defensive map is favorable — only 13 seats up vs 20 Dem seats. Key defensive states (AK, NC, OH, TX) are trending redder since 2024. However, 47 or fewer seats means Dems would need a net gain of 6+ seats — a massive wave even by midterm standards (2018 Dems gained 40 House but only 7 Senate seats with a much more favorable map). The 29.5% market price seems too high — structural GOP advantage in 2026 map suggests <20% probability of GOP dropping to 47 or fewer. However, Trump second-term structural headwinds (tariff recession risk, foreign policy fatigue) could create a blue wave scenario. Confidence at 65 reflects the high-variance midterm environment.",
+  "forecast_instructions_applied": [
+    "Rule 2: Domestic Politics Gap Check — vault has Senate thread with seat math coverage ✓",
+    "Rule 4: Geographic Coverage Gap Check — relevant states partially covered, added entity stubs for key senators"
+  ],
+  "vault_gaps_fixed": [
+    "Added entity references for key vulnerable GOP senators (Tillis, Cornyn, Murkowski, Moreno) to Senate thread",
+    "Noted: Texas Senate race (Cornyn 2026) lacks entity stub"
+  ],
+  "scanned_at": "2026-05-20T01:17:00Z"
+}

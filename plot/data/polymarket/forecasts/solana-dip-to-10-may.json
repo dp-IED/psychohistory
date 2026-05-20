@@ -1,0 +1,19 @@
+{
+  "slug": "solana-dip-to-10-may",
+  "question": "Will Solana dip to $10 in May?",
+  "market_price_pct": 0.1,
+  "volume": 98639.71,
+  "end_date": "2026-06-01",
+  "prediction": "NO",
+  "confidence": 99,
+  "vault_usage": "MEDIUM",
+  "reasoning": "This market resolves YES if any Binance 1-minute SOL/USDT candle hits a low of $10 or below in May 2026. SOL price is around $50-150 range as of May 2026 (per [[entities/solana]] created this cycle). A dip to $10 would be an ~80-90% crash from current levels in 11 days — virtually impossible without a catastrophic black-swan event. Key reasons against: (1) SOL would need to lose ~$40+ in value per token in under 2 weeks, (2) The crypto market is relatively stable post-2025 war — no major crash catalyst visible, (3) SOL has support at $40-50 level (previous cycle lows), (4) $10 would be below SOL's 2022 bear market low (~$8 was the absolute floor). Even in the 2022 crypto winter (FTX collapse, 3AC bankruptcy, Terra/Luna meltdown), SOL bottomed at ~$8 with massive selling pressure. Current market conditions are far from that level of panic. The 0.1% YES price is appropriate — efficient price should be ~0.01%. This is effectively a free-money NO prediction.",
+  "forecast_instructions_applied": [
+    "Rule 7: AI/Tech Company Coverage Gap Check — not applicable (crypto, not AI)",
+    "Rule 9: Polymarket Calibration Mode — 0.1% market aligned with near-zero probability"
+  ],
+  "vault_gaps_fixed": [
+    "Created [[entities/solana]] to cover this blockchain protocol"
+  ],
+  "scanned_at": "2026-05-20T01:17:00Z"
+}

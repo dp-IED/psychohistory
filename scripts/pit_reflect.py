@@ -130,6 +130,63 @@ def format_predictive_feedback(
         except Exception as e:
             lines.append(f"(market calibration feedback unavailable: {e})")
 
+    # ── Vault health: thread continuity ──
+    try:
+        audit_result = subprocess.run(
+            [sys.executable, str(Path(__file__).resolve().parent / "thread_continuity_audit.py"),
+             "--issues-only", "--json"],
+            capture_output=True, text=True, timeout=30,
+        )
+        if audit_result.returncode == 0 and audit_result.stdout.strip():
+            audit_data = json.loads(audit_result.stdout)
+            flagged = [t for t in audit_data.get("threads", []) if t.get("flags")]
+            stale_active = [t for t in flagged if t["status"] == "active" and any(f[0] == "STALE" for f in t["flags"])]
+            inconsistent_resolved = [t for t in flagged if any(f[0] == "INCONSISTENT" for f in t["flags"])]
+            if stale_active or inconsistent_resolved:
+                lines.append("")
+                lines.append("=== THREAD HEALTH (stale/active needs attention) ===")
+                if stale_active:
+                    for t in stale_active[:8]:
+                        lines.append(f"  STALE {t['slug']} status=active gap={t['gap']}Q last={t.get('last_linked')}")
+                    if len(stale_active) > 8:
+                        lines.append(f"  ... and {len(stale_active) - 8} more")
+                if inconsistent_resolved:
+                    for t in inconsistent_resolved[:4]:
+                        lines.append(f"  INCONSISTENT {t['slug']} conclusion={t.get('conclusion')} last_quarter={t.get('last_linked')}")
+                lines.append("  Action: set status=fading for stale active threads, fix resolved thread links.")
+    except Exception as exc:
+        lines.append(f"(thread health unavailable: {exc})")
+
+    # ── Vault health: PIT phrasing scan ──
+    try:
+        scan_result = subprocess.run(
+            [sys.executable, str(Path(__file__).resolve().parent / "pit_phrasing_scan.py"),
+             "--jsonl"],
+            capture_output=True, text=True, timeout=60,
+        )
+        if scan_result.returncode == 0 and scan_result.stdout.strip():
+            hits = [json.loads(l) for l in scan_result.stdout.splitlines() if l.strip()]
+            # Group by category for compact display
+            by_cat: dict[str, list[dict]] = {}
+            for h in hits:
+                by_cat.setdefault(h.get("category", "unknown"), []).append(h)
+            total = len(hits)
+            high_sev = sum(1 for h in hits if h.get("severity") == "high")
+            if total > 0:
+                lines.append("")
+                lines.append("=== PIT PHRASING LEAKAGE (retrocausal language in vault) ===")
+                lines.append(f"  {total} total hits ({high_sev} high severity)")
+                for cat, items in sorted(by_cat.items()):
+                    sev_high = sum(1 for i in items if i.get("severity") == "high")
+                    lines.append(f"  {cat}: {len(items)} hits ({sev_high} high)")
+                    for item in items[:2]:
+                        lines.append(f"    {item['file']}:{item['line']} [{item.get('pattern','?')}]")
+                    if len(items) > 2:
+                        lines.append(f"    ... and {len(items)-2} more")
+                lines.append("  Action: fix retrocausal phrasing — replace 'would later' with 'then', trim conclusion-framing in resolved threads.")
+    except Exception as exc:
+        lines.append(f"(phrasing scan unavailable: {exc})")
+
     if not lines:
         return "(no predictive feedback yet — run calibrate or pit_blind_forecast_test.py score)"
     return "\n".join(lines)
@@ -265,6 +322,13 @@ def main() -> None:
         "   who lack any vault coverage — not for every wikilink in a training quarter.",
         "5. Light-touch _procedure.md edits only if they reinforce conjuncture-first training.",
         "6. Report: what conjunctures you extended and which forecast errors they target.",
+        "7. Thread health: if the THREAD HEALTH section above shows stale active threads,",
+        "   update them with recent quarter context or set status to fading/resolved with a rationale.",
+        "   Do not delete old thread content — threads are cumulative.",
+        "8. PIT phrasing: if the PIT PHRASING LEAKAGE section above shows high-severity hits,",
+        "   fix them: replace 'would later' with 'then' or the concrete event, trim conclusion-framing",
+        "   language in resolved threads, remove 'ultimately led to' phrasing. The vault must speak",
+        "   from the cutoff, not from the future.",
         "",
         "Success = next forecast on similar questions uses thread/concept interaction, not trivia.",
     ]
@@ -366,7 +430,7 @@ def main() -> None:
                 continue
             try:
                 t0 = time.time()
-                p_yes, reasoning = run_structured(
+                p_yes, reasoning, _metadata = run_structured(
                     qtext,
                     cutoff=r.get("cutoff"),
                     vault_dir=str(GRAPH_VAULT),

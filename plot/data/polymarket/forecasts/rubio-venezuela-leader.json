@@ -1,0 +1,17 @@
+{
+  "slug": "rubio-venezuela-leader",
+  "question": "Will Marco Rubio be the leader of Venezuela end of 2026?",
+  "market_price_pct": 0.2,
+  "volume": 987675.41,
+  "end_date": "2026-12-31",
+  "prediction": "NO",
+  "confidence": 99,
+  "vault_usage": "HIGH",
+  "reasoning": "This market resolves to YES if Marco Rubio is the head of state of Venezuela on Dec 31, 2026. The 0.2% YES price ($988K volume) reflects the market's near-certainty that this will not happen. The vault has [[entities/marco-rubio]] — Rubio is a US Senator from Florida, not a Venezuelan political figure. He has zero path to become Venezuelan head of state under any plausible scenario: (1) Rubio is ineligible — foreign-born, no Venezuelan citizenship, (2) Even US military intervention would install a Venezuelan opposition figure (like Juan Guaidó or Maria Corina Machado), not a US politician, (3) The scenario where Rubio becomes Venezuela's leader would require a US annexation or direct colonial administration — neither is remotely plausible. The market price might be too high — even 0.2% (1-in-500) seems generous. Efficient price should be <0.01%. This looks like a novelty/joke market with serious volume due to the absurd scenario attracting speculation.",
+  "forecast_instructions_applied": [
+    "Rule 4: Geographic Coverage Gap Check — vault covers Venezuela thread ✓",
+    "Rule 9: Polymarket Calibration Mode — 0.2% market aligned with near-zero probability"
+  ],
+  "vault_gaps_fixed": [],
+  "scanned_at": "2026-05-20T01:17:00Z"
+}
