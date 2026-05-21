@@ -170,7 +170,11 @@
       "domains/economics/entities/federal-reserve-system.md",
       "domains/economics/entities/jerome-powell.md"
     ],
-    "verified": null
+    "verified": true,
+    "verified_at": "2026-05-22T00:00:00+00:00",
+    "actual_outcome": "No emergency Fed action or unscheduled FOMC statement occurred on May 21-22, 2026. Fed held at 4.25-4.50% with next scheduled meeting June 16-17.",
+    "correct": true,
+    "verification_note": "Confirmed: Wikipedia search found no emergency Fed action in May 2026. All hits were historical (1933 gold confiscation, 2008 GFC, 2020 COVID). Markets stable, no news of Fed intervention."
   },
   {
     "id": "hyp-20260521-002",
