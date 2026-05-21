@@ -105,7 +105,7 @@ def main() -> int:
             "--policy", str(DEFAULT_POLICY_PATH),
             "--concurrency", "5",
             "--skip-existing",
-            "--allow-categories", "politics", "economics", "crypto",
+            "--allow-categories", "politics,economics,crypto",
         ]
         if args.orchestrate:
             batch_cmd.append("--orchestrate")

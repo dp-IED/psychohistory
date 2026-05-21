@@ -289,47 +289,28 @@ class TournamentWatcher:
         for qid, pid in open_pairs:
             if pid not in new_post_ids:
                 continue
-            try:
-                time.sleep(0.5)  # Rate-limit safety between detail calls
-                details = get_post_details(pid, self._token)
-                qdata = details.get("question", {})
-                if qdata.get("status") == "open":
-                    new_questions.append(
-                        QuestionInfo(
-                            question_id=qid,
-                            post_id=pid,
-                            title=qdata.get("title", ""),
-                            description=qdata.get("description", ""),
-                            resolution_criteria=qdata.get(
-                                "resolution_criteria", ""
-                            ),
-                            fine_print=qdata.get("fine_print", ""),
-                            question_type=qdata.get("type", "binary"),
-                            close_time=qdata.get(
-                                "scheduled_close_time", ""
-                            ),
-                            resolve_time=qdata.get(
-                                "scheduled_resolve_time", ""
-                            ),
-                            status=qdata.get("status", ""),
-                        )
+            qdata = _fetch_post_details_safe(pid, self._token)
+            if qdata is not None and qdata.get("status") == "open":
+                new_questions.append(
+                    QuestionInfo(
+                        question_id=qid,
+                        post_id=pid,
+                        title=qdata.get("title", ""),
+                        description=qdata.get("description", ""),
+                        resolution_criteria=qdata.get(
+                            "resolution_criteria", ""
+                        ),
+                        fine_print=qdata.get("fine_print", ""),
+                        question_type=qdata.get("type", "binary"),
+                        close_time=qdata.get(
+                            "scheduled_close_time", ""
+                        ),
+                        resolve_time=qdata.get(
+                            "scheduled_resolve_time", ""
+                        ),
+                        status=qdata.get("status", ""),
                     )
-            except HTTPError as e:
-                if e.code == 429:
-                    time.sleep(2.0)  # Back off on rate limit
-                    try:
-                        details = get_post_details(pid, self._token)
-                        qdata = details.get("question", {})
-                        if qdata.get("status") == "open":
-                            new_questions.append(_build_question_info(qid, pid, qdata))
-                    except Exception:
-                        logger.warning(
-                            "Rate-limited on post %d, skipping details", pid
-                        )
-                else:
-                    logger.warning(
-                        "Failed to get details for post %d: %s", pid, e
-                    )
+                )
 
         if not new_questions:
             return None
@@ -399,6 +380,66 @@ class TournamentWatcher:
         self._state_path().write_text(
             json.dumps(self._state.to_dict(), indent=2, default=str)
         )
+
+
+# ── Rate-limit-safe fetch ─────────────────────────────────────────────
+
+
+def _fetch_post_details_safe(
+    post_id: int,
+    token: str,
+    *,
+    _base_delay: float = 1.5,
+    _max_retries: int = 3,
+) -> dict[str, Any] | None:
+    """Fetch post details with rate-limit awareness.
+
+    - 1.5s delay between successive calls (regardless of caller).
+    - On 429: respects ``Retry-After`` header; falls back to
+      exponential backoff (2s → 4s → 8s).
+    - Returns ``None`` if all retries are exhausted or a non-429
+      error occurs.
+    """
+    import time as _time
+
+    _time.sleep(_base_delay)
+
+    for attempt in range(_max_retries + 1):
+        try:
+            details = get_post_details(post_id, token)
+            return details.get("question", {})
+        except HTTPError as e:
+            if e.code != 429:
+                logger.warning(
+                    "Failed to get details for post %d: %s", post_id, e
+                )
+                return None
+
+            # ── Rate-limited ──
+            retry_after: float | None = None
+            try:
+                if e.headers is not None:
+                    ra = e.headers.get("Retry-After")
+                    if ra is not None:
+                        retry_after = float(ra)
+            except (ValueError, TypeError):
+                pass
+
+            if attempt < _max_retries:
+                delay = retry_after if retry_after else 2.0 ** (attempt + 1)
+                logger.warning(
+                    "429 on post %d (attempt %d/%d), sleeping %.1fs",
+                    post_id, attempt + 1, _max_retries + 1, delay,
+                )
+                _time.sleep(delay)
+            else:
+                logger.error(
+                    "Rate-limited on post %d after %d retries, skipping",
+                    post_id, _max_retries,
+                )
+                return None
+
+    return None
 
 
 # ── Convenience: forecast handler ────────────────────────────────────

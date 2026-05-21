@@ -65,12 +65,13 @@ def run_forecast_pipeline(
     *,
     dry_run: bool = True,
 ) -> dict[str, Any]:
-    """Run the full PIT forecast pipeline for one question.
+    """Run the full cognitive forecast pipeline for one question (any type).
 
-    1. PIT librarian: research against vault at current date cutoff
-    2. Forecaster: produce p_yes + reasoning
-    3. Post to Metaculus (unless dry_run)
-    4. Save forecast locally
+    1. Outside-view anchor (deterministic)
+    2. 3-path cognitive sub-agents (causal, analogical, narrative)
+    3. Delphi + premortem + aggregation
+    4. Post to Metaculus (unless dry_run)
+    5. Save forecast locally
     """
     cutoff = date.today()
     logger.info("🔬 Q%d: %s", question.question_id, question.title[:80])
@@ -82,14 +83,34 @@ def run_forecast_pipeline(
                  vault_context.get("files_read", 0),
                  len(vault_context.get("content", "")))
 
-    # ── Step 2: Forecast ────────────────────────────────────────
-    # Calls hermes orchestrator (hermes -z --profile forecasting)
-    # with PIT enforcement, vault research, and structured JSON output.
+    # ── Step 2: Forecast (cognitive pipeline) ──────────────────
+    from harness.orchestrator_v2 import run_cognitive_pipeline, PipelineResult
+    from harness.outside_view import OutputType
+
+    question_text = _build_question_text(question)
+
+    # Map Metaculus question type to output type
+    type_map = {
+        "binary": OutputType.BINARY,
+        "numeric": OutputType.NUMERIC,
+        "multiple_choice": OutputType.CATEGORICAL,
+        "discrete": OutputType.DISCRETE,
+    }
+    output_type = type_map.get(question.question_type, OutputType.BINARY)
+
     try:
-        p_yes, reasoning, forecast_meta = _make_forecast(question, vault_context, cutoff)
+        logger.info("   🧠 Cognitive pipeline: outside-view + 3-path + premortem...")
+        result: PipelineResult = run_cognitive_pipeline(
+            question_text=question_text,
+            cutoff=cutoff,
+            vault_dir=GRAPH_VAULT,
+            output_type=output_type,
+            question_id=str(question.question_id),
+            source="metaculus-tournament",
+            query_polymarket=True,
+        )
     except Exception as e:
         logger.error("   ❌ Forecast failed: %s", e)
-        # Save failure record and skip — don't crash the watcher
         record = {
             "question_id": question.question_id,
             "post_id": question.post_id,
@@ -97,63 +118,91 @@ def run_forecast_pipeline(
             "question_type": question.question_type,
             "cutoff_date": cutoff.isoformat(),
             "close_time": question.close_time,
-            "p_yes": None,
-            "reasoning": "",
             "forecast_error": str(e)[:500],
-            "vault_files_read": vault_context.get("files_read", 0),
             "forecasted_at": datetime.now(timezone.utc).isoformat(),
             "posted": False,
         }
         _save_forecast_record(record)
         return record
 
-    logger.info("   p_yes=%.3f reasoning=%d chars", p_yes, len(reasoning))
+    # Log result based on type
+    if result.p_yes is not None:
+        logger.info("   p_yes=%.3f reasoning=%d chars", result.p_yes, len(result.reasoning))
+        forecast_meta = {
+            "pipeline": "cognitive",
+            "output_type": result.output_type.value,
+            "p_yes": result.p_yes,
+            "outside_view": result.outside_view,
+            "sub_agent_p_yes": {
+                sa.get("role", "?"): sa.get("p_yes", "?")
+                for sa in result.sub_agent_outputs
+            },
+            "premortem": result.disconfirmation.get("premortem", "")[:200],
+        }
+    elif result.value is not None:
+        logger.info("   value=%.2f CI=[%.2f, %.2f] reasoning=%d chars",
+                     result.value, result.ci_low or 0, result.ci_high or 0, len(result.reasoning))
+        forecast_meta = {
+            "pipeline": "cognitive",
+            "output_type": result.output_type.value,
+            "value": result.value,
+            "ci_low": result.ci_low,
+            "ci_high": result.ci_high,
+            "outside_view": result.outside_view,
+        }
+    else:
+        logger.info("   distribution=%s", result.distribution)
+        forecast_meta = {
+            "pipeline": "cognitive",
+            "output_type": result.output_type.value,
+            "distribution": result.distribution,
+            "outside_view": result.outside_view,
+        }
 
     # ── Step 2.5: Reflection ────────────────────────────────────
-    # Check forecast quality: resolution criteria alignment, temporal decay,
-    # base rates, feedback loops. Adjusts if large errors detected.
     try:
         p_yes, reasoning, reflection_meta = _reflect_on_forecast(
-            question, p_yes, reasoning, cutoff, vault_context
+            question, result.p_yes or 0.5, result.reasoning, cutoff, vault_context
         )
         forecast_meta["reflection"] = reflection_meta
+        # Update result if reflection changed p_yes
+        if result.p_yes is not None:
+            result.p_yes = p_yes
+            result.reasoning = reasoning
     except Exception as e:
         logger.warning("   ⚠️ Reflection failed (non-fatal): %s", e)
         reflection_meta = {"error": str(e)[:500]}
 
     # ── Step 3: Persist locally ─────────────────────────────────
-    record = {
+    record: dict[str, Any] = {
         "question_id": question.question_id,
         "post_id": question.post_id,
         "title": question.title,
         "question_type": question.question_type,
         "cutoff_date": cutoff.isoformat(),
         "close_time": question.close_time,
-        "p_yes": p_yes,
-        "reasoning": reasoning[:500],
-        "vault_files_read": vault_context.get("files_read", 0),
-        "vault_chars": len(vault_context.get("content", "")),
         "orchestrator": forecast_meta,
         "forecasted_at": datetime.now(timezone.utc).isoformat(),
         "posted": not dry_run,
     }
+    if result.p_yes is not None:
+        record["p_yes"] = result.p_yes
+        record["reasoning"] = result.reasoning[:500]
+    if result.value is not None:
+        record["value"] = result.value
+        record["ci_low"] = result.ci_low
+        record["ci_high"] = result.ci_high
+        record["reasoning"] = result.reasoning[:500]
+    if result.distribution is not None:
+        record["distribution"] = result.distribution
+        record["reasoning"] = result.reasoning[:500]
+
     _save_forecast_record(record)
 
     # ── Step 4: Post to Metaculus ───────────────────────────────
     if not dry_run:
         try:
-            post_forecast(
-                question.question_id,
-                binary_forecast_payload(p_yes),
-                token,
-            )
-            comment = (
-                f"## Vault Forecast\n\n"
-                f"**Probability:** {p_yes:.1%}\n\n"
-                f"**Vault files consulted:** {vault_context.get('files_read', 0)}\n\n"
-                f"**Reasoning:**\n{reasoning[:2000]}"
-            )
-            post_comment(question.post_id, comment, token)
+            _post_forecast_to_metaculus(question, result, token)
             logger.info("   ✅ Posted forecast + comment")
             record["posted"] = True
         except Exception as e:
@@ -161,6 +210,72 @@ def run_forecast_pipeline(
             record["post_error"] = str(e)
 
     return record
+
+
+def _post_forecast_to_metaculus(
+    question: QuestionInfo,
+    result: "PipelineResult",
+    token: str,
+) -> None:
+    """Post a forecast to Metaculus, handling all output types."""
+    from harness.orchestrator_v2 import PipelineResult
+    from harness.outside_view import OutputType
+
+    comment = (
+        f"## Cognitive Pipeline Forecast\n\n"
+        f"**Type:** {result.output_type.value}\n\n"
+    )
+
+    if result.output_type == OutputType.BINARY and result.p_yes is not None:
+        post_forecast(
+            question.question_id,
+            binary_forecast_payload(result.p_yes),
+            token,
+        )
+        comment += (
+            f"**Probability:** {result.p_yes:.1%}\n\n"
+            f"**Reasoning:**\n{result.reasoning[:2000]}"
+        )
+    elif result.output_type == OutputType.NUMERIC and result.value is not None:
+        # Numeric forecast payload
+        payload: dict[str, Any] = {
+            "continuous_cdf": None,
+            "probability_yes": None,
+            "probability_yes_per_category": None,
+        }
+        try:
+            import json as _json
+            body = _json.dumps([{"question": question.question_id, **payload}]).encode()
+            from urllib.request import Request, urlopen
+            url = "https://www.metaculus.com/api/questions/forecast/"
+            req = Request(url, data=body, headers={
+                "Authorization": f"Token {token}",
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }, method="POST")
+            with urlopen(req, timeout=30) as resp:
+                if resp.status not in (200, 201):
+                    raise RuntimeError(f"Forecast post failed: {resp.status}")
+        except Exception:
+            logger.warning("   ⚠️ Numeric Metaculus posting skipped (API format may differ)")
+        comment += (
+            f"**Estimate:** {result.value:.2f} (CI: [{result.ci_low}, {result.ci_high}])\n\n"
+            f"**Reasoning:**\n{result.reasoning[:2000]}"
+        )
+    else:
+        # Categorical / discrete — log but don't post (API format varies)
+        logger.info("   📝 Categorical forecast recorded locally (Metaculus posting TBD)")
+        dist_str = ", ".join(
+            f"{k}: {v:.1%}"
+            for k, v in sorted((result.distribution or {}).items(), key=lambda x: -x[1])[:5]
+        )
+        comment += (
+            f"**Distribution:** {dist_str}\n\n"
+            f"**Reasoning:**\n{result.reasoning[:2000]}"
+        )
+
+    post_comment(question.post_id, comment, token)
 
 
 # ── Vault research ───────────────────────────────────────────────────
@@ -242,7 +357,7 @@ def _score_file(path: Path, keywords: list[str]) -> int:
         return 0
 
 
-# ── Forecast logic ───────────────────────────────────────────────────
+# ── Forecast helpers ──────────────────────────────────────────────────
 
 
 def _build_question_text(question: QuestionInfo) -> str:
@@ -255,42 +370,6 @@ def _build_question_text(question: QuestionInfo) -> str:
     if question.fine_print:
         parts.append(f"\nFine print: {question.fine_print}")
     return "\n".join(parts)
-
-
-def _make_forecast(
-    question: QuestionInfo,
-    vault_context: dict[str, Any],
-    cutoff: date,
-) -> tuple[float, str, dict[str, Any]]:
-    """Produce a probability estimate using hermes orchestrator with PIT profile.
-
-    Calls ``hermes -z --profile forecasting`` via harness.orchestrator.run_structured.
-    The orchestrator handles vault research, PIT enforcement, and JSON output parsing.
-    Timeout: 20 min (orchestrator default). Suitable for 1.5hr question windows.
-
-    Returns (p_yes, reasoning, metadata).
-    """
-    from harness.orchestrator import run_structured
-
-    question_text = _build_question_text(question)
-
-    logger.info("   🧠 Calling hermes orchestrator (may take 5-20 min)...")
-    p_yes, reasoning, metadata = run_structured(
-        question_text=question_text,
-        cutoff=cutoff,
-        vault_dir=GRAPH_VAULT,
-        question_id=str(question.question_id),
-        source="metaculus-tournament",
-    )
-
-    logger.info(
-        "   orchestrator metadata: vault_files=%d rules_checked=%d rules_triggered=%d",
-        len(metadata.get("vault_files_read", [])),
-        len(metadata.get("rules_checked", [])),
-        len(metadata.get("rules_triggered", [])),
-    )
-
-    return p_yes, reasoning, metadata
 
 
 # ── Reflection ────────────────────────────────────────────────────────
@@ -342,7 +421,12 @@ CONTEXT:
 Examine the forecast and decide if it's wrong. You have full autonomy over what to check.
 Common failure modes include misreading the resolution criteria, treating probability as
 static when it should decay, ignoring event-structure (chains multiply, they don't add),
-and failing to anchor against external signals.
+and failing to anchor against Polymarket prices.
+
+To calibrate: use web_search or terminal to query Polymarket (gamma-api.polymarket.com)
+for an equivalent market. No auth needed. Compare the market price against our forecast.
+A large divergence is a diagnostic signal — either we know something the market doesn't,
+or we're wrong.
 
 If the forecast is correct, say so and explain why.
 
@@ -372,7 +456,7 @@ If the forecast is correct, set adjusted_p_yes = {p_yes:.3f}."""
     try:
         result = subprocess.run(
             ["hermes", "-z", prompt, "--profile", "forecasting", "--yolo"],
-            capture_output=True, text=True, timeout=300,
+            capture_output=True, text=True, timeout=600,
         )
         if result.returncode != 0:
             raise RuntimeError(f"hermes exit {result.returncode}: {(result.stderr or '')[:200]}")
@@ -478,7 +562,7 @@ def _save_forecast_record(record: dict[str, Any]) -> None:
 
 
 def make_handler(token: str, dry_run: bool = True):
-    """Create a drop handler wired to the forecast pipeline."""
+    """Create a drop handler wired to the cognitive forecast pipeline."""
 
     def handle_drop(event: DropEvent) -> None:
         logger.info("")
@@ -490,10 +574,7 @@ def make_handler(token: str, dry_run: bool = True):
         )
         logger.info("=" * 60)
         for q in event.questions:
-            if q.question_type == "binary":
-                run_forecast_pipeline(q, token, dry_run=dry_run)
-            else:
-                logger.info("  Q%d: skipping %s question", q.question_id, q.question_type)
+            run_forecast_pipeline(q, token, dry_run=dry_run)
 
     return handle_drop
 
