@@ -1,37 +1,26 @@
-## Report: Changes Made
+## Per-Question Reflection Report: gold_12 (Biden dropout miss)
 
-### Diagnosis
+### 1. Diagnosis: Why was this prediction wrong?
 
-The Biden dropout prediction was wrong for **three structural reasons**:
+The NO prediction for "Biden drops out of presidential race?" failed due to three distinct biases:
 
-1. **Single-frame error**: I applied only the persistence frame (why Biden would stay: party unified, incumbent advantage) without checking the withdrawal frame. The vault had `leadership-persistence-under-threat` but not its mirror concept `incumbent-withdrawal-cascade` at prediction time.
+**a) Wrong frame applied:** I applied a persistence frame ("incumbents don't drop out, party unifies behind the nominee") instead of a vulnerability frame. At the time, I saw a unified Democratic party, no visible trigger, and Biden's repeated public statements. I didn't apply the historical comparison to Truman 1952 and LBJ 1968 — both incumbents who looked stable right up until they withdrew.
 
-2. **Overweighted stated intentions**: Biden's public denials ("only the Lord Almighty could convince me to drop out") were treated as credible signals when they are structurally unreliable — Truman, LBJ, and Biden all denied withdrawal intention up to the moment they withdrew.
+**b) Overweighted stated intentions:** Biden's public denials and his inner circle's confidence were treated as evidence when they're actually a structural feature of the Stage 0 denial pattern exhibited by all three canonical withdrawers.
 
-3. **Missed historical analogy**: The Truman 1952 and LBJ 1968 precedents showed the exact pattern: vulnerable incumbent + no legal jeopardy + party doubt + trigger event = withdrawal. The vault had none of these precedents documented.
+**c) Underweighted cumulative trigger probability:** Over a 10-month horizon for an 81-year-old, the probability of at least one trigger event (debate failure, health scare, primary challenge, gaffe cascade) was ~40-55% — not a low-probability tail. I assessed the static state (no trigger today) rather than the dynamic risk (trigger over horizon).
 
-**Systemic pattern**: ALL 4 wrong predictions were NO (predicted status quo, actual was disruptive change), suggesting a status-quo bias that needed explicit flagging.
+### 2. Vault Improvements Made
 
-### Files Created (2)
+| File | Change | Rationale |
+|------|--------|-----------|
+| **domain/usa/entities/george-clooney.md** (new) | Created entity stub documenting his role as donor/surrogate whose NYT op-ed was the cascade inflection point | George Clooney was referenced as a wikilink from 3+ locations but had no file — a dangling graph node |
+| **incumbent-withdrawal-cascade.md** (3 patches) | Fixed broken wikilinks: `[[Nancy Pelosi]]` -> `[[domains/usa/entities/nancy-pelosi\|Nancy Pelosi]]`, `[[George Clooney]]` -> `[[domains/usa/entities/george-clooney\|George Clooney]]` | Violated Spec Rule 36 (no dangling concept/entity references). Concept named key actors but wikilinks didn't resolve |
+| **_procedure.md** (2 patches) | Fixed broken `[[George Clooney]]` wikilink in step 16 cascade velocity section + Added new **step 6a** (Content-loaded entity sweep) requiring entity stub verification for all named actors in loaded concept/thread/procedure content | The existing step 6 (named entity sweep) only covers question text. Concept files reference entities that never appear in question text (Pelosi, Clooney, Schumer, etc.) — these were systematically missed |
+| **_spec.md** (new Rule 40) | Added Rule 40: "Donor/surrogate defection as mandatory cascade-signal tracking" with timing rule (3-7 day leading indicator before institutional engagement, P(withdrawal within 21 days) > 80% when donor defects with proximate-witness credibility) and entity stub requirements for donor/surrogates | The donor defection pattern was documented in the concept and procedure but had no spec-level mandate. Without this rule, future forecasts could still miss this signal |
 
-| File | Purpose |
-|------|---------|
-| `entities/kamala-harris.md` | Entity stub for 49th VP and 2024 Democratic nominee. Documents the 72-hour successor absorption benchmark, critical for any future late-stage nominee replacement forecast. |
-| `entities/nancy-pelosi.md` | Entity stub for former Speaker and key figure in the Biden pressure campaign. Documents the "elder statesperson defection" signal — when a party elder breaks ranks, it catalyzes the cascade. |
+### 3. Key Insight from This Miss
 
-### Files Modified (5)
+The gold_12 error was not just about getting the probability wrong — it was about the **framing error** of treating an incumbent as structurally similar to a non-incumbent. The vault now enforces candidate-type classification (Spec Rule 35, Procedure Step 16) as the FIRST step before any withdrawal analysis. This ensures that no future withdrawal question can accidentally apply a persistence frame to an incumbent without first checking the 6-signal vulnerability inventory from the aging-incumbent early warning procedure.
 
-| File | Change |
-|------|--------|
-| `concepts/incumbent-withdrawal-cascade.md` | Added **Stage 0: Stated-Intention Denial Phase** — the pre-trigger phase where leaders who will withdraw deny intention up to the moment of withdrawal. Expanded Stages 1-7 with richer detail. Added Trump persistence case to Validated By table. Added wikilinks to new entities. |
-| `_spec.md` | Added **Principle 12**: "Stated intentions are unreliable signals for withdrawal forecasts" — forecasters must overweight structural vulnerability conditions (age, approval, legal jeopardy absence, successor availability) and underweight leader's public statements. |
-| `_procedure.md` | Added **stated-intention skepticism** to Step 12 (leadership persistence/withdrawal assessment). Added **status-quo bias** to Pitfalls section — all 4 wrong predictions were NO, suggesting systematic tendency to underestimate disruption probability. |
-| `threads/2024-us-presidential-election.md` | Added `entities/kamala-harris` and `entities/nancy-pelosi` to wikilinks. |
-| `_index.md` | Added Cycle 12 section documenting all changes and key lesson about dual-frame analysis and status-quo bias. |
-
-### Key Lessons for Future Forecasts
-
-1. **Always assess both frames**: Persistence AND withdrawal. The most common error is seeing only one side.
-2. **Public denials are not evidence**: Biden, LBJ, and Truman all said they wouldn't drop out. The denial is a structural feature of the dynamic, not a signal of actual probability.
-3. **NO bias is real**: All 4 wrong predictions were NO. When assessing a change question, apply the affirmative frame FIRST (case for change) before applying the skeptical frame.
-4. **Continuing domain coverage**: The 2024 election domain now has full coverage — thread, concept, all key entities (Trump, Biden, Harris, Pelosi, Johnson, Truman, LBJ), quarter files, and forecast entries. Next forecast about US presidential politics should find 100% vault contribution.
+The specific code-level gap revealed by this reflection is: **named entities in concept files are not captured by the existing question-text entity sweep.** The Pelosi/Clooney entities were referenced in the cascade concept but not in the question "Biden drops out?" — so step 6 missed them entirely. Step 6a closes this gap.

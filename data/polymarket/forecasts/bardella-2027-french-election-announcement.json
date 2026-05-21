@@ -1,0 +1,11 @@
+{
+  "id": "bardella-2027-french-election-announcement",
+  "question": "Will Jordan Bardella announce their candidacy for the 2027 French presidential election in 2026?",
+  "market_price_yes": 0.65,
+  "volume": 996,
+  "category": "politics/international",
+  "domain": "europe",
+  "rules_applied": [
+    "Rule 4 (Geographic Coverage Gap)"
+  ]
+}

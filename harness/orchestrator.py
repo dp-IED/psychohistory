@@ -146,6 +146,7 @@ def _build_structured_prompt(
     and consult past runs before emitting its forecast.
     """
     cutoff_str = cutoff.isoformat() if cutoff else "unknown"
+    vault_label = Path(str(vault_dir)).name if vault_dir else "graph-vault"
 
     lines = [
         "=== FORECAST TASK ===",
@@ -160,18 +161,20 @@ def _build_structured_prompt(
         "You MUST complete the following research steps before forecasting.",
         "Use your available tools (read_file, search_files, web_search).",
         "",
-        'Step 1 - FORECAST RULES: Read graph-vault/_forecast_instructions.md. This contains the evidence gate,',
+        f'Step 1 - FORECAST RULES: Read {vault_label}/_forecast_instructions.md. This contains the evidence gate,',
         "  calibration data, and domain rules. Follow its instructions.",
         "",
-        "Step 2 - PROCEDURE: Read graph-vault/_procedure.md for the research workflow.",
+        f"Step 2 - PROCEDURE: Read {vault_label}/_procedure.md for the research workflow.",
         "",
-        "Step 3 - CONCEPTS: Search graph-vault/concepts/ for playbooks relevant",
+        f'Step 3 - CONCEPTS: Search {vault_label}/domains/*/concepts/ for playbooks relevant',
         "  to this question type (politics, macro, culture, etc.).",
-        "  For historical analogs only, read graph-vault/history/ — do not use root timeline/ for pre-2022.",
+        f"  For historical analogs only, read {vault_label}/history/ — do not use {vault_label}/timeline/ for pre-2022.",
         "",
-        "Step 4 - KNOWLEDGE GRAPH: Read graph-vault/timeline/ for temporal context,",
-        "  and graph-vault/entities/ for entity nodes relevant to this question (people, places,",
-        "  organizations, domains). Search graph-vault/ for threads and related nodes.",
+        f"Step 4 - KNOWLEDGE GRAPH: Read {vault_label}/timeline/ for temporal context,",
+        f"  and {vault_label}/domains/*/entities/ for entity nodes relevant to this question (people,",
+        "  places, organizations).",
+        f"  Search {vault_label}/domains/*/concepts/ for patterns,",
+        f"  and {vault_label}/domains/*/threads/ for threaded narratives.",
         "  Only read nodes listed in the PIT manifest when one is provided.",
         "",
     ]
@@ -208,7 +211,7 @@ def _build_structured_prompt(
         "No explanations, no markdown, no other text before or after.",
         '{"p_yes": 0.XX, "reasoning": "one-sentence summary; include implied timing if the question asks when"}',
         "Optionally include (RECOMMENDED):",
-        '  "vault_files_read": ["_forecast_instructions.md", "concepts/foo.md", ...]',
+        '  "vault_files_read": ["_forecast_instructions.md", "domains/usa/concepts/foo.md", ...]',
         '  "rules_checked": ["Rule 1: Central Bank Questions", "Rule 2: Domestic Politics Gap Check", ...]',
         '  "rules_triggered": ["Rule 2: Domestic Politics Gap Check", ...]',
         '  "deliberation": "2-3 sentences explaining key reasoning steps and which vault evidence most influenced the forecast"',
@@ -236,6 +239,7 @@ def _build_orchestrator_prompt(
     relevant agents, spawns them in parallel, spawns the contrarian, then synthesizes.
     """
     cutoff_str = cutoff.isoformat() if cutoff else "unknown"
+    vault_label = Path(str(vault_dir)).name if vault_dir else "graph-vault"
 
     lines = [
         "=== ORCHESTRATED FORECAST TASK ===",
@@ -254,7 +258,7 @@ def _build_orchestrator_prompt(
         "Execute these steps in order. Use your available tools (read_file, search_files,",
         "delegate_task, write_file, patch) to complete each step.",
         "",
-        "Step 1 - READ YOUR PREROGATIVES: Read graph-vault/agent-roles/_orchestrator_prerogatives.md",
+        f"Step 1 - READ YOUR PREROGATIVES: Read {vault_label}/agent-roles/_orchestrator_prerogatives.md",
         "  This defines your meta-workflow. Follow it.",
         "",
         "Step 2 - PIT LIBRARIAN (if cutoff is historical):",
@@ -263,7 +267,7 @@ def _build_orchestrator_prompt(
         "  all later sub-agents. Domain agents may use current vault for gaps — label which",
         "  facts come from the PIT brief vs live reads.",
         "",
-        "Step 3 - SCAN THE AGENT ROSTER: Use search_files to list graph-vault/agent-roles/*.md",
+        f"Step 3 - SCAN THE AGENT ROSTER: Use search_files to list {vault_label}/agent-roles/*.md",
         "  Skip pit-research-librarian for selection counts. Select 2-4 domain agents.",
         "  CRITICAL: At minimum include an actor-simulation or regional specialist for the",
         "  relevant geography AND an analyst/theorist for the question's domain.",
@@ -417,7 +421,7 @@ def run_orchestrated(
     category: str = "",
     resolution: bool | None = None,
     volume: float | None = None,
-    enforce_pit: bool = False,
+    enforce_pit: bool = True,
 ) -> tuple[float, str, dict[str, Any]]:
     """Run an orchestrated forecast using multi-agent sub-delegation.
 
@@ -515,7 +519,7 @@ def run_structured(
     category: str = "",
     resolution: bool | None = None,
     volume: float | None = None,
-    enforce_pit: bool = False,
+    enforce_pit: bool = True,
     graph_only: bool = False,
     use_pit_librarian: bool = True,
     pit_brief_block: str = "",

@@ -1,35 +1,23 @@
-All files verified. Let me provide the complete report.
+All changes complete. Here's the report:
 
 ---
 
-## REPORT: Changes made and why
+## What Changed and Why
 
-### Diagnosis
-The HNP prediction was **correct (NO)** with ~40% vault contribution. The existing `argentina-milei-realignment` thread (created after Cycle 8) provided the seat counts that made the YES case structurally impossible. However, the pattern driving the answer — regional third-way parties being squeezed under polarization — was embedded as a bullet point in a thread rather than extractable as a standalone forecasting framework. This meant the vault couldn't apply it to other countries' third-way parties (Spain's Ciudadanos, Brazil's Centrão, etc.) without rediscovering it from scratch.
+**Diagnosis**: The vault was deceptively mature for Argentina coverage — excellent thread, entity stubs, and 4+ concepts explaining every dynamic. But the PIT timeline files (2025-Q1, Q2, Q3) had ZERO pre-election campaign coverage for the October 26 legislative election despite it being Argentina's most consequential political event of 2025. A forecaster in mid-2025 asking "Will HNP win the most seats?" would have found no campaign context in the vault's timeline. This is the same gap as the Taiwan 2024 election — excellent post-hoc, empty pre-hoc.
 
-### Files changed
+**Files changed:**
 
-**1. CREATED: `concepts/regional-third-way-squeeze.md`** (9187 bytes)
-- New standalone concept: a centrist/regional party squeezed to irrelevance as the national electorate bipolarizes
-- Four canonical examples: Argentina (HNP/Primero País), Spain (Ciudadanos), France (weak partial), Brazil (emerging)
-- Forecasting application: 5-question checklist for determining whether a third-way party can win national plurality
-- Timing calibration: 30-60% vote share decline over 1-2 cycles
-- Failure conditions: presidential third-ways, highly proportional systems, territorial nationalist parties
-- This was the core improvement — converting an embedded thread dynamic into a retrievable framework
+1. **`timeline/2025-Q1.md`** — Added Argentina legislative election subsection documenting the $LIBRA crypto scandal as political backdrop, the October 26 election scheduling, the emerging coalition structure (LLA, Fuerza Patria, HNP→Primero País, FIT-U), and key dynamics to watch through the year.
 
-**2. UPDATED: `_procedure.md`**
-- **Pre-Forecast Audit Step 6** (new): Structural feasibility check for third-way/regional parties — before forecasting on a party's national chances, check national vote share history, regional concentration ratio, and polarization trend
-- **Post-Forecast Reflection Step 3** (new): Vault contribution scoring rubric — 0% (freebie), Partial (10-80%), Full (100%) — forces honest assessment of vault health per domain
-- Fixed downstream numbering (steps 4-11 renumbered)
+2. **`timeline/2025-Q2.md`** — Added Argentina legislative campaign section documenting established coalition alignments, early PIT-polling showing HNP stuck in single digits (confirming the [[regional-third-way-squeeze]] pattern even pre-election), the clean scandal-free electoral runway, and Milei's international positioning.
 
-**3. UPDATED: `concepts/populist-coattail-legislative-wave.md`**
-- Added cross-reference to new `regional-third-way-squeeze` concept — both concepts together explain why a populist surge consolidates while centrist alternatives collapse
+3. **`timeline/2025-Q3.md`** — The most consequential addition: documents the campaign's final stretch with specific scandal timelines (Karina Milei ANDIS in August, peso crisis in September, Milei approval at 32.1%), polling data per bloc through a PIT lens, the US Treasury lifeline, and a structural assessment using the [[midterm-referendum-dynamics]] framework (5+/8 factors favoring LLA despite scandals).
 
-**4. UPDATED: `_index.md`**
-- Added Q6 per-question reflection section documenting the new concept, procedure updates, and key lesson
+4. **`_procedure.md`** — Added Step 6a (pre-election campaign coverage audit) after Step 6. Mandates verification that the preceding quarter file has election campaign context. Uses Argentina 2025 as the canonical failure example. Includes specific criteria: search for country name + "election"/"campaign" — zero results = gap exists.
 
-**5. CREATED: `_reflection-2026-05-18-per-q6.md`** (5921 bytes)
-- Full reflection document with diagnosis, vault score trend table, and lessons for future cycles
+5. **`domains/latin-america/_domain.md`** — Added `midterm-referendum-dynamics` to the subjects list (was missing from LA domain index despite being directly relevant to Argentina).
 
-### Why these changes matter for the next question
-The vault score for Argentina third-way questions went from 0% (Cycle 8) to ~40% (Cycle 9) now with the concept extracted. More importantly, the next time a question asks about any third-way/regional party winning nationally — in any country — the `regional-third-way-squeeze` concept provides a ready-made analytical framework with four canonical examples and a 5-question checklist. The procedure's new Step 6 forces the pre-forecast audit to run this check for any major-actor question.
+6. **`meta/reflections/_reflection-2026-05-20-per-q6-hnp-argentina-seats-pass3.md`** — Created third-pass reflection documenting the cumulative diagnosis.
+
+**Key insight**: Two prior reflections made the vault excellent on concepts (Why HNP lost) and post-hoc results (What happened). But neither checked whether the PIT timeline backbone had pre-event coverage. The vault's "saturation" signal must include quarter file coverage, not just thread/concept depth. After these fixes, a mid-2025 forecaster would find campaign context in every relevant quarter file, not just election results in Q4.

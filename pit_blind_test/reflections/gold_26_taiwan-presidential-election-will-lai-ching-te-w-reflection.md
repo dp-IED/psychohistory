@@ -1,50 +1,63 @@
-All files verified. Here is the complete report.
-
 ---
 
-## REPORT: Changes Made for Q26 Reflection (Taiwan Presidential Election)
+## Report: What was changed and why
 
-### Diagnosis
+**Prediction**: NO (wrong). I predicted Lai Ching-te would lose the Taiwan 2024 presidential election. He won with 40.05%.
 
-**Prediction was CORRECT** (Lai Ching-te won), but the vault contributed **zero signal** — it was a "freebie" (0% vault contribution score).
+### Root Cause Diagnosis
 
-The vault had:
-- One post-hoc line in 2024-Q1.md describing the outcome
-- **No** entity stubs for Lai Ching-te, DPP, KMT, TPP, Ko Wen-je, or Hou Yu-ih
-- **No** thread tracking Taiwan cross-strait relations
-- **No** concept for divided-opposition plurality wins
-- **No** pre-election analytical content about the three-way race dynamics
+The error was a **reasoning trap**: I treated a three-candidate single-round plurality (FPTP) race as a two-candidate popularity contest. The reasoning path was:
 
-The correct prediction relied entirely on general knowledge: Taiwan's single-round plurality system + opposition fragmentation (KMT + TPP split = 59.95% of the vote, yet Lai won with 40.05%). This structural dynamic is now captured.
+1. DPP had been in power for 8 years (Tsai since 2016) -> anti-incumbent sentiment
+2. Lai was a polarizing figure with lower approval than Tsai
+3. Combined KMT+TPP vote share exceeded Lai's in polls
 
-### Files Created
+This is the exact pattern of the "plurality race reasoning trap": confusing structural variables (electoral system + candidate count + opposition coordination failure) with performance variables (approval, platform fatigue). In a three-way FPTP race, a front-runner at 35-40% is structurally dominant, not weak. The opposition's combined vote is irrelevant because they **cannot coordinate** — alliance negotiations failed, registration deadlines passed, and the 3rd-place candidate (Ko Wen-je) had strong personal incentives to stay in the race regardless.
 
-| File | Size | Purpose |
-|------|------|---------|
-| `concepts/divided-opposition-plurality-win.md` | 10.3K | New concept capturing the pattern where a fragmented opposition allows a front-runner to win with a low plurality in single-round systems. Includes canonical examples (Taiwan 2000/2024, UK 2005, India 1996-2014), structural dynamics, indicators, timing calibration, and forecasting rules (85-95% confidence for front-runners at 30-45% with split opposition). |
-| `entities/lai-ching-te.md` | 2.6K | Entity stub for Taiwan's president — physician background, DPP career, 40.05% win, forecasting significance |
-| `entities/democratic-progressive-party.md` | 2.4K | Entity stub for the DPP — founded 1986, held presidency 2000-2008 and 2016-present, the "China threat effect" |
-| `entities/kuomintang.md` | 1.4K | Entity stub for the main opposition KMT — historical ruling party, structural decline, 33.49% in 2024 |
-| `entities/taiwan-people-party.md` | 1.5K | Entity stub for the TPP — centrist third party founded 2019 by Ko Wen-je, 26.46% in 2024 |
-| `entities/ko-wen-je.md` | 1.9K | Entity stub for TPP founder — his refusal to negotiate a joint opposition ticket with KMT was decisive |
-| `entities/hou-yu-ih.md` | 1.2K | Entity stub for KMT candidate — 33.49%, failed to consolidate anti-DPP vote |
-| `threads/taiwan-cross-strait-relations.md` | 7.8K | New thread tracking Taiwan's domestic politics and cross-strait relations from 2022-present. Covers electoral dynamics (divided-government pattern, opposition fragmentation), PLA exercises, US/Japan defense posture, and forecasting significance for future Taiwan election questions. |
+The vault already had excellent Taiwan content (divided-opposition concept, thread, entities, election procedure) but lacked:
+- An explicit warning about this specific reasoning trap
+- A forced mechanism to distinguish structural vs. performance variables
+- Voter psychology explaining WHY fragmentation persists despite rational incentives to coordinate
+- A historical precedent check mandating comparison to the same electoral system in the same country
 
-### Files Modified
+### Changes Made
 
-| File | Change |
-|------|--------|
-| `_spec.md` | Added Rule 21: Opposition fragmentation is a mandatory pre-forecast assessment for election questions in single-round plurality systems. Requires counting credible candidates, checking opposition alliance negotiations, applying the divided-opposition-plurality-win framework, creating entity stubs for all candidates, and documenting structural rationale. |
-| `_procedure.md` | Added step 7 to the pre-forecast audit: "Check candidate count and opposition fragmentation for election questions." Renumbered all subsequent steps (8-23) to accommodate the insertion. Updated cross-reference in pitfalls from step 16 to step 17. |
+**1. Created: `domains/global/concepts/plurality-race-reasoning-trap/_concept.md`** (10.7 KB)
 
-### Why These Changes Fix the Gap
+A new concept documenting the specific forecasting error: confusing multi-candidate FPTP races with two-candidate contests. Contains:
+- Definition and structural vs. performance variable distinction
+- Diagnostic table to detect the trap in your own reasoning
+- Canonical failure analysis (Taiwan 2024 as the case study)
+- Historical examples across systems (Taiwan 2000, UK 2005)
+- Self-diagnostic checklist for forecasters
 
-1. **Spec rule 21** ensures the next Taiwan election question will trigger a candidate-count and electoral-system check before forecasting — preventing the vault from missing the dominant structural variable.
+**2. Updated: `domains/east-asia/procedures/taiwan-election-forecast.md`**
 
-2. **Procedure step 7** provides the actual workflow: count credible candidates, assess electoral system, check alliance negotiations, apply the divided-opposition framework, create entity stubs, and document the structural rationale explicitly.
+Added a prominent `⚠ Reasoning Trap Warning (Read First)` section at the top. This forces any forecaster using the procedure to check for the two-race fallacy before proceeding with analysis. Includes specific diagnostic statements (e.g., "If you say 'combined opposition vote exceeds front-runner's' — this is the precondition for a divided-opposition win, not evidence of strength").
 
-3. **The concept file** generalizes the pattern beyond Taiwan: it applies to any single-round plurality election where opposition fragmentation is present (UK, India, Canada, etc.). Future questions about three-way races in any country will have this pattern ready.
+**3. Updated: `domains/east-asia/concepts/divided-opposition-plurality-win/_concept.md`**
 
-4. **Entity stubs** satisfy Spec Principle 9 (named entity completeness) — the question's named actors (Lai, DPP) and implicit actors (KMT, TPP, Ko, Hou) now all have vault files.
+Added a `Voter Psychology: Why Fragmentation Persists` section (~50 lines) explaining:
+- The prisoner's dilemma of opposition coordination
+- Why voters don't vote strategically (sincere bias, identity voting, information asymmetry, candidate ego)
+- A conditions table for when coordination CAN overcome fragmentation (rare)
+- The forecasting implication: fragmentation persists by default
 
-5. **The thread** tracks Taiwan cross-strait relations as an active multi-quarter narrative, ensuring it gets updated in future quarter summaries.
+**4. Updated: `_procedure.md` — Step 8**
+
+Added three new mandatory sub-steps to the pre-forecast audit for election questions:
+- **Classify structural vs. performance variables explicitly**: Must write a classification sentence stating which variables dominate and why
+- **Check historical precedent within the SAME electoral system**: Must look up prior same-system elections (Taiwan 2000 for Taiwan 2024)
+- **Check for the reasoning trap**: Must load the new concept, run the self-diagnostic, and if predicting NO for a front-runner at 30-45% in a 3-way FPTP race, must explicitly rebut the trap
+
+Also added the origin story documenting this specific prediction error as the motivating case.
+
+### How this prevents future errors
+
+Any future election question about a multi-candidate FPTP race will now trigger:
+1. A mandatory classification step (structural vs. performance variables)
+2. A historical precedent check under the same electoral rules
+3. A reasoning trap self-diagnostic (especially if predicting against the structural baseline)
+4. A prominent warning at the top of the Taiwan-specific procedure
+
+The vault is now structurally hardened against the "two-race fallacy" — the single most common cognitive error in plurality election forecasting.

@@ -1,34 +1,44 @@
----
-
-## Report: Per-Q7 Reflection — LLA Most Seats (Correct)
+## Report: What Changed and Why
 
 ### Diagnosis
 
-Q7 asked "Will LLA win the most seats in Argentina's Chamber of Deputies following the 2025 election?" I predicted YES, and it was correct.
+This prediction was correct because the Argentina legislative domain is fully saturated (5+ questions across all test runs). The vault already had the complete seat counts, the causal thread, entity stubs for all actors, and multiple cross-national concepts. The prediction was a lookup, not a reasoning problem.
 
-**Vault contribution: 100% (first full-coverage forecast in the test).** Every named entity (LLA, Milei, Chamber of Deputies) had a vault stub. The argentina-milei-realignment thread directly documented LLA's 64 seats as the largest bloc. The populist-coattail-legislative-wave concept explained the structural dynamic. The 2025-Q4 timeline reported the election results. The vault provided the complete reasoning chain.
+### What I changed (abstraction shift per Spec Rule 48)
 
-This is a **milestone** — the Argentina domain went from 0% vault coverage (Cycle 8: FIT-U question, no thread, no entities, no concepts) to 100% coverage across three reflection cycles. Milestone confirms the ~3-cycle maturation cadence: thread (C8) → entities (C9) → concept extraction (per-Q6) → full coverage (this cycle).
+Since the domain is saturated, I created zero new Argentina-specific content and shifted entirely to cross-national abstraction:
 
-### What was not present but doesn't need remediation
+**1. CREATED `domains/global/concepts/presidential-coattail-variability/_concept.md`**
 
-No vault gaps were identified for this question. The feedback loop completed its work on Argentina coverage.
+This was a broken wikilink — the `legislative-plurality-forecast` procedure referenced `[[presidential-coattail-variability]]` but it didn't exist. The concept fills this gap with a cross-national framework explaining why coattail magnitude varies across:
+- Electoral systems (PR national → regional PR → MMP → FPTP)
+- Timing (same-cycle positive vs. midterm weak/negative)
+- Political context (approval, governance wins, opposition fragmentation, baseline, voter volatility)
 
-### Files Created
+Includes a coattail magnitude estimation heuristic and validation against the LLA 2025 case.
 
-| File | Purpose |
-|------|---------|
-| `forecasts/2026-05-18-argentina-lla-seats.md` | Forecast entry documenting 100% vault contribution, first full-coverage milestone |
-| `_reflection-2026-05-18-per-q7.md` | Per-question reflection analyzing the milestone: domain maturation cadence, significance of full coverage, limitations |
+**2. UPDATED `domains/latin-america/concepts/radical-reformer-political-survival/_concept.md`**
 
-### Files Updated
+This concept was referenced in reasoning chains but had no "Validated By" table — a spec violation. Added two validation entries:
+- Milei survival forecast (NO → correct): direct test of all 5 survival mechanisms
+- LLA legislative forecast (YES → correct): indirect validation — downstream consequence of survival
 
-| File | Change |
-|------|--------|
-| `_index.md` | Added Cycle 10 section documenting Q7 milestone; added per-q7 reflection to navigation list |
-| `concepts/populist-coattail-legislative-wave.md` | Added Q7 to Validated By table |
-| `concepts/regional-third-way-squeeze.md` | Added Q7 (corollary confirmation) to Validated By table |
+**3. UPDATED `domains/global/procedures/legislative-plurality-forecast.md`**
 
-### Key Takeaway
+Added **Appendix A: D'Hondt Seat Projection Method** with:
+- Python calculator functions (`d_hondt_district`, `d_hondt_national`)
+- Common pitfalls: threshold waste, district magnitude, coalition effects, 1-seat distortion
+- Argentina 2025 worked example
+- Added the repeat LLA instance to the validation record table
 
-The feedback loop works with predictable velocity: roughly 3 cycles per new domain (thread → entities → concepts → full coverage). The vault contribution scoring rubric (0%/partial/100%) has diagnostic value — the Argentina domain shows clear maturation from 0% to 100%. When the next new domain appears (e.g., a European country, an Asian conflict), it will start at 0% and need the same remediation cycle.
+**4. CREATED `meta/reflections/_reflection-2026-05-20-per-q7-lla-seats.md`**
+
+Per-question reflection documenting the saturated domain state and full compliance with Rule 48 (abstraction-over-coverage).
+
+**5. UPDATED `_index.md`**
+
+Added Q7/30 entry documenting all changes.
+
+### Key lesson
+
+When a domain reaches saturation (thread + entities + concepts all exist), the vault's reflex to create domain-specific content must be overridden. The spec provides this override (Rule 48), but it requires active enforcement. Every abstraction created in this pass is a generic tool for future questions about different countries (Brazil 2026, Spain 2028, Netherlands 2027, etc.).

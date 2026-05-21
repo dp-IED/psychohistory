@@ -1,8 +1,8 @@
 {
   "case_id": "gold_01_israel-x-iran-ceasefire-before-july",
   "expected": 1.0,
-  "prediction": "NO",
-  "correct": false,
+  "prediction": "YES",
+  "correct": true,
   "quarters_used": [
     "2025-Q1",
     "2024-Q4",
@@ -10,5 +10,5 @@
     "2024-Q2"
   ],
   "question": "Israel x Iran ceasefire before July? \n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if there is an official ceasefire agreement, defined as a publicly announced and mutually agreed ha",
-  "raw_output": "Now I have all the context needed. Let me produce the forecast.\n\n---\nFINAL ANSWER:\nPrediction: NO\nConfidence: 0.95\nRationale: The timeline shows only calibrated tit-for-tat strikes between Israel and Iran (April and October 2024), not sustained military engagement requiring a ceasefire, and no ceasefire negotiations appear in Q1 2025 records. Crucially, Wikipedia's description of the April 2026 Israel-Lebanon ceasefire refers to it occurring \"amid the ongoing 2026 Iran war,\" confirming the Iran-"
+  "raw_output": "Based on my thorough review of the PIT vault content (cutoff June 15, 2025), here is my synthesized assessment:\n\n**Key facts knowable by June 15, 2025:**\n- The Iran-Israel shadow war escalated through all 8 stages over 14 months (per shadow-war-to-direct-escalation concept), reaching Stage 8 (full conventional war) on June 13, 2025 with Israel's Operation Rising Lion -- large-scale airstrikes on Iranian nuclear facilities (Fordow, Natanz, Isfahan).\n- IAEA Board declared Iran non-compliant on Jun"
 }

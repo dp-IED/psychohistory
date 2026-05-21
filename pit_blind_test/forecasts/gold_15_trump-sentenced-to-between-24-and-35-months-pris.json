@@ -10,5 +10,5 @@
     "2023-Q2"
   ],
   "question": "Trump sentenced to between 24 and 35 months prison time?\n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if Donald Trump is sentenced to spend between 24 (inclusive) months and 35 month",
-  "raw_output": "Now I have a comprehensive picture. Let me synthesize my forecast.\n\nBased on the Q1 2024 context (the latest available point-in-time):\n\n1. **Trial not yet started**: The NY hush-money trial was scheduled for April 15, 2024 \u2014 the clock hadn't even begun.\n2. **November 4 hard deadline**: If no sentence at all by that date, market resolves No. Even with a swift conviction (~late May), sentencing would face procedural delays, pre-sentence reports, and inevitable postponement motions.\n3. **NY Class E"
+  "raw_output": "Now I have all the information needed. Let me synthesize my analysis.\n\nThe vault's `forecast-range-plausibility-filter` concept explicitly uses this exact question as its canonical example, applying a double filter: (1) base event \u2014 does Trump receive ANY prison sentence? (2) range plausibility \u2014 is 24-35 months structurally appropriate for a Class E first-time non-violent offender? Both filters return NO independently. For a 77-year-old first-time non-violent offender convicted of NY Class E fe"
 }

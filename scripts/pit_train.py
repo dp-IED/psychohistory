@@ -74,9 +74,9 @@ Do NOT turn every person, city, or ministry into a wikilink or entity — that f
 
 === YOUR TOOLS ===
 
-- Read_file/search_files: {vault}/timeline/, {vault}/threads/, {vault}/concepts/
+- Read_file/search_files: {vault}/timeline/, {vault}/domains/*/threads/, {vault}/domains/*/concepts/
 - Web search at {end.isoformat()} (PIT-constrained)
-- Write_file under timeline/, threads/, concepts/ only
+- Write_file under timeline/, domains/*/threads/, domains/*/concepts/ only
 
 === REQUIRED FILE ===
 
@@ -87,7 +87,7 @@ Use this structure (in order):
 ## Conjuncture
 3–6 paragraphs: what this quarter *is* as a whole — the dominant contradictions,
 what combined (war + rates + energy + politics, etc.), what turned. No bullet lists here.
-Wikilink only [[threads/...]] and [[concepts/...]] when naming an ongoing dynamic.
+Wikilink only [[domains/*/threads/...]] and [[domains/*/concepts/...]] when naming an ongoing dynamic.
 
 ## Threads (this quarter)
 For each active thread touched this quarter: one subsection with the delta since last quarter.
@@ -95,20 +95,20 @@ Wikilink the thread file. Describe interactions between forces, not biographies.
 
 ## Chronicle (evidence)
 Dated bullets supporting the conjuncture and thread deltas. Plain text for most actors and places.
-Wikilink sparingly — prefer threads/concepts over people and cities.
+Wikilink sparingly — prefer domains/*/threads/ and domains/*/concepts/ over people and cities.
 
 ## Cross-domain interactions
 2–4 items: where two or more domains (macro, war, energy, courts, tech, etc.) fed each other
 this quarter. Name the *interaction*, not a list of entities.
 
-Optional: short thread or concept stubs in threads/ or concepts/ if a dynamic clearly spans quarters.
+Optional: short thread or concept stubs in domains/*/threads/ or domains/*/concepts/ if a dynamic clearly spans quarters.
 Reflection will extend conjunctures using forecast scores — your job is to make interactions legible.
 
 === FORBIDDEN ===
 
 - No "Wikilinks Created" index or phone-book sections (People, Places, …)
 - No wikilink on every proper noun
-- No entities/ files (reflection does not expect entity stubs from training)
+- No entities/ files (use domains/*/entities/ if needed, but reflection should drive entity creation)
 - No edits to _spec.md, _procedure.md, meta/, runs/, forecasts/
 
 Write using absolute paths, e.g. write_file(path="{vault}/timeline/{label}.md", content="...").

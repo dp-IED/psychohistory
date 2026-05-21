@@ -1,42 +1,25 @@
-All vault changes are verified. Here is the diagnostic report.
+All 7 tasks complete. Here's the summary of what was changed and why:
 
----
+## Diagnosis: Why was the right prediction right?
 
-## DIAGNOSIS: Gold #16 — "Will Israel first announce ceasefire on October 9?"
+The NO prediction was structurally sound because Oct 9 fell in Israel's most acute multi-front escalation phase:
 
-### WHAT WENT WRONG
+- **3 active fronts** (Gaza, Lebanon, Iran) — Oct 9 was only 8 days into the Lebanon ground invasion, 8 days after Iran's 180-missile strike (retaliation pending)
+- **Sinwar alive** (killed Oct 16) — the primary Hamas obstacle was in command
+- **No US transition pressure** — election was a month away
+- **Sequencing constraint** — retaliation demand > Lebanon > Gaza; Gaza was last in sequence
 
-I predicted YES but the answer was NO. The Gaza ceasefire was first announced by Israel on **October 8** (PMO confirmation after Trump's announcement), not October 9. The cabinet **ratified** it on October 9, but ratification is an internal approval process, not an announcement. The Polymarket resolution criteria tracked "the next date (ET) that Israel officially announces it has agreed to a ceasefire" — that was October 8.
+The vault's dyadic ceasefire concepts (short-window, war aims, trust erosion) were excellent but couldn't diagnose the **cross-front signaling problem** — a ceasefire on Gaza while escalating on Lebanon and Iran would signal weakness to adversaries. This is a distinct dynamic from war aims incompatibility.
 
-**Root cause: Announcement-vs-Ratification Conflation.** The vault correctly documented both dates:
-- "Oct 8: Trump announces + Israel PMO confirms"
-- "Oct 9: Israeli cabinet approves"
+### What was missing → What was created
 
-But when forecasting the October 9 question, I used the cabinet ratification date (Oct 9) as if it were the announcement date. These are distinct events in ceasefire diplomacy.
+| Gap | File created/updated |
+|-----|---------------------|
+| No entity stub for the single most important ceasefire blocker | `domains/mena/entities/yahya-sinwar.md` |
+| No entity stub for the assassinated political leader | `domains/mena/entities/ismail-haniyeh.md` |
+| No entity stub for the Hezbollah leader killed 12 days before | `domains/mena/entities/hassan-nasrallah.md` |
+| No framework for multi-front blocking dynamics | `domains/mena/concepts/multi-front-escalation-ceasefire-barrier/_concept.md` |
+| Procedure had no multi-front pre-check | `domains/mena/procedures/asymmetric-ceasefire-forecast.md` — added Step 0 |
+| No rule requiring procedure-referenced entities to exist | `_spec.md` — added Rule 16 |
 
-### WHAT THE VAULT HAD RIGHT (after prior fixes)
-- The October 2025 ceasefire arc was well-documented (thread, concept, Q4 stub)
-- The diplomatic-pressure-tipping-point concept predicted the October timeframe correctly
-- The thread noted both October 8 and October 9 events
-
-### WHAT THE VAULT MISSED
-1. **No explicit distinction** between "announcement of agreement" and "cabinet ratification"
-2. **No annotation** of which date resolves Polymarket-style "first announce" questions
-3. **No cross-check step** for date-specific questions — "does the event matching the resolution criteria actually fall on this date?"
-
-### FILES CHANGED
-
-| File | Change |
-|------|--------|
-| `threads/gaza-ceasefire-negotiations-2025.md` | Added explicit "first official announcement" label to Oct 8, "ratification" label to Oct 9, plus a CRITICAL FOR FORECASTING callout box distinguishing the two |
-| `timeline/2025-Q4.md` | Rewrote ceasefire section to clarify PMO confirmation (Oct 8) vs cabinet ratification (Oct 9); added FORECASTING NOTE callout |
-| `concepts/diplomatic-pressure-tipping-point.md` | Added "CRITICAL SEQUENCE DETAIL" section on announcement vs ratification to the Gaza ceasefire canonical example; added Oct 9 entry to Validated By table |
-| `_procedure.md` | Added sub-step to step 9 (Track diplomatic signals) requiring all three dates (announcement, ratification, effective) to be documented separately for ceasefire forecasts |
-| `forecasts/2026-05-18-gaza-ceasefire-october-9.md` | Created new forecast-entry documenting the error with diagnosis and vault gaps |
-
-### PATTERN TO REMEMBER
-When a question asks about a **specific date** for a ceasefire announcement:
-1. Identify the **first official announcement** by the party in question (executive/PMO statement)
-2. Separately identify the **ratification/approval** date (cabinet/parliament vote)
-3. Separately identify the **effective date** (when fighting actually stops)
-4. Verify which of these three the question's resolution criteria refers to — they are NOT interchangeable
+**Root cause of missing entity stubs**: The procedure listed Sinwar, Haniyeh, and Nasrallah as entities to consult, but no rule required creating those stubs at procedure creation time. Rule 16 now mandates that every entity referenced in a procedure's frontmatter or "Key Entities to Consult" section must have an existing stub. This prevents future cases where the vault tells a forecaster to consult an entity that doesn't exist.

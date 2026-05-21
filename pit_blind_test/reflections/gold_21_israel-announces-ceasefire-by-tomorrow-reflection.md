@@ -1,56 +1,27 @@
-## Report: Vault Improvements from Q21 (Per-Question Reflection)
+---
 
-### Diagnosis: Why This Prediction Was Correct
+## Q21/30 Reflection Report
 
-**Question**: Israel announces ceasefire by January 17? (Predicted: YES, Actual: YES)
+**Diagnosis**: Q21 was correct (YES) with significant vault support (~70%), a dramatic improvement over Q52/84's 0% vault contribution for the same underlying question. The prior reflections had already created MENA domain infrastructure (threads, concepts, entities, procedures, spec rules). The remaining gaps were precision issues — structural elements that existed as references but lacked dedicated documentation.
 
-The vault's Q1 2025 timeline correctly recorded the ceasefire as January 15, 2025 — before the January 17 deadline. The prediction succeeded on factual recall.
+**What was changed and why:**
 
-**However**, the vault was not providing predictive signal. It had the date right but couldn't explain WHY the ceasefire happened when it did. The causal chain that produced the January 2025 ceasefire was scattered across Q3 2024 and Q4 2024 timelines but never synthesized into a framework that could have predicted the timing prospectively. Per Principle 8 (No freebie predictions), this gap needed remediation despite the correct outcome.
+### New files (5):
 
-### Files Created or Changed
+1. **`domains/mena/threads/gaza-ceasefire-negotiations-2025/events/may-2024-ceasefire-framework.md`** — The May 2024 framework was cited across 7+ files as the "pre-existing framework" but had no standalone event file. A forecaster could not understand WHY the deal existed in May 2024 but couldn't be activated until Jan 2025 without reading scattered references. This event file documents the three-phase proposal, timeline of the 8-month stall, why it failed in May vs. succeeded in Jan, and five forecasting lessons.
 
-**Created — 4 files:**
+2. **`domains/global/concepts/pre-negotiated-framework-activation/_concept.md`** — The pattern of a framework existing but awaiting political activation is distinct from negotiation-from-scratch. The concept formalizes this with an activation delay formula (0-30d to 18mo+) calibrated by blocking condition severity, Bayesian priors (60-80% P within 3 months of blocking condition resolution), and cross-conflict applicability (Israel-Hamas, Colombia, Sudan, Yemen, Ukraine).
 
-1. **`entities/hamas.md`** — New entity stub for the core non-state actor in every Gaza ceasefire question. Covers organizational structure (political bureau vs military wing, Doha vs Gaza leadership split), leadership decapitation dynamics, and external patron relationships.
+3. **Three entity stubs**: `khalil-al-hayya.md` (Hamas lead negotiator post-Sinwar), `yoav-gallant.md` (Israeli defense minister, ICC warrant, internal ceasefire advocate), `mohammed-deif.md` (Hamas military commander, Oct 7 architect, decapitation cascade target). All were key actors in the ceasefire dynamics but lacked vault presence.
 
-2. **`entities/ismail-haniyeh.md`** — Hamas political bureau chairman assassinated in Tehran July 31, 2024. Documents how his death disrupted the diplomatic channel and accelerated the Iran-Israel escalation cycle.
+### Updated files (3):
 
-3. **`entities/yahya-sinwar.md`** — Hamas leader killed October 16, 2024. The key figure whose death created the ceasefire window 3 months later. Documents the pattern: hardline leader killed → successor weaker and more pragmatic → 2-4 month window opens.
+4. **`timeline/2025-Q1.md`** — The one-line entry ("Jan 15 — Israel and Hamas approve ceasefire") risked gold_50-type confusion between mediator and party announcements. Expanded to include four-date tracking, explicit WHO-announces distinction, and links to the pre-negotiated framework activation concept.
 
-4. **`concepts/leadership-decapitation-negotiation-window.md`** — New concept capturing the recurring pattern where decapitation of a non-state armed group's most hardline leader creates a temporary window (60-120 days) during which the successor leadership is more willing to accept ceasefire terms. Includes:
-   - 5-phase structural dynamics (Decapitation → Retaliation → Reassessment → Window Opens → Closes)
-   - Day-based timing calibration (0-30 days: decreased probability; 30-60: baseline; 60-120: elevated)
-   - Failure conditions (moderate decapitation, seamless succession, no diplomatic off-ramp)
-   - Israel-Hezbollah Nov 2024 as secondary example
+5. **`domains/mena/concepts/transition-window-ceasefire-diplomacy/_concept.md`** — Added a cross-conflict comparison section contrasting transition-window diplomacy (Israel-Hamas Jan 2025) with superpower combatant entry (Iran-Israel June 2025). These are mutually exclusive mechanisms with different timelines (10 weeks vs 48 hours), probability ranges (40-60% vs 70-90%), and leading indicators. Conflating them produces wrong forecasts.
 
-5. **`_reflection-2026-05-18-per-q21.md`** — Per-question reflection documenting this cycle's changes.
+6. **`_index.md`** and **`_macro_gaps.md`** — Both updated with new reflection entries and gap logs.
 
-**Updated — 3 files:**
+### Key lesson for the vault
 
-6. **`threads/gaza-ceasefire-negotiations-2025.md`** — Major update:
-   - Added Phase 0 (Oct 2023 - Jan 2025) covering the pre-January arc with 6 key drivers (Sinwar killing, Hezbollah ceasefire, Assad fall, Trump deadline, ICC warrants, hostage protests)
-   - Updated active span from 2025-01-15 → 2023-10-07
-   - Added Key Dynamics 6 (leadership decapitation as accelerator) and 7 (pre-inauguration deadline effect)
-   - Expanded wikilinks to include new entities and concept
-
-7. **`_spec.md`** — Added:
-   - Principle 16: Ceasefire date-resolution criteria (announcement vs ratification vs effective date) must be systematically tracked
-   - Principle 17: Leadership decapitation as ceasefire leading indicator
-
-8. **`_procedure.md`** — Added:
-   - Step 10 to Pre-Forecast Audit: Assess leadership decapitation impact for ceasefire questions, with day-based calibration and successor authority assessment
-   - Renumbered steps 10-17 → 11-18
-
-### Report Summary
-
-| File | Type | Change | Why |
-|------|------|--------|-----|
-| entities/hamas.md | Entity | Created | Central actor in all Gaza ceasefire questions was missing |
-| entities/ismail-haniyeh.md | Entity | Created | Key decapitation target; diplomatic channel disrupted |
-| entities/yahya-sinwar.md | Entity | Created | His death created the 3-month ceasefire window |
-| concepts/leadership-decapitation-negotiation-window.md | Concept | Created | Extracts predictive pattern from scattered timeline data |
-| threads/gaza-ceasefire-negotiations-2025.md | Thread | Expanded | Added pre-January arc, new dynamics, extended span |
-| _spec.md | Spec | Extended | Added Principles 16-17 |
-| _procedure.md | Procedure | Extended | Added step 10 (decapitation assessment), renumbered |
-| _reflection-2026-05-18-per-q21.md | Reflection | Created | Documents this cycle |
+Even well-covered topics can have residual precision gaps. The May 2024 framework was a ghost reference — cited constantly but never documented as a standalone entity. Creating the event file and activation concept closes the gap between "the vault mentions this" and "the vault can support predictive reasoning about this." The pattern of "framework existence != framework activation" is generalizable to ANY protracted conflict where a mediator has tabled a proposal.

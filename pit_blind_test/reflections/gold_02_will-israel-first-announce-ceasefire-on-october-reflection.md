@@ -1,32 +1,41 @@
-## Report: Vault Improvements Applied
+---
 
-**Question**: Will Israel first announce ceasefire on October 8? (Israel-Hamas ceasefire)
-**Prediction**: NO | **Actual**: YES | **Result**: WRONG
+## Reflection Report: Question 2/30
 
-### Diagnosis
+**Question**: Will Israel first announce ceasefire on October 8?
+**Prediction**: YES (correct)
 
-The prediction failed because the vault had a blind spot: **diplomatic signals were invisible**. The Q3 2025 summary documented the humanitarian catastrophe well (famine, genocide finding, 28-nation call, Palestinian state recognitions), but never mentioned Trump's September 2025 20-point Gaza peace proposal — the most important development for ceasefire timing. The causal chain was: peace proposal (September) -> Hamas partial acceptance (Oct 3) -> indirect talks (Oct 6) -> ceasefire announcement (Oct 8). None of this was tracked.
+### 1. Why was the prediction right?
 
-This is the same error pattern as gold_01: **the vault tracks military escalation but ignores diplomatic resolution signals.**
+The vault had excellent coverage of the October 2025 Gaza ceasefire timeline:
+- The `gaza-october-ceasefire-2025` event file correctly documents Oct 8 as Israel's first official announcement (PMO confirmation), distinct from Oct 9 cabinet ratification
+- The `ceasefire-announcement-ratification-gap` concept provides the four-date framework (mediator announces → party announces → ratifies → effective) with the Oct 2025 case explicitly analyzed
+- The `gaza-ceasefire-negotiations-2025` thread has the full arc from Jan ceasefire through collapse through Oct breakthrough
 
-### Files Created (3 new)
+The prediction was right because the vault correctly distinguished party announcement (Oct 8) from ratification (Oct 9), and both relevant dates were documented.
 
-| File | Purpose |
-|------|---------|
-| `threads/gaza-ceasefire-negotiations-2025.md` | Full causal chain from January ceasefire collapse through October breakthrough — prevents missing this arc again |
-| `concepts/diplomatic-pressure-tipping-point.md` | Captures the pattern where accumulated international pressure (not superpower military entry) forces a ceasefire. Complements escalation-bargaining-termination. Four indicators: pressure vector diversity, off-ramp existence, accumulation rate, patron posture |
-| `forecasts/2026-05-18-gaza-ceasefire-october-8.md` | Full forecast entry documenting reasoning, error, and fixes for future retrieval |
+### 2. What vault gaps did this question reveal?
 
-### Files Updated (5 changed)
+**Gap 1: The "first announce" resolution-criteria gotcha was not documented.** The question title says "first announce" but Israel had already announced ceasefires twice in this conflict (Nov 2023, Jan 2025). A forecaster who reads the title as "first ever" would incorrectly predict NO. The resolution text uses "next date" wording, which disambiguates. This title-vs-resolution-text mismatch was not captured in any vault file — the existing `forecast-resolution-criteria-gotchas.md` entry #2 only covered "announces vs ratifies," not the multi-ceasefire "first announce" ambiguity.
 
-| File | Change |
-|------|--------|
-| `timeline/2025-Q3.md` | Added Trump's 20-point Gaza peace proposal (September 2025); updated Key Themes to link pressure events to diplomatic-pressure-tipping-point |
-| `concepts/escalation-bargaining-termination.md` | Added Gaza ceasefire as secondary example — patron as mediator vs patron as combatant; linked to new diplomatic-pressure concept |
-| `_procedure.md` | Added step 5 to pre-forecast audit: "Track diplomatic signals" — 5 specific questions to inventory before predicting ceasefire timing |
-| `entities/donald-trump.md` | Extended PIT cutoff from June 30 to Oct 10; added Gaza peace plan and October 8 ceasefire announcement; split forecasting significance into two patterns |
-| `_index.md` | Added new thread, concept, reflection links; added Cycle 6 entries |
+**Gap 2: The `ceasefire-announcement-forecast.md` procedure had no step for interpreting "first" / "next" wording in multi-ceasefire contexts.** Phase 0 covered resolution criteria analysis (0.1 WHAT, 0.2 WHO has acted) but nothing about how to interpret the temporal modifier "first" when prior events exist.
 
-### Key Insight
+**Non-gaps confirmed**: The referenced concepts `public-framework-announcement-commitment`, `war-aims-incompatibility`, `short-window-ceasefire-probability` — all exist. Entity stubs for Sinwar, Haniyeh, Nasrallah, Gallant all exist. The vault's ceasefire coverage is structurally sound.
 
-The two wrong predictions (gold_01, gold_02) both involve Middle East ceasefires, but the error modes are different: gold_01 was a PIT factual error (vault said "no ceasefire" when one had occurred), while gold_02 was a missing diplomatic signals error. Both trace to the same root cause: **the vault's structural attention is on military operations, not peace processes.** The procedure now requires a "diplomatic signals inventory" before every ceasefire forecast, which should catch this class of error going forward.
+### 3. Files updated
+
+**Updated**: `domains/global/concepts/forecast-resolution-criteria-gotchas.md`
+- Added entry #9: "First announce — Initiation vs. Chronological Priority in Multi-Ceasefire Conflicts"
+- Documents the Oct 8 question as the canonical example of the title-vs-resolution-text "first" ambiguity
+- Provides the 4-step decision rubric for future questions with "first announce" wording
+- Added cross-reference to the Oct 8 forecast run
+
+**Updated**: `domains/mena/procedures/ceasefire-announcement-forecast.md`
+- Added Phase 0.3: "Interpret 'First' / 'Next' / 'Initial' Wording"
+- Checklist-style guidance for resolving the multi-ceasefire "first announce" ambiguity before forecasting
+- Links to the resolution-criteria-gotchas concept entry #9
+- Updated related_concepts to include `forecast-resolution-criteria-gotchas`
+
+### 4. What the vault will do better next time
+
+On any future question with "first announce" wording in a multi-ceasefire conflict, the procedure now has a dedicated Phase 0.3 step that forces the forecaster to: read the resolution text, count prior occurrences, check for parallel questions, and apply the announcement-vs-ratification framework before predicting. The resolution-criteria-gotchas concept now has the canonical example with the decision rubric. The vault's meta-awareness of its own coverage is improved.

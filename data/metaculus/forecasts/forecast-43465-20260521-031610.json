@@ -1,0 +1,14 @@
+{
+  "question_id": 43465,
+  "post_id": 43461,
+  "title": "Will at least 5 non-passengers be linked to the MV Hondius hantavirus outbreak before August 2026?",
+  "question_type": "binary",
+  "cutoff_date": "2026-05-21",
+  "close_time": "2026-07-01T00:00:00Z",
+  "p_yes": 0.54,
+  "reasoning": "Base rate: 45%. Yes signals: 3. No signals: 0. Vault files consulted: 10. Adjusted forecast: 54.0%.",
+  "vault_files_read": 10,
+  "vault_chars": 8302,
+  "forecasted_at": "2026-05-21T03:16:10.466852+00:00",
+  "posted": false
+}

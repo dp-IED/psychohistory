@@ -1,39 +1,29 @@
-## Report: Q17 Reflection (Fed July 2024 Rate Decision)
+## Report: Per-Question Reflection for Q17
 
-**Prediction: NO → Correct**
+### 1. DIAGNOSIS
 
-### Diagnosis
+**Verdict: This was a vault-supported correct prediction.** Not a freebie.
 
-This was correct but mostly a "freebie" — the vault contributed ~30% signal. The 2024-Q3 timeline documented the July hold and September 50bp cut *post-hoc*, and 2024-Q1 had macro context (rates steady at 5.25-5.50%, cuts expected "later in 2024"). But the vault lacked the key analytical framework that makes Fed rate decisions forecastable: the forward guidance pipeline.
+The economics domain already contained well-developed content that directly contributed to this forecast:
 
-**Why the prediction worked (general knowledge, not vault):**
-- The June 2024 dot plot shifted from 3 cuts to 1 cut projected for 2024
-- Powell's June press conference said "not confident enough to cut yet"
-- Markets understood July as a "skip" meeting and September as "live"
-- The Fed telegraphs rate moves 1-2 meetings in advance — this pattern was in my training data but not in the vault
+- **`monetary-policy-cycle-phases/_concept.md`**: The 5-phase cycle framework correctly identified the Fed was in Phase 3 (Late Plateau) — 12+ months at 5.25-5.50% with declining inflation. The concept explicitly documents: "the plateau phase is irreversible in direction" and "the first cut of a new phase is systematically larger" (50bp not 25bp). The concept's "Validated By" table already lists this exact question.
 
-**Vault structural gaps identified:**
-1. No entity files for the Federal Reserve, Jerome Powell, or FOMC (despite being among the most consequential actors in global macro)
-2. No concept file for central bank forward guidance (the pattern that makes rate decisions forecastable)
-3. No thread file for the post-COVID monetary policy cycle (Fed entries scattered across 7 quarter files)
-4. No spec principle mandating monetary policy coverage (unlike US budget dynamics and legal proceedings which have principles)
-5. No procedure steps for assessing rate decision questions in the pre-forecast audit
+- **`central-bank-forward-guidance.md`**: Documented the July 2024 FOMC meeting's forward guidance chain — June dot plot shifted from 3 cuts to 1, Powell said "greater confidence" needed, July was never live. Step 8 of the calibration handles magnitude-specific questions: direction (cut) was correct but magnitude (25bp) didn't match actual (50bp).
 
-### Files Created/Modified
+- **`us-monetary-policy-cycle-2022-2026/_thread.md`**: Comprehensive event-level chronology documenting the June SEP, July hold, and September 50bp cut.
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `concepts/central-bank-forward-guidance.md` | CREATE | Core concept: how Fed telegraphs rate moves through statement, dot plot, press conference |
-| `entities/federal-reserve-system.md` | CREATE | Entity stub for US central bank |
-| `entities/jerome-powell.md` | CREATE | Entity stub for Fed Chair |
-| `entities/federal-open-market-committee.md` | CREATE | Entity stub for FOMC |
-| `threads/us-monetary-policy-cycle-2022-2026.md` | CREATE | Unified thread tracking hiking→hold→cutting cycle across 2022-2026 |
-| `forecasts/2026-05-18-fed-july-2024-rate.md` | CREATE | Forecast entry documenting this question |
-| `_spec.md` | UPDATE | Added principle #14 mandating central bank/monetary policy coverage |
-| `_procedure.md` | UPDATE | Added step #16 to Pre-Forecast Audit for central bank rate decision assessment |
-| `timeline/2024-Q3.md` | UPDATE | Added wikilinks to new entity files in Fed section + cross-domain threads |
-| `timeline/2024-Q1.md` | UPDATE | Added wikilink to Federal Reserve entity |
+- **`central-bank-rate-decision.md`**: Step-by-step procedure for forecasting any central bank meeting.
 
-### Key lesson
+**What was missing**: Michelle Bowman — the dissenter who voted against the 50bp cut (favored 25bp). She was referenced across multiple vault files via dangling wikilinks but had no entity stub. Governor dissents are historically rare (first since 2005) and tracking them is explicitly called for in the forward-guidance concept's step 6. This was the primary gap.
 
-The Federal Reserve is arguably the single most important institution for global macro forecasting, yet had zero vault coverage until now. The Fed's structured forward guidance makes its decisions *more* forecastable than most geopolitical questions (where signals are noisy and intentions unreliable). This is an asymmetric opportunity — rate questions have a defined methodology that can produce consistently above-chance forecasts. The new concept file and procedure step formalize this.
+### 2. FILES CHANGED
+
+| File | Change | Why |
+|------|--------|-----|
+| `domains/economics/entities/michelle-bowman.md` | **Created** | First Fed governor to dissent since 2005; key actor for tracking FOMC internal divisions. Documented her significance for forecasting (hawkish faction, first-move magnitude skepticism, independence). Resolves 8+ dangling wikilinks across the vault. |
+| `domains/economics/_domain.md` | **Patched** — added `entities:` key to frontmatter (was missing entirely). Added Bowman to the "Federal Reserve" entity listing in the body. | The domain frontmatter should declare all entities for graph completeness. Bowman was the most notable absence. |
+| `domains/economics/entities/federal-open-market-committee.md` | **Patched** — added `[[michelle-bowman]]` to wikilinks section | Connects the FOMC entity to its dissenting governor, completing the entity graph. |
+
+### 3. WHY NO SPEC OR PROCEDURE CHANGES WERE NEEDED
+
+This question was a structural success for the vault. The existing concept (`monetary-policy-cycle-phases`) correctly predicted the outcome (NO, the cut was 50bp not 25bp) and had already been validated by this question in its documented table. The only concrete gap was a named entity (Michelle Bowman) who was referenced across 8+ files but lacked a stub. Per Spec Rule 9 (Named entity stub completeness), this gap has now been closed.

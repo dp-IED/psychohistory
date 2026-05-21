@@ -1,28 +1,44 @@
-Per-question reflection complete. Here's what was diagnosed and remediated:
+## Report: Q27 Reflection — Ko Wen-je Taiwan Election
 
-## Diagnosis
+Prediction was correct (NO), and the vault contributed ~80% of the reasoning via the existing third-party-ceiling-fptp and divided-opposition-plurality-win concepts. However, three gaps prevented the vault from contributing 100%.
 
-**Prediction**: NO (correct). Ground truth: NO — Ko Wen-je got 26.46%, third place.
+### Diagnosis
 
-**Vault contribution**: 0% (freebie). The correct prediction came entirely from general knowledge. The quarter files that should have contained the pre-election campaign (2023-Q3, 2023-Q4) had **zero** Taiwan election coverage — despite the election being held just 2 weeks after the Q4 cutoff. The file had post-hoc entities and concepts (created after earlier cycles) but no PIT pre-election material a forecaster could have used.
+The vault had strong structural coverage but missed **amplifying dynamics** — factors that don't change the binary outcome but improve probability calibration and provide deeper explanatory power:
 
-## Root Cause
+1. **Cross-strait thread was structurally broken** — marked `status: fading` with a deprecation note, making it look abandoned. But it contains essential analysis of the "China threat effect" that amplifies DPP's electoral advantage. A forecaster loading it would see a dead file and potentially miss the cross-reference.
 
-The vault's writing methodology looks **backward**, not **forward**. Contemporary quarter files document dozens of completed events but miss upcoming forecast-relevant elections. The 2023-Q4 file covered elections in the Netherlands, Argentina, New Zealand, Poland, Portugal, and Ecuador — but not the Taiwan election that determined a major prediction question.
+2. **No formalized concept for external-threat-incumbency-boost** — The third-party-ceiling concept explains why Ko couldn't win. The divided-opposition concept explains why Lai won. But neither explains *why the DPP's margin was 40.05% rather than a bare plurality of ~36%*. China's pressure campaign against Lai is a known amplifier, but it wasn't abstracted into a reusable forecasting tool.
 
-## What Was Changed
+3. **Late-campaign collapse was under-documented** — The third-party-ceiling concept mentioned "late-campaign collapse effect" in one sentence. The collapse trajectory (peak at 6+ months out, accelerated collapse in final 4 weeks) is a predictable, non-linear pattern that should be formalized for calibration.
 
-| File | Action | Detail |
-|------|--------|--------|
-| `timeline/2023-Q3.md` | Updated | Added Taiwan election section: candidate nominations (Mar-May 2023), polling trends (Ko briefly competitive June-July, then declining), Gou's August entry |
-| `timeline/2023-Q4.md` | Updated | Added Taiwan election section: KMT-TPP alliance collapse (Nov 13-24), Gou's withdrawal, final polling data (Ko at 17-24% in third), debates, forecasting significance |
-| `entities/terry-gou.md` | Created | Entity stub for Foxconn founder who ran as independent and withdrew on registration deadline |
-| `entities/ko-wen-je.md` | Updated | Added pre-election polling context with specific data and structural analysis |
-| `concepts/divided-opposition-plurality-win.md` | Updated | Added Validated By entry for this forecast (NO validated by concept's inverse logic) |
-| `_spec.md` | Updated | Added Rule 22: "Pre-election coverage is mandatory in contemporary quarter files" — 6 required fields |
-| `_procedure.md` | Updated | Added step 6 to Phase 1 (check for upcoming elections); added "Pre-Election Coverage Is the Most Common Omission" lesson |
-| `forecasts/2026-05-18-taiwan-ko-wen-je.md` | Created | Full forecast entry documenting reasoning, vault gaps, and remediation |
+### Files Changed
 
-## Key Structural Improvement
+**Updated — `domains/east-asia/threads/taiwan-cross-strait-relations/_thread.md`**
+- Status changed from `fading` to `active`. Removed the deprecation note that told readers the file was stale.
+- Added "Relationship to Taiwan Presidential Election Thread" section with an integration table showing how the two threads are complementary (tension level vs fragmentation) and must be loaded together.
+- Added wikilink to new external-threat-incumbency-boost concept.
 
-The forward-looking check is now mandatory: before writing any contemporary quarter file, you must check the calendar for major elections in the next 2 quarters and proactively document candidate field, electoral system, opposition coordination status, and polling data. This prevents the next "post-hoc bias" gap.
+**Created — `domains/global/concepts/external-threat-incumbency-boost/_concept.md`** (13KB)
+- New cross-domain concept: external threats from an adversary boost the incumbent party's electoral standing through a *partisan advantage* channel, distinct from the temporary rally-around-the-flag effect.
+- 5 canonical examples: Taiwan (PRC pressure boosts DPP), Georgia (Russia boosts nationalism), Israel (rocket attacks boost right-wing), Pakistan (India tensions boost military-aligned gov), US 2020 as negative counterexample.
+- 4 mechanisms: issue salience shift, incumbent-as-defender framing, opposition delegitimization, nationalist mobilization.
+- 7-step forecasting application with calibrated magnitude table (strong 3-8pp, moderate 1-3pp, neutral/reversed).
+
+**Updated — `domains/east-asia/concepts/third-party-ceiling-fptp/_concept.md`**
+- Expanded late-campaign collapse pattern from 1 sentence to a 4-phase trajectory model (6+ months out, 2-4 months out, 0-4 weeks out, election day).
+- Added 3 canonical data points: Ko Wen-je (~30% to 26.46%), James Soong (42% to 36.84%), Ross Perot (39% to 18.9%).
+- Added forecasting implication: assume 3-8 point collapse from peak, non-linear, concentrated in final 4 weeks.
+- Updated Validated By entry to reference the collapse pattern.
+
+**Updated — `_procedure.md`**
+- Added step 8c to the Pre-Forecast Audit: "Check for external threat/interference effects on elections" with 7 sub-steps (identify adversary, assess partisan alignment, check timing/blowback/economic pain, apply concept, document explicitly).
+- Renamed old step 8c (shutdown) to 8d to maintain sequential numbering.
+
+**Updated — `meta/reflections/_reflection-2026-05-20-per-q27-v2.md`**
+- Updated to v3 with new score trend line (90% amplified) and remediation table.
+- Added insight: progression across cycles = coverage -> structure -> amplification. After ensuring structural coverage, check for amplifying dynamics that affect the probability window.
+
+### What Changed Strategically
+
+The vault went from having strong structural mechanics (3-way FPTP -> opposition fragmentation -> DPP wins) to also having the amplifying dynamics (external pressure -> incumbent boost, late-campaign collapse trajectory). These don't change the binary prediction (still NO) but improve probability calibration and give the next forecaster more precise tools for reasoning about margins, timing, and secondary variables.

@@ -10,5 +10,5 @@
     "2023-Q3"
   ],
   "question": "TikTok banned in the US before May 2025?\n\nPolymarket resolution text:\nThis market will resolve to \"Yes\" if the TikTok app is banned for download and/or use by the majority of Americans in the United S",
-  "raw_output": "Based on the timeline files and Wikipedia context provided, here's my analysis:\n\nThe Wikipedia current context explicitly states the outcome:\n\n1. **PAFACA** was passed by Congress and signed by President Biden (law existed)\n2. **Supreme Court upheld** the law after TikTok's legal challenge\n3. **ByteDance refused to sell** before the deadline\n4. The ban **took effect on January 19, 2025** \u2014 described as a \"de jure nationwide ban\"\n\nThe Polymarket resolution criteria say: \"For this market to resolv"
+  "raw_output": "---\n\n## Analysis\n\n**Cutoff: September 17, 2024**\n\n**What was known:**\n\nThe **Protecting Americans from Foreign Adversary Controlled Applications Act** (PAFACA) was signed into law by President Biden on **April 24, 2024**, giving ByteDance **9 months** (~January 19, 2025) to divest TikTok or face a ban on US app stores. The bill passed with **bipartisan supermajorities**: House 352-65, Senate 79-18. This level of bipartisan consensus made legislative repeal near-impossible regardless of the Novem"
 }

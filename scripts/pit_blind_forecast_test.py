@@ -13,7 +13,7 @@ Usage:
   python scripts/pit_blind_forecast_test.py [--phase quarters|forecast|score|all]
 """
 
-import json, subprocess, sys, os, time, re
+import json, subprocess, sys, os, time, re, shutil
 from pathlib import Path
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -230,7 +230,7 @@ def phase_quarters():
     return all_qs
 # ── Phase 2: Per-question forecast + immediate reflection ──────────
 
-def phase_forecast(question_ids: list[str] | None = None):
+def phase_forecast(question_ids: list[str] | None = None, force: bool = False):
     """
     Per-question forecast + immediate reflection loop.
 
@@ -262,13 +262,14 @@ def phase_forecast(question_ids: list[str] | None = None):
 
         # Resume: skip if this question already has a committed reflection
         # (check git for a commit message containing the case_id)
-        skip_check = subprocess.run(
-            ["git", "log", "--oneline", "--grep", f"reflection after {case_id}"],
-            capture_output=True, text=True, cwd=str(VAULT_PATH), timeout=10,
-        )
-        if skip_check.stdout.strip():
-            print(f"\n  [{i+1}/{len(cases)}] {case_id[:45]} — already reflected, skipping")
-            continue
+        if not force:
+            skip_check = subprocess.run(
+                ["git", "log", "--oneline", "--grep", f"reflection after {case_id}"],
+                capture_output=True, text=True, cwd=str(VAULT_PATH), timeout=10,
+            )
+            if skip_check.stdout.strip():
+                print(f"  [{i+1}/{len(cases)}] {case_id[:45]} — already reflected, skipping")
+                continue
 
         created = case["record"]["created_at"]
         try:
@@ -285,29 +286,44 @@ def phase_forecast(question_ids: list[str] | None = None):
         # ── Step A: Read vault state before forecast ──
         vault_tree = "\n".join(_tree(VAULT_PATH))
 
-        # ── Step B: Forecast ──
+        # ── Step A.5: Create PIT snapshot ──
+        from harness.vault_pit import materialize_pit_snapshot, format_admissible_block
+        import tempfile
+        cutoff_date = dt.date()
+        pit_tmp = tempfile.mkdtemp(prefix="pit-forecast-")
+        pit_snapshot_path = Path(pit_tmp)
+        copied = materialize_pit_snapshot(
+            VAULT_PATH, pit_snapshot_path, cutoff_date, strict=True
+        )
+
+        # ── Step B: Forecast (using PIT snapshot, NOT live vault) ──
         q_files = "\n".join(f"  timeline/{q}.md" for q in pre_qs)
         question_text = case["full_text"][:4000]
 
+        pit_block = format_admissible_block(copied, vault_dir=pit_snapshot_path)
+
         forecast_prompt = f"""=== FORECAST TASK (question {i+1}/{len(cases)}) ===
 
-You are in the graph vault at:
-{VAULT_PATH}
+=== PIT CONSTRAINT ===
+You are in a PIT-constrained vault snapshot at:
+{pit_snapshot_path}
 
-Read the following quarterly context files from the vault
-using read_file to understand the historical situation BEFORE the question
-was asked. These summaries were prepared without knowledge of the question.
+The LIVE vault at {VAULT_PATH} contains information from AFTER your cutoff.
+DO NOT read from the live vault. Only use files from the snapshot.
+Your cutoff date is {cutoff_date.isoformat()}.
 
-Relevant timeline files:
+{pit_block}
+
+Relevant timeline files (read from the snapshot path above):
 {q_files}
 
 === QUESTION TO FORECAST ===
 
 {question_text}
 
-Based on the historical context in the vault:
-- Read each timeline file listed above
-- You may also check threads/ and concepts/ for context
+Based on the historical context in the PIT snapshot:
+- Read each timeline file listed above from the snapshot
+- You may also check domains/*/threads/ and domains/*/concepts/ for context
 - Then produce your forecast
 
 You MUST output your answer in this exact format at the end:
@@ -411,9 +427,9 @@ because there are only {len(cases)} total.
 2. IMPROVE THE SYSTEM — write files to {VAULT_PATH}:
    - Update _spec.md if the schema needs refinement (e.g. "include diplomatic signals")
    - Update _procedure.md if the forecast methodology needs changing
-   - Create/update a thread file in threads/ for a causal chain that was missed
-   - Create/update a concept file in concepts/ for a recurring dynamic
-   - Create entity stubs for people/orgs that were relevant but missing
+   - Create/update a thread file in domains/*/threads/ for a causal chain that was missed
+   - Create/update a concept file in domains/*/concepts/ for a recurring dynamic
+   - Create entity stubs in domains/*/entities/ for people/orgs that were relevant but missing
 
 3. REPORT: What did you change and why?
 
@@ -471,6 +487,9 @@ question benefits from improved context."""
 
         # Brief pause between questions
         time.sleep(2)
+
+        # Clean up PIT snapshot temp dir
+        shutil.rmtree(pit_snapshot_path, ignore_errors=True)
 
     # ── Final summary ──
     print(f"\n{'='*70}")
@@ -703,9 +722,9 @@ YOUR TASK
 2. IMPROVE THE SYSTEM:
    - Update _spec.md: define/refine the schema for quarter summaries
    - Update _procedure.md: document how the pipeline works
-   - Create/update thread files in threads/ for causal chains that were missed
-   - Create/update concept files in concepts/ for recurring dynamics
-   - Create entity stubs for key people/orgs referenced
+   - Create/update thread files in domains/*/threads/ for causal chains that were missed
+   - Create/update concept files in domains/*/concepts/ for recurring dynamics
+   - Create entity stubs in domains/*/entities/ for key people/orgs referenced
 
 3. REPORT: What did you change and why?
 
@@ -846,13 +865,15 @@ def _tree(dir_path: Path, prefix: str = "", max_files: int = 50) -> list[str]:
 # ── Main ─────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    phase = sys.argv[1] if len(sys.argv) > 1 else "all"
+    force = "--force" in sys.argv
+    args = [a for a in sys.argv[1:] if a != "--force"]
+    phase = args[0] if args else "all"
 
     if phase in ("quarters", "all"):
         phase_quarters()
 
     if phase in ("forecast", "all"):
-        phase_forecast()
+        phase_forecast(force=force)
 
     if phase in ("score", "all"):
         phase_score()

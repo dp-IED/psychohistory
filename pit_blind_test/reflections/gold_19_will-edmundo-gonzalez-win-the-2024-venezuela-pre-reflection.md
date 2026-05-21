@@ -1,41 +1,40 @@
-## REPORT: What Was Changed and Why
+## DIAGNOSIS
 
-### Diagnosis: Why I Predicted NO (Wrong)
+The YES prediction for "Will Edmundo González win the 2024 Venezuela presidential election?" was CORRECT. The vault provided substantial signal:
 
-This was the 6th wrong prediction out of 19 questions -- and the 6th consecutive NO prediction that should have been YES. The error had three layers:
+**What helped:**
+- The "forecast-resolution-criteria-gotchas" concept correctly flagged the "win vote vs take office" distinction — the market resolves on who got more votes, not who assumed power.
+- The "authoritarian-electoral-facade" concept provided the framework for separating electoral outcome from power transition.
+- The "late-candidate-substitution" concept correctly identified Machado's endorsement of González as a proven vote-transfer pattern.
+- The ConVzla entity documented the parallel vote tabulation from 81% of polling centers, showing the opposition could prove its victory.
 
-**1. Resolution-criteria ambiguity (primary cause)**: I interpreted "wins the election" as "assumes office" (the political-power outcome). Polymarket resolves it as "receives the most votes" (the electoral outcome). In authoritarian contexts, these diverge dramatically -- González got ~67% of the vote per parallel tabulation, but Maduro prevented him from taking office. The market still resolved YES because González won the vote.
+**What was missing — and got fixed:**
 
-**2. Unknown opposition vote-monitoring infrastructure (enabling cause)**: The PUD coalition's ConVzla operation collected tally sheets from 81% of polling centers. This parallel vote tabulation made the true outcome knowable beyond dispute, regardless of the CNE's fabricated results. I was unaware of this capability.
+1. **2024-Q1 had ZERO Venezuela content** — despite being the quarter when the Barbados Agreement unraveled, the TSJ upheld Machado's ban, Corina Yoris was blocked, and González was registered as a placeholder. This was a glaring gap for a question about the July election's roots.
 
-**3. Zero vault coverage (structural cause)**: The vault had no entity stubs for any Venezuelan actor, no thread on Venezuela politics, and no concept for authoritarian electoral dynamics. There was no infrastructure to support careful reasoning about the specific mechanisms at play.
+2. **No entity stub for Corina Yoris** — the CNE's first procedural obstruction target, whose blocking drove the González selection. She existed as a passing reference in the CNE entity but had no node in the graph.
 
-### Files Created (6 new files)
+3. **No entity stub for the Carter Center** — the independent observer whose rejection of CNE results was critical for international consensus.
 
-| File | Type | Purpose |
-|------|------|---------|
-| `entities/edmundo-gonzalez.md` | Entity | Opposition candidate who won the vote |
-| `entities/nicolas-maduro.md` | Entity | Incumbent who maintained power despite losing |
-| `entities/maria-corina-machado.md` | Entity | Barred opposition leader whose endorsement was decisive |
-| `entities/plataforma-unitaria.md` | Entity | PUD coalition + ConVzla parallel vote tabulation operation |
-| `threads/venezuela-authoritarian-resilience.md` | Thread | Tracks Venezuela's political dynamics, regime control mechanisms, opposition strategy (status: active) |
-| `concepts/authoritarian-electoral-facade.md` | Concept | Framework for forecasting opposition victory in rigged-authoritarian elections: parallel vote tabulation, institutional control, distinguishing vote outcome from office assumption |
-| `forecasts/2026-05-18-venezuela-election-gonzalez.md` | Forecast entry | Full documentation of prediction, error diagnosis, vault gaps, and changes made |
+4. **No polling data in the thread** — pre-election polling was a key input for confidence calibration but was undocumented.
 
-### Files Updated (4 modified)
+5. **No analysis of regime electoral miscalculation** — why Maduro agreed to a competitive election he then had to steal. This is a reusable dynamic for forecasting future authoritarian elections.
 
-| File | Key Changes |
-|------|-------------|
-| `_spec.md` | Added Principle 15: Mandatory resolution-criteria clarity for authoritarian election questions -- check resolution text, create entity stubs for all actors, assess PVT infrastructure, apply authoritarian-electoral-facade concept |
-| `_procedure.md` | Added Step 16 to Pre-Forecast Audit: winning-the-vote vs assuming-office distinction with 5-part checklist. Added authoritarian-election sub-pattern to status-quo bias pitfalls. Added 2 new lessons to "Lessons from Cycle 4" |
-| `timeline/2024-Q3.md` | Revised Venezuela entry: explicitly states González won the vote (~67% to ~30%), details ConVzla operation from 81% of polling centers, notes Carter Center/UN/OAS rejection, adds wiki-links to new thread + concept |
-| `_index.md` | Added Cycle 19 entry documenting the Venezuela domain transition from 0% to foundational coverage |
+## CHANGES MADE
 
-### Key Systemic Insight
+### 1. timeline/2024-Q1.md — FILLED VENEZUELA GAP
+Added a full Venezuela subsection covering: TSJ upholding Machado's ban (Jan), US sanctions warnings, Machado's refusal to go into exile, CNE blocking Corina Yoris, González registered as placeholder, with forecasting significance analysis connecting Q1 events to the July outcome. Added Venezuela to "Other Geopolitical Developments" and "Key Themes" sections. Added wikilinks to the Venezuela thread and late-candidate-substitution concept.
 
-The Venezuela error exposed a new failure mode not previously captured: **resolution-criteria ambiguity in election questions**. The vault already had:
-- Status-quo bias pitfall (6/6 wrong predictions are NO)
-- "Dual-frame analysis" spec principle
-- Named-entity completeness spec principle
+### 2. domains/latin-america/entities/corina-yoris.md — NEW ENTITY
+Created entity stub for the originally-designated replacement candidate whose CNE blocking forced the González substitution. Links to Machado, González, PUD, CNE, ConVzla, and the thread. Captures the "procedural obstruction" tactic as distinct from administrative disqualification.
 
-But none of these addressed the specific trap where "wins" can mean two different things in authoritarian contexts. The new spec principle (15) and procedure step (16) close this gap. The vault now has a systematic process for checking resolution criteria before forecasting any election question.
+### 3. domains/latin-america/entities/carter-center.md — NEW ENTITY
+Created entity stub for the independent election observer organization. Documents its role in validating ConVzla evidence and rejecting CNE results. Includes forecasting significance section for future authoritarian election questions.
+
+### 4. domains/latin-america/threads/venezuela-authoritarian-resilience/_thread.md — ENRICHED
+- Added Key Dynamic #7: "Regime electoral miscalculation" — analyzing why Maduro agreed to a competitive election (economic overconfidence, opposition boycott assumption, US electoral calendar, institutional safety net) with a forecasting heuristic for similar future cases.
+- Added "Pre-Election Polling Data (2024)" section with tables showing Machado's 2023 polling (58-63%) and González's post-substitution polling (52-59%), plus 5 key polling insights for authoritarian context forecasting.
+- Added wikilinks to corina-yoris, carter-center, and 2024-Q1.
+
+### 5. timeline/2024-Q2.md — TIGHTENED
+Refined the April 17 sanctions entry to explicitly cite "regime violations of the Barbados Agreement," linking the sanctions reinstatement to the Q1 events.

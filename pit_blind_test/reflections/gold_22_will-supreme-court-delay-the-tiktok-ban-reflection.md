@@ -1,32 +1,44 @@
-All changes verified. Here is the report:
+All edits verified. Here's my full report:
 
 ---
 
-## REPORT: Q22 Reflection — SCOTUS TikTok Ban Delay (Correct)
+## REPORT: Q22 Reflection — What Changed and Why
 
 ### Diagnosis
 
-This prediction (NO — SCOTUS would not delay the ban) was correct. The vault contributed partial signal (~40%) via the existing national-security-tech-ban concept (ownership-structure targeting survives First Amendment review) and the TikTok/ByteDance entity stubs (legislative timeline). But the primary reasoning driver — interpreting SCOTUS's procedural choices (cert before judgment + compressed 3-week schedule + no stay) as a near-deterministic signal that the Court would rule on the merits before the deadline — came from general knowledge, not vault content.
+This question ("Will Supreme Court delay the Tiktok ban?") was **correct** (predicted NO, actual NO). The vault already had strong analytical infrastructure: the SCOTUS Procedural Signals concept, the Executive Enforcement Delay concept, procedure step 20, timeline coverage, and entity stubs — all built from earlier reflections.
 
-The vault had one side of the SCOTUS timing coin covered (defendant-driven delay via `judicial-timing-political-deadline`, from the Trump criminal cases) but completely lacked the other side: court-accelerated review as a forecasting signal. These are mirror-image dynamics.
+**The critical gap identified**: These two concepts existed in separate files with **zero cross-references** between them. The TikTok saga involves BOTH types of delay operating independently in sequence — SCOTUS did NOT delay (judicial), but Trump DID delay enforcement afterward (executive). A future question testing either type independently would not benefit from the comparison. The vault had no decision tree for disambiguating ambiguous "will X be delayed?" questions.
 
-### Changes Made
+### Files Changed (5 files + 1 new)
 
-1. **Created `concepts/scotus-procedural-signals.md`** (14.9 KB) — New concept capturing how SCOTUS procedural choices serve as forecasting signals for substantive outcomes. Three canonical examples:
-   - TikTok (2025): cert before judgment → 23d to argument → 7d to unanimous ruling → no stay. Complete procedural trajectory perfectly predicted the outcome.
-   - Trump immunity (2024): bypass denied → standard schedule → 67d post-argument. Slow trajectory signaled genuine deliberation and delay.
-   - Nixon (1974): expedited cert → 5 weeks to argument → 16d to unanimous ruling. Same accelerated trajectory as TikTok.
-   
-   Includes calibrated probability tables for each signal combination and a 4-stage pattern archetype (case arrival → scheduling → post-argument speed → stay assessment).
+**1. `domains/usa/concepts/scotus-procedural-signals.md`** — Added **Stage 6: Judicial Delay vs Executive Delay** (~60 lines)
+- Comparison table (actor, mechanism, timing, resolution impact, TikTok outcome)
+- 5-step decision tree for "will X be delayed?" questions: identify delay type, check resolution text, map timeline relative to effective date, check for sequential operation, apply the appropriate framework
+- Two-delay sequence timeline showing both types operating independently on the same legal timeline
+- Added `executive-enforcement-delay` to related_concepts and wikilinks
 
-2. **Updated `entities/us-supreme-court.md`** — Added full TikTok expedited review timeline table (Dec 6 through Jan 17) and a new "Procedural Signals for Forecasting" section documenting the five key signals the Court emits through its procedural choices.
+**2. `_procedure.md`** (Step 20) — Added delay-type disambiguation sub-bullet (~6 lines)
+- Explicitly distinguishes "will Court delay?" (judicial, SCOTUS signals framework) from "will the ban persist?" (executive, executive-enforcement-delay concept)
+- Documents the "no" on judicial delay does NOT imply "no" on executive delay
+- Decision rule for ambiguous passive-voice questions
+- Preserved the existing trajectory principle sub-bullet
 
-3. **Created `forecasts/2026-05-18-scotus-tiktok-delay.md`** (6.9 KB) — Standard forecast entry documenting the reasoning, vault contribution assessment (40%), vault gaps, and remediation.
+**3. `domains/global/concepts/executive-enforcement-delay/_concept.md`** — Added **"Relationship to Judicial Delay"** section (~15 lines)
+- Comparison table mirroring the one in the SCOTUS concept
+- Forecasting rule: which framework applies to which question type
+- Cross-reference to the SCOTUS concept's Stage 6 section
+- Added `scotus-procedural-signals` to related_concepts
 
-4. **Updated `_procedure.md`** — Added Step 19 to the Pre-Forecast Audit: "Assess SCOTUS procedural signals." Covers procedural posture identification (cert before judgment vs. standard cert vs. emergency stay), timeline mapping, signal tracking with calibrated probabilities, the trajectory principle, and the contrast with the defendant-delay pattern.
+**4. `domains/usa/entities/us-supreme-court.md`** — Added Pattern Summary row to TikTok timeline table
+- Documents the "no delay" track record
+- Cross-references the judicial-vs-executive delay distinction in the SCOTUS signals concept
 
-5. **Updated `_index.md`** — Added Cycle 22 entry documenting the prediction, new concept, entity updates, and key lesson about the mirror-image dynamic between court-accelerated review and defendant-driven delay.
+**5. `_index.md`** — Index updated with all 5 changes listed under Recent Additions
 
-### Key Learning
+**6. `meta/reflections/_reflection-2026-05-20-per-q22-scotus-tiktok-delay.md`** — **NEW** per-question reflection file
+- Full diagnosis, causal chain, all improvements documented, vault health metrics
 
-The vault's SCOTUS coverage was one-sided. The Trump criminal cases taught us to watch for defendants using delay as a legal strategy. But the TikTok case taught us the opposite: when the Court itself accelerates review, it signals intent to resolve on the merits before a deadline — not to grant a stay. Both patterns are now captured (`judicial-timing-political-deadline` for defendant delay, `scotus-procedural-signals` for court acceleration). Future questions about whether SCOTUS will block or delay government action should consult both frameworks.
+### Why These Changes Matter
+
+The vault previously had the right content but was **disconnected**. A forecaster loading the SCOTUS signals concept for a "will Court delay?" question would not be prompted to check whether the question was actually about executive delay instead. The decision tree forces disambiguation before analysis begins — preventing the category error of applying the wrong framework. This is the next-forecast-relevant improvement: the next "will X be delayed?" question (about any regulatory action in any jurisdiction) will trigger the decision tree and route the forecaster to the correct analytical framework.

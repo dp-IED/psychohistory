@@ -1,37 +1,25 @@
-## Report: Q25 Reflection (Correct Prediction, Major Vault Remediation)
+## Q25 Reflection Complete
 
 ### Diagnosis
 
-The prediction was **correct** (NO — the Fed did not hike after July 2024). However, this revealed a **structural vault maintenance failure**: the spec's principle #14 mandates Fed rate coverage in every contemporary quarter, but the monetary policy thread had been abandoned after September 2024. Three consecutive quarter files (2024-Q4, 2025-Q1, 2025-Q2) had **zero mentions** of any Fed decisions. The thread, entity files, and concept were all frozen in time.
+**Correct prediction** (NO — Fed did not hike after July 2024). The forecast reasoning relied on the June 2024 SEP dot plot shift (3 cuts to 1 cut) and the late-plateau principle: a 12-month hold with declining inflation makes a hike structurally impossible.
 
-### Files Created (1)
+**Vault gap (principle #8 violation)**: The prediction was correct, but the graph-vault's canonical timeline files for 2024-Q1 and 2024-Q2 had **zero monetary policy coverage** — despite containing the 4 FOMC meetings that produced the critical signals. The June 2024 SEP existed only in the pit_blind_test quarters, not in the vault's own timeline directory.
 
-- **entities/michelle-bowman.md** — Fed Governor who issued the first governor dissent since 2005. She's cited across the thread, concept, and multiple quarter files but had no entity stub.
+### Changes Made (8 files)
 
-### Files Modified (10)
+**Created** (2):
+- `domains/economics/entities/beth-hammack.md` — Cleveland Fed President, dissented Dec 2024
+- `domains/economics/entities/christopher-waller.md` — Fed Governor, dissented Mar 2025
 
-1. **forecasts/2026-05-18-fed-july-2024-rate.md** — Fixed direction-reversed question text ("decreases" → "increases") and updated reasoning to match
-2. **timeline/2024-Q4.md** — Added section 5.3 with Nov 7 (25bp cut) and Dec 18 (25bp cut, Hammack dissent)
-3. **timeline/2025-Q1.md** — Added Fed decisions subsection: Jan 29 hold and Mar 19 hold (Waller dissent)
-4. **timeline/2025-Q2.md** — Added section 2.5: May 7 and Jun 18 holds amid Liberation Day tariff uncertainty
-5. **threads/us-monetary-policy-cycle-2022-2026.md** — Added Phase 5 (6 meetings across Q4 2024-H1 2025), added Key Dynamic #5 (Tariff-Induced Policy Paralysis), updated wikilinks
-6. **concepts/central-bank-forward-guidance.md** — Added 2025 Tariff-Led Policy Paralysis example, step 7 on "no action" signal, restored step 6 on dissents, fixed Validated By table
-7. **entities/federal-reserve-system.md** — Extended timeline through Dec 2025
-8. **entities/jerome-powell.md** — Extended timeline through H1 2025
-9. **entities/federal-open-market-committee.md** — Extended timeline through Dec 2025 with all votes and dissents
-10. **entities/michelle-bowman.md** — Entity created
-11. **concepts/central-bank-forward-guidance.md** — Wikilinks updated
-12. **threads/us-monetary-policy-cycle-2022-2026.md** — Wikilinks updated
-13. **entities/federal-reserve-system.md** — Wikilinks updated
-14. **entities/jerome-powell.md** — Wikilinks updated
-
-### Spec/Procedure Changes
-
-- **spec.md principle #20 (new)**: Thread continuity is mandatory — active threads must be updated each quarter or status-changed to fading/resolved
-- **procedure.md Phase 3 step 6 (new)**: Verification step after thread updates — check every active thread has new data or a skip rationale
-- **procedure.md step 21 (new, renumbered)**: Thread continuity enforcement — explicit blocking step
-- **procedure.md step 22 (new, renumbered)**: Quarterly Fed decision audit with standardized template
+**Patched** (6):
+- `timeline/2024-Q1.md` — Added full Economics section (Jan FOMC, Mar FOMC, CPI, market repricing, other central banks)
+- `timeline/2024-Q2.md` — Added full Economics section (May FOMC, June FOMC/SEP, CPI trajectory, FORECASTING SIGNIFICANCE note explaining why July hike was impossible, ECB first cut, BoE hold)
+- `_procedure.md` — Added Phase 1 step 10: monetary policy check for every contemporary quarter file
+- `_spec.md` — Added principle 56: monetary policy coverage mandatory in every timeline file
+- `domains/economics/_domain.md` — Added both new entities to frontmatter and key entities list
+- `domains/economics/entities/federal-open-market-committee.md` and `domains/economics/threads/us-monetary-policy-cycle-2022-2026/_thread.md` — Added wikilinks
 
 ### Key Lesson
 
-The vault's most dangerous failure mode is not missing coverage but **abandoning** coverage that was built. Creating a thread and entities is only half the work — maintaining them quarter after quarter is what creates forecasting value. The new spec principle #20 and procedure verification step #6 are designed to prevent this.
+The vault's concepts and threads were excellent for monetary policy, but the timeline quarter files were structurally incomplete. The fix ensures that every future contemporary quarter file gets a mandatory Economics section with FOMC decisions, dot plot projections, CPI readings, and market repricing — preventing the timeline-vs-concept gap from recurring.

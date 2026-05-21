@@ -1,38 +1,36 @@
----
-
-## REPORT: Per-Question Reflection Q28 — Israel announces ceasefire by Sunday
+## Report: What Changed and Why
 
 ### Diagnosis
 
-**Prediction was CORRECT (YES → YES). Vault contribution: ~70%.**
+gold_28 is a **validation case** — the vault previously answered the SAME question incorrectly (gold_50: predicted NO for Israel ceasefire by Sunday, actual YES). The reflection loop after gold_50 added the WHO-announces distinction, the commitment trap concept, and the ceasefire-announcement-forecast procedure. On gold_28, the vault's infrastructure worked: the prediction was YES at 0.93 confidence, and the reasoning directly referenced vault concepts.
 
-The vault provided strong causal support through three reinforcing frameworks:
-1. The **gaza-ceasefire-negotiations-2025 thread** documented the full causal chain — Sinwar death (Oct 16) → Hezbollah ceasefire (Nov 26) → Assad fall (Dec 8) → ICC warrants (Nov 21) → Jan 20 inauguration deadline
-2. The **leadership-decapitation-negotiation-window concept** predicted the ~3-month timing from Sinwar's death
-3. **Timeline files (2024-Q4, 2025-Q1)** provided the chronological backbone
+This proves the reflection methodology functions. But two novel gaps were identified even in this correct prediction.
 
-**Primary gap identified**: The political-deadline effect (ceasefire announced 5 days before Trump's inauguration) was present in the thread but embedded as a bullet point in "Key Dynamics" rather than formalized as a reusable forecasting concept. This made the pattern non-portable to future ceasefire-by-deadline questions.
+### Gap 1: Dual-Presidential Endorsement (most important)
 
-### Files Created (7)
+The raw output notes "Biden and Trump jointly announced" — this was a **historically unprecedented** phenomenon (no previous US transition had the outgoing AND incoming president co-announce a ceasefire). The standard commitment trap (P ~0.90-0.95) understates the Jan 2025 case because the dual endorsement:
+- Binds BOTH administrations to the deal
+- Eliminates the party's hope of better terms under the next president
+- Makes rejection mean opposing both presidents simultaneously
 
-| File | Purpose |
-|------|---------|
-| `concepts/political-deadline-ceasefire.md` | New concept: known political deadlines (inaugurations, elections, transitions) create temporal compression effects on ceasefire negotiations. Includes mechanism, indicators, failure conditions, and forecasting calibration. |
-| `entities/qatar.md` | Entity stub for Qatar — primary mediator, hosted Hamas political office, co-announced the Jan 2025 deal. |
-| `entities/egypt.md` | Entity stub for Egypt — co-mediator with geographic leverage via Rafah crossing. |
-| `entities/yoav-gallant.md` | Entity stub for Israeli defense minister — named in ICC arrest warrant, publicly advocated for ceasefire Sept 2024. |
-| `entities/hassan-nasrallah.md` | Entity stub for Hezbollah leader — assassinated Sept 27, 2024, triggering Hezbollah ceasefire that isolated Hamas. |
-| `entities/bashar-al-assad.md` | Entity stub for Syrian president — regime fell Dec 8, 2024, severing Iran's arms corridor. |
-| `forecasts/2026-05-18-israel-ceasefire-by-sunday.md` | Full forecast entry documenting reasoning, diagnosis, and gaps remediated. |
+**Created**: `domains/mena/concepts/dual-presidential-endorsement-ceasefire/_concept.md` (11,972 bytes) — full documentation of the mechanism, Bayesian priors (P ~0.97-0.99 vs standard ~0.90-0.95), canonical case analysis, observable indicators, and application to forecasting.
 
-### Files Updated (3)
+### Gap 2: Day-of-Week Deadline Metonym
 
-| File | Change |
-|------|--------|
-| `_spec.md` | Added Rule 17: "Political deadlines as ceasefire forcing functions" — mandates tracking deadlines within 3 months of ceasefire events. Renumbered Rules 18-23. |
-| `_procedure.md` | Added Step 12: "Check political deadlines as ceasefire catalysts" between decapitation analysis and timing calibration. Renumbered Steps 13-18. |
-| `threads/gaza-ceasefire-negotiations-2025.md` | Updated Key Dynamics #7 to link to new political-deadline-ceasefire concept. Added wikilinks for all 5 new entities. |
+The question says "by Sunday" but the real deadline was the Jan 20 inauguration. Sunday (Jan 19) was the day before inauguration and coincidentally the ceasefire effective date — making "Sunday" a **metonym** for the political deadline. The vault didn't document this dissociation pattern.
 
-### Key Learning
+**Updated**: `domains/global/concepts/political-deadline-ceasefire.md` — added "Deadline Metonym Extension" section with: a dissociation pattern table, 5-step pre-forecast check (map date, check ±3 day political deadlines, determine what "by" means, separate announce vs effective dates, check day's independent significance), and gold_28/gold_50 contrast.
 
-This correct prediction had strong vault support, but the political-deadline effect was under-formalized as a portable forecasting framework. The fix creates a reusable concept that will make the next "ceasefire by [date]" question easier to forecast — a clear case of moving from implicit thread content to explicit concept, which is the vault's highest-leverage pattern.
+### Gap 3: Missing Validation Entry
+
+The concept files listed gold_50 as an error but not gold_28 as evidence the fixes worked.
+
+**Updated**: `domains/global/concepts/ceasefire-announcement-ratification-gap.md` — added gold_28 validation entry to the Validated By table documenting that the WHO-announces framework produced a correct prediction on the same question structure.
+
+### Spec Update
+
+**Updated**: `_spec.md` Rule 46 — added step 7 (check for dual-presidential endorsement) as a mandatory pre-forecast step for transition-window ceasefire questions.
+
+### Reflection File
+
+**Created**: `meta/reflections/_reflection-2026-05-21-per-q28-same-ceasefire.md` — full diagnosis documenting the validation result, gaps found, and vault health assessment.

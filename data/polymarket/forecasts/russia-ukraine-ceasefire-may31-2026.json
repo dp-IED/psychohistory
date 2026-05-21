@@ -1,0 +1,11 @@
+{
+  "id": "russia-ukraine-ceasefire-may31-2026",
+  "question": "Russia x Ukraine ceasefire by May 31, 2026?",
+  "market_price_yes": 0.021,
+  "volume": 9905,
+  "category": "geopolitics",
+  "domain": "global",
+  "rules_applied": [
+    "Rule 14 (Asymmetric Ceasefire)"
+  ]
+}

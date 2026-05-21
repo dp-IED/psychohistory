@@ -1,44 +1,33 @@
-## Report: What Was Changed and Why
+All files verified. Here's the report.
+
+---
+
+## Report: What changed and why
 
 ### Diagnosis
 
-**Prediction was correct (NO), but vault contributed zero signal.** This was a "freebie" — basic knowledge that a 3-5% Trotskyist coalition cannot win a plurality in Argentina was sufficient. The vault had no Argentina coverage beyond one sentence about Milei at Trump's inauguration. A correct prediction that relies solely on general knowledge reveals a structural gap just as clearly as a wrong prediction.
+The prediction was **correct (NO) with ~80% vault contribution**. The vault's mature Argentina coverage from prior cycles provided the seat counts (LLA 64 vs FIT-U 3), the structural ceiling framework (far-left-marginalization-polarization concept), and the historical baseline (FIT-U entity with 2-5% decade-long ceiling). However, three residual gaps remained even after 3+ prior reflection cycles:
 
-**Vault state at forecast time:** No thread for Argentina, no entity files for Milei/LLA/FIT-U, no concept capturing the populist-outsider-to-legislative-majority cycle. Contemporary quarter files existed but focused exclusively on Middle East conflicts.
+### Changes Made
 
-### Changes Made (9 new files, 4 modified)
+**1. Removed stale duplicate entity** (`domains/europe/entities/fit-u.md`)
+- FIT-U is an Argentine party, not European. The duplicate was inferior (37 lines vs 59) and mislabeled as "Slovenian political party" in the Europe domain index. Deleted the file and removed its cross-reference from `europe/_domain.md`. This eliminates a data-integrity risk where vault domain loads could retrieve the wrong entity.
 
-**New: 1 thread file**
-- `threads/argentina-milei-realignment.md` — tracks Milei's 2023 victory through the 2025 legislative election where LLA went from 10 to 64 seats. Status: resolved (the election arc is complete). Connects to [[2023-Q4]] through [[2025-Q4]], links to all new entity files.
+**2. Created 3 missing entity stubs** (`domains/latin-america/entities/`)
+- **myriam-bregman.md** — 2023 FIT-U presidential candidate, PTS faction leader, most nationally visible FIT-U figure after del Cano. Her absence was the highest-risk gap: a question about "FIT-U's next presidential candidate" would have found no vault content.
+- **romina-del-pla.md** — Partido Obrero labor organizer and deputy. Relevant for questions about FIT-U's union strategy or internal faction balance.
+- **christian-castillo.md** — PTS intellectual leader, sociologist. Relevant for questions about FIT-U strategic direction or doctrinal evolution.
 
-**New: 1 concept file**
-- `concepts/populist-coattail-legislative-wave.md` — captures the pattern where an anti-system outsider who wins the presidency with a weak legislative position subsequently generates a coattail effect in the next legislative election, consolidating dominance. Canonical example: Argentina 2023-2025. Weaker analogs: India 2014-2019, US 2016-2018.
+**3. Updated FIT-U entity** with wikilinks for all three new stubs (both in Key Figures section and Wikilinks section at bottom).
 
-**New: 5 entity stubs**
-- `entities/javier-milei.md` — Argentine president, libertarian, won 2023 with 56%
-- `entities/la-libertad-avanza.md` — Milei's coalition, won 64 seats in 2025
-- `entities/fit-u.md` — Trotskyist coalition, 3.90% in 2025, structurally irrelevant under Milei-Kicillof polarization
-- `entities/nicolas-del-cano.md` — FIT-U leader
-- `entities/axel-kicillof.md` — Buenos Aires governor, Fuerza Patria leader, likely 2027 presidential candidate
+**4. Updated `_spec.md` Rule 9** with a "Recursive completeness" subsection requiring that named individuals within entity files ("Key Figures", "Leadership") also get entity stubs if they could plausibly appear in a forecast question.
 
-**New: 1 forecast entry**
-- `forecasts/2026-05-18-argentina-fit-u-seats.md` — documents the question, reasoning, actual outcome, and explicitly notes that vault contributed zero signal
+**5. Updated `_procedure.md`** post-forecast reflection with Step 4: "Scan for recursive entity completeness" — a procedural forcing function to catch second-tier entity gaps before they become information cascades.
 
-**New: 1 reflection**
-- `_reflection-2026-05-18-c8.md` — full cycle reflection introducing the "no freebie" principle
+**6. Wrote reflection file** at `meta/reflections/_reflection-2026-05-20-per-q4-fit-u-argentina-seats.md` documenting the diagnosis, gaps, and fixes.
 
-**Modified: `_procedure.md`** — three structural changes:
-1. Added Pre-Forecast Audit steps 3-4: entity stub creation for all named actors (before forecasting) and domain thread check
-2. Added Post-Forecast Reflection step 2: vault contribution assessment for correct predictions (distinguishing vault-driven from general-knowledge correct answers)
-3. Added requirement to create/update domain thread regardless of prediction correctness
-4. Renumbered all existing steps (was 1-7, now 1-9)
+**7. Updated `_index.md`** with the per-question reflection entry documenting all changes.
 
-**Modified: `_spec.md`** — added Principle 8: "No freebie predictions. A correct forecast that relied solely on general knowledge reveals a vault gap as surely as a wrong one."
+### Key lesson
 
-**Modified: `_index.md`** — added thread, concept, entities, forecast entry, Cycle 8 section, reflection link
-
-**Modified: `timeline/2025-Q4.md`** — added Argentina election results to Other Regional Developments and KEY THEMES, added 5 new wikilinks
-
-### Key Insight
-
-The "no freebie" principle shifts the vault's evaluation metric from pure accuracy (% correct) to vault-contribution rate (% of correct predictions where vault provided non-trivial signal). A 50% accuracy rate with high vault contribution is more valuable than 80% accuracy from general knowledge alone. This reflection is the first time we've explicitly diagnosed a "correct but vault-contributed-zero" scenario — and created all the infrastructure that should have existed before the forecast.
+Mature domains still have residual gaps after multiple reflection passes. The most persistent gap type is **second-tier entity completeness** — the primary subject (FIT-U) has a stub, but the named individuals within it (Bregman, Del Pla, Castillo) don't. The cost of stub creation (~2 min each) is negligible compared to the risk of future misses. The new recursive completeness check in the procedure prevents this cascade going forward.

@@ -1,34 +1,63 @@
----
+## Reflection Report: Q15 — Trump Sentenced 24-35 Months
 
-## Report: Cycle 15 Reflection — Trump Sentencing 24-35 Months
+### 1. DIAGNOSIS — Why the prediction was correct
 
-### Diagnosis
+This was a correct NO prediction where the vault provided 100% of the needed signal. The existing framework was comprehensive:
 
-**Prediction: NO (correct)** — Trump received unconditional discharge (no jail, no probation, no fine) on January 10, 2025.
+**What helped — vault content that directly supported the forecast:**
 
-**Why it was correct:** The structural obstacles to incarcerating a president-elect were insurmountable: Secret Service logistics, constitutional novelty, prosecution concession, and the fact that 24-35 months corresponds to a Class C/D felony range while Trump was convicted of Class E (lowest NY felony) as a first-time non-violent 78-year-old offender. The range was structurally implausible even without the officeholder factor.
+- **presidential-sentencing-dynamics concept** already explicitly covered the 24-35 month range (lines 143-144): "Corresponds to the range for a Class C or D felony... P(sentence in this range) < 5% even for a non-officeholder Class E defendant. With officeholder status: P < 1%"
+- **forecast-range-plausibility-filter concept** already used 24-35 months as its canonical example, documenting the double-filter test
+- **proc-sentencing-range-forecast procedure** formalized the step-by-step analysis
+- **juan-merchan entity** documented the three-delay cascade and its leading-indicator value
+- **alvin-bragg entity** documented the prosecution posture concession
+- **trump-criminal-cases thread** tracked the four-case timeline through to sentencing resolution
 
-**What the vault contributed (50% — substantial):** The accumulated assets from Cycles 13-14 performed well:
-- The **presidential-sentencing-dynamics concept** provided the core analytical framework (officeholder status, prosecution posture, NY Class E guidelines). Its P(incarceration) < 5% calibration directly supported the NO prediction.
-- The **trump-criminal-cases thread** documented the full procedural timeline (conviction → multiple sentencing delays → post-election status shift → January 10 sentencing), establishing that sentencing delays were a predictable pattern, not random scheduling.
-- **Entity stubs for Trump, Merchan, and Bragg** allowed assessment of judge tendencies and prosecution posture.
+**What the vault was missing — despite the correct prediction:**
 
-This is the highest vault contribution score for any Trump legal question, up from 10% (Cycle 13) to 20% (Cycle 14) to 50% (Cycle 15). The feedback-loop approach is measurably working.
+1. **No Q15 forecast record** — the 24-35 month variant had no dedicated forecast file (the Q14 file only covered 12-23 months)
+2. **"Sentencing delay cascade" was only embedded in the Merchan entity** — the leading-indicator pattern (three delays → near-deterministic leniency) was implicit in Merchan's file but not extracted as a generalizable concept applicable to other judges and other political prosecutions globally
+3. **No multi-range question handling** — Q14 and Q15 were different ranges for the same sentencing event, and the procedure had no guidance on how to handle this scenario (consistency check, independence of filters, etc.)
+4. **Dangling reference risk** — the `judicial-timing-political-deadline` concept is referenced from multiple files but I confirmed the path is `domains/usa/concepts/` not `domains/global/concepts/` — I fixed the incorrect path in the new concept I created
 
-### Vault Gaps Identified
+### 2. FILES CREATED
 
-1. **No forecast entry existed** for the 24-35 month variant — only the 12-23 month version was documented.
-2. **The concept lacked a dimension for range-specific implausibility.** The existing concept covered "will incarceration happen?" but not "is this specific range plausible for this felony class?" The 24-35 month range is even more improbable than 12-23 months for Class E charges, but this distinction wasn't captured.
-3. **No NY felony class sentencing range table** existed anywhere in the vault. Understanding that different ranges correspond to different felony classes is essential for any sentencing-range question.
+**`forecasts/2026-05-18-trump-sentencing-24-35-months.md`** (3,870 bytes)
+- Q15 forecast record documenting the reasoning trace and vault contribution
+- Explicit double-filter assessment (Filter A: no prison for president-elect; Filter B: 24-35 months structurally disproportionate for Class E)
+- Cross-references all relevant concepts, entities, procedures, and threads
 
-### Files Changed
+**`domains/global/concepts/sentencing-delay-cascade.md`** (12,499 bytes)
+- New generalizable concept extracting the "judge delay as leading indicator" pattern from the Merchan entity
+- Defines the 6-stage archetype: Conviction → Delay 1 (weak signal) → Delay 2 (moderate-high) → Status change → Delay 3 (very high) → Light sentence
+- Provides Bayesian update calibration: after 2 delays P(incarceration) = baseline × 0.3; after 3+ P(incarceration) = baseline × 0.05
+- Documents intensifiers (elected judges, status-change feasibility, prosecution posture shift) and attenuators
+- Explicitly distinguishes from `judicial-timing-political-deadline` (which is defendant-side strategy vs. judge-side behavior)
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `/graph-vault/forecasts/2026-05-18-trump-sentencing-24-35-months.md` | Created | Forecast entry documenting the question, reasoning (50% vault contribution), remediation plan, with wikilinks to concept/thread/entities |
-| `/graph-vault/concepts/presidential-sentencing-dynamics.md` | Updated | Added **Range-Specific Implausibility** section with NY felony class sentencing range table (Classes A-I through E), range-to-class mapping for 12-23, 24-35, and 36-48 month ranges, and the "double-filter" test (range plausibility + officeholder constraints = both required for YES). Added 24-35 month forecast to Validated By table. |
-| `/graph-vault/_index.md` | Updated | Added Cycle 15 section documenting the 50% vault contribution, the concept improvement, and the key lesson about accumulated vault assets producing measurable improvement |
+### 3. FILES UPDATED
 
-### Key Lesson for Future Cycles
+**`_procedure.md`** (2 patches)
+- Added sentencing-delay-cascade reference to the "assess the judge's tendencies" bullet
+- Added forecast-range-plausibility-filter reference to the "offense severity and felony class" bullet
 
-The vault contribution score progression for the US legal-political domain — 10% (Cycle 13) → 20% (Cycle 14) → 50% (Cycle 15) — validates the feedback-loop approach. Each successive question in the same domain benefits from accumulated vault assets. The domain improvement is measurable. The critical insight for future forecasting: the same structural factors that make 12-23 months implausible also make 24-35 months implausible, plus the specific range mismatch adds a second independent filter. The new "Range-Specific Implausibility" section in the concept makes this reusable for any future question about specific sentence ranges.
+**`domains/usa/procedures/proc-sentencing-range-forecast.md`** (3 patches)
+- Added sentencing-delay-cascade reference to Step 3 judge assessment
+- Added Step 5: Multi-Range Question Handling — 5 rules for when the same event has multiple range questions (independence per range, consistency check, disjoint range probability summation)
+- Added sentencing-delay-cascade to references section
+
+**`domains/usa/concepts/presidential-sentencing-dynamics.md`** (3 patches)
+- Added `sentencing-delay-cascade` to `related_concepts` frontmatter
+- Updated Step 5 to reference the new concept and provide delay-count calibration
+- Added sentencing-delay-cascade to Wikilinks section
+
+**`domains/usa/entities/juan-merchan.md`** (2 patches)
+- Added sentencing-delay-cascade reference to the "Key insight for forecasting" section, noting the pattern generalizes beyond Merchan
+- Added sentencing-delay-cascade to Wikilinks section
+
+### 4. LINK VERIFICATION
+
+All 8 wikilinks in the new forecast file and all 7 wikilinks in the new concept resolve correctly. Fixed 3 incorrect references (`domains/global/concepts/judicial-timing-political-deadline` → `domains/usa/concepts/judicial-timing-political-deadline`) during the audit.
+
+### 5. KEY LESSON FOR FUTURE QUESTIONS
+
+The sentencing dynamic is now comprehensively covered at 3 levels of specificity: (1) the general sentencing delay cascade concept (any judge, any political prosecution), (2) the presidential-sentencing-dynamics concept (US presidential officeholder specifically), and (3) the procedure for range-specific questions. This layered coverage means future questions about ANY high-profile political sentencing can draw on a generalizable framework, not just Trump-specific analysis.

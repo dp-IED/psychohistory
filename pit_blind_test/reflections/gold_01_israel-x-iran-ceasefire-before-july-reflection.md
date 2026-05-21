@@ -1,43 +1,33 @@
 ## Report: What Changed and Why
 
-### DIAGNOSIS
+### Diagnosis
 
-The prediction was wrong for **four compounding reasons**:
+The prediction was correct (YES) because the forecast identified the correct causal model: an escalation ladder approaching war, with a superpower patron whose entry would produce rapid ceasefire. But **the vault lacked the structural framework to connect these insights to the "ceasefire before date X" question type.** This was a graph-connectivity problem, not a content problem.
 
-**1. PIT factual error (most direct cause):** The 2025-Q2 timeline stated "By quarter's end, the conflict was ongoing with no ceasefire." This was false. The ceasefire was announced by Trump on June 23 and took effect June 24 — a full 6 days before the Polymarket deadline. The vault lied to itself about the core fact.
+Specifically, the error source (which gold_01's actual historical prediction produced) was: the forecaster saw "no ceasefire negotiations" and concluded NO — treating a war-termination question as a diplomatic question. The vault had the right building blocks (escalation ladder, 48-hour rule, IAEA entity, Iran nuclear latency analysis) but NO edges between the escalation-bargaining concept and the ceasefire-timing procedures.
 
-**2. Missing thread — Iran-Israel escalation arc:** The conflict went through 8 identifiable escalation thresholds from April 2024 to June 2025 (proxy → covert → diplomatic target → direct strike → assassination on sovereign soil → ballistic missile exchange → full war → superpower entry). No thread tracked this. At prediction time, the pattern was invisible.
+### Changes Made (9 files total)
 
-**3. Missing concept — escalation-bargaining termination:** The idea that superpower direct entry can trigger rapid ceasefire (rather than prolonged war) is counterintuitive. Without this framework, US entry on June 22 was read as "war expands" rather than "peak escalation that creates off-ramp."
+**3 New Files:**
+1. **`domains/global/concepts/ceasefire-pathway-decomposition/_concept.md`** (10.8 KB) — The core framework: classifies ceasefire questions into three pathways with distinct probability mechanisms. Pathway B (war-termination) is the key addition: P(ceasefire) = P(war in window) × P(termination | war). This is the single most important forecasting insight for state-on-state ceasefire questions. Includes the gold_01 error as a canonical demonstration: a Type-A (diplomatic) analysis yields P < 0.05; Type-B decomposition yields P > 0.70.
 
-**4. Missing entity stubs:** No files for Netanyahu, Trump, Khamenei, or Pezeshkian. Understanding Trump's dealmaker incentive structure — he needed to end the war quickly to avoid a Middle East quagmire in an election year — would have been critical.
+2. **`domains/global/procedures/state-on-state-ceasefire-decomposition.md`** (10.2 KB) — Step-by-step procedure for executing the decomposition: classify pathway, estimate P(war) from escalation ladder, estimate P(termination | war) from 48-hour rule conditions, calculate combined probability, check resolution pitfalls. Includes the 'damaged mediation' trap warning, the escalation-ladder coupling insight, and validation tables.
 
-### FILES CREATED (5 new)
+3. **`domains/mena/entities/israeli-security-cabinet.md`** (4.5 KB) — Documents the ratification body that must approve Israeli ceasefires, including its crisis-accelerated approval process (0 hours vs 1-2 days standard), composition, and the specific timeline of the June 2025 ratification.
 
-| File | Type | Purpose |
-|------|------|---------|
-| `threads/iran-israel-escalation.md` | Thread | Tracks the 14-month escalation arc from April 2024 to June 2025 ceasefire. Documents the 9-step escalation ladder, the weakened deterrence preceding war, and the superpower-entry-as-catalyst dynamic. |
-| `concepts/escalation-bargaining-termination.md` | Concept | Framework for state-on-state conflict where superpower patron entry paradoxically triggers rapid termination. Lists 6 indicators to watch for, 4 failure conditions, and forecasting applications. |
-| `entities/benjamin-netanyahu.md` | Entity | Israeli PM's risk calculus — existential threat framing, weakened proxies creating opportunity window, strong patron relationship. |
-| `entities/donald-trump.md` | Entity | Dealmaker identity, escalation-dominance-then-mediate pattern, political incentive to avoid protracted war. |
-| `entities/ali-khamenei.md` | Entity | Regime survival as primary objective — accepted ceasefire despite nuclear program damage. |
-| `entities/masoud-pezeshkian.md` | Entity | Limited agency of elected Iranian president during wartime — distinguishes figureheads from real decision-makers. |
-| `entities/iran-israel-conflict.md` | Entity | Event entity for the direct state-on-state conflict period (2024-2025). |
-| `forecasts/2026-05-18-israel-iran-ceasefire.md` | Forecast-entry | Full diagnostic of wrong prediction. Documents reasoning, actual outcome, vault gaps, and 5 generalizable lessons for future forecasts. |
+**6 Modified Files:**
+4. **`_spec.md`** — Added Rule 11 (ceasefire questions must be pathway-classified before probability estimation) and Rule 11a (ceasefire entity completeness for security councils/ratification bodies). Gold_01 is the canonical example.
 
-### FILES MODIFIED (4 updated)
+5. **`_procedure.md`** — Added full reflection entry documenting the "wrong causal model" error pattern, the root cause (graph-connectivity gap), the fix, the forecast rule for any ceasefire question, and the entity stub creation requirement.
 
-| File | Change |
-|------|--------|
-| `timeline/2025-Q2.md` | **Corrected PIT error** — replaced "no ceasefire" with accurate description of June 23 announcement and June 24 ceasefire. Updated Key Themes section with pattern analysis. |
-| `_spec.md` | **Added 3 new principles**: contemporary coverage must parallel historical with same rigor; forecast as feedback loop; added `forecasts/` directory and `type: forecast-entry` schema. |
-| `_procedure.md` | **Added Per-Forecast Cycle section**: Pre-Forecast Audit (5 steps: domain mapping, contemporary check, escalation ladder, patron dynamics, PIT accuracy) and Post-Forecast Reflection (8 steps: diagnose error type, fix timeline, create threads/concepts/entities, write entry, update index, write reflection). |
-| `_index.md` | Added all new threads, concepts, entities, and cycle-5 changelog. |
+6. **`escalation-bargaining-termination.md`** — Added `ceasefire-pathway-decomposition` to related_concepts, added a Cross-References section explicitly linking to the new decomposition concept and procedure, establishing the graph edge that was missing.
 
-### NEW DIRECTORY
+7. **`short-window-ceasefire-probability/_concept.md`** — Strengthened the "When This Framework Fails" section with a bold warning that this concept applies ONLY to Pathway A ceasefires. Added explicit instruction to classify pathway first, and added cross-references to the new decomposition concept and the escalation-bargaining concept.
 
-`forecasts/` — per-question forecast entry files. These are the feedback loop that ensures every wrong prediction structurally improves the vault.
+8. **`inter-state-ceasefire-feasibility.md`** — Added a Pre-Assessment Required section that forces pathway classification before applying default feasibility factors. Explicitly redirects to the new decomposition procedure for Pathway B.
 
-### BOTTOM LINE
+9. **`ceasefire-timing.md`** — Added Step 0 to the Approach: classify the ceasefire pathway first. Pathway B redirects to the new decomposition procedure; only Pathways A and C continue with this procedure.
 
-The vault was treating contemporary events as low-priority data dumps while dedicating all structural effort (threads, concepts, entities) to 1900-1901. After this fix, contemporary coverage has the same structural rigor as historical — thread tracking causal chains, concept files for pattern recognition, entity files for actor analysis, and a forecast entry documenting the lesson. The vault is now structurally capable of forecasting the next Middle East conflict rather than just cataloging it after the fact.
+### Key Forecasting Insight
+
+The most important learning from this reflection: **for state-on-state conflicts with a superpower patron and an escalation ladder, the same structural factors that increase P(war) also increase P(ceasefire) — because the war-termination mechanism (superpower entry → rapid ceasefire) means the probability of ceasefire is coupled to the probability of war.** A forecaster who treats a war-termination ceasefire question as a diplomatic one will be wrong by 50+ percentage points. The fix was not more content (the vault had all the information needed) but better graph connectivity between the escalation-bargaining concept and the ceasefire procedures.

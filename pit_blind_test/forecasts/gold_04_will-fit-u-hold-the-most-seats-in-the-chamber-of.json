@@ -10,5 +10,5 @@
     "2024-Q1"
   ],
   "question": "Will FIT-U hold the most seats in the Chamber of Deputies following the 2025 Argentina election?\n\nPolymarket resolution text:\nThe 2025 election for half of the seats in Argentina's Chamber of Deputies",
-  "raw_output": "Now I have a comprehensive picture of the historical context. Here's my analysis:\n\n**Context from the vault:**\n- Nov 2023: Javier Milei (libertarian right-wing) won the presidency with 56%, defeating Peronist Sergio Massa\n- Jan 2025: Milei was still actively governing, attending Trump's inauguration as a notable foreign leader\n- No mention of any Argentine political crisis through Q2 2025\n\n**FIT-U (Frente de Izquierda y de Trabajadores - Unidad)** is a far-left Trotskyist coalition that has hist"
+  "raw_output": "I've now examined all relevant PIT-constrained sources. Let me synthesize.\n\nHere's what the vault establishes as of the 2025-02-05 cutoff:\n\n1. **FIT-U is a far-left Trotskyist coalition** with a long track record of 3-5% national vote share and at most a handful of Chamber seats. The vault's concept `far-left-marginalization-polarization` provides a ceiling heuristic: \"<5% for Trotskyist/revolutionary-socialist parties\" in polarized two-bloc systems.\n\n2. **Argentina is deeply polarized** between"
 }

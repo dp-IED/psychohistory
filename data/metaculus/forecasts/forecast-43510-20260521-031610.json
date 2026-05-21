@@ -1,0 +1,14 @@
+{
+  "question_id": 43510,
+  "post_id": 43505,
+  "title": "Will the Senate of the Philippines remove Vice President Sara Duterte from office before September 2026?",
+  "question_type": "binary",
+  "cutoff_date": "2026-05-21",
+  "close_time": "2026-08-31T22:59:00Z",
+  "p_yes": 0.54,
+  "reasoning": "Base rate: 45%. Yes signals: 6. No signals: 3. Vault files consulted: 10. Adjusted forecast: 54.0%.",
+  "vault_files_read": 10,
+  "vault_chars": 8457,
+  "forecasted_at": "2026-05-21T03:16:10.568553+00:00",
+  "posted": false
+}
