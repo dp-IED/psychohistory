@@ -154,5 +154,76 @@
       "concepts/central-bank-forward-guidance.md"
     ],
     "verified": null
+  },
+  {
+    "id": "hyp-20260521-001",
+    "created": "2026-05-21",
+    "domain": "economics",
+    "timeframe": "24h",
+    "target_date": "2026-05-22",
+    "prediction": "No emergency Federal Reserve policy action or unscheduled FOMC statement will occur on May 21-22, 2026",
+    "confidence": 0.95,
+    "reasoning": "The Federal Reserve operates on a fixed meeting schedule (next: June 16-17, 2026). Unscheduled policy actions have occurred only during acute crises (COVID March 2020, GFC 2008, 9/11 2001). The current macro environment shows no acute crisis: BTC at ~$76K, no banking failures, no sovereign debt crisis, no market dislocation requiring emergency intervention. The Fed's plateau phase (4.25-4.50% since Jan 2025) reflects wait-and-see on tariff/inflation data. The monetary-policy-cycle-phases concept documents this as a characteristic plateau — the next move direction is debated (cut vs hold) but no one expects an emergency inter-meeting move. Confidence 0.95 reflects the near-deterministic baseline: unscheduled Fed actions average ~1 per 5-8 years.",
+    "vault_files_cited": [
+      "domains/economics/concepts/monetary-policy-cycle-phases.md",
+      "domains/economics/concepts/central-bank-forward-guidance.md",
+      "domains/economics/entities/federal-reserve-system.md",
+      "domains/economics/entities/jerome-powell.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260521-002",
+    "created": "2026-05-21",
+    "domain": "economics",
+    "timeframe": "1w",
+    "target_date": "2026-05-28",
+    "prediction": "Bitcoin (BTC) will close above $74,000 on May 28, 2026",
+    "confidence": 0.75,
+    "reasoning": "BTC currently at ~$76,800 (May 21). The $74K level is ~3.6% below current price — well within normal weekly volatility. Polymarket's 'BTC above $74K on May 22' at 98.2% reflects near-certainty for the immediate term. No major macro catalysts in the May 22-28 window: no FOMC, no CPI/PCE release, no scheduled Treasury auctions that could disrupt markets. The bitcoin-etf-flow-price-driver concept documents that spot ETF flows have been net positive, providing structural support. The crypto-market thread documents the recovery from the Feb 2026 drawdown ($97K→$60K) with BTC now in a consolidation range of $72-80K. A break below $74K would require a catalyst (regulatory shock, macro scare, major exchange failure) — none are visible on the horizon. Confidence 0.75 reflects the asymmetry: the base case (no catalyst) keeps BTC above $74K, but crypto tail risk (exchange hack, regulatory announcement) prevents higher confidence.",
+    "vault_files_cited": [
+      "domains/economics/threads/crypto-market/_thread.md",
+      "domains/economics/concepts/bitcoin-etf-flow-price-driver.md",
+      "domains/economics/concepts/policy-expectation-without-delivery.md",
+      "data/polymarket/tracked_markets.jsonl"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260521-003",
+    "created": "2026-05-21",
+    "domain": "economics",
+    "timeframe": "1m",
+    "target_date": "2026-06-18",
+    "prediction": "The Federal Reserve will hold the federal funds rate at 4.25-4.50% at the June 16-17, 2026 FOMC meeting — no rate change",
+    "confidence": 0.70,
+    "reasoning": "The Fed has held at 4.25-4.50% since January 2025 through seven consecutive meetings. The monetary-policy-cycle-phases concept classifies this as the 'plateau phase' — a deliberate pause after the 100bp of cuts in late 2024, driven by tariff-induced uncertainty that makes both additional cuts and hikes hard to justify. The central-bank-forward-guidance concept documents that the Fed strongly prefers to signal rate changes 2-4 weeks in advance through speeches, minutes, and press conferences. As of May 21, no such pre-signaling has occurred. The debt-sustainability-framework concept (newly created) adds context: rising US debt service costs create political pressure for cuts, but the Fed's dual mandate requires inflation progress first. Tariff policy uncertainty creates a 'paralysis by ambiguity' — the Fed cannot model the inflation impact of tariffs not yet announced. Without either a clear disinflation trend or a labor market deterioration, the plateau continues. Confidence 0.70 rather than higher because: (1) one month of CPI data (May release June 10) could shift expectations, (2) the tariff situation could resolve rapidly, (3) the CME FedWatch probabilities are not visible at PIT cutoff.",
+    "vault_files_cited": [
+      "domains/economics/concepts/monetary-policy-cycle-phases.md",
+      "domains/economics/concepts/central-bank-forward-guidance.md",
+      "domains/economics/concepts/debt-sustainability-framework.md",
+      "domains/economics/entities/federal-reserve-system.md",
+      "domains/economics/entities/jerome-powell.md",
+      "domains/economics/entities/federal-open-market-committee.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260521-004",
+    "created": "2026-05-21",
+    "domain": "politics",
+    "timeframe": "3m",
+    "target_date": "2026-08-21",
+    "prediction": "Jordan Bardella will NOT formally announce his candidacy for the 2027 French presidential election by August 21, 2026",
+    "confidence": 0.58,
+    "reasoning": "The french-electoral-dynamics concept documents the two-round presidential system and the RN's structural dependence on Marine Le Pen. Bardella's candidacy is contingent on Le Pen's eligibility ruling from her EU parliamentary assistant funds trial — the verdict (expected 2026, no specific date) could impose a 5-year electoral ban. Until that legal path resolves, a formal candidacy announcement by Bardella is strategically premature: (1) if Le Pen is cleared, she runs as the RN's natural candidate and Bardella stands down; (2) if Le Pen is banned, Bardella becomes the automatic successor and announces shortly after. The procedural timing favors the verdict arriving in summer/fall 2026 (appeals process timeline), making an announcement BEFORE the verdict improbable. The 2027-french-presidential-election thread tracks the centrist fragmentation (Philippe, Attal, possibly Macron succession) and RN dynamics. Polymarket prices 'Bardella to announce in 2026' at 65% YES — this appears overpriced given the legal prerequisite not yet resolved. The market may be conflating 'Bardella eventually runs' with 'Bardella announces before Aug 21.' The marine-le-pen entity documents the EU funds case and candidacy decision framework. Confidence 0.58 reflects the key uncertainty: if the verdict arrives before Aug 21 with a ban, Bardella announces immediately → prediction fails. If the verdict is delayed past Aug 21, Bardella waits → prediction succeeds. The probability split is roughly 42% early verdict + ban / 58% delayed verdict or no ban.",
+    "vault_files_cited": [
+      "domains/france/concepts/french-electoral-dynamics.md",
+      "domains/france/threads/2027-french-presidential-election/_thread.md",
+      "domains/france/entities/marine-le-pen.md",
+      "domains/france/entities/jordan-bardella.md",
+      "domains/france/entities/emmanuel-macron.md"
+    ],
+    "verified": null
   }
 ]
