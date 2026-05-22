@@ -163,7 +163,7 @@
     "target_date": "2026-05-22",
     "prediction": "No emergency Federal Reserve policy action or unscheduled FOMC statement will occur on May 21-22, 2026",
     "confidence": 0.95,
-    "reasoning": "The Federal Reserve operates on a fixed meeting schedule (next: June 16-17, 2026). Unscheduled policy actions have occurred only during acute crises (COVID March 2020, GFC 2008, 9/11 2001). The current macro environment shows no acute crisis: BTC at ~$76K, no banking failures, no sovereign debt crisis, no market dislocation requiring emergency intervention. The Fed's plateau phase (4.25-4.50% since Jan 2025) reflects wait-and-see on tariff/inflation data. The monetary-policy-cycle-phases concept documents this as a characteristic plateau — the next move direction is debated (cut vs hold) but no one expects an emergency inter-meeting move. Confidence 0.95 reflects the near-deterministic baseline: unscheduled Fed actions average ~1 per 5-8 years.",
+    "reasoning": "The Federal Reserve operates on a fixed meeting schedule (next: June 16-17, 2026). Unscheduled policy actions have occurred only during acute crises (COVID March 2020, GFC 2008, 9/11 2001). The current macro environment shows no acute crisis: BTC at ~$76K, no banking failures, no sovereign debt crisis, no market dislocation requiring emergency intervention. The Fed's plateau phase (4.25-4.50% since Jan 2025) reflects wait-and-see on tariff/inflation data. The monetary-policy-cycle-phases concept documents this as a characteristic plateau \u2014 the next move direction is debated (cut vs hold) but no one expects an emergency inter-meeting move. Confidence 0.95 reflects the near-deterministic baseline: unscheduled Fed actions average ~1 per 5-8 years.",
     "vault_files_cited": [
       "domains/economics/concepts/monetary-policy-cycle-phases.md",
       "domains/economics/concepts/central-bank-forward-guidance.md",
@@ -184,7 +184,7 @@
     "target_date": "2026-05-28",
     "prediction": "Bitcoin (BTC) will close above $74,000 on May 28, 2026",
     "confidence": 0.75,
-    "reasoning": "BTC currently at ~$76,800 (May 21). The $74K level is ~3.6% below current price — well within normal weekly volatility. Polymarket's 'BTC above $74K on May 22' at 98.2% reflects near-certainty for the immediate term. No major macro catalysts in the May 22-28 window: no FOMC, no CPI/PCE release, no scheduled Treasury auctions that could disrupt markets. The bitcoin-etf-flow-price-driver concept documents that spot ETF flows have been net positive, providing structural support. The crypto-market thread documents the recovery from the Feb 2026 drawdown ($97K→$60K) with BTC now in a consolidation range of $72-80K. A break below $74K would require a catalyst (regulatory shock, macro scare, major exchange failure) — none are visible on the horizon. Confidence 0.75 reflects the asymmetry: the base case (no catalyst) keeps BTC above $74K, but crypto tail risk (exchange hack, regulatory announcement) prevents higher confidence.",
+    "reasoning": "BTC currently at ~$76,800 (May 21). The $74K level is ~3.6% below current price \u2014 well within normal weekly volatility. Polymarket's 'BTC above $74K on May 22' at 98.2% reflects near-certainty for the immediate term. No major macro catalysts in the May 22-28 window: no FOMC, no CPI/PCE release, no scheduled Treasury auctions that could disrupt markets. The bitcoin-etf-flow-price-driver concept documents that spot ETF flows have been net positive, providing structural support. The crypto-market thread documents the recovery from the Feb 2026 drawdown ($97K\u2192$60K) with BTC now in a consolidation range of $72-80K. A break below $74K would require a catalyst (regulatory shock, macro scare, major exchange failure) \u2014 none are visible on the horizon. Confidence 0.75 reflects the asymmetry: the base case (no catalyst) keeps BTC above $74K, but crypto tail risk (exchange hack, regulatory announcement) prevents higher confidence.",
     "vault_files_cited": [
       "domains/economics/threads/crypto-market/_thread.md",
       "domains/economics/concepts/bitcoin-etf-flow-price-driver.md",
@@ -199,9 +199,9 @@
     "domain": "economics",
     "timeframe": "1m",
     "target_date": "2026-06-18",
-    "prediction": "The Federal Reserve will hold the federal funds rate at 4.25-4.50% at the June 16-17, 2026 FOMC meeting — no rate change",
-    "confidence": 0.70,
-    "reasoning": "The Fed has held at 4.25-4.50% since January 2025 through seven consecutive meetings. The monetary-policy-cycle-phases concept classifies this as the 'plateau phase' — a deliberate pause after the 100bp of cuts in late 2024, driven by tariff-induced uncertainty that makes both additional cuts and hikes hard to justify. The central-bank-forward-guidance concept documents that the Fed strongly prefers to signal rate changes 2-4 weeks in advance through speeches, minutes, and press conferences. As of May 21, no such pre-signaling has occurred. The debt-sustainability-framework concept (newly created) adds context: rising US debt service costs create political pressure for cuts, but the Fed's dual mandate requires inflation progress first. Tariff policy uncertainty creates a 'paralysis by ambiguity' — the Fed cannot model the inflation impact of tariffs not yet announced. Without either a clear disinflation trend or a labor market deterioration, the plateau continues. Confidence 0.70 rather than higher because: (1) one month of CPI data (May release June 10) could shift expectations, (2) the tariff situation could resolve rapidly, (3) the CME FedWatch probabilities are not visible at PIT cutoff.",
+    "prediction": "The Federal Reserve will hold the federal funds rate at 4.25-4.50% at the June 16-17, 2026 FOMC meeting \u2014 no rate change",
+    "confidence": 0.7,
+    "reasoning": "The Fed has held at 4.25-4.50% since January 2025 through seven consecutive meetings. The monetary-policy-cycle-phases concept classifies this as the 'plateau phase' \u2014 a deliberate pause after the 100bp of cuts in late 2024, driven by tariff-induced uncertainty that makes both additional cuts and hikes hard to justify. The central-bank-forward-guidance concept documents that the Fed strongly prefers to signal rate changes 2-4 weeks in advance through speeches, minutes, and press conferences. As of May 21, no such pre-signaling has occurred. The debt-sustainability-framework concept (newly created) adds context: rising US debt service costs create political pressure for cuts, but the Fed's dual mandate requires inflation progress first. Tariff policy uncertainty creates a 'paralysis by ambiguity' \u2014 the Fed cannot model the inflation impact of tariffs not yet announced. Without either a clear disinflation trend or a labor market deterioration, the plateau continues. Confidence 0.70 rather than higher because: (1) one month of CPI data (May release June 10) could shift expectations, (2) the tariff situation could resolve rapidly, (3) the CME FedWatch probabilities are not visible at PIT cutoff.",
     "vault_files_cited": [
       "domains/economics/concepts/monetary-policy-cycle-phases.md",
       "domains/economics/concepts/central-bank-forward-guidance.md",
@@ -220,7 +220,7 @@
     "target_date": "2026-08-21",
     "prediction": "Jordan Bardella will NOT formally announce his candidacy for the 2027 French presidential election by August 21, 2026",
     "confidence": 0.58,
-    "reasoning": "The french-electoral-dynamics concept documents the two-round presidential system and the RN's structural dependence on Marine Le Pen. Bardella's candidacy is contingent on Le Pen's eligibility ruling from her EU parliamentary assistant funds trial — the verdict (expected 2026, no specific date) could impose a 5-year electoral ban. Until that legal path resolves, a formal candidacy announcement by Bardella is strategically premature: (1) if Le Pen is cleared, she runs as the RN's natural candidate and Bardella stands down; (2) if Le Pen is banned, Bardella becomes the automatic successor and announces shortly after. The procedural timing favors the verdict arriving in summer/fall 2026 (appeals process timeline), making an announcement BEFORE the verdict improbable. The 2027-french-presidential-election thread tracks the centrist fragmentation (Philippe, Attal, possibly Macron succession) and RN dynamics. Polymarket prices 'Bardella to announce in 2026' at 65% YES — this appears overpriced given the legal prerequisite not yet resolved. The market may be conflating 'Bardella eventually runs' with 'Bardella announces before Aug 21.' The marine-le-pen entity documents the EU funds case and candidacy decision framework. Confidence 0.58 reflects the key uncertainty: if the verdict arrives before Aug 21 with a ban, Bardella announces immediately → prediction fails. If the verdict is delayed past Aug 21, Bardella waits → prediction succeeds. The probability split is roughly 42% early verdict + ban / 58% delayed verdict or no ban.",
+    "reasoning": "The french-electoral-dynamics concept documents the two-round presidential system and the RN's structural dependence on Marine Le Pen. Bardella's candidacy is contingent on Le Pen's eligibility ruling from her EU parliamentary assistant funds trial \u2014 the verdict (expected 2026, no specific date) could impose a 5-year electoral ban. Until that legal path resolves, a formal candidacy announcement by Bardella is strategically premature: (1) if Le Pen is cleared, she runs as the RN's natural candidate and Bardella stands down; (2) if Le Pen is banned, Bardella becomes the automatic successor and announces shortly after. The procedural timing favors the verdict arriving in summer/fall 2026 (appeals process timeline), making an announcement BEFORE the verdict improbable. The 2027-french-presidential-election thread tracks the centrist fragmentation (Philippe, Attal, possibly Macron succession) and RN dynamics. Polymarket prices 'Bardella to announce in 2026' at 65% YES \u2014 this appears overpriced given the legal prerequisite not yet resolved. The market may be conflating 'Bardella eventually runs' with 'Bardella announces before Aug 21.' The marine-le-pen entity documents the EU funds case and candidacy decision framework. Confidence 0.58 reflects the key uncertainty: if the verdict arrives before Aug 21 with a ban, Bardella announces immediately \u2192 prediction fails. If the verdict is delayed past Aug 21, Bardella waits \u2192 prediction succeeds. The probability split is roughly 42% early verdict + ban / 58% delayed verdict or no ban.",
     "vault_files_cited": [
       "domains/france/concepts/french-electoral-dynamics.md",
       "domains/france/threads/2027-french-presidential-election/_thread.md",
@@ -238,7 +238,7 @@
     "target_date": "2026-05-23",
     "prediction": "President Trump will NOT announce a major new military deployment or initiate a new armed conflict on May 22-23, 2026",
     "confidence": 0.92,
-    "reasoning": "The post-Alaska Summit foreign policy pattern (Aug 2025–present) shows Trump favoring diplomatic mediation (Armenia-Azerbaijan, Gaza ceasefire, Ukraine framework) over military escalation. The Iran ceasefire is holding at 99.9% on Polymarket. No geopolitical hot spot is at a boiling point requiring a 24h response. The US-Russia diplomatic track continues through the Alaska framework. The timeline documents a period of diplomatic engagement, not military posturing. Trump's second-term pattern is peace-broker, not war-starter. Emergency military deployments require a triggering event — none visible in the current news cycle.",
+    "reasoning": "The post-Alaska Summit foreign policy pattern (Aug 2025\u2013present) shows Trump favoring diplomatic mediation (Armenia-Azerbaijan, Gaza ceasefire, Ukraine framework) over military escalation. The Iran ceasefire is holding at 99.9% on Polymarket. No geopolitical hot spot is at a boiling point requiring a 24h response. The US-Russia diplomatic track continues through the Alaska framework. The timeline documents a period of diplomatic engagement, not military posturing. Trump's second-term pattern is peace-broker, not war-starter. Emergency military deployments require a triggering event \u2014 none visible in the current news cycle.",
     "vault_files_cited": [
       "domains/global/threads/us-russia-diplomatic-relations/_thread.md",
       "domains/mena/threads/iran-israel-escalation/_thread.md",
@@ -255,7 +255,7 @@
     "target_date": "2026-05-29",
     "prediction": "The Colombian presidential election (first round May 31) will proceed as scheduled without a major candidate boycott or withdrawal that would fundamentally alter the race structure",
     "confidence": 0.88,
-    "reasoning": "Colombian elections have strong institutional integrity with consistent turnout and no history of last-minute candidate withdrawals by frontrunners. The fragmented-right-wing-field concept predicts all right-wing candidates (de la Espriella, Valencia, Peñalosa, Fajardo) will contest the first round to maximize their individual vote shares before runoff consolidation — withdrawing would forfeit their bargaining position for the runoff. Cepeda has a clear polling lead (40-45%) and zero incentive to withdraw. The Registraduría Nacional has demonstrated operational capacity through multiple election cycles. No security crisis or natural disaster is visible that would force postponement. Market volume ($29.9M) reflects high confidence in procedural integrity.",
+    "reasoning": "Colombian elections have strong institutional integrity with consistent turnout and no history of last-minute candidate withdrawals by frontrunners. The fragmented-right-wing-field concept predicts all right-wing candidates (de la Espriella, Valencia, Pe\u00f1alosa, Fajardo) will contest the first round to maximize their individual vote shares before runoff consolidation \u2014 withdrawing would forfeit their bargaining position for the runoff. Cepeda has a clear polling lead (40-45%) and zero incentive to withdraw. The Registradur\u00eda Nacional has demonstrated operational capacity through multiple election cycles. No security crisis or natural disaster is visible that would force postponement. Market volume ($29.9M) reflects high confidence in procedural integrity.",
     "vault_files_cited": [
       "domains/latin-america/threads/colombia-2026-presidential-election/_thread.md",
       "domains/latin-america/concepts/fragmented-right-wing-field/_concept.md",
@@ -271,9 +271,9 @@
     "domain": "geopolitics",
     "timeframe": "1m",
     "target_date": "2026-06-22",
-    "prediction": "The Colombian presidential election will NOT produce a first-round winner — a runoff will be required between Iván Cepeda and a right-wing candidate (most likely Abelardo de la Espriella)",
-    "confidence": 0.80,
-    "reasoning": "No Colombian presidential candidate has won in the first round since the 1991 constitution established the two-round system. Cepeda's polling (40-45%) is structurally below the 50%+1 threshold. The fragmented-right-wing-field concept documents that multi-candidate conservative fields split the right-wing vote in round 1 while enabling consolidation in round 2. Polymarket prices first-round winner at only 12.1% — a near-consensus that a runoff is required. De la Espriella (50.5% to win election vs 15.8% to win first round) is the market's expected runoff consolidator. The structural dynamics (anti-incumbency, right-wing fragmentation, Cepeda ceiling at ~46-48%) all point toward a runoff. Even if Cepeda significantly outperforms polls, crossing 50% in a 5+ candidate field with a 40-45% polling range is mathematically near-impossible.",
+    "prediction": "The Colombian presidential election will NOT produce a first-round winner \u2014 a runoff will be required between Iv\u00e1n Cepeda and a right-wing candidate (most likely Abelardo de la Espriella)",
+    "confidence": 0.8,
+    "reasoning": "No Colombian presidential candidate has won in the first round since the 1991 constitution established the two-round system. Cepeda's polling (40-45%) is structurally below the 50%+1 threshold. The fragmented-right-wing-field concept documents that multi-candidate conservative fields split the right-wing vote in round 1 while enabling consolidation in round 2. Polymarket prices first-round winner at only 12.1% \u2014 a near-consensus that a runoff is required. De la Espriella (50.5% to win election vs 15.8% to win first round) is the market's expected runoff consolidator. The structural dynamics (anti-incumbency, right-wing fragmentation, Cepeda ceiling at ~46-48%) all point toward a runoff. Even if Cepeda significantly outperforms polls, crossing 50% in a 5+ candidate field with a 40-45% polling range is mathematically near-impossible.",
     "vault_files_cited": [
       "domains/latin-america/threads/colombia-2026-presidential-election/_thread.md",
       "domains/latin-america/concepts/fragmented-right-wing-field/_concept.md",
@@ -290,9 +290,9 @@
     "domain": "economics",
     "timeframe": "3m",
     "target_date": "2026-08-22",
-    "prediction": "The Federal Reserve will hold the federal funds rate unchanged at both the June 16-17 and July 28-29, 2026 FOMC meetings — zero rate changes through August 22, 2026",
+    "prediction": "The Federal Reserve will hold the federal funds rate unchanged at both the June 16-17 and July 28-29, 2026 FOMC meetings \u2014 zero rate changes through August 22, 2026",
     "confidence": 0.72,
-    "reasoning": "The monetary-policy-cycle-phases concept classifies the current period as the 'plateau phase' — the Fed cut 200bp (Sep 2024–Jan 2026) then paused due to tariff-induced uncertainty. The central-bank-forward-guidance concept documents that the Fed strongly prefers 2-4 weeks of pre-signaling through speeches, minutes, and press conferences before any rate change. As of May 22, no such signaling has occurred for either the June or July meetings. The tariff-inflation-labor trilemma creates policy paralysis: tariffs push inflation up (arguing against cuts), while slowing growth argues for easing. The timeline (2026-Q2) shows the Fed held at both the May 6 and June 17 meetings. Governor Miran's lone dissent for a cut at the June meeting signals internal debate but not a majority shift. July is typically a non- meeting month for major policy changes (the Fed rarely initiates new policy directions in summer unless reacting to a crisis). Confidence 0.72 rather than higher because: (1) one CPI print (May data, released June 10) could shift expectations, (2) a tariff resolution could remove the uncertainty that anchors the plateau, (3) July meetings can produce surprises if data shifts dramatically.",
+    "reasoning": "The monetary-policy-cycle-phases concept classifies the current period as the 'plateau phase' \u2014 the Fed cut 200bp (Sep 2024\u2013Jan 2026) then paused due to tariff-induced uncertainty. The central-bank-forward-guidance concept documents that the Fed strongly prefers 2-4 weeks of pre-signaling through speeches, minutes, and press conferences before any rate change. As of May 22, no such signaling has occurred for either the June or July meetings. The tariff-inflation-labor trilemma creates policy paralysis: tariffs push inflation up (arguing against cuts), while slowing growth argues for easing. The timeline (2026-Q2) shows the Fed held at both the May 6 and June 17 meetings. Governor Miran's lone dissent for a cut at the June meeting signals internal debate but not a majority shift. July is typically a non- meeting month for major policy changes (the Fed rarely initiates new policy directions in summer unless reacting to a crisis). Confidence 0.72 rather than higher because: (1) one CPI print (May data, released June 10) could shift expectations, (2) a tariff resolution could remove the uncertainty that anchors the plateau, (3) July meetings can produce surprises if data shifts dramatically.",
     "vault_files_cited": [
       "domains/economics/concepts/monetary-policy-cycle-phases.md",
       "domains/economics/concepts/central-bank-forward-guidance.md",
@@ -300,6 +300,139 @@
       "domains/economics/entities/federal-reserve-system.md",
       "domains/economics/entities/jerome-powell.md",
       "timeline/2026-Q2.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-005",
+    "created": "2026-05-22",
+    "domain": "economics",
+    "timeframe": "4m",
+    "target_date": "2026-09-16",
+    "prediction": "The Federal Reserve will NOT cut the federal funds rate at the September 15-16, 2026 FOMC meeting \u2014 the plateau at 4.25-4.50% will continue",
+    "confidence": 0.86,
+    "reasoning": "The monetary-policy-cycle-phases concept classifies the current period as the 'plateau phase' \u2014 extended hold at 4.25-4.50% since January 2026 driven by 'paralysis by ambiguity' (tariffs \u2192 inflation vs slowing growth). The Fed always pre-signals rate changes 2-4 weeks in advance through speeches, minutes, and dot plots \u2014 as of May 22, ZERO signals exist for a September cut. Governor Miran's lone dissent at June signals internal debate but not a majority shift. For a September cut to materialize, we need 3+ months of clear disinflation AND employment softening \u2014 current data shows neither. Market: 14.15% YES at $99K volume \u2014 well-calibrated.",
+    "vault_files_cited": [
+      "domains/economics/concepts/monetary-policy-cycle-phases.md",
+      "domains/economics/concepts/central-bank-forward-guidance.md",
+      "domains/economics/threads/us-monetary-policy-cycle-2022-2026/_thread.md",
+      "domains/economics/entities/federal-reserve-system.md",
+      "timeline/2026-Q2.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-006",
+    "created": "2026-05-22",
+    "domain": "geopolitics",
+    "timeframe": "1w",
+    "target_date": "2026-05-31",
+    "prediction": "Italy will NOT announce a new warship deployment through the Strait of Hormuz by May 31, 2026",
+    "confidence": 0.985,
+    "reasoning": "Only 9 days remain in the window. Italian naval deployments require 2-4 weeks political authorization (Defense Ministry \u2192 PM \u2192 parliamentary notification). Italy already participates in EMASoH (European Maritime Awareness mission) \u2014 routine surveillance rotations, NOT new-deployment events. No crisis trigger in past 14 days (Hormuz seizure event, Iranian provocation). Iran ceasefire holding at 99.9%. The 1.55% YES market price captures the tiny residual probability of an already-in-motion deployment being announced in the final 9 days. Created vault coverage: italy.md entity + strait-of-hormuz.md entity.",
+    "vault_files_cited": [
+      "domains/europe/entities/italy.md",
+      "domains/mena/entities/strait-of-hormuz.md",
+      "domains/mena/threads/iran-israel-escalation/_thread.md",
+      "domains/global/concepts/short-window-military-strike-probability.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-007",
+    "created": "2026-05-22",
+    "domain": "politics",
+    "timeframe": "3m",
+    "target_date": "2026-08-11",
+    "prediction": "Mandela Barnes will win the 2026 Wisconsin Governor Democratic primary election",
+    "confidence": 0.53,
+    "reasoning": "Barnes enters with the highest name recognition from his 2022 Senate run (lost by 1.0% to Ron Johnson). His progressive positioning aligns with the Wisconsin Democratic primary electorate concentrated in Madison/Milwaukee. Main challenger Sara Rodriguez (current Lt. Governor) has institutional advantages but lower name recognition. Barnes's 2022 statewide campaign built a donor network, volunteer base, and media relationships none of his opponents can replicate. Key risk: if Governor Evers endorses Rodriguez, the race flips. Market: 50.5% YES at $10K volume \u2014 essentially a coin flip, my +2.5pp adjustment reflects Barnes's structural advantages that a 50/50 market may slightly underweight.",
+    "vault_files_cited": [
+      "domains/usa/entities/mandela-barnes.md",
+      "domains/usa/threads/us-2026-midterm-elections/_thread.md",
+      "domains/usa/concepts/state-electoral-reliability/_concept.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-008",
+    "created": "2026-05-22",
+    "domain": "politics",
+    "timeframe": "5m",
+    "target_date": "2026-11-03",
+    "prediction": "The Democratic Party will NOT win the TX-23 House seat in the 2026 midterm election",
+    "confidence": 0.76,
+    "reasoning": "TX-23 is R+5 Cook PVI, held by Rep. Tony Gonzales (R) who won by 14.2% in 2024. Texas House districts are resistant to national Democratic waves \u2014 even in D+8.6 national environment (2018), Democrats gained only 2 Texas seats. TX-23 specifically requires a D+5-7 national environment AND a top-tier Hispanic challenger AND significant DCCC investment \u2014 unlikely all three converge. The midterm-referendum-dynamics concept supports a Democratic national advantage, but Texas's inelasticity means D+5 nationally may not flip R+5 in west Texas. Created tx-23-congressional-district.md entity. Market: 24.5% YES \u2014 well-calibrated.",
+    "vault_files_cited": [
+      "domains/usa/entities/tx-23-congressional-district.md",
+      "domains/usa/entities/texas.md",
+      "domains/usa/threads/us-2026-midterm-elections/_thread.md",
+      "domains/usa/threads/us-house-elections/_thread.md",
+      "domains/global/concepts/midterm-referendum-dynamics/_concept.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-009",
+    "created": "2026-05-22",
+    "domain": "economics",
+    "timeframe": "1m",
+    "target_date": "2026-06-30",
+    "prediction": "Stripe's valuation will NOT hit $165B (LOW threshold) by June 30, 2026",
+    "confidence": 0.81,
+    "reasoning": "Stripe's last valuation: $65B (Feb 2024 tender), secondary market ~$70-85B. $165B requires >2x increase in 5 weeks \u2014 structurally impossible without a funding round or IPO filing (neither announced). Comparable public fintech companies (Adyen $50B, Block $60B, PayPal $70B) all trade below $165B. Private valuations are set at funding rounds; no round is scheduled before June 30. Created stripe.md entity stub and flagged private-company-valuation-dynamics concept gap. Market: 19% YES at $10K \u2014 may be overpriced (I'd estimate 5-8%) but anchoring to market per calibration rules. The 19% may reflect confusion with the $172.5B HIGH market (58% YES) or tail risk of surprise IPO filing.",
+    "vault_files_cited": [
+      "domains/economics/entities/stripe.md",
+      "domains/economics/concepts/strategic-bitcoin-reserve.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-010",
+    "created": "2026-05-22",
+    "domain": "politics",
+    "timeframe": "7m",
+    "target_date": "2026-12-31",
+    "prediction": "The US will NOT enact a comprehensive federal AI safety bill before 2027",
+    "confidence": 0.55,
+    "reasoning": "The US AI safety regulation federal thread documents that legislative progress on AI safety has been slow despite bipartisan interest. Key blockers: (1) Congress is gridlocked on tech regulation broadly \u2014 Section 230 reform, data privacy, and antitrust all stalled; (2) AI safety specifically splits along industry vs safety lines, not party lines; (3) The 2026 midterm election cycle means the legislative calendar is compressed \u2014 only ~40 working days remain in 2026 post-election; (4) Executive orders (Biden AI EO 2023, Trump AI EO 2025) have filled the regulatory gap, reducing urgency for legislation; (5) State-level AI regulation (CA, CO, CT) has been more active than federal, further diffusing pressure. The 49.5% market price appears to overweight the post-DeepSeek/ChatGPT regulatory panic and underweight the structural gridlock. Even modest AI safety bills (reporting requirements, NIST standards codification) face the same procedural hurdles as comprehensive ones. Baseline: major tech legislation passes in <15% of Congressional sessions. Confidence 0.55 reflects possibility of a narrow, non-controversial bill passing as a rider.",
+    "vault_files_cited": [
+      "domains/usa/threads/us-ai-safety-regulation-federal/_thread.md",
+      "domains/usa/threads/state-level-ai-regulation/_thread.md",
+      "domains/usa/concepts/state-level-tech-regulation-bellwether/_concept.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-011",
+    "created": "2026-05-22",
+    "domain": "politics",
+    "timeframe": "3w",
+    "target_date": "2026-06-09",
+    "prediction": "Pamela Evette will NOT win the 2026 South Carolina Governor Republican primary election",
+    "confidence": 0.67,
+    "reasoning": "Created vault coverage: [[south-carolina]], [[pamela-evette]]. SC governor is open seat (McMaster term-limited). Evette is sitting LG but SC elects LG independently \u2014 her incumbency advantage is moderate but not overwhelming. The 31% market price reflects an open field where no candidate has consolidated the establishment lane. Key factors: (1) SC has a runoff system \u2014 if no candidate exceeds 50%, top 2 advance. Multi-candidate field makes this likely. (2) Trump has not endorsed in this race yet \u2014 his endorsement is decisive in SC Republican primaries. (3) Evette's business background (QBS) is an asset but evangelical turnout in SC primaries favors candidates with stronger cultural conservative credentials. (4) Alan Wilson (AG) has higher name recognition among base voters. (5) Mark Burns (pastor) has the evangelical lane to himself. In a 3+ candidate field with runoff, Evette advancing to runoff is plausible (~40%) but WINNING outright in the first round is unlikely given right-wing fragmentation. Predicting she does not win the primary \u2014 either loses outright in round 1 or loses in runoff to a more culturally conservative candidate. Confidence 0.67 reflects structural disadvantages in a deep-red open-seat primary.",
+    "vault_files_cited": [
+      "domains/usa/entities/south-carolina.md",
+      "domains/usa/entities/pamela-evette.md",
+      "domains/usa/concepts/state-electoral-reliability/_concept.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-012",
+    "created": "2026-05-22",
+    "domain": "economics",
+    "timeframe": "2m",
+    "target_date": "2026-07-16",
+    "prediction": "The Bank of Korea will NOT decrease the base rate at the July 16, 2026 Monetary Policy Board meeting",
+    "confidence": 0.96,
+    "reasoning": "Created vault coverage: [[south-korea]], [[bank-of-korea]]. The 2.3% market price is well-calibrated and I am essentially matching it. Key factors: (1) BoK has already begun an easing cycle from 3.50% \u2014 additional cuts require either disinflation progress or growth deterioration, neither strongly visible. (2) Won stability constraint: KRW has been under pressure; aggressive rate cuts -> won depreciation -> imported inflation. (3) Fed plateau at 4.25-4.50% limits BoK's room \u2014 EM central banks rarely cut aggressively when the Fed is on hold. (4) Household debt at ~105% GDP means financial stability mandate constrains additional easing. (5) Export data: semiconductor cycle recovering modestly, reducing urgency for stimulus. (6) Governor Rhee Chang-yong's term expired April 2026 \u2014 if a successor hasn't been appointed, this adds policy uncertainty that favors a hold. The 2.3% YES reflects the small tail risk of a surprise cut if export data deteriorates sharply, but the structural constraints (won, Fed, household debt) make a July cut very unlikely. This is consistent with the EM-central-bank-credibility-normalization concept: politically independent EM central banks in easing cycles make incremental moves and strongly signal them in advance \u2014 no such signal exists.",
+    "vault_files_cited": [
+      "domains/east-asia/entities/south-korea.md",
+      "domains/east-asia/entities/bank-of-korea.md",
+      "domains/mena/concepts/em-central-bank-credibility-normalization/_concept.md",
+      "domains/economics/concepts/central-bank-forward-guidance.md"
     ],
     "verified": null
   }
