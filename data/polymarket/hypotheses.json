@@ -229,5 +229,78 @@
       "domains/france/entities/emmanuel-macron.md"
     ],
     "verified": null
+  },
+  {
+    "id": "hyp-20260522-001",
+    "created": "2026-05-22",
+    "domain": "geopolitics",
+    "timeframe": "24h",
+    "target_date": "2026-05-23",
+    "prediction": "President Trump will NOT announce a major new military deployment or initiate a new armed conflict on May 22-23, 2026",
+    "confidence": 0.92,
+    "reasoning": "The post-Alaska Summit foreign policy pattern (Aug 2025–present) shows Trump favoring diplomatic mediation (Armenia-Azerbaijan, Gaza ceasefire, Ukraine framework) over military escalation. The Iran ceasefire is holding at 99.9% on Polymarket. No geopolitical hot spot is at a boiling point requiring a 24h response. The US-Russia diplomatic track continues through the Alaska framework. The timeline documents a period of diplomatic engagement, not military posturing. Trump's second-term pattern is peace-broker, not war-starter. Emergency military deployments require a triggering event — none visible in the current news cycle.",
+    "vault_files_cited": [
+      "domains/global/threads/us-russia-diplomatic-relations/_thread.md",
+      "domains/mena/threads/iran-israel-escalation/_thread.md",
+      "timeline/2026-Q2.md",
+      "domains/global/entities/donald-trump.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-002",
+    "created": "2026-05-22",
+    "domain": "geopolitics",
+    "timeframe": "1w",
+    "target_date": "2026-05-29",
+    "prediction": "The Colombian presidential election (first round May 31) will proceed as scheduled without a major candidate boycott or withdrawal that would fundamentally alter the race structure",
+    "confidence": 0.88,
+    "reasoning": "Colombian elections have strong institutional integrity with consistent turnout and no history of last-minute candidate withdrawals by frontrunners. The fragmented-right-wing-field concept predicts all right-wing candidates (de la Espriella, Valencia, Peñalosa, Fajardo) will contest the first round to maximize their individual vote shares before runoff consolidation — withdrawing would forfeit their bargaining position for the runoff. Cepeda has a clear polling lead (40-45%) and zero incentive to withdraw. The Registraduría Nacional has demonstrated operational capacity through multiple election cycles. No security crisis or natural disaster is visible that would force postponement. Market volume ($29.9M) reflects high confidence in procedural integrity.",
+    "vault_files_cited": [
+      "domains/latin-america/threads/colombia-2026-presidential-election/_thread.md",
+      "domains/latin-america/concepts/fragmented-right-wing-field/_concept.md",
+      "events/colombia-presidential-election-2026.md",
+      "domains/latin-america/entities/ivan-cepeda-castro.md",
+      "domains/latin-america/entities/abelardo-de-la-espriella.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-003",
+    "created": "2026-05-22",
+    "domain": "geopolitics",
+    "timeframe": "1m",
+    "target_date": "2026-06-22",
+    "prediction": "The Colombian presidential election will NOT produce a first-round winner — a runoff will be required between Iván Cepeda and a right-wing candidate (most likely Abelardo de la Espriella)",
+    "confidence": 0.80,
+    "reasoning": "No Colombian presidential candidate has won in the first round since the 1991 constitution established the two-round system. Cepeda's polling (40-45%) is structurally below the 50%+1 threshold. The fragmented-right-wing-field concept documents that multi-candidate conservative fields split the right-wing vote in round 1 while enabling consolidation in round 2. Polymarket prices first-round winner at only 12.1% — a near-consensus that a runoff is required. De la Espriella (50.5% to win election vs 15.8% to win first round) is the market's expected runoff consolidator. The structural dynamics (anti-incumbency, right-wing fragmentation, Cepeda ceiling at ~46-48%) all point toward a runoff. Even if Cepeda significantly outperforms polls, crossing 50% in a 5+ candidate field with a 40-45% polling range is mathematically near-impossible.",
+    "vault_files_cited": [
+      "domains/latin-america/threads/colombia-2026-presidential-election/_thread.md",
+      "domains/latin-america/concepts/fragmented-right-wing-field/_concept.md",
+      "events/colombia-presidential-election-2026.md",
+      "domains/latin-america/entities/ivan-cepeda-castro.md",
+      "domains/latin-america/entities/abelardo-de-la-espriella.md",
+      "domains/latin-america/entities/paloma-valencia.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260522-004",
+    "created": "2026-05-22",
+    "domain": "economics",
+    "timeframe": "3m",
+    "target_date": "2026-08-22",
+    "prediction": "The Federal Reserve will hold the federal funds rate unchanged at both the June 16-17 and July 28-29, 2026 FOMC meetings — zero rate changes through August 22, 2026",
+    "confidence": 0.72,
+    "reasoning": "The monetary-policy-cycle-phases concept classifies the current period as the 'plateau phase' — the Fed cut 200bp (Sep 2024–Jan 2026) then paused due to tariff-induced uncertainty. The central-bank-forward-guidance concept documents that the Fed strongly prefers 2-4 weeks of pre-signaling through speeches, minutes, and press conferences before any rate change. As of May 22, no such signaling has occurred for either the June or July meetings. The tariff-inflation-labor trilemma creates policy paralysis: tariffs push inflation up (arguing against cuts), while slowing growth argues for easing. The timeline (2026-Q2) shows the Fed held at both the May 6 and June 17 meetings. Governor Miran's lone dissent for a cut at the June meeting signals internal debate but not a majority shift. July is typically a non- meeting month for major policy changes (the Fed rarely initiates new policy directions in summer unless reacting to a crisis). Confidence 0.72 rather than higher because: (1) one CPI print (May data, released June 10) could shift expectations, (2) a tariff resolution could remove the uncertainty that anchors the plateau, (3) July meetings can produce surprises if data shifts dramatically.",
+    "vault_files_cited": [
+      "domains/economics/concepts/monetary-policy-cycle-phases.md",
+      "domains/economics/concepts/central-bank-forward-guidance.md",
+      "domains/economics/threads/us-monetary-policy-cycle-2022-2026/_thread.md",
+      "domains/economics/entities/federal-reserve-system.md",
+      "domains/economics/entities/jerome-powell.md",
+      "timeline/2026-Q2.md"
+    ],
+    "verified": null
   }
 ]
