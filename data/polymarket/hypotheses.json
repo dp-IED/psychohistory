@@ -479,5 +479,141 @@
       "domains/iran/entities/islamic-revolutionary-guard-corps-irgc.md"
     ],
     "verified": null
+  },
+  {
+    "id": "hyp-20260523-003",
+    "created": "2026-05-23",
+    "domain": "geopolitics",
+    "timeframe": "24h",
+    "target_date": "2026-05-24",
+    "prediction": "President Trump will NOT announce a major new military deployment or initiate a new armed conflict on May 23-24, 2026",
+    "confidence": 0.92,
+    "reasoning": "The post-Alaska Summit foreign policy pattern (Aug 2025–present) shows Trump favoring diplomatic mediation over military escalation. The Iran ceasefire holds at 99.9% on Polymarket. The US-Russia diplomatic track continues through the Alaska framework. Trump's China visit (May 13-15) was diplomatic. The 2026-Q2 timeline documents a period of diplomatic engagement, not military posturing. Emergency deployments require triggering events — no such trigger is visible in the current news cycle. This follows the same structural pattern as previously verified 24h hypotheses (hyp-20260522-001, hyp-20260521-001). Confidence 0.92 reflects residual tail risk (unscheduled crisis requiring rapid response) but <8% probability given the administration's established diplomatic pattern.",
+    "vault_files_cited": [
+      "timeline/2026-Q2.md",
+      "domains/global/threads/us-russia-diplomatic-relations/_thread.md",
+      "domains/mena/threads/iran-israel-escalation/_thread.md",
+      "domains/global/entities/donald-trump.md",
+      "domains/global/entities/alaska-summit.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260523-004",
+    "created": "2026-05-23",
+    "domain": "politics",
+    "timeframe": "1w",
+    "target_date": "2026-05-31",
+    "prediction": "The Colombian presidential election first round (May 31, 2026) will NOT produce an outright winner — a runoff will be required between Iván Cepeda and the top right-wing candidate",
+    "confidence": 0.85,
+    "reasoning": "No Colombian presidential candidate has won in the first round since the 1991 constitution established the two-round system (32 years, ~8 elections). Cepeda's polling (40-45%) is structurally below the 50%+1 threshold. The fragmented-right-wing-field concept documents that multi-candidate conservative fields (de la Espriella, Valencia, Peñalosa, Fajardo) split the right-wing vote in round 1. Cepeda's structural ceiling is ~46-48% — even significant polling outperformance can't cross 50% with 5+ candidates on the ballot. Polymarket prices first-round winner at ~12% YES — consensus that a runoff is required. The runoff (June 21) will feature right-wing consolidation behind the top right-wing candidate, testing the fragmented-right-wing-field concept's prediction that collective right-wing vote share exceeds individual candidate shares. The Colombia election thread (enriched Pass 21) provides comprehensive structural analysis. Confidence 0.85 reflects near-certainty of runoff (no candidate >50%) with residual risk of surprise candidate withdrawal concentrating votes.",
+    "vault_files_cited": [
+      "domains/latin-america/threads/colombia-2026-presidential-election/_thread.md",
+      "domains/latin-america/concepts/fragmented-right-wing-field/_concept.md",
+      "events/colombia-presidential-election-2026.md",
+      "domains/latin-america/entities/ivan-cepeda-castro.md",
+      "domains/latin-america/entities/abelardo-de-la-espriella.md",
+      "data/polymarket/tracked_markets.jsonl"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260523-005",
+    "created": "2026-05-23",
+    "domain": "economics",
+    "timeframe": "1m",
+    "target_date": "2026-06-23",
+    "prediction": "The Federal Reserve will hold the federal funds rate at 4.25-4.50% at the June 16-17, 2026 FOMC meeting — no rate change",
+    "confidence": 0.72,
+    "reasoning": "The monetary-policy-cycle-phases concept classifies the current period as the 'plateau phase' — the Fed held at 4.25-4.50% through seven consecutive meetings. The central-bank-forward-guidance concept documents that the Fed strongly prefers to pre-signal rate changes 2-4 weeks in advance through speeches, minutes, and press conferences. As of May 23, zero such signals exist for a June cut. The tariff-inflation-labor trilemma creates 'paralysis by ambiguity': tariffs push inflation up (arguing against cuts), while slowing growth argues for easing. The 2026-Q2 timeline documents the May 6 hold (11-0) and projects a June 17 hold (10-1, Miran dissent for a cut). One CPI print (May data, released June 10) could shift expectations, but a single month of data rarely triggers a rate change after a 7-meeting hold. The cumulative rate path: 5.50% (Sep 2024 peak) → 4.25-4.50% (current) via 200bp of cuts, then plateau. Confidence 0.72 rather than higher because: (1) one CPI print could shift market expectations, (2) tariff resolution could remove the uncertainty anchor, (3) the Miran dissent signals internal debate that could build toward a majority.",
+    "vault_files_cited": [
+      "domains/economics/concepts/monetary-policy-cycle-phases.md",
+      "domains/economics/concepts/central-bank-forward-guidance.md",
+      "domains/economics/threads/us-monetary-policy-cycle-2022-2026/_thread.md",
+      "domains/economics/entities/federal-reserve-system.md",
+      "domains/economics/entities/jerome-powell.md",
+      "timeline/2026-Q2.md",
+      "domains/global/threads/us-trade-policy-tariffs/_thread.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260523-006",
+    "created": "2026-05-23",
+    "domain": "economics",
+    "timeframe": "3m",
+    "target_date": "2026-08-23",
+    "prediction": "The Bank of Korea will NOT decrease the base rate at the July 16, 2026 Monetary Policy Board meeting",
+    "confidence": 0.94,
+    "reasoning": "The Bank of Korea has already begun an easing cycle from 3.50% — additional cuts require either disinflation progress or growth deterioration, neither strongly visible. Key structural constraints: (1) Won stability: KRW under pressure; aggressive rate cuts → won depreciation → imported inflation; (2) Fed plateau at 4.25-4.50% limits BoK room — EM central banks cannot cut when the Fed is on hold without currency risk; (3) Household debt at ~105% GDP means financial stability mandate constrains additional easing; (4) Governor Rhee Chang-yong's term expired April 2026 — if a successor hasn't been appointed, policy uncertainty favors hold; (5) Polymarket prices July cut at just 2.2% YES ($9.9K volume) — market near-certainty of hold. The EM-central-bank-credibility-normalization concept documents that politically independent EM central banks in easing cycles make incremental moves with strong pre-signaling — zero signals exist. Confidence 0.94 reflects the market consensus plus structural constraints making a surprise cut extremely unlikely. The 6% residual risk captures: (a) a sharp export deterioration between now and July, (b) new BoK governor with dovish mandate, (c) won appreciation providing policy space.",
+    "vault_files_cited": [
+      "domains/east-asia/entities/south-korea.md",
+      "domains/east-asia/entities/bank-of-korea.md",
+      "domains/mena/concepts/em-central-bank-credibility-normalization/_concept.md",
+      "domains/economics/concepts/central-bank-forward-guidance.md",
+      "domains/economics/entities/federal-reserve-system.md",
+      "data/polymarket/tracked_markets.jsonl"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260523-007",
+    "created": "2026-05-23",
+    "domain": "geopolitics",
+    "timeframe": "1w",
+    "target_date": "2026-05-31",
+    "prediction": "The US and Iran will NOT reach a permanent peace deal by May 31, 2026",
+    "confidence": 0.90,
+    "reasoning": "Only 8 days remain in the window. The Polymarket 'US x Iran permanent peace deal by May 31' trades at 35% YES ($41M volume) — the market heavily discounts a near-term deal. The [[us-iran-post-war-diplomacy]] thread documents that previous short-deadline markets (January, March, early May) all resolved NO, confirming the deal moves slowly. The May 26 market (27.5% YES, $2.4M) and May 31 market (35% YES) show that even with 3-8 days remaining, traders assign at most 35% probability. Key blockers: (1) IRGC terrorism designation is the hardest bargaining chip and unlikely to resolve in 8 days; (2) Israel's security establishment opposes any deal that doesn't fully dismantle Iran's nuclear program; (3) Trump's China visit (May 13-15) consumed diplomatic bandwidth that would otherwise have been spent on Iran negotiations. The escalating YES prices on longer deadlines (42% June 15, 53.5% June 30, 61.5% July 31, 77% Dec 31) confirm the market consensus: the deal is coming, but not in 8 days. Confidence 0.90 reflects the structural impossibility of resolving the IRGC issue, Israeli objections, and verification framework in the remaining time.",
+    "vault_files_cited": [
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
+      "domains/mena/threads/iran-israel-escalation/_thread.md",
+      "domains/iran/entities/ali-khamenei.md",
+      "domains/iran/entities/islamic-revolutionary-guard-corps-irgc.md",
+      "domains/global/entities/donald-trump.md",
+      "timeline/2026-Q2.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260523-008",
+    "created": "2026-05-23",
+    "domain": "geopolitics",
+    "timeframe": "1m",
+    "target_date": "2026-06-30",
+    "prediction": "Donald Trump WILL announce that the United States blockade of the Strait of Hormuz has been lifted by June 30, 2026",
+    "confidence": 0.90,
+    "reasoning": "The Polymarket market 'Will Donald Trump announce that the United States blockade of the Strait of Hormuz has been lifted by June 30, 2026?' trades at 92% YES ($993K volume). Newly created [[us-blockade-strait-of-hormuz]] entity documents the critical structural insight: blockade lifting is NOT the same as a permanent peace deal. The blockade was imposed by the Commander-in-Chief as a wartime measure during the June 2025 Twelve-Day War and can be LIFTED by the Commander-in-Chief as a de-escalatory measure — no treaty, no Senate ratification, no Congressional approval. The 'US x Iran permanent peace deal by June 30' trades at 53.5% ($12.3M) while the blockade-lifting market is at 92% — a 38.5pp gap that reflects different mechanisms. Trump's diplomatic pattern (Alaska Summit, Armenia-Azerbaijan, Gaza ceasefire) favors low-cost de-escalation signals: a high-visibility, low-domestic-cost announcement that the US is serious about normalization. The Iran ceasefire has held at 99.9% for 11 months — zero operational reason to maintain blockade. Two tail risks: (1) Khamenei succession interrupts diplomacy, (2) Israeli pressure to maintain blockade until nuclear program verified dismantled. Confidence 0.90 vs market 0.92 reflects slight additional weight on the succession tail risk.",
+    "vault_files_cited": [
+      "domains/mena/entities/us-blockade-strait-of-hormuz.md",
+      "domains/mena/entities/strait-of-hormuz.md",
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
+      "domains/mena/threads/iran-israel-escalation/_thread.md",
+      "domains/global/entities/donald-trump.md",
+      "domains/global/entities/alaska-summit.md",
+      "domains/iran/entities/ali-khamenei.md",
+      "timeline/2026-Q2.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260523-009",
+    "created": "2026-05-23",
+    "domain": "geopolitics",
+    "timeframe": "3m",
+    "target_date": "2026-08-23",
+    "prediction": "Ali Khamenei will remain Supreme Leader of Iran through August 23, 2026",
+    "confidence": 0.88,
+    "reasoning": "Ali Khamenei is 87 years old (born April 19, 1939). The [[elderly-leader-mortality-risk]] concept provides actuarial baseline: an 87-year-old male has ~12-15% annual mortality risk (~1% monthly). However, Khamenei has survived prostate cancer (diagnosed 2014, treated), and Supreme Leaders receive top-tier Iranian medical care. The Polymarket 'Khamenei head of state at end of 2026' market trades at 66.45% YES (Mojtaba Khamenei at 66.45% for succession, suggesting ~67% probability Khamenei is NOT head of state by end-2026). BUT the December 31, 2026 deadline is 7+ months away vs August 23 at 3 months. The monthly mortality risk is ~1% → ~3% over 3 months, adjusted upward for: (1) Khamenei's known prostate cancer history, (2) reports of reduced public visibility since Twelve-Day War (June 2025), (3) succession jockeying by Mojtaba and IRGC signaling preparation. The 66.45% December price implies ~7%/month attrition rate, which applied to 3 months yields ~19% mortality/incapacitation probability. I adjust down to 12% for the shorter window (mortality risk is not linear — health crises accelerate toward end-stage). Confidence 0.88 reflects: base rate ~3% (actuarial) + ~5% (visible health decline signals) + ~4% (IRGC succession preparation interpreted as anticipatory) = ~12% risk of transition by August 23.",
+    "vault_files_cited": [
+      "domains/iran/entities/ali-khamenei.md",
+      "domains/iran/entities/mojtaba-khamenei.md",
+      "domains/iran/entities/islamic-revolutionary-guard-corps-irgc.md",
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
+      "domains/global/concepts/elderly-leader-mortality-risk/_concept.md",
+      "domains/mena/concepts/em-central-bank-credibility-normalization/_concept.md",
+      "timeline/2026-Q2.md"
+    ],
+    "verified": null
   }
 ]
