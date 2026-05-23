@@ -249,7 +249,11 @@
       "timeline/2026-Q2.md",
       "domains/global/entities/donald-trump.md"
     ],
-    "verified": null
+    "verified": true,
+    "verified_at": "2026-05-23T05:40:00+00:00",
+    "actual_outcome": "No major new military deployment or armed conflict initiated May 22-23, 2026. Wikipedia confirms Iran war started Feb 28 (ongoing, not new), domestic National Guard deployments are ongoing from 2025, Trump's China visit (May 13-15) was diplomatic. No new conflict announcements.",
+    "correct": true,
+    "verification_note": "Confirmed: No new military deployments or conflicts on May 22-23. Iran war is ongoing since Feb 28 \u2014 not a new deployment. Domestic deployments are continuous from 2025. Hypothesis correct."
   },
   {
     "id": "hyp-20260522-002",
@@ -437,6 +441,42 @@
       "domains/east-asia/entities/bank-of-korea.md",
       "domains/mena/concepts/em-central-bank-credibility-normalization/_concept.md",
       "domains/economics/concepts/central-bank-forward-guidance.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260523-001",
+    "created": "2026-05-23",
+    "domain": "geopolitics",
+    "timeframe": "2m",
+    "target_date": "2026-07-31",
+    "prediction": "The US and Iran will reach a permanent peace deal by July 31, 2026",
+    "confidence": 0.6,
+    "reasoning": "Updated analysis as of May 23, 2026. Market: 61.5% YES at $1M volume for the July 31 deadline. The Twelve-Day War ended 11 months ago. Since then: (1) Ceasefire has held without major violation; (2) Iran's nuclear program is destroyed, removing the primary casus belli; (3) Khamenei (87) has succession incentive to lock in a deal before leadership transition; (4) Trump's diplomatic pattern (Alaska Summit, Armenia-Azerbaijan, Gaza ceasefire) demonstrates deal-making capacity; (5) Multiple short-deadline markets (April, early May) resolved NO, but longer deadlines show escalating YES prices (35% May 31, 42% June 15, 53% June 30, 62% July 31, 77% Dec 31) \u2014 the market consensus is the deal is coming but needs time. 'Permanent peace deal' is broadly defined in the resolution criteria \u2014 an executive agreement or framework declaration ending military hostilities could trigger YES. Key risk: Khamenei succession interrupts negotiations. Created [[domains/iran/threads/us-iran-post-war-diplomacy]] thread and [[mojtaba-khamenei]] entity to close vault gaps.",
+    "vault_files_cited": [
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
+      "domains/iran/entities/ali-khamenei.md",
+      "domains/iran/entities/mojtaba-khamenei.md",
+      "domains/mena/threads/iran-israel-escalation/_thread.md",
+      "domains/global/entities/donald-trump.md",
+      "domains/global/entities/iran.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260523-002",
+    "created": "2026-05-23",
+    "domain": "geopolitics",
+    "timeframe": "7m",
+    "target_date": "2026-12-31",
+    "prediction": "Ali Motahari will NOT be head of state in Iran at end of 2026",
+    "confidence": 0.995,
+    "reasoning": "Market: 0.15% YES at $99K volume. Ali Motahari has been BARRED from the Assembly of Experts (the body that selects the Supreme Leader). He is not a senior cleric (marja'), lacks IRGC patronage, and has no institutional path to either the Supreme Leadership or presidency. The real succession fight is between Mojtaba Khamenei (66.45%, IRGC-backed) and clerical-establishment alternatives (Alireza Arafi 1.7%, Abbas Araghchi 4.8%). Motahari is listed in the Polymarket candidate market because he's a recognizable political name, but structurally has zero probability. This is a freebie \u2014 the market already prices it at near-impossibility. Created [[ali-motahari]] entity stub and [[mojtaba-khamenei]] entity to close vault gap for Iran succession markets.",
+    "vault_files_cited": [
+      "domains/iran/entities/ali-motahari.md",
+      "domains/iran/entities/mojtaba-khamenei.md",
+      "domains/iran/entities/ali-khamenei.md",
+      "domains/iran/entities/islamic-revolutionary-guard-corps-irgc.md"
     ],
     "verified": null
   }
