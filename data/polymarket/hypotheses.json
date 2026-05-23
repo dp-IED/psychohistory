@@ -15,7 +15,11 @@
       "entities/iran-israel-conflict.md",
       "entities/donald-trump.md"
     ],
-    "verified": null
+    "verified": true,
+    "verified_at": "2026-05-23T00:50:00+00:00",
+    "actual_outcome": "No major military deployment or new armed conflict announced May 22-23, 2026. No Polymarket conflict/deployment markets appeared. Wikipedia shows no Trump military action on these dates.",
+    "correct": true,
+    "verification_note": "Confirmed: No new military deployments or armed conflicts initiated. Iran ceasefire holds. Post-Alaska Summit diplomatic pattern continues."
   },
   {
     "id": "hyp-20260518-002",
