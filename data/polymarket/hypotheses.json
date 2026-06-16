@@ -108,7 +108,11 @@
       "entities/jerome-powell.md",
       "entities/federal-open-market-committee.md"
     ],
-    "verified": null
+    "verified": true,
+    "verified_at": "2026-06-16T23:06:33+00:00",
+    "actual_outcome": "Fed held federal funds rate at 4.25-4.50% at June 16-17, 2026 FOMC meeting. No rate change. Polymarket \"No change\" resolved YES (99.55%).",
+    "correct": true,
+    "verification_note": "CORRECT. Fed held rates at 4.25-4.50% at June 16-17, 2026 FOMC meeting. Polymarket \"No change\" market at 99.55% YES. No rate cut. Pattern continues: all 2026 meetings (Jan, Mar, Apr, Jun) held rates unchanged. Governor Miran dissented for a cut per vault projection."
   },
   {
     "id": "hyp-20260518-008",
@@ -222,7 +226,11 @@
       "domains/economics/entities/jerome-powell.md",
       "domains/economics/entities/federal-open-market-committee.md"
     ],
-    "verified": null
+    "verified": true,
+    "verified_at": "2026-06-16T23:06:33+00:00",
+    "actual_outcome": "Fed held federal funds rate at 4.25-4.50% at June 16-17, 2026 FOMC meeting. No rate change. Polymarket \"No change\" at 99.55%.",
+    "correct": true,
+    "verification_note": "EARLY VERIFICATION. CORRECT. FOMC decision June 17 confirmed hold. Vault projection (plateau phase, Miran dissent) accurate. Both hypotheses (0.60 and 0.70 confidence) directionally correct."
   },
   {
     "id": "hyp-20260521-004",
@@ -656,7 +664,7 @@
     "target_date": "2026-06-30",
     "prediction": "Donald Trump will NOT speak to Ahmed al-Sharaa (Syrian de facto leader) in June 2026",
     "confidence": 0.85,
-    "reasoning": "Only 14 days remain in June. Trump's diplomatic bandwidth is consumed by the June 14 US-Iran peace deal aftermath (sanctions relief sequencing, Congressional notification, Israeli reaction management). Ahmed al-Sharaa leads HTS — a US-designated terrorist organization — creating a direct-engagement barrier requiring waiver or delisting, neither signaled. Trump's peace-broker pattern prioritizes high-stakes deals (Iran, Alaska, Gaza) not mid-tier diplomatic meetings. No preparatory diplomatic groundwork (ambassador-level meetings, Special Envoy visits) has occurred. The 32.5% Polymarket YES price appears to overweight generic 'Trump meets leaders' narrative and underweight the HTS terrorist designation + 14-day window constraints. Created vault coverage: [[ahmed-al-sharaa]] entity stub + updated [[syria]] entity. Vault gap: no Syria post-Assad thread exists.",
+    "reasoning": "Only 14 days remain in June. Trump's diplomatic bandwidth is consumed by the June 14 US-Iran peace deal aftermath (sanctions relief sequencing, Congressional notification, Israeli reaction management). Ahmed al-Sharaa leads HTS \u2014 a US-designated terrorist organization \u2014 creating a direct-engagement barrier requiring waiver or delisting, neither signaled. Trump's peace-broker pattern prioritizes high-stakes deals (Iran, Alaska, Gaza) not mid-tier diplomatic meetings. No preparatory diplomatic groundwork (ambassador-level meetings, Special Envoy visits) has occurred. The 32.5% Polymarket YES price appears to overweight generic 'Trump meets leaders' narrative and underweight the HTS terrorist designation + 14-day window constraints. Created vault coverage: [[ahmed-al-sharaa]] entity stub + updated [[syria]] entity. Vault gap: no Syria post-Assad thread exists.",
     "vault_files_cited": [
       "domains/mena/entities/ahmed-al-sharaa.md",
       "domains/global/entities/syria.md",
@@ -674,13 +682,70 @@
     "target_date": "2028-12-31",
     "prediction": "Yair Golan will NOT be the next Prime Minister of Israel",
     "confidence": 0.996,
-    "reasoning": "Structural near-impossibility. Golan's party (The Democrats, Labor+Meretz merger) polls at 4-8 seats — far from the 61 needed to form government. The Israeli electorate has undergone a generational rightward shift: right-religious bloc consistently commands 60+ seats; center-left maxes at ~35 seats even with Arab party support. Netanyahu remains dominant despite corruption indictments. Golan's 2016 Holocaust speech remains a permanent attack ad. The 0.4% Polymarket YES price is well-calibrated — if anything generous. The only path requires all 5 of: Netanyahu conviction + Likud fracture + center-left unification + Arab party inclusion + external shock — combined probability <1%. Created vault coverage: [[yair-golan]] entity stub. Vault gap identified: no Israeli domestic politics/electoral dynamics thread exists — vault covers Israel extensively in security contexts but has zero political party system coverage.",
+    "reasoning": "Structural near-impossibility. Golan's party (The Democrats, Labor+Meretz merger) polls at 4-8 seats \u2014 far from the 61 needed to form government. The Israeli electorate has undergone a generational rightward shift: right-religious bloc consistently commands 60+ seats; center-left maxes at ~35 seats even with Arab party support. Netanyahu remains dominant despite corruption indictments. Golan's 2016 Holocaust speech remains a permanent attack ad. The 0.4% Polymarket YES price is well-calibrated \u2014 if anything generous. The only path requires all 5 of: Netanyahu conviction + Likud fracture + center-left unification + Arab party inclusion + external shock \u2014 combined probability <1%. Created vault coverage: [[yair-golan]] entity stub. Vault gap identified: no Israeli domestic politics/electoral dynamics thread exists \u2014 vault covers Israel extensively in security contexts but has zero political party system coverage.",
     "vault_files_cited": [
       "domains/mena/entities/yair-golan.md",
       "domains/mena/entities/israel.md",
       "domains/mena/entities/israeli-security-cabinet.md",
       "domains/mena/threads/iran-israel-escalation/_thread.md",
       "_forecast_instructions.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260617-001",
+    "created": "2026-06-16",
+    "domain": "geopolitics",
+    "timeframe": "1w",
+    "target_date": "2026-06-24",
+    "prediction": "Colombia presidential election runoff (June 21) will result in a contested result \u2014 the margin between de la Espriella and Cepeda will be less than 5%, and the losing candidate will challenge the result before concession",
+    "confidence": 0.62,
+    "reasoning": "First round: de la Espriella 43.7%, Cepeda 40.9% \u2014 a 2.8pp gap. Runoff dynamics: right-wing consolidation behind de la Espriella (Valencia 5.8%, Pe\u00f1alosa 4.2%, Fajardo 3.1%) gives him 43.7+13.1=56.8% ceiling. Cepeda needs left-wing consolidation + Petro machine + anti-Espriella centrist votes. Colombian elections since 2018 have been decided by <5pp margins (Duque 54%-42% in 2018; Petro 50.4%-47.3% in 2022). The contested-result pattern: both 2018 and 2022 saw fraud allegations from losing sides, and Colombia's polarized environment (post-Petro, post-2021 protests) makes this likely. Polymarket: de la Espriella 60.5% to win at 0M volume. The market is pricing a clear de la Espriella win, but the 2.8pp first-round gap + right-wing fragmentation risk (some Valencia voters may abstain) makes a close race likely. Contested result \u2260 overturned result \u2014 the prediction is about the close margin and challenge, not who ultimately takes office. Confidence 0.62: structural polarization + precedent make this more likely than not.",
+    "vault_files_cited": [
+      "domains/latin-america/threads/colombia-2026-presidential-election/_thread.md",
+      "domains/latin-america/concepts/fragmented-right-wing-field/_concept.md",
+      "domains/latin-america/entities/abelardo-de-la-espriella.md",
+      "domains/latin-america/entities/ivan-cepeda-castro.md",
+      "events/colombia-presidential-election-2026.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260617-002",
+    "created": "2026-06-16",
+    "domain": "economics",
+    "timeframe": "1m",
+    "target_date": "2026-07-17",
+    "prediction": "The US will NOT be in a recession (NBER-declared) by mid-July 2026. GDP growth Q2 2026 will be reported above 1.5% annualized.",
+    "confidence": 0.68,
+    "reasoning": "The Fed held rates at 4.25-4.50% at today's June FOMC \u2014 continuing the plateau phase. This confirms the monetary-policy-cycle-phases concept: no urgency to cut because no recession signal. Key indicators: (1) Labor market remains resilient with unemployment below 4.5%; (2) Consumer spending sustained by real wage growth and post-COVID balance sheets; (3) Tariff uncertainty is a drag but not a shock \u2014 no Liberation Day 2.0 announced; (4) The US-Iran peace deal (resolved YES June 14) removes geopolitical tail risk; (5) Housing market: rates at 4.25-4.50% are not recessionary \u2014 the 2007-09 recession required rates at 5.25% with a housing bubble. NBER recession requires a significant decline in activity spread across the economy lasting more than a few months \u2014 none of the indicators support this within 4 weeks. The 25.5% Polymarket recession-by-2026 price (.5M) overweights fear and underweights structural resilience. Even a mild downturn would take 3-6 months to be declared by NBER (which declares retrospectively). Confidence 0.68 reflects uncertainty from: (1) potential tariff escalation, (2) lagged effects of the 200bp rate cuts from 2024-2026, (3) global slowdown spillovers.",
+    "vault_files_cited": [
+      "domains/economics/concepts/monetary-policy-cycle-phases.md",
+      "domains/economics/threads/us-monetary-policy-cycle-2022-2026/_thread.md",
+      "domains/economics/entities/federal-reserve-system.md",
+      "domains/economics/entities/jerome-powell.md",
+      "timeline/2026-Q2.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260617-003",
+    "created": "2026-06-16",
+    "domain": "geopolitics",
+    "timeframe": "3m",
+    "target_date": "2026-09-17",
+    "prediction": "The Strait of Hormuz blockade will be lifted by September 17, 2026 \u2014 either through formal Trump announcement or de facto cessation of enforcement. US-Iran permanent peace deal framework signed by August 31.",
+    "confidence": 0.75,
+    "reasoning": "The blockade-lifting market is at 92% YES by June 30 (93K volume). The US-Iran peace deal by July 31 is at 61.5% YES (M). The sequencing logic: (1) The June 14 US-Iran peace deal resolved YES \u2014 this is the breakthrough; (2) Blockade lifting is a unilateral Trump action requiring zero Congressional approval \u2014 it's the low-cost de-escalation signal; (3) The IRGC terrorism designation and Israeli objections are the hardest bargaining chips \u2014 they explain the remaining 38.5% risk for the July 31 deal but don't block blockade lifting; (4) Trump's diplomatic pattern: Alaska Summit \u2192 Armenia-Azerbaijan \u2192 Gaza ceasefire \u2192 US-Iran deal \u2014 each step built on the last; (5) Khamenei succession risk (87 years old, prostate cancer history) creates urgency on the Iranian side to lock in a deal before leadership transition. The 3-month window to Sept 17 gives time for: blockade lifting (June-July), sanctions relief sequencing (July-Aug), permanent framework signing (Aug). The 92% market price for June 30 blockade lifting may be slightly aggressive \u2014 I'd assign 85% to June 30 but 95%+ to Sept 17. The deal framework by Aug 31: ~75% (market at 61.5% for July 31 + extra month for final sticking points). Combined probability: both events happen ~75%. Confidence reflects the residual Israeli veto risk (Netanyahu coalition depends on Smotrich/Ben-Gvir who oppose any Iran deal) and Khamenei health uncertainty.",
+    "vault_files_cited": [
+      "domains/mena/entities/us-blockade-strait-of-hormuz.md",
+      "domains/mena/entities/strait-of-hormuz.md",
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
+      "domains/mena/threads/iran-israel-escalation/_thread.md",
+      "domains/iran/entities/ali-khamenei.md",
+      "domains/iran/entities/mojtaba-khamenei.md",
+      "domains/global/entities/donald-trump.md",
+      "timeline/2026-Q2.md"
     ],
     "verified": null
   }
