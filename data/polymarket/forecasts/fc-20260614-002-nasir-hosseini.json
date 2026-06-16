@@ -1,0 +1,32 @@
+{
+  "id": "fc-20260614-002",
+  "created": "2026-06-14T17:30:00Z",
+  "market_question": "Will Nasir Hosseini be head of state in Iran end of 2026?",
+  "source": "polymarket",
+  "domain": "geopolitics",
+  "market_data": {
+    "yes_price": 0.002,
+    "no_price": 0.998,
+    "volume": 98876,
+    "end_date": "2026-12-31"
+  },
+  "vault_files_read": [
+    "domains/iran/entities/nasir-hosseini.md",
+    "domains/iran/entities/ali-khamenei.md",
+    "domains/iran/entities/mojtaba-khamenei.md",
+    "domains/iran/entities/islamic-revolutionary-guard-corps-irgc.md",
+    "domains/iran/entities/ali-motahari.md"
+  ],
+  "forecast_instructions_check": [
+    {"rule": "Rule 4 (Geographic Coverage)", "triggered": true, "note": "Created nasir-hosseini.md entity — vault gap now closed"},
+    {"rule": "Rule 13 (Rare-Event Base Rate)", "triggered": false, "note": "Not a catastrophic event question"}
+  ],
+  "vault_knowledge_summary": "Nasir Hosseini is a reformist-leaning MP with no path to Supreme Leader (not a cleric, not in Assembly of Experts) and limited presidential path (Guardian Council vetting). The real succession fight is between Mojtaba Khamenei (66.45% market) and clerical-establishment alternatives. Hosseini is listed on Polymarket because he's a recognizable name, not because he has a structural path to power.",
+  "vault_usage_score": "HIGH",
+  "counterfactual": "Without vault, model would need to research Iranian political structure to confirm Hosseini has no path. Vault entities directly establish his structural position and constraints.",
+  "forecast": {
+    "prediction": "NO",
+    "confidence": 0.998,
+    "reasoning": "Iran's head of state is the Supreme Leader, selected by the Assembly of Experts from senior Shi'a clerics (marja'). Nasir Hosseini is neither a cleric nor a member of the Assembly of Experts. The presidency (head of government, not head of state) is the only elected position he could theoretically hold, but: (1) 'head of state' in the Polymarket question refers to the Supreme Leader position, (2) even if interpreted as president, reformist candidates face Guardian Council vetting and Hosseini has no presidential campaign apparatus. The succession question centers on Khamenei (87, prostate cancer history). If Khamenei dies, the IRGC-backed succession goes to Mojtaba Khamenei. If Khamenei survives through 2026 (66.45% market), Hosseini's probability is zero. The 0.2% market price is essentially an error bar — I assign even lower probability (0.2% rounded)."
+  }
+}

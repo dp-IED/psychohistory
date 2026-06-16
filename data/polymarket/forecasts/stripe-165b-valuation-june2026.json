@@ -1,0 +1,35 @@
+{
+  "id": "fc-20260522-005",
+  "created": "2026-05-22T16:22:00Z",
+  "market_question": "Will Stripe's valuation hit (LOW) $165B by June 30?",
+  "market_slug": "will-stripes-valuation-hit-low-165b-by-june-30",
+  "domain": "economics",
+  "output_type": "binary",
+  "market_data": {
+    "yes_price": 0.19,
+    "no_price": 0.81,
+    "volume": 9994,
+    "end_date": "2026-07-01T12:00:00Z",
+    "source": "polymarket"
+  },
+  "vault_files_read": [
+    "domains/economics/concepts/strategic-bitcoin-reserve.md",
+    "domains/economics/concepts/debt-sustainability-framework.md",
+    "_forecast_instructions.md"
+  ],
+  "forecast_instructions_check": {
+    "rule_7_ai_tech_company": "TRIGGERED — Tech company valuation question. Vault has ZERO Stripe coverage — no entity stub for Stripe, no fintech valuation thread, no private market pricing concept. Rule 7 requires entity stubs for top contenders; Stripe is not covered.",
+    "rule_4_geographic_coverage": "NOT TRIGGERED — Stripe is US-based (San Francisco / Dublin dual HQ) and US is well-covered generically, though not for Stripe specifically."
+  },
+  "vault_knowledge_summary": "The vault has essentially ZERO relevant content for this question. The strategic-bitcoin-reserve and debt-sustainability-framework concepts are tangentially related (they deal with asset valuation and financial markets) but provide no Stripe-specific or private-market-valuation signal. This is a pure vault gap.",
+  "vault_usage_score": "LOW",
+  "vault_usage_explanation": "The vault contributed nothing to this forecast. Stripe is a private company; its valuation data comes from secondary market transactions and funding rounds, not public markets. The vault has no fintech entity stubs, no private-market-valuation concept, and no Stripe-specific coverage. This forecast relies entirely on general knowledge of Stripe's business and private market dynamics.",
+  "counterfactual": "Without the vault, this forecast would be identical. The vault is completely silent on Stripe. This is the clearest vault gap in this cycle.",
+  "forecast": {
+    "prediction": "NO",
+    "p_yes": 0.19,
+    "confidence": 0.81,
+    "reasoning": "THE FORECAST IS NO — Stripe's valuation will NOT hit $165B by June 30, 2026.\n\n**Stripe's Current Valuation Context**:\n- Last primary funding round: $65B valuation (February 2024, $6.5B raised)\n- Secondary market transactions: Estimated $70-85B range (2025)\n- Peak valuation: $95B (March 2021, during the tech bubble)\n- The $165B LOW target represents a >2x increase from the current ~$75B secondary market estimate in ~5 weeks\n\n**Why $165B in 5 Weeks is Structurally Impossible**:\n1. **No funding round scheduled**: Stripe has not announced or leaked any funding round for Q2 2026. Private company valuations are set at funding rounds — without one, there's no official repricing event.\n2. **Secondary markets don't move that fast**: Even in a hot private market, secondary transactions at 2x+ premium would require a fundamental business transformation (e.g., IPO filing, blockbuster earnings report). Stripe is not IPO-ing before June 30.\n3. **Revenue trajectory**: Stripe's estimated 2025 revenue was ~$20-25B with ~25-30% growth. At $75B valuation, that's ~3x revenue multiple. To justify $165B (~7-8x revenue), Stripe would need to demonstrate accelerating growth to 40%+ AND expanding margins AND a path to IPO — none of which can be credibly established in 5 weeks.\n4. **Comparable companies**: Adyen (public, ~$50B market cap), Block/Square ($60B), PayPal ($70B). These are all larger or comparable payment processors trading at lower multiples. Stripe at $165B would be 2x the next largest payments company.\n\n**What Could Move the Valuation**:\n- An IPO filing (S-1) could catalyze secondary market repricing to $100-120B, but $165B in the private market without a public listing is unprecedented for fintech\n- A monster funding round at $165B would require a strategic investor (Sovereign Wealth Fund) willing to pay a massive premium — unlikely without a liquidity event on the horizon\n\n**Market Check**: The Polymarket price of 19.0% YES seems generous — it may reflect confusion with the $172.5B HIGH market (58% YES, $4.3K volume) which is a different contract. The LOW $165B at 19% implies a ~1:4 chance, which overstates the probability given the structural impossibility of a 2x valuation increase in 5 weeks without a funding round. I would actually price this closer to 5-8% but am anchoring to the market price (Rule 9: calibration mode — align with PM unless strong pre-cutoff evidence of mispricing). The market may be incorporating tail risk of a surprise IPO filing that I'm underweighting.\n\nAligned at 0.19 per market calibration rules."
+  },
+  "vault_gap": "CRITICAL — Stripe and private-market-valuation have zero vault coverage. Reflection must create: (1) domains/economics/entities/stripe.md entity stub, (2) domains/economics/concepts/private-company-valuation-dynamics concept. Rule 7 triggered."
+}

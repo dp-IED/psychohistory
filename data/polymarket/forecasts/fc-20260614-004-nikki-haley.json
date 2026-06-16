@@ -1,0 +1,29 @@
+{
+  "id": "fc-20260614-004",
+  "created": "2026-06-14T17:30:00Z",
+  "market_question": "Will Nikki Haley win the 2028 Republican presidential nomination?",
+  "source": "polymarket",
+  "domain": "politics",
+  "market_data": {
+    "yes_price": 0.009,
+    "no_price": 0.991,
+    "volume": 9873212,
+    "end_date": "2028-07-01"
+  },
+  "vault_files_read": [
+    "domains/global/entities/donald-trump.md",
+    "domains/usa/threads/us-2026-midterm-elections/_thread.md"
+  ],
+  "forecast_instructions_check": [
+    {"rule": "Rule 2 (Domestic Politics)", "triggered": true, "note": "US politics question — midterm thread provides structural context"}
+  ],
+  "vault_knowledge_summary": "Minimal vault content specific to Haley's 2028 prospects. The midterm thread documents the 2026 political environment. The Trump entity establishes the post-Alaska Summit diplomatic pattern and second-term political capital.",
+  "vault_usage_score": "LOW",
+  "counterfactual": "Without vault, general knowledge would reach identical conclusion. Vault gap: no Haley entity, no 2028 GOP nomination thread.",
+  "forecast": {
+    "prediction": "NO",
+    "confidence": 0.995,
+    "reasoning": "The 0.9% YES price at $9.9M volume represents near-market-certainty that Haley does NOT win the 2028 nomination. Key factors: (1) JD Vance is the constitutional successor and presumptive 2028 frontrunner as sitting VP; (2) Haley lost the 2024 primary decisively to Trump and has been absent from Trump's second-term administration — no cabinet position, no platform to build 2028 momentum; (3) The post-2024 MAGA realignment of the GOP makes a traditional conservative like Haley structurally disadvantaged — the party base has moved toward economic populism and America-first foreign policy, not Chamber-of-Commerce Republicanism; (4) Haley would be 56 in 2028 — not too old, but without an electoral base since leaving the SC governorship in 2017; (5) The $9.9M volume with only 0.9% YES means smart money is heavily short — this is not a market where contrarian value exists. Confidence 0.995 reflects near-certainty. The 0.5% residual captures: Vance scandal/health event, Trump family endorsement of Haley, catastrophic GOP realignment. Vault gap: missing Haley entity and 2028 GOP nomination thread — creating during reflection."
+  },
+  "vault_gap": "Missing: nikki-haley.md entity, 2028-gop-presidential-nomination thread"
+}

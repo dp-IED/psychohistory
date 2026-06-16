@@ -1,0 +1,38 @@
+{
+  "id": "fc-20260522-004",
+  "created": "2026-05-22T16:22:00Z",
+  "market_question": "Will the Democratic Party win the TX-23 House seat?",
+  "market_slug": "will-the-democratic-party-win-the-tx-23-house-seat",
+  "domain": "politics",
+  "output_type": "binary",
+  "market_data": {
+    "yes_price": 0.245,
+    "no_price": 0.755,
+    "volume": 9952,
+    "end_date": "2026-11-03T00:00:00Z",
+    "source": "polymarket"
+  },
+  "vault_files_read": [
+    "domains/usa/entities/texas.md",
+    "domains/usa/threads/us-2026-midterm-elections/_thread.md",
+    "domains/usa/threads/us-house-elections/_thread.md",
+    "domains/usa/concepts/state-electoral-reliability/_concept.md",
+    "domains/global/concepts/midterm-referendum-dynamics/_concept.md",
+    "_forecast_instructions.md"
+  ],
+  "forecast_instructions_check": {
+    "rule_2_domestic_politics": "TRIGGERED — US political question. Vault has Texas entity and midterm elections thread, but NO TX-23 specific coverage. The us-house-elections thread covers the generic House landscape but lacks district-level detail.",
+    "rule_4_geographic_coverage": "TRIGGERED — TX-23 has no specific vault coverage. Only a generic texas.md entity exists. Geographic gap flagged for reflection."
+  },
+  "vault_knowledge_summary": "The vault's midterm-referendum-dynamics concept provides the structural framework: midterm elections are referendums on the president's party. Trump is in office → Republican midterm penalty is the base case. However, TX-23 is a specific district (currently held by Rep. Tony Gonzales, R) covering west Texas from San Antonio to El Paso. The district is competitive (R+5 Cook PVI) but has trended Republican in recent cycles. The vault lacks district-level information needed for a high-confidence forecast — general midterm dynamics can't distinguish TX-23 from 434 other House districts.",
+  "vault_usage_score": "LOW",
+  "vault_usage_explanation": "The vault contributed structural midterm dynamics but zero district-specific information. The forecast relies almost entirely on general knowledge of TX-23 district characteristics and historical election data. This is a vault gap — TX-23 needs district-level entity coverage.",
+  "counterfactual": "Without the vault, this forecast would be essentially identical. The midterm-referendum-dynamics concept is useful for generic ballot forecasting but doesn't move the needle on a specific district. The vault is redundant for TX-23.",
+  "forecast": {
+    "prediction": "NO",
+    "p_yes": 0.24,
+    "confidence": 0.76,
+    "reasoning": "THE FORECAST IS NO — The Democratic Party will NOT win the TX-23 House seat.\n\n**District Profile**: TX-23 is Texas's 23rd congressional district — a sprawling west Texas district stretching from San Antonio suburbs to El Paso. Cook PVI: R+5. Current representative: Tony Gonzales (R), first elected 2020.\n\n**Structural Republican Advantage**: TX-23 has voted Republican in every election since its 2013 redistricting configuration, with the exception of 2018 (Will Hurd, R, won narrowly). In 2024, Gonzales won by ~14 points — a solid margin in a district Trump carried comfortably.\n\n**Midterm Dynamics**: The midterm-referendum-dynamics concept establishes that midterms are referendums on the president's party. If Trump's approval is underwater (as it typically is for second-term presidents heading into midterms), Democrats should gain seats. TX-23 at R+5 would normally be a Democratic target if the national environment shifts D+5-7.\n\n**But Texas is Different**: Texas House districts have proven resistant to national Democratic waves:\n- In 2018 (D+8.6 national wave), Democrats gained only 2 Texas seats\n- In 2020, despite Biden improving on Clinton's Texas margins, Democrats gained zero Texas seats\n- TX-23 specifically: Gonzales won by 14 points in 2024 (presidential year) and 17 points in 2022 (midterm)\n\n**Candidate Quality**: The Democratic Party's ability to recruit a top-tier challenger in TX-23 is uncertain. The district's geography (huge, rural, expensive media markets in San Antonio/El Paso) makes it an expensive race. National Democratic committees (DCCC) may prioritize smaller, more suburban districts over a sprawling R+5 rural-exurban district.\n\n**Bottom Line**: At 24.5% YES, the market is pricing the structural midterm penalty for Republicans plus a Democratic national environment advantage. But TX-23's specific characteristics (Trump-friendly demographics, strong incumbent, expensive media markets, Democratic recruitment challenges) make a flip unlikely. Even D+5 nationally might not be enough to flip R+5 in Texas given the state's inelasticity. Market price is well-calibrated."
+  },
+  "vault_gap": "CRITICAL — TX-23 needs district-level entity coverage. Created: domains/usa/entities/tx-23-congressional-district.md with district profile, election history, and incumbent data."
+}

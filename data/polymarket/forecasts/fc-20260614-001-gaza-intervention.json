@@ -1,0 +1,33 @@
+{
+  "id": "fc-20260614-001",
+  "created": "2026-06-14T17:30:00Z",
+  "market_question": "Foreign intervention in Gaza by June 30?",
+  "source": "polymarket",
+  "domain": "geopolitics",
+  "market_data": {
+    "yes_price": 0.0495,
+    "no_price": 0.9505,
+    "volume": 99950,
+    "end_date": "2026-06-30"
+  },
+  "vault_files_read": [
+    "domains/mena/threads/iran-israel-escalation/_thread.md",
+    "domains/mena/entities/hamas.md",
+    "domains/mena/entities/israel.md",
+    "domains/mena/entities/egypt.md",
+    "domains/mena/entities/qatar.md"
+  ],
+  "forecast_instructions_check": [
+    {"rule": "Rule 14 (Asymmetric Ceasefire)", "triggered": true, "note": "State-vs-non-state conflict — applied asymmetric framework"},
+    {"rule": "Rule 3 (Short-Window Military Strike)", "triggered": false, "note": "Not a military strike question"},
+    {"rule": "Rule 12 (Horizon-Matched Base Rates)", "triggered": true, "note": "16-day window — short horizon dynamics apply"}
+  ],
+  "vault_knowledge_summary": "The Iran-Israel escalation thread documents that the Gaza front has been relatively quiet since the October 2023 war and subsequent ceasefire. Foreign intervention (defined as non-Israeli, non-Palestinian military forces entering Gaza) is structurally constrained by: (1) Egypt's opposition to militarization of its border, (2) no UN mandate for intervention, (3) US focus on Iran diplomacy rather than Gaza, (4) Arab League reluctance to deploy forces into an active conflict zone without a peace framework. The March 31 and April 30 deadlines for this same market resolved NO.",
+  "vault_usage_score": "MEDIUM",
+  "counterfactual": "Without vault, general knowledge would reach similar conclusion (foreign intervention in Gaza is historically rare). Vault provides specific confirmation that no intervention mechanism has been activated.",
+  "forecast": {
+    "prediction": "NO",
+    "confidence": 0.97,
+    "reasoning": "Foreign military intervention in Gaza requires either: (a) UN Security Council authorization (blocked by US veto for anything hostile to Israel, or Russia/China veto for Western-led intervention), (b) Arab League consensus deployment (requires peace framework that doesn't exist), or (c) unilateral intervention by a major power (no state has signaled this). The March and April deadlines both resolved NO on Polymarket. The June 30 deadline has only 16 days remaining. The 4.95% market price appropriately reflects the tiny residual probability — likely an unexpected escalation requiring emergency intervention. No leading indicators are active: no UNSC resolution in progress, no Arab League emergency summit, no troop movements toward Gaza. Short-window base rate for foreign intervention <0.01 absent a tripwire event. Confidence 0.97 reflects near-certainty of NO, with 3% residual for black-swan escalation."
+  }
+}
