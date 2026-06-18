@@ -579,7 +579,7 @@
     "verified_at": "2026-06-18T01:50:00+00:00",
     "actual_outcome": "Fed held federal funds rate at 4.25-4.50% at June 16-17, 2026 FOMC meeting. No rate change. Polymarket 'No change' resolved YES (99.55%). Governor Miran dissented for a cut.",
     "correct": true,
-    "verification_note": "CORRECT. June FOMC held rates unchanged. Verified early — target_date was June 23 but event happened June 16-17. Miran dissent as projected."
+    "verification_note": "CORRECT. June FOMC held rates unchanged. Verified early \u2014 target_date was June 23 but event happened June 16-17. Miran dissent as projected."
   },
   {
     "id": "hyp-20260523-006",
@@ -828,7 +828,7 @@
     "target_date": "2026-09-13",
     "prediction": "The Green Party (MP) will NOT win the most seats in the 2026 Swedish parliamentary election. The Social Democrats (S) or Moderates (M) will win the most seats.",
     "confidence": 0.97,
-    "reasoning": "Near-deterministic NO. The Green Party (MP) has never won more than 7.2% of the vote in any Swedish election (peak: 2014 at 6.9% of seats). Current polling: 4-8%. To win the most seats, MP would need to surpass both the Social Democrats (~30-35%) and Moderates (~18-22%) — requiring a ~25pp swing that would be unprecedented in modern democratic history. The Swedish proportional representation system with 4% threshold structurally prevents small parties from winning plurality unless both major parties collapse simultaneously. The 0.7% YES Polymarket price ($100K vol) is well-calibrated — this is effectively a novelty market with noise-trader activity. Created vault coverage: [[sweden]] entity stub. Vault gap: no Nordic/Scandinavian politics thread exists — noted for future reflection.",
+    "reasoning": "Near-deterministic NO. The Green Party (MP) has never won more than 7.2% of the vote in any Swedish election (peak: 2014 at 6.9% of seats). Current polling: 4-8%. To win the most seats, MP would need to surpass both the Social Democrats (~30-35%) and Moderates (~18-22%) \u2014 requiring a ~25pp swing that would be unprecedented in modern democratic history. The Swedish proportional representation system with 4% threshold structurally prevents small parties from winning plurality unless both major parties collapse simultaneously. The 0.7% YES Polymarket price ($100K vol) is well-calibrated \u2014 this is effectively a novelty market with noise-trader activity. Created vault coverage: [[sweden]] entity stub. Vault gap: no Nordic/Scandinavian politics thread exists \u2014 noted for future reflection.",
     "vault_files_cited": [
       "domains/europe/entities/sweden.md",
       "_forecast_instructions.md"
@@ -843,7 +843,7 @@
     "target_date": "2026-08-12",
     "prediction": "Mike Lindell will NOT win the 2026 Minnesota Governor Republican primary election",
     "confidence": 0.84,
-    "reasoning": "Structural NO. Lindell has never held elected office. While his MAGA brand and potential Trump endorsement create a primary lane, the MN GOP establishment is likely to coalesce around a conventional candidate (Scott Jensen ran in 2022 and lost by 7.7% — a credible baseline). Key factors: (1) Lindell's legal exposure (Dominion/Smartmatic lawsuits, FBI phone seizure) creates ongoing negative news cycles; (2) MyPillow business decline reduces self-funding capacity; (3) MN primary electorate, while Trump-loyal, has shown willingness to nominate establishment candidates when electability is at stake; (4) The primary is August 2026 — late primary gives establishment time to organize; (5) General election in MN (D+1 state that last voted GOP for president in 1972) means GOP primary voters may prioritize electability. The 16% Polymarket YES ($99K vol) appears approximately fair — it captures the Trump endorsement tail risk plus the weak bench factor. Created vault coverage: [[mike-lindell]] entity stub.",
+    "reasoning": "Structural NO. Lindell has never held elected office. While his MAGA brand and potential Trump endorsement create a primary lane, the MN GOP establishment is likely to coalesce around a conventional candidate (Scott Jensen ran in 2022 and lost by 7.7% \u2014 a credible baseline). Key factors: (1) Lindell's legal exposure (Dominion/Smartmatic lawsuits, FBI phone seizure) creates ongoing negative news cycles; (2) MyPillow business decline reduces self-funding capacity; (3) MN primary electorate, while Trump-loyal, has shown willingness to nominate establishment candidates when electability is at stake; (4) The primary is August 2026 \u2014 late primary gives establishment time to organize; (5) General election in MN (D+1 state that last voted GOP for president in 1972) means GOP primary voters may prioritize electability. The 16% Polymarket YES ($99K vol) appears approximately fair \u2014 it captures the Trump endorsement tail risk plus the weak bench factor. Created vault coverage: [[mike-lindell]] entity stub.",
     "vault_files_cited": [
       "domains/usa/entities/mike-lindell.md",
       "domains/usa/entities/minnesota.md",
@@ -859,7 +859,7 @@
     "target_date": "2026-12-31",
     "prediction": "The UAE will NOT leave the Gulf Cooperation Council (GCC) in 2026",
     "confidence": 0.91,
-    "reasoning": "Structural NO. Zero GCC member states have exited the bloc since its 1981 founding (43 years). The UAE has the most independent foreign policy of GCC members (Abraham Accords, Yemen withdrawal, Iran engagement), but outright exit requires: (a) major diplomatic rupture with Saudi Arabia, (b) calculation that bilateral deals outperform multilateral bloc benefits, (c) acceptance of loss of GCC institutional cover and unified currency coordination. Key constraints: (1) Saudi Arabia is the UAE's largest GCC trading partner — exit would disrupt economic integration; (2) GCC provides collective security framework that UAE benefits from (Yemen Houthi threat, Iran maritime tension); (3) UAE's strategy has been to pursue independent policy WITHIN GCC (Qatar blockade participation, then AlUla reconciliation) rather than exit; (4) The 2017-2021 Qatar crisis demonstrated that intra-GCC ruptures get resolved through mediation, not exit. The 9.5% Polymarket YES ($98K vol) appears appropriately low — it prices the tail risk of a major Saudi-UAE diplomatic rupture but not the base case. Created vault coverage: [[uae]] entity stub. Vault gap: no GCC/Gulf politics thread exists.",
+    "reasoning": "Structural NO. Zero GCC member states have exited the bloc since its 1981 founding (43 years). The UAE has the most independent foreign policy of GCC members (Abraham Accords, Yemen withdrawal, Iran engagement), but outright exit requires: (a) major diplomatic rupture with Saudi Arabia, (b) calculation that bilateral deals outperform multilateral bloc benefits, (c) acceptance of loss of GCC institutional cover and unified currency coordination. Key constraints: (1) Saudi Arabia is the UAE's largest GCC trading partner \u2014 exit would disrupt economic integration; (2) GCC provides collective security framework that UAE benefits from (Yemen Houthi threat, Iran maritime tension); (3) UAE's strategy has been to pursue independent policy WITHIN GCC (Qatar blockade participation, then AlUla reconciliation) rather than exit; (4) The 2017-2021 Qatar crisis demonstrated that intra-GCC ruptures get resolved through mediation, not exit. The 9.5% Polymarket YES ($98K vol) appears appropriately low \u2014 it prices the tail risk of a major Saudi-UAE diplomatic rupture but not the base case. Created vault coverage: [[uae]] entity stub. Vault gap: no GCC/Gulf politics thread exists.",
     "vault_files_cited": [
       "domains/mena/entities/uae.md",
       "domains/mena/entities/saudi-arabia.md",
@@ -875,7 +875,7 @@
     "target_date": "2026-06-30",
     "prediction": "Donald Trump WILL agree to withdraw US troops from the Iranian region by June 30, 2026",
     "confidence": 0.65,
-    "reasoning": "The 63% Polymarket YES ($980K vol) reflects the post-June 14 US-Iran peace deal breakthrough. Key structural factors: (1) The US-Iran permanent peace deal resolved YES on June 14 — this is the catalyst that makes troop withdrawal credible; (2) The Strait of Hormuz blockade lifting market is at 92% YES by June 30 ($993K vol) — troop withdrawal is a logical companion announcement to blockade lifting; (3) 'Agree to withdraw' is different from 'completed withdrawal' — an agreement/announcement is the low-cost diplomatic signal Trump favors; (4) Trump's diplomatic pattern (Alaska Summit, Armenia-Azerbaijan, Gaza ceasefire, now Iran deal) demonstrates deal-making capacity and preference for high-visibility peace announcements; (5) The 'Iranian region' resolution criteria likely encompasses US forces in Iraq, Syria, and Gulf naval assets — the scope definition matters; (6) The June 14 peace deal logically includes a phased withdrawal timeline; announcing the agreement to withdraw by June 30 is a sequencing step. Two tail risks: (a) Israeli security establishment opposition delays announcement, (b) Khamenei health crisis (87yo) interrupts diplomatic timeline. Confidence 0.65 vs market 0.63: I slightly overweight the momentum from the June 14 deal and the blockade-lifting-announcement correlation.",
+    "reasoning": "The 63% Polymarket YES ($980K vol) reflects the post-June 14 US-Iran peace deal breakthrough. Key structural factors: (1) The US-Iran permanent peace deal resolved YES on June 14 \u2014 this is the catalyst that makes troop withdrawal credible; (2) The Strait of Hormuz blockade lifting market is at 92% YES by June 30 ($993K vol) \u2014 troop withdrawal is a logical companion announcement to blockade lifting; (3) 'Agree to withdraw' is different from 'completed withdrawal' \u2014 an agreement/announcement is the low-cost diplomatic signal Trump favors; (4) Trump's diplomatic pattern (Alaska Summit, Armenia-Azerbaijan, Gaza ceasefire, now Iran deal) demonstrates deal-making capacity and preference for high-visibility peace announcements; (5) The 'Iranian region' resolution criteria likely encompasses US forces in Iraq, Syria, and Gulf naval assets \u2014 the scope definition matters; (6) The June 14 peace deal logically includes a phased withdrawal timeline; announcing the agreement to withdraw by June 30 is a sequencing step. Two tail risks: (a) Israeli security establishment opposition delays announcement, (b) Khamenei health crisis (87yo) interrupts diplomatic timeline. Confidence 0.65 vs market 0.63: I slightly overweight the momentum from the June 14 deal and the blockade-lifting-announcement correlation.",
     "vault_files_cited": [
       "domains/mena/entities/us-blockade-strait-of-hormuz.md",
       "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
@@ -894,7 +894,7 @@
     "target_date": "2026-06-30",
     "prediction": "The UK will NOT designate the IRGC (Islamic Revolutionary Guard Corps) a terrorist organization by June 30, 2026",
     "confidence": 0.96,
-    "reasoning": "Near-deterministic NO within 12-day window. Key constraints: (1) UK terrorism designation requires formal Home Office process — a proscription order under the Terrorism Act 2000 takes weeks to months, not days; (2) The UK Foreign Office has historically resisted IRGC proscription due to: diplomatic channel preservation (UK embassy in Tehran), dual-national detainee negotiation leverage, and concern about escalation with Iran; (3) The June 14 US-Iran peace deal REDUCES the likelihood of new IRGC designations — Western powers are in de-escalation mode, not escalation; (4) No parliamentary debate, Home Office consultation, or ministerial statement has signaled imminent designation; (5) The US designated IRGC as FTO in 2019 under Trump 1.0 — the UK explicitly declined to follow then and has maintained that position through three PMs (Johnson, Sunak, Starmer/Badenoch). The 1.1% Polymarket YES ($98K vol) is well-calibrated — it prices the near-impossibility of a 12-day window for a process that typically takes 3-6 months. Created vault coverage: [[uk]] should have IRGC designation context; [[irgc]] entity exists. Vault gap: no UK-Iran relations thread.",
+    "reasoning": "Near-deterministic NO within 12-day window. Key constraints: (1) UK terrorism designation requires formal Home Office process \u2014 a proscription order under the Terrorism Act 2000 takes weeks to months, not days; (2) The UK Foreign Office has historically resisted IRGC proscription due to: diplomatic channel preservation (UK embassy in Tehran), dual-national detainee negotiation leverage, and concern about escalation with Iran; (3) The June 14 US-Iran peace deal REDUCES the likelihood of new IRGC designations \u2014 Western powers are in de-escalation mode, not escalation; (4) No parliamentary debate, Home Office consultation, or ministerial statement has signaled imminent designation; (5) The US designated IRGC as FTO in 2019 under Trump 1.0 \u2014 the UK explicitly declined to follow then and has maintained that position through three PMs (Johnson, Sunak, Starmer/Badenoch). The 1.1% Polymarket YES ($98K vol) is well-calibrated \u2014 it prices the near-impossibility of a 12-day window for a process that typically takes 3-6 months. Created vault coverage: [[uk]] should have IRGC designation context; [[irgc]] entity exists. Vault gap: no UK-Iran relations thread.",
     "vault_files_cited": [
       "domains/iran/entities/islamic-revolutionary-guard-corps-irgc.md",
       "domains/europe/entities/uk.md",
@@ -911,7 +911,7 @@
     "target_date": "2026-06-19",
     "prediction": "President Trump will NOT announce a major new military deployment or initiate a new armed conflict on June 18-19, 2026. The post-June 14 US-Iran peace deal diplomatic pattern continues without military escalation.",
     "confidence": 0.93,
-    "reasoning": "The June 14 US-Iran permanent peace deal is the defining recent geopolitical event — it represents the completion of Trump's peace-broker diplomatic playbook. Post-peace-deal periods are characterized by sanctions relief sequencing, Congressional notification, and implementation diplomacy — NOT new military deployments. The US-Iran post-war diplomacy thread documents that the administration's bandwidth is consumed by: (1) IRGC terrorism designation negotiations, (2) blockade-lifting sequencing (92% YES by June 30), (3) sanctions relief implementation. Zero indicators of a new military deployment exist. The post-Alaska Summit pattern (10+ months of diplomatic only, zero new conflicts) combined with the peace deal momentum makes a 24h military escalation extremely improbable. Confidence 0.93: residual risk from unscheduled crisis (North Korea, Taiwan Strait, unexpected Iran violation) but the base rate for new US military deployments in peacetime is <1% per day.",
+    "reasoning": "The June 14 US-Iran permanent peace deal is the defining recent geopolitical event \u2014 it represents the completion of Trump's peace-broker diplomatic playbook. Post-peace-deal periods are characterized by sanctions relief sequencing, Congressional notification, and implementation diplomacy \u2014 NOT new military deployments. The US-Iran post-war diplomacy thread documents that the administration's bandwidth is consumed by: (1) IRGC terrorism designation negotiations, (2) blockade-lifting sequencing (92% YES by June 30), (3) sanctions relief implementation. Zero indicators of a new military deployment exist. The post-Alaska Summit pattern (10+ months of diplomatic only, zero new conflicts) combined with the peace deal momentum makes a 24h military escalation extremely improbable. Confidence 0.93: residual risk from unscheduled crisis (North Korea, Taiwan Strait, unexpected Iran violation) but the base rate for new US military deployments in peacetime is <1% per day.",
     "vault_files_cited": [
       "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
       "domains/global/concepts/peace-broker-diplomatic-playbook/_concept.md",
@@ -930,7 +930,7 @@
     "target_date": "2026-06-25",
     "prediction": "Abelardo de la Espriella will WIN the Colombian presidential runoff election on June 21, 2026, defeating Ivan Cepeda by a margin of 4-8 percentage points",
     "confidence": 0.68,
-    "reasoning": "First round results: de la Espriella 43.7%, Cepeda 40.9% — a 2.8pp gap. Runoff dynamics favor de la Espriella: (1) Right-wing consolidation: Valencia (5.8%), Penalosa (4.2%), Fajardo (3.1%) collectively represent 13.1% of first-round vote. In Colombian runoffs, ~70-80% of eliminated-candidate votes transfer to the ideologically aligned runoff candidate. De la Espriella's ceiling: 43.7 + (0.75 × 13.1) = 53.5%. (2) Anti-incumbency wind: Cepeda is aligned with the unpopular Petro administration, which has a 31% approval rating. Colombian runoff history (2014, 2018, 2022) shows the anti-incumbent candidate consolidating ~55-60% of late-deciding voters. (3) Polymarket pricing: de la Espriella at 60.5% YES — the market was badly wrong in the first round (Cepeda at 82.5%) due to polling error cascades, but is now incorporating structural runoff factors. (4) The fragmented-right-wing-field concept predicts right-wing consolidation advantage in round 2, and the two-round-runoff-dynamics concept documents the incumbency penalty phenomenon. (5) Key risk: if Petro/Gustavo Petro mobilizes the left-wing base aggressively, the margin could be narrower. If de la Espriella makes a major gaffe, the race could flip. Confidence 0.68 reflects: structural advantage (right-wing consolidation + anti-incumbency) but Colombian runoffs have recently been tight (2022: 3.1pp margin).",
+    "reasoning": "First round results: de la Espriella 43.7%, Cepeda 40.9% \u2014 a 2.8pp gap. Runoff dynamics favor de la Espriella: (1) Right-wing consolidation: Valencia (5.8%), Penalosa (4.2%), Fajardo (3.1%) collectively represent 13.1% of first-round vote. In Colombian runoffs, ~70-80% of eliminated-candidate votes transfer to the ideologically aligned runoff candidate. De la Espriella's ceiling: 43.7 + (0.75 \u00d7 13.1) = 53.5%. (2) Anti-incumbency wind: Cepeda is aligned with the unpopular Petro administration, which has a 31% approval rating. Colombian runoff history (2014, 2018, 2022) shows the anti-incumbent candidate consolidating ~55-60% of late-deciding voters. (3) Polymarket pricing: de la Espriella at 60.5% YES \u2014 the market was badly wrong in the first round (Cepeda at 82.5%) due to polling error cascades, but is now incorporating structural runoff factors. (4) The fragmented-right-wing-field concept predicts right-wing consolidation advantage in round 2, and the two-round-runoff-dynamics concept documents the incumbency penalty phenomenon. (5) Key risk: if Petro/Gustavo Petro mobilizes the left-wing base aggressively, the margin could be narrower. If de la Espriella makes a major gaffe, the race could flip. Confidence 0.68 reflects: structural advantage (right-wing consolidation + anti-incumbency) but Colombian runoffs have recently been tight (2022: 3.1pp margin).",
     "vault_files_cited": [
       "domains/latin-america/threads/colombia-2026-presidential-election/_thread.md",
       "domains/latin-america/concepts/fragmented-right-wing-field/_concept.md",
@@ -947,9 +947,9 @@
     "domain": "geopolitics",
     "timeframe": "1m",
     "target_date": "2026-07-18",
-    "prediction": "The US blockade of the Strait of Hormuz will be lifted by July 18, 2026 — either through formal Trump announcement or de facto cessation of enforcement. The US-Iran permanent peace deal signed June 14 creates the diplomatic context making blockade continuation indefensible.",
+    "prediction": "The US blockade of the Strait of Hormuz will be lifted by July 18, 2026 \u2014 either through formal Trump announcement or de facto cessation of enforcement. The US-Iran permanent peace deal signed June 14 creates the diplomatic context making blockade continuation indefensible.",
     "confidence": 0.82,
-    "reasoning": "The US-Iran permanent peace deal was signed June 14, 2026 — 4 days ago. The blockade was imposed as a wartime measure during the Twelve-Day War (June 2025). With the peace deal signed, the blockade serves zero operational purpose: (1) Iran's nuclear program was destroyed during the Feb 28, 2026 war; (2) Iran's civilian government (not IRGC) is the US negotiating counterparty; (3) The blockade lifting market is at 92% YES by June 30 ($993K volume) — near-consensus on near-term lifting. The sequencing logic from the peace-broker-diplomatic-playbook concept is: peace deal signed → blockade lifted as confidence-building measure → sanctions relief sequenced → IRGC designation negotiations. Blockade lifting requires ONLY a Commander-in-Chief decision — zero Congressional approval needed. The war-termination-velocity concept documents the unprecedented speed of this enemy-to-peace transition (3.5 months). The remaining 18% risk reflects: (1) Israeli objections (Netanyahu coalition depends on Smotrich/Ben-Gvir), (2) Khamenei succession uncertainty (87yo), (3) implementation sequencing (lifting might be conditional on specific Iranian actions). Confidence 0.82 vs market ~0.92: I slightly overweight the Israeli veto risk and the possibility that blockade lifting is sequenced as part of a broader announcement package rather than a standalone action. But by July 18 (34 days from peace deal), the blockade should be history.",
+    "reasoning": "The US-Iran permanent peace deal was signed June 14, 2026 \u2014 4 days ago. The blockade was imposed as a wartime measure during the Twelve-Day War (June 2025). With the peace deal signed, the blockade serves zero operational purpose: (1) Iran's nuclear program was destroyed during the Feb 28, 2026 war; (2) Iran's civilian government (not IRGC) is the US negotiating counterparty; (3) The blockade lifting market is at 92% YES by June 30 ($993K volume) \u2014 near-consensus on near-term lifting. The sequencing logic from the peace-broker-diplomatic-playbook concept is: peace deal signed \u2192 blockade lifted as confidence-building measure \u2192 sanctions relief sequenced \u2192 IRGC designation negotiations. Blockade lifting requires ONLY a Commander-in-Chief decision \u2014 zero Congressional approval needed. The war-termination-velocity concept documents the unprecedented speed of this enemy-to-peace transition (3.5 months). The remaining 18% risk reflects: (1) Israeli objections (Netanyahu coalition depends on Smotrich/Ben-Gvir), (2) Khamenei succession uncertainty (87yo), (3) implementation sequencing (lifting might be conditional on specific Iranian actions). Confidence 0.82 vs market ~0.92: I slightly overweight the Israeli veto risk and the possibility that blockade lifting is sequenced as part of a broader announcement package rather than a standalone action. But by July 18 (34 days from peace deal), the blockade should be history.",
     "vault_files_cited": [
       "domains/mena/entities/us-blockade-strait-of-hormuz.md",
       "domains/mena/entities/strait-of-hormuz.md",
@@ -968,9 +968,9 @@
     "domain": "economics",
     "timeframe": "3m",
     "target_date": "2026-09-18",
-    "prediction": "The Federal Reserve will NOT cut the federal funds rate at the September 15-16, 2026 FOMC meeting. The plateau phase continues — the Fed will hold rates through summer 2026, with the next cut conditional on either clear disinflation or labor market deterioration.",
+    "prediction": "The Federal Reserve will NOT cut the federal funds rate at the September 15-16, 2026 FOMC meeting. The plateau phase continues \u2014 the Fed will hold rates through summer 2026, with the next cut conditional on either clear disinflation or labor market deterioration.",
     "confidence": 0.78,
-    "reasoning": "The monetary-policy-cycle-phases concept classifies the current period as the 'plateau phase' — extended hold following cuts. The Fed held at all 2026 meetings (Jan, Mar, May, June) with Miran as the lone dissenter for a cut. Key factors supporting continued hold through September: (1) The US-Iran peace deal (June 14) is disinflationary (lower oil risk premium, reduced military spending pressure) — but the Fed needs 2-3 months of data to confirm the trend; (2) Tariff uncertainty remains elevated — no Liberation Day 2.0 but existing tariffs plus appeal litigation create policy fog; (3) Core PCE is ~2.3-2.7% — above the 2% target but trending down slowly, not fast enough to trigger a cut; (4) Labor market at ~4.0-4.3% unemployment — cooling but not alarming, insufficient to force a cut; (5) The central-bank-forward-guidance concept: the Fed strongly prefers 2-4 weeks of pre-signaling before rate changes — as of June 18, zero signals exist for a September cut. Polymarket 'Fed cut by September 2026' at 14.15% ($99K volume) — well-calibrated low probability. Confidence 0.78 rather than higher because: (1) 3 months of data (June CPI July 15, July CPI Aug 12, Aug jobs Sept 4) could shift the picture; (2) If tariff resolution removes the uncertainty anchor, the Fed might act faster; (3) Miran's dissent could build toward a majority if labor data softens.",
+    "reasoning": "The monetary-policy-cycle-phases concept classifies the current period as the 'plateau phase' \u2014 extended hold following cuts. The Fed held at all 2026 meetings (Jan, Mar, May, June) with Miran as the lone dissenter for a cut. Key factors supporting continued hold through September: (1) The US-Iran peace deal (June 14) is disinflationary (lower oil risk premium, reduced military spending pressure) \u2014 but the Fed needs 2-3 months of data to confirm the trend; (2) Tariff uncertainty remains elevated \u2014 no Liberation Day 2.0 but existing tariffs plus appeal litigation create policy fog; (3) Core PCE is ~2.3-2.7% \u2014 above the 2% target but trending down slowly, not fast enough to trigger a cut; (4) Labor market at ~4.0-4.3% unemployment \u2014 cooling but not alarming, insufficient to force a cut; (5) The central-bank-forward-guidance concept: the Fed strongly prefers 2-4 weeks of pre-signaling before rate changes \u2014 as of June 18, zero signals exist for a September cut. Polymarket 'Fed cut by September 2026' at 14.15% ($99K volume) \u2014 well-calibrated low probability. Confidence 0.78 rather than higher because: (1) 3 months of data (June CPI July 15, July CPI Aug 12, Aug jobs Sept 4) could shift the picture; (2) If tariff resolution removes the uncertainty anchor, the Fed might act faster; (3) Miran's dissent could build toward a majority if labor data softens.",
     "vault_files_cited": [
       "domains/economics/concepts/monetary-policy-cycle-phases.md",
       "domains/economics/concepts/central-bank-forward-guidance.md",
@@ -980,6 +980,63 @@
       "domains/global/concepts/peace-broker-diplomatic-playbook/_concept.md",
       "timeline/2026-Q2.md",
       "_forecast_instructions.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260618-010",
+    "created": "2026-06-18",
+    "domain": "geopolitics",
+    "timeframe": "1m",
+    "target_date": "2026-07-15",
+    "prediction": "Strait of Hormuz traffic will return to normal by July 15, 2026 \u2014 the US blockade lifts by June 30 (92% market probability), and commercial shipping normalizes within ~2 weeks post-lifting",
+    "confidence": 0.58,
+    "reasoning": "The June 14 US-Iran peace deal makes the blockade (wartime measure from June 2025) operationally indefensible. Blockade lifting is priced at 92% YES by June 30. Traffix normalization follows mechanically: once blockade lifts, pent-up commercial demand and rapid-response shipping posture restore ~70%+ of normal 15-20 vessel/day transit within 2 weeks. The 38.5% market price appears underpriced given the peace deal cascade \u2014 I assign 58% probability. Risk: Israeli veto delays lifting past June 30, compressing normalization window.",
+    "vault_files_cited": [
+      "domains/mena/entities/strait-of-hormuz.md",
+      "domains/mena/entities/us-blockade-strait-of-hormuz.md",
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
+      "domains/global/concepts/peace-broker-diplomatic-playbook/_concept.md",
+      "domains/global/concepts/war-termination-velocity/_concept.md",
+      "timeline/2026-Q2.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260618-011",
+    "created": "2026-06-18",
+    "domain": "geopolitics",
+    "timeframe": "6m",
+    "target_date": "2026-12-31",
+    "prediction": "Mustafa Hijri will NOT be head of state in Iran at end of 2026",
+    "confidence": 0.998,
+    "reasoning": "Structural near-impossibility. Hijri is a Kurdish opposition leader with zero institutional path to Supreme Leadership (requires senior Shia clerical status + Assembly of Experts) or presidency (requires Guardian Council vetting). Iran has never had a non-Shia, non-Persian, or non-establishment head of state. The real succession question is Mojtaba Khamenei (66.45% market prob) vs clerical alternatives. Hijri appears on Polymarket for candidate-list completeness \u2014 effectively a noise-trader market.",
+    "vault_files_cited": [
+      "domains/mena/entities/mustafa-hijri.md",
+      "domains/iran/entities/ali-khamenei.md",
+      "domains/iran/entities/mojtaba-khamenei.md",
+      "domains/iran/entities/islamic-revolutionary-guard-corps-irgc.md",
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260618-012",
+    "created": "2026-06-18",
+    "domain": "geopolitics",
+    "timeframe": "6m",
+    "target_date": "2026-12-31",
+    "prediction": "A Russia-Ukraine ceasefire will be reached by December 31, 2026",
+    "confidence": 0.48,
+    "reasoning": "Trump peace-broker diplomatic cascade: Alaska Summit (Aug 2025) -> Armenia-Azerbaijan -> Gaza ceasefire -> US-Iran peace deal (June 14, 2026). Each success frees bandwidth for the next. With Iran deal signed, Ukraine is the last major pre-2025 conflict. Key factors: (1) demonstrated peace-broker track record (4/4), (2) freed diplomatic bandwidth, (3) Alaska Summit bilateral template applies, (4) war fatigue on both sides after 58+ months. A Korea-style armistice (ceasefire without peace treaty) is the most likely template. Risk: NATO membership deadlock, European exclusion from bilateral format, Zelenskyy domestic politics. Market 32.5% appears underpriced given diplomatic cascade momentum.",
+    "vault_files_cited": [
+      "russia-ukraine-war.md",
+      "domains/global/threads/us-russia-diplomatic-relations/_thread.md",
+      "domains/global/entities/donald-trump.md",
+      "domains/global/entities/alaska-summit.md",
+      "timeline/2026-Q2.md",
+      "cases/gold_09_russia-x-ukraine-ceasefire-before-2027.md",
+      "domains/global/concepts/peace-broker-diplomatic-playbook/_concept.md"
     ],
     "verified": null
   }
