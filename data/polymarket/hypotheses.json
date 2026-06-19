@@ -920,7 +920,11 @@
       "domains/global/entities/donald-trump.md",
       "domains/mena/entities/us-blockade-strait-of-hormuz.md"
     ],
-    "verified": null
+    "verified": true,
+    "verified_at": "2026-06-19T07:45:00+00:00",
+    "actual_outcome": "No major new military deployment or armed conflict announced June 18-19, 2026. Post-peace-deal diplomatic pattern continues. No new conflict markets appeared on Polymarket. No Wikipedia entries for new US military actions on these dates.",
+    "correct": true,
+    "verification_note": "CORRECT. No new military deployments or conflicts initiated June 18-19. Consistent with post-Alaska Summit and post-Iran peace deal diplomatic pattern across 5+ verified 24h hypotheses."
   },
   {
     "id": "hyp-20260618-007",
@@ -1036,6 +1040,85 @@
       "domains/global/entities/alaska-summit.md",
       "timeline/2026-Q2.md",
       "cases/gold_09_russia-x-ukraine-ceasefire-before-2027.md",
+      "domains/global/concepts/peace-broker-diplomatic-playbook/_concept.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260619-001",
+    "created": "2026-06-19",
+    "domain": "geopolitics",
+    "timeframe": "24h",
+    "target_date": "2026-06-20",
+    "prediction": "President Trump will NOT announce a major new military deployment or initiate a new armed conflict on June 19-20, 2026. The post-Iran peace deal diplomatic pattern continues.",
+    "confidence": 0.93,
+    "reasoning": "Structural continuation of the post-June 14 US-Iran peace deal diplomatic pattern. All 6 previous 24h hypotheses on this question resolved CORRECT (hyp-20260518-001, hyp-20260521-001, hyp-20260522-001, hyp-20260523-003, hyp-20260618-006, etc.). The administration's bandwidth is consumed by: (1) Iran sanctions relief sequencing, (2) Strait of Hormuz blockade lifting (92% YES by June 30), (3) Colombia runoff diplomacy (June 21). Zero indicators of a new military deployment. The peace-broker-diplomatic-playbook concept and war-termination-velocity concept document the administration's established pattern: diplomatic only, zero new conflicts since Alaska Summit (Aug 2025). Confidence 0.93 reflects ~7% residual risk from unscheduled crisis (North Korea provocation, Taiwan Strait incident, unexpected Iran violation).",
+    "vault_files_cited": [
+      "domains/global/concepts/peace-broker-diplomatic-playbook/_concept.md",
+      "domains/global/concepts/war-termination-velocity/_concept.md",
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
+      "timeline/2026-Q2.md",
+      "domains/global/entities/donald-trump.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260619-002",
+    "created": "2026-06-19",
+    "domain": "politics",
+    "timeframe": "1w",
+    "target_date": "2026-06-26",
+    "prediction": "Abelardo de la Espriella will WIN the Colombian presidential runoff election on June 21, 2026, defeating Ivan Cepeda by a margin of 3-8 percentage points",
+    "confidence": 0.68,
+    "reasoning": "First round (May 31): de la Espriella 43.7%, Cepeda 40.9% — a 2.8pp gap. Runoff dynamics structurally favor de la Espriella: (1) Right-wing consolidation: eliminated right-wing candidates (Valencia 5.8%, Penalosa 4.2%, Fajardo 3.1%) collectively represent 13.1% of first-round vote. Colombian runoff history shows ~75% of eliminated-candidate votes transfer to the ideologically aligned candidate. De la Espriella ceiling: 43.7 + (0.75 * 13.1) = 53.5%. (2) Anti-incumbency wind: Cepeda aligned with Petro administration (31% approval). Colombian runoffs consistently penalize the incumbent-aligned candidate. (3) Polymarket: de la Espriella 60.5% YES — post-first-round market correctly prices the consolidation advantage. (4) The two-round-runoff-dynamics concept and fragmented-right-wing-field concept both predict this outcome. Risk: (a) Petro machine mobilizes aggressively in Bogota/Medellin, narrowing margin, (b) de la Espriella makes a late gaffe, (c) low turnout hurts right-wing consolidation. Confidence 0.68 reflects structural advantage weighted against Colombia's recent tight runoff history (2022: 3.1pp margin, 2018: 12pp).",
+    "vault_files_cited": [
+      "domains/latin-america/threads/colombia-2026-presidential-election/_thread.md",
+      "domains/latin-america/concepts/fragmented-right-wing-field/_concept.md",
+      "domains/global/concepts/two-round-runoff-dynamics/_concept.md",
+      "events/colombia-presidential-election-2026.md",
+      "forecasts/2026-06-14-colombia-runoff-revision.md",
+      "domains/latin-america/entities/abelardo-de-la-espriella.md",
+      "domains/latin-america/entities/ivan-cepeda-castro.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260619-003",
+    "created": "2026-06-19",
+    "domain": "geopolitics",
+    "timeframe": "1m",
+    "target_date": "2026-07-19",
+    "prediction": "The US blockade of the Strait of Hormuz will be lifted by July 19, 2026 — either through formal Trump announcement or de facto cessation of enforcement",
+    "confidence": 0.85,
+    "reasoning": "The US-Iran permanent peace deal was signed June 14, 2026 (5 days ago). The blockade was imposed as a wartime measure during the Twelve-Day War (June 2025). With the peace deal signed: (1) Zero operational purpose for blockade — Iran's nuclear program destroyed, civilian government is negotiating counterparty. (2) Blockade lifting requires ONLY Commander-in-Chief decision — zero Congressional approval. (3) The blockade-lifting Polymarket is at 92% YES by June 30 ($993K volume) — near-consensus on near-term lifting. (4) The peace-broker-diplomatic-playbook concept documents the sequencing: peace deal → blockade lifted as confidence-building → sanctions relief → IRGC negotiations. By July 19 (35 days post-deal), blockade should be history. The remaining 15% risk: Israeli security establishment objections (Netanyahu coalition depends on Smotrich/Ben-Gvir), Khamenei succession uncertainty (87yo), or implementation sequencing delays. This is a continuation of hyp-20260618-008 (same prediction, July 18 target).",
+    "vault_files_cited": [
+      "domains/mena/entities/us-blockade-strait-of-hormuz.md",
+      "domains/mena/entities/strait-of-hormuz.md",
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
+      "domains/global/concepts/peace-broker-diplomatic-playbook/_concept.md",
+      "domains/global/concepts/war-termination-velocity/_concept.md",
+      "domains/global/entities/donald-trump.md",
+      "timeline/2026-Q2.md",
+      "runs/20260618-us-iran-diplomatic-meeting-july31.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260619-004",
+    "created": "2026-06-19",
+    "domain": "economics",
+    "timeframe": "3m",
+    "target_date": "2026-09-19",
+    "prediction": "The Federal Reserve will hold the federal funds rate unchanged at the September 15-16, 2026 FOMC meeting — no rate cut. The plateau phase at 4.25-4.50% continues.",
+    "confidence": 0.78,
+    "reasoning": "The monetary-policy-cycle-phases concept classifies the current period as the 'plateau phase' — the Fed has held at 4.25-4.50% through all 2026 meetings (Jan, Mar, May, Jun) with Governor Miran as the lone dissenter for a cut. Key factors supporting continued hold through September: (1) The US-Iran peace deal (June 14) is disinflationary (lower oil risk premium, reduced military spending) but the Fed needs 2-3 months of data to confirm the trend. (2) Tariff uncertainty remains elevated — no Liberation Day 2.0 but existing tariffs plus appeal litigation create policy fog. (3) Core PCE is ~2.3-2.7% — above target but trending down slowly. (4) Labor market at ~4.0-4.3% unemployment — cooling but insufficient to force a cut. (5) The central-bank-forward-guidance concept: the Fed strongly prefers 2-4 weeks of pre-signaling before rate changes — as of June 19, zero signals exist for a September cut. (6) Polymarket 'Fed cut by September 2026' at 14.15% ($99K volume) — well-calibrated low probability. Confidence 0.78: 3 months of data could shift the picture, but the structural conditions (above-target inflation, resilient labor, tariff uncertainty) favor continued hold. This extends the June FOMC hold (verified CORRECT, hyp-20260518-007, hyp-20260521-003, hyp-20260523-005) through the summer.",
+    "vault_files_cited": [
+      "domains/economics/concepts/monetary-policy-cycle-phases.md",
+      "domains/economics/concepts/central-bank-forward-guidance.md",
+      "domains/economics/threads/us-monetary-policy-cycle-2022-2026/_thread.md",
+      "domains/economics/entities/federal-reserve-system.md",
+      "domains/economics/entities/jerome-powell.md",
+      "timeline/2026-Q2.md",
       "domains/global/concepts/peace-broker-diplomatic-playbook/_concept.md"
     ],
     "verified": null
