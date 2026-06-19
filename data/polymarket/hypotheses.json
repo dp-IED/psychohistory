@@ -1070,7 +1070,7 @@
     "target_date": "2026-06-26",
     "prediction": "Abelardo de la Espriella will WIN the Colombian presidential runoff election on June 21, 2026, defeating Ivan Cepeda by a margin of 3-8 percentage points",
     "confidence": 0.68,
-    "reasoning": "First round (May 31): de la Espriella 43.7%, Cepeda 40.9% — a 2.8pp gap. Runoff dynamics structurally favor de la Espriella: (1) Right-wing consolidation: eliminated right-wing candidates (Valencia 5.8%, Penalosa 4.2%, Fajardo 3.1%) collectively represent 13.1% of first-round vote. Colombian runoff history shows ~75% of eliminated-candidate votes transfer to the ideologically aligned candidate. De la Espriella ceiling: 43.7 + (0.75 * 13.1) = 53.5%. (2) Anti-incumbency wind: Cepeda aligned with Petro administration (31% approval). Colombian runoffs consistently penalize the incumbent-aligned candidate. (3) Polymarket: de la Espriella 60.5% YES — post-first-round market correctly prices the consolidation advantage. (4) The two-round-runoff-dynamics concept and fragmented-right-wing-field concept both predict this outcome. Risk: (a) Petro machine mobilizes aggressively in Bogota/Medellin, narrowing margin, (b) de la Espriella makes a late gaffe, (c) low turnout hurts right-wing consolidation. Confidence 0.68 reflects structural advantage weighted against Colombia's recent tight runoff history (2022: 3.1pp margin, 2018: 12pp).",
+    "reasoning": "First round (May 31): de la Espriella 43.7%, Cepeda 40.9% \u2014 a 2.8pp gap. Runoff dynamics structurally favor de la Espriella: (1) Right-wing consolidation: eliminated right-wing candidates (Valencia 5.8%, Penalosa 4.2%, Fajardo 3.1%) collectively represent 13.1% of first-round vote. Colombian runoff history shows ~75% of eliminated-candidate votes transfer to the ideologically aligned candidate. De la Espriella ceiling: 43.7 + (0.75 * 13.1) = 53.5%. (2) Anti-incumbency wind: Cepeda aligned with Petro administration (31% approval). Colombian runoffs consistently penalize the incumbent-aligned candidate. (3) Polymarket: de la Espriella 60.5% YES \u2014 post-first-round market correctly prices the consolidation advantage. (4) The two-round-runoff-dynamics concept and fragmented-right-wing-field concept both predict this outcome. Risk: (a) Petro machine mobilizes aggressively in Bogota/Medellin, narrowing margin, (b) de la Espriella makes a late gaffe, (c) low turnout hurts right-wing consolidation. Confidence 0.68 reflects structural advantage weighted against Colombia's recent tight runoff history (2022: 3.1pp margin, 2018: 12pp).",
     "vault_files_cited": [
       "domains/latin-america/threads/colombia-2026-presidential-election/_thread.md",
       "domains/latin-america/concepts/fragmented-right-wing-field/_concept.md",
@@ -1088,9 +1088,9 @@
     "domain": "geopolitics",
     "timeframe": "1m",
     "target_date": "2026-07-19",
-    "prediction": "The US blockade of the Strait of Hormuz will be lifted by July 19, 2026 — either through formal Trump announcement or de facto cessation of enforcement",
+    "prediction": "The US blockade of the Strait of Hormuz will be lifted by July 19, 2026 \u2014 either through formal Trump announcement or de facto cessation of enforcement",
     "confidence": 0.85,
-    "reasoning": "The US-Iran permanent peace deal was signed June 14, 2026 (5 days ago). The blockade was imposed as a wartime measure during the Twelve-Day War (June 2025). With the peace deal signed: (1) Zero operational purpose for blockade — Iran's nuclear program destroyed, civilian government is negotiating counterparty. (2) Blockade lifting requires ONLY Commander-in-Chief decision — zero Congressional approval. (3) The blockade-lifting Polymarket is at 92% YES by June 30 ($993K volume) — near-consensus on near-term lifting. (4) The peace-broker-diplomatic-playbook concept documents the sequencing: peace deal → blockade lifted as confidence-building → sanctions relief → IRGC negotiations. By July 19 (35 days post-deal), blockade should be history. The remaining 15% risk: Israeli security establishment objections (Netanyahu coalition depends on Smotrich/Ben-Gvir), Khamenei succession uncertainty (87yo), or implementation sequencing delays. This is a continuation of hyp-20260618-008 (same prediction, July 18 target).",
+    "reasoning": "The US-Iran permanent peace deal was signed June 14, 2026 (5 days ago). The blockade was imposed as a wartime measure during the Twelve-Day War (June 2025). With the peace deal signed: (1) Zero operational purpose for blockade \u2014 Iran's nuclear program destroyed, civilian government is negotiating counterparty. (2) Blockade lifting requires ONLY Commander-in-Chief decision \u2014 zero Congressional approval. (3) The blockade-lifting Polymarket is at 92% YES by June 30 ($993K volume) \u2014 near-consensus on near-term lifting. (4) The peace-broker-diplomatic-playbook concept documents the sequencing: peace deal \u2192 blockade lifted as confidence-building \u2192 sanctions relief \u2192 IRGC negotiations. By July 19 (35 days post-deal), blockade should be history. The remaining 15% risk: Israeli security establishment objections (Netanyahu coalition depends on Smotrich/Ben-Gvir), Khamenei succession uncertainty (87yo), or implementation sequencing delays. This is a continuation of hyp-20260618-008 (same prediction, July 18 target).",
     "vault_files_cited": [
       "domains/mena/entities/us-blockade-strait-of-hormuz.md",
       "domains/mena/entities/strait-of-hormuz.md",
@@ -1109,9 +1109,9 @@
     "domain": "economics",
     "timeframe": "3m",
     "target_date": "2026-09-19",
-    "prediction": "The Federal Reserve will hold the federal funds rate unchanged at the September 15-16, 2026 FOMC meeting — no rate cut. The plateau phase at 4.25-4.50% continues.",
+    "prediction": "The Federal Reserve will hold the federal funds rate unchanged at the September 15-16, 2026 FOMC meeting \u2014 no rate cut. The plateau phase at 4.25-4.50% continues.",
     "confidence": 0.78,
-    "reasoning": "The monetary-policy-cycle-phases concept classifies the current period as the 'plateau phase' — the Fed has held at 4.25-4.50% through all 2026 meetings (Jan, Mar, May, Jun) with Governor Miran as the lone dissenter for a cut. Key factors supporting continued hold through September: (1) The US-Iran peace deal (June 14) is disinflationary (lower oil risk premium, reduced military spending) but the Fed needs 2-3 months of data to confirm the trend. (2) Tariff uncertainty remains elevated — no Liberation Day 2.0 but existing tariffs plus appeal litigation create policy fog. (3) Core PCE is ~2.3-2.7% — above target but trending down slowly. (4) Labor market at ~4.0-4.3% unemployment — cooling but insufficient to force a cut. (5) The central-bank-forward-guidance concept: the Fed strongly prefers 2-4 weeks of pre-signaling before rate changes — as of June 19, zero signals exist for a September cut. (6) Polymarket 'Fed cut by September 2026' at 14.15% ($99K volume) — well-calibrated low probability. Confidence 0.78: 3 months of data could shift the picture, but the structural conditions (above-target inflation, resilient labor, tariff uncertainty) favor continued hold. This extends the June FOMC hold (verified CORRECT, hyp-20260518-007, hyp-20260521-003, hyp-20260523-005) through the summer.",
+    "reasoning": "The monetary-policy-cycle-phases concept classifies the current period as the 'plateau phase' \u2014 the Fed has held at 4.25-4.50% through all 2026 meetings (Jan, Mar, May, Jun) with Governor Miran as the lone dissenter for a cut. Key factors supporting continued hold through September: (1) The US-Iran peace deal (June 14) is disinflationary (lower oil risk premium, reduced military spending) but the Fed needs 2-3 months of data to confirm the trend. (2) Tariff uncertainty remains elevated \u2014 no Liberation Day 2.0 but existing tariffs plus appeal litigation create policy fog. (3) Core PCE is ~2.3-2.7% \u2014 above target but trending down slowly. (4) Labor market at ~4.0-4.3% unemployment \u2014 cooling but insufficient to force a cut. (5) The central-bank-forward-guidance concept: the Fed strongly prefers 2-4 weeks of pre-signaling before rate changes \u2014 as of June 19, zero signals exist for a September cut. (6) Polymarket 'Fed cut by September 2026' at 14.15% ($99K volume) \u2014 well-calibrated low probability. Confidence 0.78: 3 months of data could shift the picture, but the structural conditions (above-target inflation, resilient labor, tariff uncertainty) favor continued hold. This extends the June FOMC hold (verified CORRECT, hyp-20260518-007, hyp-20260521-003, hyp-20260523-005) through the summer.",
     "vault_files_cited": [
       "domains/economics/concepts/monetary-policy-cycle-phases.md",
       "domains/economics/concepts/central-bank-forward-guidance.md",
@@ -1120,6 +1120,42 @@
       "domains/economics/entities/jerome-powell.md",
       "timeline/2026-Q2.md",
       "domains/global/concepts/peace-broker-diplomatic-playbook/_concept.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260619-005",
+    "created": "2026-06-19",
+    "domain": "geopolitics",
+    "timeframe": "2w",
+    "target_date": "2026-06-30",
+    "prediction": "Iran will NOT agree to end enrichment of uranium by June 30, 2026",
+    "confidence": 0.91,
+    "reasoning": "Iran's enrichment capacity was destroyed in June 2025 Twelve-Day War. Khamenei assassinated Feb 28, 2026. June 14 peace deal signed but enrichment renunciation is the LAST step in diplomatic sequencing, not the first. Only 11 days remain in window. No post-Khamenei leader has political capital to permanently renounce enrichment \u2014 would be seen as capitulation. Market at 4.5% YES ($9.9M volume) \u2014 well-calibrated near-consensus NO. Created vault coverage: domains/iran/concepts/iran-nuclear-enrichment-post-war/_concept.md. Updated Iran domain hub with current status.",
+    "vault_files_cited": [
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
+      "events/us-iran-peace-deal-june-2026.md",
+      "domains/iran/concepts/iran-nuclear-enrichment-post-war/_concept.md",
+      "domains/mena/threads/iran-israel-escalation/_thread.md",
+      "domains/iran/entities/islamic-revolutionary-guard-corps-irgc.md"
+    ],
+    "verified": null
+  },
+  {
+    "id": "hyp-20260619-006",
+    "created": "2026-06-19",
+    "domain": "geopolitics",
+    "timeframe": "open",
+    "target_date": "2026-12-31",
+    "prediction": "The next diplomatic US-Iran meeting will NOT be held in Iran",
+    "confidence": 0.992,
+    "reasoning": "No US diplomatic presence in Iran since 1979 embassy hostage crisis. All US-Iran meetings since 1979 have been in neutral third countries (Switzerland, Oman, Qatar, UN venues). June 14 peace deal mediated by Pakistan. Previous meeting documented in Switzerland. A meeting in Iran requires security guarantees unprecedented in 47 years plus domestic political cover on both sides. Neutral venues solve all diplomatic, security, and optics problems. Market at 0.4% YES ($995K volume) \u2014 near-consensus NO.",
+    "vault_files_cited": [
+      "domains/iran/threads/us-iran-post-war-diplomacy/_thread.md",
+      "events/us-iran-peace-deal-june-2026.md",
+      "runs/20260615-us-iran-switzerland.md",
+      "domains/global/entities/iran.md",
+      "domains/global/entities/donald-trump.md"
     ],
     "verified": null
   }
