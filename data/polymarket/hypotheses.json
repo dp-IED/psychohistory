@@ -1060,7 +1060,11 @@
       "timeline/2026-Q2.md",
       "domains/global/entities/donald-trump.md"
     ],
-    "verified": null
+    "verified": true,
+    "verified_at": "2026-06-20T18:30:00+00:00",
+    "actual_outcome": "No major new military deployment or armed conflict announced June 19-20, 2026. Wikipedia search confirms: no new deployments. Iran war continues from Feb 28 (not new). Domestic National Guard deployments ongoing from 2025. Trump diplomatic pattern holds. All 7 consecutive 24h no-deployment hypotheses now verified correct.",
+    "correct": true,
+    "verification_note": "CORRECT. No new military deployments or conflicts June 19-20. Verified via Wikipedia search (no new deployment entries for these dates). Pattern: 7/7 correct 24h no-deployment hypotheses since May 18."
   },
   {
     "id": "hyp-20260619-002",
