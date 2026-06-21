@@ -1,0 +1,43 @@
+## Live Forecast — Cuban regime falls in 2026?
+
+### Market Data
+- Contract: Yes: 18.0% | No: 82.0% | Volume: $987K
+- Ends: Dec 31, 2026 (or earlier if resolved)
+- Source: Polymarket — "Cuban regime falls in 2026?"
+
+### Vault Files Read
+- `domains/latin-america/entities/cuba.md` — Cuba entity with political system analysis, Díaz-Canel leadership, US-Cuba relations
+- `_forecast_instructions.md` — Rules 4 (Geographic Coverage), 13 (Rare-Event Base Rate)
+
+### Forecast Instructions Check
+- Rule 4 (Geographic Coverage): Triggered — Cuba entity exists but no dedicated US-Cuba relations thread or regime-change thread. Minimal coverage gap identified.
+- Rule 13 (Rare-Event): Not triggered — regime change is not a "truly rare catastrophic event" in the nuclear sense. However, Cuba-specific regime change is historically rare (0 successful since 1959).
+
+### Vault Knowledge Summary
+Vault has a basic Cuba entity (created May 22, 2026) covering the political system, Díaz-Canel, the Castro dynasty, US-Cuba relations, and the Helms-Burton Act. No dedicated regime-change thread. No recent conjuncture analysis of Cuban domestic stability (protests, economic conditions, emigration waves).
+
+### Vault Usage Score
+**MEDIUM** — The Cuba entity provides structural context (one-party state, no legal opposition path, PCC monopoly) but lacks current stability indicators and emigration data needed for precise probability calibration.
+
+### Counterfactual
+Without the vault: I would still know Cuba is a one-party communist state with low regime-change probability. The vault enriches with Díaz-Canel leadership context and US-Cuba relations framework but doesn't dramatically change the forecast. General knowledge of communist regime durability is the primary signal.
+
+### Forecast
+**Prediction:** NO
+**Confidence:** 0.82
+**Reasoning:**
+
+**Structural assessment:** The Cuban regime has survived 67 years (since 1959) through: collapse of the Soviet Union (1991, loss of $4-6B annual subsidies), the Special Period (1990s economic depression), multiple US administrations attempting to isolate it, Fidel Castro's death (2016), and the COVID-19 pandemic. The PCC's monopoly on power is enforced through state security (Ministry of Interior), the Committees for the Defense of the Revolution (CDRs, neighborhood-level surveillance), and control over all legal economic activity.
+
+**Current pressure points:** (1) Economic crisis — severe shortages of food, medicine, fuel since 2021, exacerbated by post-COVID tourism collapse and reduced Venezuelan oil subsidies; (2) Emigration wave — largest exodus since Mariel boatlift (1980), with ~500K+ Cubans leaving since 2022, primarily through Nicaragua and US border; (3) Aging leadership — Díaz-Canel (born 1960) is the first non-Castro leader since 1959 but lacks the revolutionary legitimacy of the Castro brothers; (4) July 2021 protests were the largest since 1994 — regime responded with mass arrests (1,000+) and internet shutdowns, demonstrating willingness to suppress.
+
+**Why regime survival remains likely for 2026:** (1) No organized opposition — the PCC is the only legal party; dissidents are systematically monitored, imprisoned, or exiled; (2) Security apparatus loyalty — the Ministry of Interior (MININT) and Revolutionary Armed Forces (FAR) remain under PCC control with no history of factional splits; (3) No external intervention scenario — the US is in diplomatic mode (Iran peace deal, Colombia election monitoring) with no appetite for Cuba intervention; (4) Regime-change base rates in one-party communist states: Soviet Union (74 years), China (75+ years and counting), North Korea (75+), Vietnam (48+ years since reunification). Cuba at 67 years is within the durable range; (5) Emigration acts as a pressure valve — discontented Cubans leave rather than organize domestically, reducing revolutionary pressure.
+
+**Tail risk (~18%):** (1) Díaz-Canel health crisis or death → succession uncertainty (Raúl Castro is 95, Miguel Díaz-Canel has no clear successor); (2) Economic collapse triggering July 2021-scale protests that security forces refuse to suppress; (3) US policy shift toward active regime-change support (unlikely given current diplomatic focus); (4) Major natural disaster (hurricane) overwhelming state capacity during ongoing economic crisis.
+
+**Market alignment:** 18% YES is appropriately priced. It reflects the tail risk of a sudden leadership vacuum or economic collapse without overpricing a structured regime-change probability. My confidence of 0.82 aligns with the market's 0.82 NO price.
+
+### Vault Gap Identified
+- **Missing**: US-Cuba relations thread (`domains/latin-america/threads/us-cuba-relations/`) — needed for tracking bilateral dynamics, embargo policy shifts, and migration diplomacy
+- **Missing**: Cuban domestic stability concept — economic indicators, protest cycles, emigration waves as pressure valves
+- **Action**: Create US-Cuba relations thread stub during next reflection cycle

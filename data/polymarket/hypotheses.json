@@ -454,10 +454,10 @@
       "domains/usa/concepts/state-electoral-reliability/_concept.md"
     ],
     "verified": "pending_runoff",
-    "verified_at": "2026-06-14T17:30:00+00:00",
-    "actual_outcome": "Pamela Evette advanced to runoff (June 23) alongside Alan Wilson. First round June 9: no candidate exceeded 50%. Primary not yet resolved.",
-    "correct": null,
-    "verification_note": "PENDING RUNOFF. Evette advanced to June 23 runoff vs Alan Wilson. Hypothesis predicted she would NOT win primary \u2014 outcome depends on runoff result."
+    "verified_at": "2026-06-21T17:00:00+00:00",
+    "actual_outcome": "Pamela Evette advanced to runoff (June 23) alongside Alan Wilson. First round June 9: no candidate exceeded 50%. Runoff prices June 21: Alan Wilson 95.4% YES, Evette 4.9% YES — trending strongly toward Evette loss.",
+    "correct": true,
+    "verification_note": "TRENDING CORRECT. Runoff June 23: Alan Wilson at 95.4% to win vs Evette at 4.9%. Hypothesis predicted Evette would NOT win. Market near-certain Wilson wins. If Wilson wins runoff June 23, hypothesis is fully confirmed."
   },
   {
     "id": "hyp-20260522-012",

@@ -1,0 +1,53 @@
+## Live Forecast — Will UAE leave the Gulf Cooperation Council in 2026?
+
+### Market Data
+- Contract: Yes: 10.0% | No: 90.0% | Volume: $98.5K
+- Ends: Dec 31, 2026
+- Source: Polymarket — "Will UAE leave the Gulf Cooperation Council in 2026?"
+
+### Vault Files Read
+- `domains/mena/entities/uae.md` — UAE entity with GCC dynamics analysis (created June 18, 2026)
+- `_forecast_instructions.md` — Rule 4 (Geographic Coverage)
+
+### Forecast Instructions Check
+- Rule 4 (Geographic Coverage): Triggered — UAE entity exists but no dedicated GCC/Gulf politics thread. Coverage exists but is minimal.
+- No other rules directly triggered.
+
+### Vault Knowledge Summary
+Vault has UAE entity (created June 18, 2026) covering: MBZ leadership, GCC membership, Abraham Accords, independent foreign policy, 2017-2021 Qatar blockade as intra-GCC rupture precedent, Yemen withdrawal, and exit probability assessment. Entity correctly notes 0 GCC member exits since 1981 founding (43 years) and the 9.5% market price as appropriately low.
+
+### Vault Usage Score
+**MEDIUM** — UAE entity provides good structural analysis of GCC exit constraints but lacks a dedicated GCC thread for tracking intra-Gulf dynamics, OPEC+ quota disputes, and Saudi-UAE economic rivalry.
+
+### Counterfactual
+"Without the vault: I would still know GCC is a durable bloc with no historical exits. The UAE entity provides specific details about MBZ's leadership, Qatar blockade reconciliation, and independent foreign policy that enrich the analysis but don't fundamentally change the 90% NO baseline."
+
+### Forecast
+**Prediction:** NO
+**Confidence:** 0.90
+**Reasoning:**
+
+**Structural assessment:** The Gulf Cooperation Council has maintained 100% membership retention since 1981 (43 years, 6 founding members, zero exits). The bloc survived the most severe intra-GCC crisis in its history — the 2017-2021 Qatar blockade where Saudi Arabia, UAE, Bahrain, and Egypt severed diplomatic ties with Qatar. Despite 3.5 years of blockade, NO member exited. The AlUla Declaration (January 2021) restored relations.
+
+**UAE's institutional benefits from GCC membership:**
+1. **Collective security umbrella**: Peninsula Shield Force, shared missile defense (THAAD/Patriot), intelligence sharing against Iran and Houthi threats
+2. **Economic integration**: GCC common market, customs union, coordinated currency pegs to USD
+3. **Diplomatic cover**: GCC provides multilateral legitimacy for UAE foreign policy initiatives (Abraham Accords, Iran engagement)
+4. **Saudi market access**: Saudi Arabia is UAE's largest GCC trading partner; GCC exit would disrupt economic ties
+
+**UAE's independent foreign policy — managed WITHIN GCC:**
+- Withdrew from Yemen war (2019) while remaining in GCC
+- Normalized with Israel via Abraham Accords (2020) — Saudi Arabia didn't follow but didn't block
+- Engaged Iran diplomatically — parallel to, not against, Saudi engagement
+- OPEC+ quota disputes with Saudi Arabia — resolved within OPEC+ framework, not by exiting
+
+**Why 2026 is not the year:** (1) The US-Iran peace deal (June 14, 2026) reduces Gulf security tensions, making GCC exit LESS necessary, not more; (2) UAE-Saudi economic competition (NEOM vs Dubai) is managed through bilateral channels, not bloc membership; (3) UAE's strategy since 2019 has been to pursue independent policy within GCC while keeping the institutional benefits; (4) No public statements from UAE leadership suggesting GCC exit consideration; (5) The 10% market price appropriately captures the tail risk of a major Saudi-UAE rupture without overpricing it.
+
+**Tail risk (~10%):** (1) Major diplomatic rupture with Saudi Arabia (e.g., OPEC+ breakdown, succession crisis, regional war alignment); (2) UAE calculates bilateral deals with US/China/Israel outperform GCC multilateral framework; (3) GCC institutional gridlock on UAE priorities (Iran policy, Israel normalization, economic diversification) becomes intolerable.
+
+**Market alignment:** 10% YES is well-calibrated. My confidence of 0.90 essentially matches the market. This forecast is a "market confirms vault analysis" case — structural factors and market price converge.
+
+### Vault Gap Identified
+- **Missing**: GCC/Gulf politics thread (`domains/mena/threads/gcc-gulf-politics/`) — tracking intra-GCC dynamics, OPEC+ coordination, Saudi-UAE economic rivalry, Peninsula Shield Force developments
+- **Missing**: Saudi Arabia entity coverage of GCC role (current Saudi entity focuses on Iran/US relations, not GCC institutional dynamics)
+- **Action**: Create GCC thread stub during next reflection cycle
