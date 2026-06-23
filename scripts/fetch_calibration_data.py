@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Fetch resolved Polymarket markets from The Graph subgraph.
+"""Fetch all resolved Polymarket markets via pmxt.
 
-The Polymarket CLOB subgraph tracks all markets on-chain with proper filtering.
-Endpoint: https://api.studio.thegraph.com/query/{id}/polymarket-clob/version/latest
+Dumps every resolved non-sports binary market with its tags — no regex
+classification.  The tag-based calibration model consumes this output;
+the agent maps novel questions to tag clusters at query time.
+
+Formerly used The Graph subgraph + regex mechanism families.
 """
 
 from __future__ import annotations
@@ -10,284 +13,182 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import sys
 import time
-import urllib.request
-from collections import defaultdict
-from datetime import date
+from collections import Counter
 from pathlib import Path
+
+import pmxt
 
 HERE = Path(__file__).resolve().parent
 TESTBED = HERE.parent
-OUTPUT = TESTBED / "data" / "polymarket" / "mechanism_calibration.jsonl"
+OUTPUT = TESTBED / "data" / "polymarket" / "resolved_markets.jsonl"
 
-# Polymarket subgraph endpoint (CLOB — the active/live subgraph)
-# Alternative: the older polymarket-matic subgraph
-SUBGRAPH_ENDPOINTS = [
-    "https://api.studio.thegraph.com/query/83978/polymarket-clob/version/latest",
-    "https://api.studio.thegraph.com/query/83978/polymarket-clob/v0.0.1",
-    "https://gateway.thegraph.com/api/[api-key]/subgraphs/id/...",  # needs key
-]
+# ── Exclusion filters ──────────────────────────────────────────────────
+# Goal: keep every market that could inform political/economic/conflict
+# calibration.  Drop obvious sports, crypto prices, meme bets.
 
-# Fallback: direct subgraph ID if studio endpoint doesn't work
-SUBGRAPH_IDS = [
-    "polymarket/polymarket-clob",  # common naming convention
-    "polymarket/polymarket-matic",  # legacy
-]
-
-FAMILY_PATTERNS = {
-    "structural-lock-in": [
-        (r"(win|most seats|holds?.+majority).+(election|presidential|midterm)", "FPTP front-runner"),
-        (r"(announce|declares?.+(ceasefire|truce))", "ceasefire announcement"),
-        (r"(begins? trading|launch|lists? on).+(ETF|exchange)", "ETF listing"),
-        (r"(uphold|strike down|enjoin|block).+(law|ban|executive order)", "court ruling on law"),
-        (r"(confirm|approve).+(nominee|justice|judge|appointment)", "confirmation lock-in"),
-    ],
-    "structural-ceiling": [
-        (r"(third.?party|minor.?party|independent).+(win|majority|most seats)", "third-party ceiling"),
-        (r"(never|less than 1%|under 1%).+(win|elected)", "near-zero probability"),
-        (r"(nuclear|nuke).+(detonat|use|strike|launch)", "nuclear use"),
-        (r"(shutdown|default|debt ceiling).+(government|federal)", "shutdown ceiling"),
-    ],
-    "discretionary": [
-        (r"(Fed|Federal Reserve).+(increase|decrease|cut|hike|hold).+(rate|bps)", "Fed decision"),
-        (r"(win|elected).+(president|senate|congress|governor|primary)", "election outcome"),
-        (r"(VP|vice president).+(nominee|selected|chosen)", "VP selection"),
-        (r"(ceasefire|peace|truce|negotiation).+(Israel|Hamas|Ukraine|Russia|Gaza)", "ceasefire"),
-        (r"(drop.?out|withdraw|resign|step.?down).+(president|candidate)", "withdrawal"),
-    ],
-}
-
-EXCLUDE = re.compile(
+EXCLUDE_TITLE = re.compile(
     r"(price of|above \$|below \$|dip to|BTC|ETH|SOL|XRP|NFT)"
     r"|(NBA|NFL|NHL|MLB|UFC|NCAAB|F1|PGA|Super Bowl|World Cup|Wimbledon|Masters)"
     r"|(Will [A-Z][a-z]+ say|Will [A-Z][a-z]+ mention|Will [A-Z][a-z]+ wear)"
     r"|(Games Total|Map Handicap|Counter-Strike|Moneyline|O/U|Spread:)"
-    r"|(Completed Match|Total Kills|Coin Toss)",
-    re.IGNORECASE
+    r"|(Completed Match|Total Kills|Coin Toss|Anytime TD|Receiving Yards)"
+    r"|(Champions League|UEFA|Premier League|La Liga|Bundesliga|Serie A|Ligue 1)"
+    r"|(Stanley Cup|Grand Prix|Tour de France|Daytona|Indy 500)",
+    re.IGNORECASE,
 )
 
+EXCLUDE_TAGS = {
+    "Sports", "Soccer", "Basketball", "Baseball", "Football",
+    "Tennis", "Golf", "MMA", "Boxing", "Cricket", "Rugby",
+    "Hockey", "NASCAR", "Formula 1", "Olympics",
+}
 
-def graphql_query(endpoint: str, query: str, variables: dict | None = None) -> dict:
-    """Execute a GraphQL query against a subgraph endpoint."""
-    payload = {"query": query}
-    if variables:
-        payload["variables"] = variables
+# Tags that are structural/metadata, not topical
+META_TAGS = {
+    "All", "Recurring", "Monthly", "Parent For Derivative",
+    "Hit Price", "Best of 2025",
+}
 
-    data = json.dumps(payload).encode()
-    req = urllib.request.Request(
-        endpoint,
-        data=data,
-        headers={"Content-Type": "application/json", "User-Agent": "psychohistory/0.1"},
-    )
-    resp = urllib.request.urlopen(req, timeout=30)
-    return json.loads(resp.read())
-
-
-def discover_endpoint() -> str | None:
-    """Try known endpoints and subgraph IDs to find a working one."""
-    # Simple introspection query
-    test_query = "{ _meta { block { number } } }"
-
-    # Try studio endpoints first
-    for ep in SUBGRAPH_ENDPOINTS:
-        try:
-            result = graphql_query(ep, test_query)
-            block = result.get("data", {}).get("_meta", {}).get("block", {}).get("number")
-            if block:
-                print(f"  Found working endpoint: {ep} (block {block})")
-                return ep
-        except Exception as e:
-            print(f"  {ep[:50]}... → {str(e)[:60]}")
-
-    # Try decentralized network endpoints
-    for subgraph_id in SUBGRAPH_IDS:
-        ep = f"https://api.thegraph.com/subgraphs/name/{subgraph_id}"
-        try:
-            result = graphql_query(ep, test_query)
-            if result.get("data"):
-                print(f"  Found: {ep}")
-                return ep
-        except Exception:
-            pass
-
-    return None
+PAGE_SIZE = 100
+FETCH_DELAY = 0.10
 
 
-def fetch_resolved_markets(endpoint: str, limit: int = 500) -> list[dict]:
-    """Fetch closed markets with resolution from subgraph."""
-    query = """
-    query($first: Int!, $skip: Int!) {
-      conditions(first: $first, skip: $skip, 
-        where: { 
-          resolved: true,
-        },
-        orderBy: resolutionTimestamp,
-        orderDirection: desc
-      ) {
-        id
-        question
-        outcomes
-        payouts
-        resolutionTimestamp
-        creationTimestamp
-        category
-      }
-    }
-    """
-
-    markets = []
-    skip = 0
-    batch_size = min(100, limit)
-
-    while len(markets) < limit:
-        try:
-            result = graphql_query(endpoint, query, {"first": batch_size, "skip": skip})
-            conditions = result.get("data", {}).get("conditions", [])
-        except Exception as e:
-            print(f"  Error at skip={skip}: {e}")
-            break
-
-        if not conditions:
-            break
-
-        markets.extend(conditions)
-        skip += batch_size
-        print(f"  Fetched {len(markets)} resolved markets...")
-        time.sleep(0.5)
-
-    return markets[:limit]
+def is_sports(market: pmxt.models.UnifiedMarket) -> bool:
+    if market.tags and EXCLUDE_TAGS.intersection(market.tags):
+        return True
+    if EXCLUDE_TITLE.search(market.title):
+        return True
+    return False
 
 
-def resolve_outcome(condition: dict) -> bool | None:
-    """Determine resolution from subgraph condition data."""
-    # payouts is an array of [payout_for_outcome_0, payout_for_outcome_1]
-    # For binary: [1.0, 0.0] = YES, [0.0, 1.0] = NO
-    payouts = condition.get("payouts", [])
-    if payouts and len(payouts) >= 2:
-        payout_0 = float(payouts[0])
-        if payout_0 >= 0.99:
-            return True  # YES won
-        elif payout_0 <= 0.01:
-            return False  # NO won
-
-    # Check outcomes directly
-    outcomes = condition.get("outcomes", [])
-    if outcomes:
-        return outcomes[0].lower() if isinstance(outcomes[0], str) else None
-
-    return None
-
-
-def classify(question: str) -> tuple[str | None, str]:
-    q = question.lower()
-    for family in ["structural-lock-in", "structural-ceiling", "discretionary"]:
-        for pat, subcat in FAMILY_PATTERNS[family]:
-            if re.search(pat, q):
-                return family, subcat
-    return None, ""
+def clean_tags(tags: list[str] | None) -> list[str]:
+    if not tags:
+        return []
+    return sorted(t for t in tags if t not in META_TAGS)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--limit", type=int, default=500)
+    parser = argparse.ArgumentParser(
+        description="Fetch all resolved Polymarket markets via pmxt"
+    )
+    parser.add_argument("--limit", type=int, default=0,
+                        help="Max records (0 = fetch all available)")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    print("=== Finding Polymarket subgraph endpoint ===\n")
-    endpoint = discover_endpoint()
+    print("=== Fetching resolved Polymarket markets via pmxt ===\n")
+    client = pmxt.Polymarket()
 
-    if not endpoint:
-        print("\n❌ No working subgraph endpoint found.")
-        print("   Options:")
-        print("   1. Get an API key from https://thegraph.com/studio/")
-        print("   2. Use the decentralized network: https://api.thegraph.com/subgraphs/name/polymarket/polymarket-clob")
-        print("   3. Try: https://gateway.thegraph.com/api/[key]/subgraphs/id/...")
-        return 1
+    records: list[dict] = []
+    seen_ids: set[str] = set()
+    offset = 0
+    empty_pages = 0
 
-    print(f"\n=== Fetching resolved markets ===\n")
-    conditions = fetch_resolved_markets(endpoint, args.limit)
-    print(f"Fetched {len(conditions)} total conditions")
+    while args.limit == 0 or len(records) < args.limit:
+        try:
+            markets = client.fetch_markets(params={
+                "status": "closed",
+                "limit": PAGE_SIZE,
+                "offset": offset,
+            })
+        except Exception as e:
+            print(f"  Error at offset={offset}: {e}")
+            break
 
-    # Filter and classify
-    records = []
-    stats = defaultdict(lambda: {"found": 0, "classified": 0})
+        if not markets:
+            break
 
-    for c in conditions:
-        q = c.get("question", "")
-        if not q or EXCLUDE.search(q):
-            continue
+        new_in_page = 0
+        for m in markets:
+            if m.market_id in seen_ids:
+                continue
+            seen_ids.add(m.market_id)
 
-        resolution = resolve_outcome(c)
-        if resolution is None:
-            continue
+            if is_sports(m):
+                continue
 
-        family, subcat = classify(q)
-        if not family:
-            continue
+            resolution = _resolve_outcome(m)
+            if resolution is None:
+                continue
 
-        records.append({
-            "question": q,
-            "resolution": resolution,
-            "family": family,
-            "subcategory": subcat,
-            "end_date": c.get("resolutionTimestamp", ""),
-            "category": c.get("category", ""),
-        })
-        stats[family]["classified"] += 1
+            end_date = ""
+            if m.resolution_date:
+                end_date = (m.resolution_date.isoformat()
+                            if hasattr(m.resolution_date, "isoformat")
+                            else str(m.resolution_date))
 
-    # Write output
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT, "w") as f:
-        for rec in records:
-            f.write(json.dumps(rec) + "\n")
+            records.append({
+                "question": m.title,
+                "resolution": resolution,
+                "end_date": end_date,
+                "tags": clean_tags(m.tags),
+                "slug": m.slug or "",
+                "market_id": m.market_id,
+                "volume": m.volume or 0,
+            })
+            new_in_page += 1
 
-    print(f"\nWrote {len(records)} mechanism-relevant markets to {OUTPUT}")
-    print(f"\nBy family:")
-    for family in ["structural-lock-in", "structural-ceiling", "discretionary"]:
-        yes = sum(1 for r in records if r["family"] == family and r["resolution"])
-        no = sum(1 for r in records if r["family"] == family and not r["resolution"])
-        total = yes + no
-        if total > 0:
-            alpha = 1 + yes
-            beta = 1 + no
-            post = alpha / (alpha + beta)
-            print(f"  {family}: {total} ({yes}Y/{no}N) → posterior {post:.3f}")
+        offset += PAGE_SIZE
+        pct = (len(records) / max(offset, 1)) * 100
 
-    if args.dry_run:
-        return 0
-
-    # Build calibration tables
-    print(f"\n=== Building calibration tables ===\n")
-    calib = defaultdict(lambda: defaultdict(lambda: {"yes": 0, "no": 0}))
-    for rec in records:
-        if rec["resolution"]:
-            calib[rec["family"]][rec["subcategory"]]["yes"] += 1
+        if new_in_page == 0:
+            empty_pages += 1
+            if empty_pages >= 3:
+                print(f"  {offset:>5} markets checked, {len(records):>4} kept "
+                      f"({pct:.0f}%) — 3 empty pages, stopping.")
+                break
+            print(f"  {offset:>5} markets checked, {len(records):>4} kept "
+                  f"({pct:.0f}%)")
         else:
-            calib[rec["family"]][rec["subcategory"]]["no"] += 1
+            empty_pages = 0
+            print(f"  {offset:>5} markets checked, {len(records):>4} kept "
+                  f"({pct:.0f}%)  +{new_in_page}")
 
-    for family in ["structural-lock-in", "structural-ceiling", "discretionary"]:
-        subs = calib[family]
-        total_yes = sum(s["yes"] for s in subs.values())
-        total_no = sum(s["no"] for s in subs.values())
-        total = total_yes + total_no
-        if total == 0:
-            continue
+        time.sleep(FETCH_DELAY)
 
-        alpha = 1 + total_yes
-        beta = 1 + total_no
-        post = alpha / (alpha + beta)
+    # ── Write ──────────────────────────────────────────────────────────
+    if not args.dry_run:
+        OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+        with open(OUTPUT, "w") as f:
+            for rec in records:
+                f.write(json.dumps(rec) + "\n")
+        print(f"\nWrote {len(records)} records to {OUTPUT}")
 
-        print(f"## {family} (pooled: {total} markets, posterior {post:.3f})")
-        for subcat in sorted(subs.keys()):
-            s = subs[subcat]
-            n = s["yes"] + s["no"]
-            if n == 0: continue
-            a, b = 1 + s["yes"], 1 + s["no"]
-            print(f"   {subcat}: {s['yes']}Y/{s['no']}N ({n}) → posterior {a/(a+b):.3f}")
-        print()
+    # ── Summary ────────────────────────────────────────────────────────
+    yes = sum(1 for r in records if r["resolution"])
+    no = len(records) - yes
+    print(f"\nResolved: {yes} YES  /  {no} NO  ({yes/(yes+no)*100:.1f}% YES)")
+
+    # Tag distribution
+    tag_counts = Counter()
+    for r in records:
+        for t in r["tags"]:
+            tag_counts[t] += 1
+
+    print(f"\nTop 30 tags:")
+    for tag, count in tag_counts.most_common(30):
+        # Show yes/no split per tag
+        tag_yes = sum(1 for r in records
+                      if tag in r["tags"] and r["resolution"])
+        tag_total = sum(1 for r in records if tag in r["tags"])
+        post = (1 + tag_yes) / (2 + tag_total)
+        print(f"  {tag:<30} {tag_total:>4} markets  "
+              f"posterior={post:.3f}")
 
     return 0
+
+
+def _resolve_outcome(market: pmxt.models.UnifiedMarket) -> bool | None:
+    yes = market.yes
+    if yes is None:
+        return None
+    price = yes.price
+    if price >= 0.99:
+        return True
+    if price <= 0.01:
+        return False
+    return None
 
 
 if __name__ == "__main__":
