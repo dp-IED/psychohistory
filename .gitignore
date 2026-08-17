@@ -10,44 +10,12 @@ __pycache__/
 *.egg-info/
 
 proposal.json
-ACLED Data_*.csv
 
-data/polymarket_resolved/**
-data/gdelt
-data/gdelt/**
-data/acled
-data/acled/**
-data/mixed
-data/mixed/**
-data/warehouse/*.duckdb
-data/warehouse/*.duckdb-*
-data/arab_spring/**
-data/arab_spring/*.duckdb
-data/arab_spring/*.duckdb-*
-snapshots/**
-shared_data/arab_spring/*.duckdb
-shared_data/arab_spring/*.duckdb-*
-logs
-logs/**
+logs/
 artifacts/**
 !artifacts/.gitkeep
-docs/pit_subgraph_audit_*.json
-docs/warehouse_quality_gate_*.json
-ablations/*.json
-!data/polymarket_resolved/.gitkeep
-!data/gdelt/.gitkeep
-cache/**
-!cache/.gitkeep
-
-autoresearch/experiments/candidates/
-autoresearch/experiments/graph_cache/
-autoresearch/experiments/best/latest/
-autoresearch/experiments/log.jsonl
-autoresearch/experiments/agent_subprocess.log
-
-# Bundled upstream clone (separate repository)
-autoresearch-mlx/
 
 .env
 .hermes/
 .harness_memory/
+graphify-out/

@@ -3,17 +3,14 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "psychohistory-forecast-ir"
-version = "0.1.0"
-description = "Temporal graph IR primitives for a narrow geopolitical forecasting MVP"
-readme = "forecast_charter.md"
+name = "psychohistory"
+version = "0.2.0"
+description = "Skills and subagent training bed for temporally clean forecasting"
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-  "numpy>=1.26",
   "pydantic>=2.5",
-  "xgboost>=2.0",
-  "duckdb>=1.0",
-  "tqdm>=4.66",
+  "pyyaml>=6.0",
   "openai>=1.35",
 ]
 
@@ -21,16 +18,11 @@ dependencies = [
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
 
 [tool.setuptools.packages.find]
-include = ["evals*", "schemas*", "ingest*", "baselines*"]
+include = ["harness*", "ingest*", "schemas*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-q -m 'not torch_train and not warehouse and not gdelt_live'"
+addopts = "-q"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-markers = [
-  "torch_train: GNN training tests that require an isolated process (run with: pytest -m torch_train tests/test_gnn.py)",
-  "warehouse: DuckDB warehouse integration (opt-in: pytest -m warehouse)",
-  "gdelt_live: downloads real GDELT zips (slow, needs network; pytest -m gdelt_live …)",
-]

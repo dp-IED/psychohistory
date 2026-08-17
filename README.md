@@ -1,23 +1,40 @@
 # Psychohistory
 
-Temporally clean **graph forecasting** with **query-conditioned subgraphs + assumptions** upstream of the encoder/WM; (roadmap) **market-informed training**, **learned slow structure**, and **constrained Q&A**.
+Skills and subagent **training bed** for temporally clean forecasting.
+
+The durable product is a point-in-time **graph-vault**, PIT filters, compression skills, and eval probes. Agents should learn to forecast from admissible evidence only — not from a single CLI runner.
+
+A **temporary** hermes v1 orchestrator still posts forecasts. Portable skills must not import it. Next session replaces that runner.
 
 ## Start here
 
 | Document | Purpose |
 |----------|---------|
-| [`project.md`](project.md) | Purpose, **goals**, repository map |
-| [`roadmap.md`](roadmap.md) | **Full** program stages, gates, **what to avoid** |
-| [`next_steps.md`](next_steps.md) | **Actionable** work order (gradients-first sequencing) |
-| [`forecast_charter.md`](forecast_charter.md) | Metrics, inputs, non-goals |
-| [`docs/reviewers-guide.md`](docs/reviewers-guide.md) | Reviews, discovery protocol, red flags |
-| [`docs/graph-builder-contract-v0.1.md`](docs/graph-builder-contract-v0.1.md) | **Locked** graph builder, assumptions, supervision stages, compute & training contexts |
-| [`docs/polymarket_agentic_harness.md`](docs/polymarket_agentic_harness.md) | **Polymarket pivot:** agent-authored outcome-world portfolios + graph/GNN stress tests |
-| [`docs/research/architecture.md`](docs/research/architecture.md) | **Target** layered architecture (evidence → builder/lens → encoder/WM; not code-bound) |
-| [`docs/research/research.md`](docs/research/research.md) | Deep-research handoff + conversation summary |
+| [`project.md`](project.md) | What this repo is |
+| [`next_steps.md`](next_steps.md) | Current work order |
+| [`docs/polymarket_agentic_harness.md`](docs/polymarket_agentic_harness.md) | Market frames, branches, PIT labels |
+| [`docs/history/research-track.md`](docs/history/research-track.md) | Deleted France/GNN/warehouse program (git history only) |
 
-## Engineering
+## Layout
 
-- **Data:** [`docs/storage_architecture.md`](docs/storage_architecture.md)
-- **France benchmark / source ablations:** [`docs/source_layer_experiments.md`](docs/source_layer_experiments.md), [`docs/2026-04-16-france-gdelt-benchmark-note.md`](docs/2026-04-16-france-gdelt-benchmark-note.md)
-- **Wikidata grounding:** [`docs/wikidata/00-overview.md`](docs/wikidata/00-overview.md)
+| Path | Role |
+|------|------|
+| `graph-vault/` | Knowledge store (timelines, entities, threads, forecast runs) |
+| `harness/` | PIT, skills, tools, memory protocol; `orchestrator.py` is TEMPORARY |
+| `ingest/` | Polymarket resolved markets and branch graphs |
+| `schemas/` | Polymarket agentic contracts |
+| `data/polymarket/` | Hypotheses, tracked markets, forecasts |
+| `data/pit_market_probes/` | PIT calibration probes |
+| `scripts/` | Vault/PIT/backtest CLIs |
+
+## Temporary runner (do not build on this)
+
+```text
+python -m scripts.run_backtest --source polymarket --max-questions 5
+```
+
+Requires `hermes` on PATH. Skills and subagents should take vault + cutoff + question as inputs instead.
+
+## Non-negotiable
+
+No post-`t` facts in inputs. Replay by cutoff.

@@ -12,7 +12,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from evals.graph_artifact_contract import (
+from schemas.graph_artifact import (
     ArtifactEdge,
     ArtifactNode,
     ArtifactProvenance,

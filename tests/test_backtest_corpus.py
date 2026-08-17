@@ -24,7 +24,7 @@ def test_polymarket_field_mapping() -> None:
         "groupItemTagUUIDs": ["tag-1", "tag-2"],
     }
 
-    record = normalize_polymarket_market(dict[str, object](raw), min_close_date=date(2023, 1, 1), min_volume=5000.0)
+    record = normalize_polymarket_market(dict[str, object](raw), min_close_date=date(2023, 1, 1))
 
     assert record is not None
     assert record.resolution is True
@@ -43,7 +43,7 @@ def test_polymarket_resolution_no() -> None:
         "outcomePrices": json.dumps(["0", "1"]),
     }
 
-    record = normalize_polymarket_market(dict[str, object](raw), min_close_date=date(2023, 1, 1), min_volume=5000.0)
+    record = normalize_polymarket_market(dict[str, object](raw), min_close_date=date(2023, 1, 1))
 
     assert record is not None
     assert record.resolution is False
@@ -63,8 +63,7 @@ def test_polymarket_category_extraction() -> None:
         "tags": ["politics", "us-elections"],
     }
     record = normalize_polymarket_market(
-        dict[str, object](raw_tags), min_close_date=date(2023, 1, 1), min_volume=5000.0
-    )
+        dict[str, object](raw_tags), min_close_date=date(2023, 1, 1)    )
     assert record is not None
     assert record.category == "politics"
 
@@ -79,8 +78,7 @@ def test_polymarket_category_extraction() -> None:
         "category": "crypto",
     }
     record2 = normalize_polymarket_market(
-        dict[str, object](raw_cat), min_close_date=date(2023, 1, 1), min_volume=5000.0
-    )
+        dict[str, object](raw_cat), min_close_date=date(2023, 1, 1)    )
     assert record2 is not None
     assert record2.category == "crypto"
 
@@ -141,7 +139,7 @@ def test_skips_unresolved() -> None:
     }
 
     assert (
-        normalize_polymarket_market(dict[str, object](raw), min_close_date=date(2023, 1, 1), min_volume=1000.0)
+        normalize_polymarket_market(dict[str, object](raw), min_close_date=date(2023, 1, 1))
         is None
     )
 
@@ -158,7 +156,7 @@ def test_skips_non_binary() -> None:
     }
 
     assert (
-        normalize_polymarket_market(dict[str, object](raw), min_close_date=date(2023, 1, 1), min_volume=1000.0)
+        normalize_polymarket_market(dict[str, object](raw), min_close_date=date(2023, 1, 1))
         is None
     )
 

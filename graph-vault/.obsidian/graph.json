@@ -1,0 +1,100 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": true,
+  "colorGroups": [
+    {
+      "query": "tag:#community/market_probe_pipeline",
+      "color": {
+        "a": 1,
+        "rgb": 4890367
+      }
+    },
+    {
+      "query": "tag:#community/vault_query_probe",
+      "color": {
+        "a": 1,
+        "rgb": 48340
+      }
+    },
+    {
+      "query": "tag:#community/pit_search_research",
+      "color": {
+        "a": 1,
+        "rgb": 8146431
+      }
+    },
+    {
+      "query": "tag:#community/calibration_scoring",
+      "color": {
+        "a": 1,
+        "rgb": 16739584
+      }
+    },
+    {
+      "query": "tag:#community/orchestrator_core",
+      "color": {
+        "a": 1,
+        "rgb": 16717636
+      }
+    },
+    {
+      "query": "tag:#community/reflection_engine",
+      "color": {
+        "a": 1,
+        "rgb": 16728193
+      }
+    },
+    {
+      "query": "tag:#community/blind_spot_checks",
+      "color": {
+        "a": 1,
+        "rgb": 16755456
+      }
+    },
+    {
+      "query": "tag:#community/llm_synthesis",
+      "color": {
+        "a": 1,
+        "rgb": 58998
+      }
+    },
+    {
+      "query": "tag:#community/graph_compression",
+      "color": {
+        "a": 1,
+        "rgb": 6627327
+      }
+    },
+    {
+      "query": "tag:#community/policy_configuration",
+      "color": {
+        "a": 1,
+        "rgb": 2718207
+      }
+    },
+    {
+      "query": "path:codegraph",
+      "color": {
+        "a": 1,
+        "rgb": 4491468
+      }
+    }
+  ],
+  "collapse-display": false,
+  "showArrow": false,
+  "textFadeMultiplier": -2.4,
+  "nodeSizeMultiplier": 1.54660590277778,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": false,
+  "centerStrength": 0,
+  "repelStrength": 9.6328125,
+  "linkStrength": 0.442578125,
+  "linkDistance": 30,
+  "scale": 1.8709651922077706,
+  "close": true
+}

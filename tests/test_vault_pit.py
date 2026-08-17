@@ -27,18 +27,21 @@ def test_timeline_filter(tmp_path: Path) -> None:
 
 def test_entity_pit_cutoff(tmp_path: Path) -> None:
     vault = tmp_path / "vault"
-    (vault / "entities").mkdir(parents=True)
-    (vault / "entities" / "old.md").write_text(
+    entities = vault / "domains" / "usa" / "entities"
+    entities.mkdir(parents=True)
+    (entities / "old.md").write_text(
         "---\ntype: entity\npit_cutoff: 2023-12-31\n---\n",
         encoding="utf-8",
     )
-    (vault / "entities" / "new.md").write_text(
+    (entities / "new.md").write_text(
         "---\ntype: entity\npit_cutoff: 2026-05-18\n---\n",
         encoding="utf-8",
     )
     cutoff = date(2024, 1, 1)
-    assert is_path_admissible(vault, "entities/old.md", cutoff)
-    assert not is_path_admissible(vault, "entities/new.md", cutoff)
+    old_ok, _ = is_path_admissible(vault, "domains/usa/entities/old.md", cutoff)
+    new_ok, _ = is_path_admissible(vault, "domains/usa/entities/new.md", cutoff)
+    assert old_ok
+    assert not new_ok
 
 
 def test_excludes_meta_and_runs(tmp_path: Path) -> None:

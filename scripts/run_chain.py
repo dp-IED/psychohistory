@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Chain: 3 batches of 5 Polymarket questions + reflection each.
-Writes log to LOG FILE so you can tail it.
+"""TEMPORARY chain wrapper around the v1 hermes backtest runner.
+
+Portable skills/subagents must not depend on this script.
 """
 import argparse
 import os

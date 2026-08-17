@@ -1,12 +1,12 @@
 ---
 description: Psychohistory memory distillate — concise defaults, sequencing, and agent-maintained preferences
 alwaysApply: true
-last_reviewed: 2026-04-30
+last_reviewed: 2026-08-17
 ---
 
 # Project memory (concise)
 
-Purpose: this is the agent fast-path memory for every session. Canonical detail lives in repo docs.
+Purpose: skills/subagent training bed for temporally clean forecasting. Canonical detail lives in repo docs.
 
 ## Update protocol
 
@@ -17,41 +17,31 @@ Purpose: this is the agent fast-path memory for every session. Canonical detail 
 
 ## Canonical docs
 
-- `project.md` (mission, structure)
-- `roadmap.md` (stages/gates)
+- `README.md` / `project.md` (what this repo is)
 - `next_steps.md` (current sequence)
-- `forecast_charter.md` (targets/metrics)
-- `docs/graph-builder-contract-v0.1.md` (locked builder contract)
-- `docs/storage_architecture.md` (warehouse)
-- `docs/source_layer_experiments.md` (France/source ablations)
+- `docs/polymarket_agentic_harness.md` (market frames / PIT labels)
+- `docs/history/research-track.md` (deleted research program; do not treat as current)
 
 ## Non-negotiables
 
 - No post-`t` leakage; replayable history by cutoff.
-- Baselines first; graph must beat comparable tabular/recurrence at same cutoff.
-- Complexity must earn itself via ablations (retrieval/sparsity/encoder/WM all ablatable).
-- Markets supervise forecaster calibration; terminal resolutions are not direct builder labels, but market-linked public reasoning chains can be mined as demonstrations/filters when accurate and structurally similar to historical analysis.
-- LLM is part of the system being optimized: it reasons over constrained intermediate representations, not alone from raw context or hidden parametric knowledge.
+- Portable skills/subagents must not import hermes or `harness.orchestrator`.
+- `harness/orchestrator.py` is a **temporary** runner to replace.
 
 ## Strategic defaults
 
 - Gradients before grand design: thin correct loop first, then scale.
 - Measurement over ontology expansion.
-- Discovery before naming: detect structure first, label regimes second with checks.
-- Builder supervision uses GDELT+ACLED per contract; France is validation/smoke, not primary training corpus.
+- Vault + PIT + probes are the training surface; markets are labels and coverage, not the product.
 
 ## Sequencing (compressed)
 
-Roadmap: Charter → Ontology → Replay → Baselines → GNN backbone → Markets track → Learned builder+assumptions+WM → Analog retrieval → Constrained Q&A → Cross-domain stress.
-
-Near-term (`next_steps.md`): A–C′ prerequisites, then D→H model spine, then I (Iran shadow), then M (markets ingestion emphasis).
+Next: skill/subagent interface → replace hermes v1 → eval on existing PIT probes. Tournament watcher rewrite later. Do not resume France/GNN/builder.
 
 ## Engineering checks
 
-- Contract checks: `evals/graph_artifact_contract.py`
-- Metrics: `baselines/metrics.py`
-- Re-run leakage audits on pipeline changes.
-- Re-run France harness when shared ingest/snapshot/backtest paths change.
+- Default pytest must pass without hermes on PATH.
+- Re-run PIT admissibility tests when vault layout or `vault_pit.py` changes.
 
 ---
 
@@ -61,8 +51,12 @@ Near-term (`next_steps.md`): A–C′ prerequisites, then D→H model spine, the
 - 2026-04-30: Treat locked-decisions tables as operational memory; decisions are not reliably "locked" unless recorded there.
 - 2026-05-03: For `R(q, h_t)`, avoid a fixed global schema; use a minimal invariant envelope for audit/logging while optimizing the query-conditioned representation process itself.
 - 2026-05-03: LLM-in-loop seed set locked to 30 resolved Polymarket-only questions: 10 politics/institutional power, 10 economics/macro-policy, 10 culture/entertainment. Culture belief extraction is expected weaker; 10/domain tests anti-collapse/scaffold diversity, not powered calibration.
+- 2026-08-17: Pivot to harness-only training bed; delete research track from working tree; v1 hermes runner is temporary; v2 cognitive pipeline deleted.
 
 ## Parked / planned later (agent-maintained)
 
-- Predictive-coding centrality trajectory objective · parked until synthetic France-equivalent harness verifies positive-pair semantics quickly · trigger: harness tests + diagnostics committed.
-- Wikipedia point-in-time ingestion expansion · parked until Contract 6 integration checks are green for failure attribution clarity · trigger: Contract 6 pass with current stack.
+- France/GNN/warehouse/builder/WM · parked permanently unless un-parked · last full tree: `b8ac2d66` / `origin/main` `b50ae186`.
+- GNN-agent worktree · parked · path `conductor/workspaces/psychohistory-v2/gnn-agent`.
+- Tournament watcher · rewrite from scratch; do not restore v2.
+- Predictive-coding centrality trajectory objective · parked (research-era).
+- Wikipedia point-in-time ingestion expansion · parked (research-era).

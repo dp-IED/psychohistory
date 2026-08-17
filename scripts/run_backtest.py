@@ -45,42 +45,32 @@ class BacktestResult:
 
 def run_single_backtest(
     question: BacktestQuestion,
+    *,
+    vault_dir: str | Path = GRAPH_VAULT,
+    orchestrate: bool = False,
 ) -> BacktestResult:
-    """Run a single backtest question through the cognitive pipeline.
-
-    Uses the same pipeline as Metaculus: outside-view anchor →
-    3-path reasoning → Delphi → premortem → aggregate.
-    """
-    from harness.orchestrator_v2 import run_cognitive_pipeline
-    from harness.outside_view import OutputType
-
-    question_text = getattr(question, "question_text", "")
-    cutoff_dt = getattr(question, "open_date", None) or date.today()
-    qid = getattr(question, "question_id", "unknown")
-
-    try:
-        result = run_cognitive_pipeline(
-            question_text=question_text,
-            cutoff=cutoff_dt,
-            vault_dir=GRAPH_VAULT,
-            output_type=OutputType.BINARY,
-            question_id=qid,
-            source="polymarket-backtest",
-            enforce_pit=True,
-            query_polymarket=False,
-        )
-        p_yes = result.p_yes or 0.5
-    except Exception:
-        p_yes = 0.5
+    """Run a single backtest question through the temporary v1 hermes runner."""
+    kwargs = {
+        "cutoff": question.open_date,
+        "vault_dir": str(vault_dir),
+        "question_id": str(question.question_id),
+        "source": "polymarket-backtest",
+        "category": getattr(question, "category", "general") or "general",
+        "resolution": question.resolution,
+        "volume": getattr(question, "volume", None),
+    }
+    if orchestrate:
+        p_yes, _reasoning, _meta = run_orchestrated(question.question_text, **kwargs)
+    else:
+        p_yes, _reasoning, _meta = run_structured(question.question_text, **kwargs)
 
     brier = None
-    outcome = getattr(question, "resolution", None)
-    if outcome is not None:
-        target = 1.0 if outcome else 0.0
+    if question.resolution is not None:
+        target = 1.0 if question.resolution else 0.0
         brier = (p_yes - target) ** 2
 
     return BacktestResult(
-        question_id=qid,
+        question_id=str(question.question_id),
         p_yes=p_yes,
         brier_score=brier,
     )
@@ -88,9 +78,15 @@ def run_single_backtest(
 
 def run_backtest_batch(
     questions: list[BacktestQuestion],
+    *,
+    vault_dir: str | Path = GRAPH_VAULT,
+    orchestrate: bool = False,
 ) -> list[BacktestResult]:
-    """Run a batch of backtest questions through the cognitive pipeline."""
-    return [run_single_backtest(q) for q in questions]
+    """Run a batch of backtest questions through the temporary v1 hermes runner."""
+    return [
+        run_single_backtest(q, vault_dir=vault_dir, orchestrate=orchestrate)
+        for q in questions
+    ]
 
 
 def _rollup_summary(results: list[BacktestResult]) -> dict[str, Any]:

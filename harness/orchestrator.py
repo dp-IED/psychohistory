@@ -1,4 +1,7 @@
-"""Minimal orchestration: load questions, prompt hermes, store runs in graph-vault.
+"""TEMPORARY v1 runner: load questions, prompt hermes, store runs in graph-vault.
+
+This module shells out to the hermes CLI. Portable skills and subagents must not
+import it. Next session replaces this runner; keep PIT/vault/skills independent.
 
 Three modes:
 - **Structured** (Polymarket / Metaculus):  question + cutoff -> JSON p_yes
