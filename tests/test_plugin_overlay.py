@@ -49,9 +49,18 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert skill_meta.get("disable-model-invocation") == "true"
     assert "ledger.md" in skill_body
     assert "references/discovery.md" in skill_body
+    reflect = REPO_ROOT / "skills" / "reflect" / "SKILL.md"
+    assert reflect.is_file()
+    reflect_meta, reflect_body = _frontmatter(reflect)
+    assert reflect_meta["name"] == "reflect"
+    assert reflect_meta.get("disable-model-invocation") == "true"
+    assert "after_y" in reflect_body
+    assert "justification" in reflect_body.lower()
+    assert "graph-vault" in reflect_body
     parent_meta, parent_body = _frontmatter(parent)
     assert parent_meta["name"] == "parent"
     assert "skills/due-today/SKILL.md" in parent_body
+    assert "skills/reflect/SKILL.md" in parent_body
     worker_meta, worker_body = _frontmatter(worker)
     assert worker_meta["name"] == "claim-worker"
     assert "ledger.md" in worker_body

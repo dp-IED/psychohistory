@@ -10,7 +10,9 @@ _PROBLEM_HEADING = re.compile(
 )
 _CLAIM_HEADING = re.compile(r"^###\s+(?P<id>\S+)\s*$", re.MULTILINE)
 _K_LINE = re.compile(r"(?m)^K:\s*(\d+)\s*$")
-_FIELD = re.compile(r"(?m)^-\s+(?P<name>Problem|Due|Owner|Claim|Justification):\s*(?P<value>.*)$")
+_FIELD = re.compile(
+    r"(?m)^-\s+(?P<name>Problem|Due|Y|Owner|Claim|Justification):\s*(?P<value>.*)$"
+)
 
 
 @dataclass(frozen=True)
@@ -25,6 +27,7 @@ class Claim:
     id: str
     problem_id: str
     due: date
+    y: date  # resolution date; omitted Y on the ledger means Due (due at Y)
     owner: str
     claim: str
     justification: str
@@ -38,6 +41,13 @@ class Ledger:
 
     def due_today(self, as_of: date) -> tuple[Claim, ...]:
         return tuple(claim for claim in self.claims if claim.due == as_of)
+
+    def after_y(self, as_of: date) -> tuple[Claim, ...]:
+        return tuple(
+            claim
+            for claim in self.claims
+            if as_of > claim.y and claim.due != as_of
+        )
 
 
 def parse_ledger(text: str) -> Ledger:
@@ -96,6 +106,7 @@ def _parse_claims(text: str) -> tuple[Claim, ...]:
                 id=heading.group("id"),
                 problem_id=fields.get("Problem", ""),
                 due=date.fromisoformat(fields["Due"]),
+                y=date.fromisoformat(fields["Y"]) if fields.get("Y") else date.fromisoformat(fields["Due"]),
                 owner=fields.get("Owner", ""),
                 claim=fields.get("Claim", ""),
                 justification=fields.get("Justification", ""),

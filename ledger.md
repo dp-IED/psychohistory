@@ -16,6 +16,7 @@ Motivation: The training bed needs one problem row before ungated discovery runs
 
 - Problem: P-seed
 - Due: 2099-01-01
+- Y: 2099-01-01
 - Owner: claim-worker
 - Claim: This seed claim exists so the ledger is parseable before live wakeups.
 - Justification: Placeholder reasoning trace; replace on the first real due-today write.

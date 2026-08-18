@@ -74,6 +74,39 @@ def test_due_today_excludes_claims_due_on_another_day() -> None:
     assert book.due_today(date(2026, 1, 1)) == ()
 
 
+def test_after_y_is_claims_whose_resolution_date_has_passed() -> None:
+    book = parse_ledger(_FIXTURE)
+    assert [c.id for c in book.after_y(date(2026, 8, 18))] == []
+    assert [c.id for c in book.after_y(date(2026, 8, 19))] == ["C-due"]
+    assert {c.id for c in book.after_y(date(2027, 1, 1))} == {"C-due", "C-later"}
+
+
+def test_explicit_y_can_differ_from_due() -> None:
+    text = _FIXTURE.replace(
+        "- Due: 2026-08-18\n- Owner:",
+        "- Due: 2026-08-18\n- Y: 2026-09-01\n- Owner:",
+        1,
+    )
+    book = parse_ledger(text)
+    claim = next(c for c in book.claims if c.id == "C-due")
+    assert claim.due == date(2026, 8, 18)
+    assert claim.y == date(2026, 9, 1)
+    assert [c.id for c in book.after_y(date(2026, 8, 19))] == []
+    assert [c.id for c in book.after_y(date(2026, 9, 2))] == ["C-due"]
+
+
+def test_after_y_skips_a_claim_that_is_also_due_today() -> None:
+    text = _FIXTURE.replace(
+        "- Due: 2026-08-18\n- Owner:",
+        "- Due: 2026-08-18\n- Y: 2026-08-01\n- Owner:",
+        1,
+    )
+    book = parse_ledger(text)
+    assert [c.id for c in book.due_today(date(2026, 8, 18))] == ["C-due"]
+    assert [c.id for c in book.after_y(date(2026, 8, 18))] == []
+    assert [c.id for c in book.after_y(date(2026, 8, 19))] == ["C-due"]
+
+
 def test_repo_ledger_is_the_schedule_book() -> None:
     path = REPO_ROOT / "ledger.md"
     book = parse_ledger(path.read_text(encoding="utf-8"))
