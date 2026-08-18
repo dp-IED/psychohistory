@@ -1,12 +1,12 @@
 ---
 description: Psychohistory memory distillate — concise defaults, sequencing, and agent-maintained preferences
 alwaysApply: true
-last_reviewed: 2026-08-17
+last_reviewed: 2026-08-18
 ---
 
 # Project memory (concise)
 
-Purpose: skills/subagent training bed for temporally clean forecasting. Canonical detail lives in repo docs.
+Purpose: harness-agnostic plugin training bed for live forecasting. Canonical detail: `CONTEXT.md`, `docs/adr/`, `next_steps.md`.
 
 ## Update protocol
 
@@ -17,31 +17,37 @@ Purpose: skills/subagent training bed for temporally clean forecasting. Canonica
 
 ## Canonical docs
 
-- `README.md` / `project.md` (what this repo is)
-- `next_steps.md` (current sequence)
-- `docs/polymarket_agentic_harness.md` (market frames / PIT labels)
-- `docs/history/research-track.md` (deleted research program; do not treat as current)
+- `CONTEXT.md` (glossary)
+- `README.md` / `project.md`
+- `next_steps.md`
+- `docs/adr/` (0001–0006)
+- `docs/polymarket_agentic_harness.md` (parked testbed)
+- `docs/history/research-track.md` (deleted research program)
 
 ## Non-negotiables
 
-- No post-`t` leakage; replayable history by cutoff.
-- Portable skills/subagents must not import hermes or `harness.orchestrator`.
-- `harness/orchestrator.py` is a **temporary** runner to replace.
+- Plugin overlay (`skills/`, `agents/`, `references/`); host owns `/loop` / `/automate`. No plugin daemon.
+- Portable skills/agents must not import hermes or `harness.orchestrator`.
+- `harness/orchestrator.py` is leftover, not the product to rewrite.
+- Training loop is forward: ledger → due-today → reflect at `Y`. Not historical PIT Brier.
+- Reflection may write plugin **and** vault graph. GNN analysis stays parked.
 
 ## Strategic defaults
 
-- Gradients before grand design: thin correct loop first, then scale.
-- Measurement over ontology expansion.
-- Vault + PIT + probes are the training surface; markets are labels and coverage, not the product.
+- Epochs = plugin + vault improvements; weights frozen; guard skill bloat.
+- Ungated problem discovery; cull on reflection; `K` new problems per discovery tick (start 1).
+- Ledger is `ledger.md` at repo root (problems + motivation; claims + justification).
+- Due-today and discovery are separate host jobs; ticker deferred until overlay exists.
+- Measurement over ontology expansion; live markets are discovery/labels, not the parked gold testbed.
 
 ## Sequencing (compressed)
 
-Next: skill/subagent interface → replace hermes v1 → eval on existing PIT probes. Tournament watcher rewrite later. Do not resume France/GNN/builder.
+Next: plugin overlay → `ledger.md` → Parent due-today behavior → host `/automate` later. Polymarket testbed after live loop. Do not resume France/GNN/builder. Do not replace orchestrator as the product.
 
 ## Engineering checks
 
 - Default pytest must pass without hermes on PATH.
-- Re-run PIT admissibility tests when vault layout or `vault_pit.py` changes.
+- Re-run PIT admissibility tests only when vault layout or `vault_pit.py` changes (legacy gate).
 
 ---
 
@@ -52,11 +58,15 @@ Next: skill/subagent interface → replace hermes v1 → eval on existing PIT pr
 - 2026-05-03: For `R(q, h_t)`, avoid a fixed global schema; use a minimal invariant envelope for audit/logging while optimizing the query-conditioned representation process itself.
 - 2026-05-03: LLM-in-loop seed set locked to 30 resolved Polymarket-only questions: 10 politics/institutional power, 10 economics/macro-policy, 10 culture/entertainment. Culture belief extraction is expected weaker; 10/domain tests anti-collapse/scaffold diversity, not powered calibration.
 - 2026-08-17: Pivot to harness-only training bed; delete research track from working tree; v1 hermes runner is temporary; v2 cognitive pipeline deleted.
+- 2026-08-18: Live ledger training loop (plugin + host `/loop`/`/automate`); not PIT backtest; not in-repo orchestrator rewrite. Claude-style plugin layout. Reflection writes vault graph; GNN still parked.
 
 ## Parked / planned later (agent-maintained)
 
 - France/GNN/warehouse/builder/WM · parked permanently unless un-parked · last full tree: `b8ac2d66` / `origin/main` `b50ae186`.
 - GNN-agent worktree · parked · path `conductor/workspaces/psychohistory-v2/gnn-agent`.
+- GNN analysis of the live vault graph · later; vault graph writes are in-scope now.
+- Polymarket testbed (gold, probes, `schemas/polymarket_agentic.py`) · after live loop exists.
+- Host `/automate` for Parent due-today vs discovery · after overlay + ledger.
 - Tournament watcher · rewrite from scratch; do not restore v2.
 - Predictive-coding centrality trajectory objective · parked (research-era).
 - Wikipedia point-in-time ingestion expansion · parked (research-era).

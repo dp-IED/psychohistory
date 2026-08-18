@@ -1,18 +1,20 @@
 # Psychohistory
 
-A **training bed** for forecasting skills and subagents that can run in any harness.
+A **training bed** for a forecasting **plugin** that any harness can load (Cursor, Claude Code, Codex, …).
 
 ## What “done” means here
 
-1. **Point-in-time vault.** For cutoff `t`, only evidence admissible at `t` is visible (`harness/vault_pit.py`).
-2. **Portable skills.** Compression, retrieval, blind-spot checks, and search tools do not import hermes or a specific agent CLI.
-3. **Eval loops.** Polymarket probes, backtests, and resolution/Brier records measure skill quality.
-4. **Harness-agnostic protocol.** Memory schema, episodes, and resolution stay usable when the runner changes.
+1. **Plugin overlay.** `skills/`, `agents/`, `references/` plus deterministic helpers. The host owns orchestration (`/loop`, `/automate`). No hermes import.
+2. **Live training loop.** Discover problems and claims → `ledger.md` → Parent wakes due agents → at `Y` reflect into plugin **and** vault graph. Fan-out is many live OSINT / political / socioeconomic bets, including self-chosen **problems** (method that should pay forward).
+3. **Vault graph.** Reflection may add entities, threads, concepts. GNN analysis of that graph is later (research track stays parked).
+4. **Epochs improve the plugin.** Frozen model weights. Guard skill bloat.
+
+Historical PIT filters and gold probes remain in-tree as legacy; they are not the epoch objective. The Polymarket **testbed** (gold/schemas) is parked; live markets are a discovery surface.
 
 ## Temporary vs durable
 
-- **Durable:** `graph-vault/`, PIT, `harness/skills/`, `harness/tools/`, `harness/policy/`, memory/agent-loop types, Polymarket ingest/schemas, probe data.
-- **Temporary:** `harness/orchestrator.py` and chain scripts that shell out to hermes. Replace next session.
+- **Durable:** `graph-vault/`, plugin overlay (to add), `ledger.md` (to add), `CONTEXT.md`, `docs/adr/`.
+- **Temporary:** `harness/orchestrator.py` and chain scripts that shell out to hermes. Do not rewrite them into the product.
 
 ## Not this repo anymore
 
