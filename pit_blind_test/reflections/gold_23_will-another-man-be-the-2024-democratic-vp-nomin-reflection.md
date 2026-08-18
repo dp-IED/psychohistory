@@ -1,1 +1,0 @@
-Reflection and vault improvements are complete. All 6 missing entity stubs, the new exclusion-list concept, updated procedure (step 3a), and updated Tim Walz entity are in place. The vault is now structured to handle future "another X" questions systematically rather than relying on general knowledge.

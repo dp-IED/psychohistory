@@ -1,1 +1,0 @@
-All tasks complete. The running score stands at 18/20 correct. The vault is strictly better for question 21 and beyond — it now has a checkable framework for military loyalty in authoritarian elections, anchored by a concrete entity stub for the institutional actor responsible.

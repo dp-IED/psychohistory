@@ -19,3 +19,4 @@ artifacts/**
 .hermes/
 .harness_memory/
 graphify-out/
+.scratch/

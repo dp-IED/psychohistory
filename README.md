@@ -1,40 +1,33 @@
 # Psychohistory
 
-Skills and subagent **training bed** for temporally clean forecasting.
+Harness-agnostic **plugin** for live forecasting. The repository **is** the plugin. Load in place (no marketplace cache):
 
-The durable product is a point-in-time **graph-vault**, PIT filters, compression skills, and eval probes. Agents should learn to forecast from admissible evidence only — not from a single CLI runner.
+```text
+claude --plugin-dir .
+```
 
-A **temporary** hermes v1 orchestrator still posts forecasts. Portable skills must not import it. Next session replaces that runner.
+Then `/due-today` or `/reflect`. Cursor: project-root Parent pointer at `.cursor/agents/parent.md`.
+
+Epochs improve `skills/`, `agents/`, `references/`, and (when Parent first writes it) a vault graph. The host owns `/loop` / `/automate`. Weights stay frozen.
 
 ## Start here
 
 | Document | Purpose |
 |----------|---------|
+| [`CONTEXT.md`](CONTEXT.md) | Domain language |
 | [`project.md`](project.md) | What this repo is |
 | [`next_steps.md`](next_steps.md) | Current work order |
-| [`docs/polymarket_agentic_harness.md`](docs/polymarket_agentic_harness.md) | Market frames, branches, PIT labels |
-| [`docs/history/research-track.md`](docs/history/research-track.md) | Deleted France/GNN/warehouse program (git history only) |
+| [`docs/adr/`](docs/adr/) | Locked decisions |
+| [`ledger.md`](ledger.md) | Schedule book |
 
 ## Layout
 
 | Path | Role |
 |------|------|
-| `graph-vault/` | Knowledge store (timelines, entities, threads, forecast runs) |
-| `harness/` | PIT, skills, tools, memory protocol; `orchestrator.py` is TEMPORARY |
-| `ingest/` | Polymarket resolved markets and branch graphs |
-| `schemas/` | Polymarket agentic contracts |
-| `data/polymarket/` | Hypotheses, tracked markets, forecasts |
-| `data/pit_market_probes/` | PIT calibration probes |
-| `scripts/` | Vault/PIT/backtest CLIs |
+| `.claude-plugin/plugin.json` | Plugin manifest (no version pin) |
+| `skills/` `agents/` `references/` | Overlay |
+| `ledger.md` | Problems + dated claims |
+| `harness/ledger.py` | Deterministic schedule reader |
+| `docs/adr/` | ADRs 0001–0006 |
 
-## Temporary runner (do not build on this)
-
-```text
-python -m scripts.run_backtest --source polymarket --max-questions 5
-```
-
-Requires `hermes` on PATH. Skills and subagents should take vault + cutoff + question as inputs instead.
-
-## Non-negotiable
-
-No post-`t` facts in inputs. Replay by cutoff.
+Retired PIT, hermes, Polymarket eval, and the old `graph-vault/` corpus live in git history (`origin/main`, `e867bec3`), not this branch.

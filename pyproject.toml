@@ -4,25 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "psychohistory"
-version = "0.2.0"
-description = "Skills and subagent training bed for temporally clean forecasting"
+version = "0.3.0"
+description = "Harness-agnostic plugin for live forecasting"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [
-  "pydantic>=2.5",
-  "pyyaml>=6.0",
-  "openai>=1.35",
-]
+dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+dev = ["pytest>=8.0"]
 
 [tool.setuptools.packages.find]
-include = ["harness*", "ingest*", "schemas*"]
+include = ["harness*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"

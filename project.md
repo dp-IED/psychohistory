@@ -1,19 +1,18 @@
 # Psychohistory
 
-A **training bed** for forecasting skills and subagents that can run in any harness.
+A **training bed** for a forecasting **plugin** that any harness can load (Cursor, Claude Code, Codex, …). This repository is the plugin root.
 
 ## What “done” means here
 
-1. **Point-in-time vault.** For cutoff `t`, only evidence admissible at `t` is visible (`harness/vault_pit.py`).
-2. **Portable skills.** Compression, retrieval, blind-spot checks, and search tools do not import hermes or a specific agent CLI.
-3. **Eval loops.** Polymarket probes, backtests, and resolution/Brier records measure skill quality.
-4. **Harness-agnostic protocol.** Memory schema, episodes, and resolution stay usable when the runner changes.
+1. **Plugin overlay.** `skills/`, `agents/`, `references/` at the repo root. Host owns orchestration (`--plugin-dir .`, later `/loop` / `/automate`).
+2. **Live training loop.** Discover problems and claims → `ledger.md` → Parent wakes due agents → at `Y` reflect into plugin **and** a vault graph Parent creates on first write.
+3. **Epochs improve the plugin.** Frozen model weights. Guard skill bloat.
 
 ## Temporary vs durable
 
-- **Durable:** `graph-vault/`, PIT, `harness/skills/`, `harness/tools/`, `harness/policy/`, memory/agent-loop types, Polymarket ingest/schemas, probe data.
-- **Temporary:** `harness/orchestrator.py` and chain scripts that shell out to hermes. Replace next session.
+- **Durable:** plugin overlay, `ledger.md`, `harness.ledger`, `CONTEXT.md`, `docs/adr/`.
+- **Not on this branch:** hermes orchestrator, PIT filters, gold probes, inherited vault corpus (git history).
 
-## Not this repo anymore
+## Not this repo on this branch
 
-The France GDELT GNN, warehouse, learned graph builder, and world-model track were removed from the working tree. See [`docs/history/research-track.md`](docs/history/research-track.md).
+France GDELT GNN, warehouse, learned graph builder, and the old eval trees were removed from this branch. Retrieve from git history if needed.
