@@ -1,6 +1,6 @@
 # Psychohistory
 
-A harness-agnostic plugin for live forecasting: agents write justified claims in a ledger, a host loop wakes a Parent, the Parent wakes today's agents, reflection updates the plugin and the vault graph. This repo is a training bed, not an in-process orchestrator.
+A harness-agnostic plugin for live forecasting: agents write justified claims in a ledger, a host loop wakes a Parent, the Parent wakes today's agents, reflection grows the plugin. This repo is a training bed, not an in-process orchestrator.
 
 ## Language
 
@@ -17,8 +17,8 @@ A markdown agent definition under `agents/`: a named role with its own prompt an
 _Avoid_: Subagent-as-Python-type, delegate_task roster inside orchestrator.py
 
 **Reference**:
-Long-form material under `references/` that skills and agents consult (procedures, vault conventions). Not runtime forecast output.
-_Avoid_: Spec dump, CONTEXT.md as a spec
+Long-form material under `references/` that skills and agents consult (procedures, strategies, durable facts). Not a sidecar vault and not runtime forecast output.
+_Avoid_: Spec dump; restoring `graph-vault/` layout; CONTEXT.md as a spec
 
 **Script**:
 Deterministic code. The live schedule reader is `harness.ledger`. No LLM.
@@ -33,7 +33,7 @@ Retired vault filter (git history). Not the training loop.
 _Avoid_: Using PIT as the name for live wakeups or host cron
 
 **Training epoch**:
-One scored pass whose intended outcome is plugin improvement: new or tighter skills, new tools, clearer references — not a weight update. Guard against skill bloat (`/writing-for-agents`).
+One scored pass whose intended outcome is plugin growth: new or rewritten skills, agents, tools/scripts, strategies, and instructions — not a weight update. Later reflection culls overlay that failed to transfer.
 _Avoid_: Fine-tuning run, gradient step
 
 **Plugin overlay**:
@@ -65,17 +65,17 @@ Why this problem was opened. Stored on the problem in the ledger so Parent does 
 _Avoid_: Justification (that belongs on a dated claim)
 
 **Parent**:
-Due-today tick: read the ledger, wake agents scheduled for today. Discovery is a different, rarer tick. At most **K** new problems per discovery tick; open inventory unbounded. Reflection tick: after `Y`, grade and write overlay (and vault when Parent creates it).
-_Avoid_: Repo crontab; discovery on the same tick as due-today
+Due-today tick (`/due-today`): read the ledger, wake agents scheduled for today. Discovery is a different, rarer tick (`/discover`). At most **K** new problems per discovery tick; open inventory unbounded. Reflection tick (`/reflect`): after `Y`, grade and grow or cull the plugin.
+_Avoid_: Repo crontab; combining due-today, discovery, and reflect in one host job
 
 **Fan-out**:
 Breadth of live claims plus ungated proactive **problem** finding. Reflection culls. Calibration is scoring at `Y` plus whether methods transferred.
 _Avoid_: Multi-agent roster on one question; replaying old gold
 
 **Reflection**:
-After `Y`, grade the claim and the justification, then write **plugin** (skills/agents/references, with bloat guardrails) **and vault** (entities, threads, concepts — created on first write). GNN scoring of that graph is later, not this loop.
-_Avoid_: Plugin-only patches; silent weight updates
+After `Y`, grade the claim and the justification, then change the **plugin** (new or rewritten skills, agents, references, scripts/tools, strategies). Add files when the grade earned a new capability. Cull overlay that failed. Durable facts live in the overlay.
+_Avoid_: Sidecar `graph-vault/`; silent weight updates
 
 **Training loop**:
-Forward only: discover problems and claims → append ledger → host due-today tick → Parent wakes due agents → at `Y` reflect → plugin + vault. Discovery tick is separate.
+Forward only: discover problems and claims → append ledger → host due-today tick → Parent wakes due agents → at `Y` reflect → plugin. Discovery tick is separate.
 _Avoid_: PIT backtest as the epoch; gold Brier as quality

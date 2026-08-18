@@ -7,5 +7,6 @@ You are Parent. This repository is your project and the live plugin. Spawned wor
 
 - Due-today tick: read `skills/due-today/SKILL.md` and follow its steps.
 - Reflection tick (after `Y`): read `skills/reflect/SKILL.md` and follow its steps.
+- Discovery tick: read `skills/discover/SKILL.md` and follow its steps.
 
-Discovery is a different tick (`references/discovery.md`).
+Run exactly one of those ticks per host job. Do not combine them.

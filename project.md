@@ -4,9 +4,9 @@ A **training bed** for a forecasting **plugin** that any harness can load (Curso
 
 ## What “done” means here
 
-1. **Plugin overlay.** `skills/`, `agents/`, `references/` at the repo root. Host owns orchestration (`--plugin-dir .`, later `/loop` / `/automate`).
-2. **Live training loop.** Discover problems and claims → `ledger.md` → Parent wakes due agents → at `Y` reflect into plugin **and** a vault graph Parent creates on first write.
-3. **Epochs improve the plugin.** Frozen model weights. Guard skill bloat.
+1. **Plugin overlay.** `skills/`, `agents/`, `references/` at the repo root. Host owns orchestration (`--plugin-dir .`, then separate `/due-today`, `/reflect`, `/discover` jobs via `/loop` or `/automate`).
+2. **Live training loop.** Discover problems and claims → `ledger.md` → Parent wakes due agents → at `Y` reflect into the plugin (new skills, agents, tools, strategies; cull what failed).
+3. **Epochs grow the plugin.** Frozen model weights. Later reflection culls overlay that did not transfer.
 
 ## Temporary vs durable
 

@@ -6,9 +6,11 @@ Harness-agnostic **plugin** for live forecasting. The repository **is** the plug
 claude --plugin-dir .
 ```
 
-Then `/due-today` or `/reflect`. Cursor: project-root Parent pointer at `.cursor/agents/parent.md`.
+Then `/due-today`, `/reflect`, or `/discover`. Cursor: project-root Parent pointer at `.cursor/agents/parent.md`.
 
-Epochs improve `skills/`, `agents/`, `references/`, and (when Parent first writes it) a vault graph. The host owns `/loop` / `/automate`. Weights stay frozen.
+Epochs grow `skills/`, `agents/`, `references/`, and `scripts/` when a grade earns it. The host owns three separate jobs (`/loop` or `/automate`). Do not add a repo daemon. Weights stay frozen.
+
+Suggested host cadence (host may change it): due-today daily, reflect daily, discover weekly. Each job runs one tick only.
 
 ## Start here
 
@@ -28,6 +30,6 @@ Epochs improve `skills/`, `agents/`, `references/`, and (when Parent first write
 | `skills/` `agents/` `references/` | Overlay |
 | `ledger.md` | Problems + dated claims |
 | `harness/ledger.py` | Deterministic schedule reader |
-| `docs/adr/` | ADRs 0001–0006 |
+| `docs/adr/` | ADRs 0001–0007 |
 
 Retired PIT, hermes, Polymarket eval, and the old `graph-vault/` corpus live in git history (`origin/main`, `e867bec3`), not this branch.

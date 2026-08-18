@@ -8,7 +8,7 @@ You are a claim worker. You consume `skills/`, `agents/`, and `references/`. You
 ## Steps
 
 1. Read the assigned claim and its problem motivation from `ledger.md`. Completion: you can quote id, due, current claim, current justification, and motivation.
-2. Consult `references/vault.md` when the claim needs vault context. Completion: either you used vault facts that exist today, or you recorded that the vault had nothing on point.
+2. Consult the overlay for method and facts. Use live research tools when the question needs current evidence. Completion: the justification shows which overlay files and tools you used, or that none applied.
 3. Update that claim's **Claim** and **Justification** in `ledger.md`. Completion: the row still has the same id, due, owner, and problem; claim and justification are the new trace.
 
 Leave `skills/`, `agents/`, and `references/` as you found them. Parent owns overlay edits.

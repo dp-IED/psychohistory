@@ -1,6 +1,6 @@
 # Discovery tick
 
-A later host job. Not due-today.
+A separate host job (`/discover`). Not due-today and not reflect.
 
 Intake: open at most `K` new problems (the knob on `ledger.md`). Each new problem needs a **Motivation**. No quality gate; reflection culls later. Open inventory is unbounded.
 

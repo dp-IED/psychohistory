@@ -1,7 +1,7 @@
 ---
 description: Psychohistory memory distillate — concise defaults, sequencing, and agent-maintained preferences
 alwaysApply: true
-last_reviewed: 2026-08-18
+last_reviewed: 2026-08-19
 ---
 
 # Project memory (concise)
@@ -20,19 +20,19 @@ Purpose: harness-agnostic plugin training bed for live forecasting. Canonical de
 - `CONTEXT.md` (glossary)
 - `README.md` / `project.md`
 - `next_steps.md`
-- `docs/adr/` (0001–0006)
+- `docs/adr/` (0001–0007)
 
 ## Non-negotiables
 
 - Plugin overlay (`skills/`, `agents/`, `references/`); host owns `/loop` / `/automate`. No plugin daemon.
 - Repo is the plugin: `claude --plugin-dir .`. No marketplace cache as the live copy.
 - Portable overlay must not import hermes or a retired orchestrator.
-- Training loop is forward: ledger → due-today → reflect at `Y`.
-- Reflection may write plugin **and** vault (Parent creates the vault dir on first write). GNN stays parked.
+- Training loop is forward: discover → ledger → due-today → reflect at `Y`.
+- Reflection grows or culls the plugin (ADR 0007). No `graph-vault/` write. GNN stays parked.
 
 ## Strategic defaults
 
-- Epochs = plugin (+ vault) improvements; weights frozen; guard skill bloat.
+- Epochs = plugin growth (new skills, agents, tools, strategies); later reflection culls; weights frozen.
 - Ungated problem discovery; cull on reflection; `K` new problems per discovery tick (start 1).
 - Ledger is `ledger.md` at repo root.
 - Due-today, discovery, and reflect are separate host jobs.
@@ -40,7 +40,7 @@ Purpose: harness-agnostic plugin training bed for live forecasting. Canonical de
 
 ## Sequencing (compressed)
 
-Next: host ticker, then live claims. Polymarket testbed after live loop. Do not restore orchestrator/PIT/gold vault onto this branch.
+Next: arm host ticker (`/due-today` daily, `/reflect` daily, `/discover` weekly), then live claims. Polymarket testbed after live loop. Do not restore orchestrator/PIT/gold vault onto this branch.
 
 ## Engineering checks
 
@@ -55,12 +55,12 @@ Next: host ticker, then live claims. Polymarket testbed after live loop. Do not 
 - 2026-05-03: For `R(q, h_t)`, avoid a fixed global schema; use a minimal invariant envelope for audit/logging while optimizing the query-conditioned representation process itself.
 - 2026-08-17: Pivot to harness-only training bed; v1 hermes runner was temporary.
 - 2026-08-18: Live ledger training loop (plugin + host `/loop`/`/automate`); Claude-style plugin layout; in-place load; branch ships plugin + context only.
+- 2026-08-19: Self-improving plugin: reflection may add skills, agents, tools, strategies; durable facts live in the overlay, not `graph-vault/`.
 
 ## Parked / planned later (agent-maintained)
 
 - Old tree (PIT, hermes, gold vault, probes) · git history · `e867bec3` / `origin/main`.
 - France/GNN/warehouse/builder/WM · parked · last full tree: `b8ac2d66`.
-- GNN analysis of a live vault graph · later; Parent creates vault on first reflection write.
+- GNN analysis of a live overlay graph · later; do not recreate `graph-vault/`.
 - Polymarket testbed · after live loop; retrieve from history.
-- Host `/automate` for Parent due-today vs discovery vs reflect · after overlay+ledger (overlay exists).
 - Tournament watcher · rewrite from scratch; do not restore v2.
