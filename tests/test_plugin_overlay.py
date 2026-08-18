@@ -34,7 +34,7 @@ def test_plugin_manifest_declares_in_place_plugin() -> None:
 
 
 def test_overlay_lives_at_plugin_root() -> None:
-    skill = REPO_ROOT / "skills" / "due-today" / "SKILL.md"
+    skill = REPO_ROOT / "skills" / "predict" / "SKILL.md"
     parent = REPO_ROOT / "agents" / "parent.md"
     worker = REPO_ROOT / "agents" / "claim-worker.md"
     discovery = REPO_ROOT / "references" / "discovery.md"
@@ -44,7 +44,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert discovery.is_file()
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
-    assert skill_meta["name"] == "due-today"
+    assert skill_meta["name"] == "predict"
     assert skill_meta.get("disable-model-invocation") == "true"
     assert "ledger.md" in skill_body
     assert "references/discovery.md" in skill_body
@@ -55,19 +55,19 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert discover_meta.get("disable-model-invocation") == "true"
     assert "ledger.md" in discover_body
     assert "references/discovery.md" in discover_body
-    assert "due-today" in discover_body.lower()
+    assert "predict" in discover_body.lower()
     reflect = REPO_ROOT / "skills" / "reflect" / "SKILL.md"
     assert reflect.is_file()
     reflect_meta, reflect_body = _frontmatter(reflect)
     assert reflect_meta["name"] == "reflect"
     assert reflect_meta.get("disable-model-invocation") == "true"
-    assert "after_y" in reflect_body
+    assert "after_resolution" in reflect_body
     assert "justification" in reflect_body.lower()
     assert "graph-vault" in reflect_body
     assert "new or rewritten" in reflect_body.lower()
     parent_meta, parent_body = _frontmatter(parent)
     assert parent_meta["name"] == "parent"
-    assert "skills/due-today/SKILL.md" in parent_body
+    assert "skills/predict/SKILL.md" in parent_body
     assert "skills/reflect/SKILL.md" in parent_body
     assert "skills/discover/SKILL.md" in parent_body
     worker_meta, worker_body = _frontmatter(worker)
@@ -79,7 +79,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     pointer_meta, pointer_body = _frontmatter(pointer)
     assert pointer_meta["name"] == "parent"
     assert "agents/parent.md" in pointer_body
-    assert "due-today" in pointer_body
+    assert "predict" in pointer_body
 
 
 def test_overlay_markdown_stays_portable() -> None:

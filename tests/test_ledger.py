@@ -17,14 +17,16 @@ K: 1
 
 ### P-nato — NATO article 5 this year
 
+Resolution: 2026-12-31
+
 Motivation: Markets will score alliance cohesion; we need a problem row before discovery exists.
 
 ## Claims
 
-### C-due
+### C-early
 
 - Problem: P-nato
-- Due: 2026-08-18
+- Forecast: 2026-08-18
 - Owner: nato-watcher
 - Claim: NATO will not invoke article 5 in 2026.
 - Justification: No article 5 trigger is on the board this year.
@@ -32,10 +34,10 @@ Motivation: Markets will score alliance cohesion; we need a problem row before d
 ### C-later
 
 - Problem: P-nato
-- Due: 2026-12-31
+- Forecast: 2026-09-01
 - Owner: nato-watcher
 - Claim: Alliance cohesion holds through year-end.
-- Justification: Year-end is a different wakeup.
+- Justification: Year-end is a different forecast day.
 """
 
 
@@ -44,67 +46,49 @@ def test_ledger_reports_k() -> None:
     assert book.k == 1
 
 
-def test_ledger_lists_problems_with_motivation() -> None:
+def test_ledger_lists_problems_with_motivation_and_resolution() -> None:
     book = parse_ledger(_FIXTURE)
     assert len(book.problems) == 1
     problem = book.problems[0]
     assert problem.id == "P-nato"
     assert problem.title == "NATO article 5 this year"
+    assert problem.resolution_day == date(2026, 12, 31)
     assert problem.motivation == (
         "Markets will score alliance cohesion; we need a problem row before discovery exists."
     )
 
 
-def test_due_today_returns_claims_scheduled_on_as_of_date() -> None:
+def test_live_problems_are_those_at_or_before_resolution_day() -> None:
     book = parse_ledger(_FIXTURE)
-    due = book.due_today(date(2026, 8, 18))
-    assert len(due) == 1
-    claim = due[0]
-    assert claim.id == "C-due"
-    assert claim.owner == "nato-watcher"
-    assert claim.due == date(2026, 8, 18)
-    assert claim.claim == "NATO will not invoke article 5 in 2026."
-    assert claim.justification == "No article 5 trigger is on the board this year."
+    live = book.live_problems(date(2026, 8, 18))
+    assert [p.id for p in live] == ["P-nato"]
+    assert book.live_problems(date(2026, 12, 31))[0].id == "P-nato"
+    assert book.live_problems(date(2027, 1, 1)) == ()
 
 
-def test_due_today_excludes_claims_due_on_another_day() -> None:
+def test_after_resolution_is_claims_whose_problem_has_passed() -> None:
     book = parse_ledger(_FIXTURE)
-    due = book.due_today(date(2026, 8, 18))
-    assert [c.id for c in due] == ["C-due"]
-    assert book.due_today(date(2026, 1, 1)) == ()
+    assert book.after_resolution(date(2026, 12, 31)) == ()
+    ids = {c.id for c in book.after_resolution(date(2027, 1, 1))}
+    assert ids == {"C-early", "C-later"}
 
 
-def test_after_y_is_claims_whose_resolution_date_has_passed() -> None:
+def test_forecast_day_is_when_the_row_was_written() -> None:
     book = parse_ledger(_FIXTURE)
-    assert [c.id for c in book.after_y(date(2026, 8, 18))] == []
-    assert [c.id for c in book.after_y(date(2026, 8, 19))] == ["C-due"]
-    assert {c.id for c in book.after_y(date(2027, 1, 1))} == {"C-due", "C-later"}
+    early = next(c for c in book.claims if c.id == "C-early")
+    assert early.forecast_day == date(2026, 8, 18)
+    assert early.owner == "nato-watcher"
+    assert early.claim == "NATO will not invoke article 5 in 2026."
 
 
-def test_explicit_y_can_differ_from_due() -> None:
-    text = _FIXTURE.replace(
-        "- Due: 2026-08-18\n- Owner:",
-        "- Due: 2026-08-18\n- Y: 2026-09-01\n- Owner:",
-        1,
-    )
-    book = parse_ledger(text)
-    claim = next(c for c in book.claims if c.id == "C-due")
-    assert claim.due == date(2026, 8, 18)
-    assert claim.y == date(2026, 9, 1)
-    assert [c.id for c in book.after_y(date(2026, 8, 19))] == []
-    assert [c.id for c in book.after_y(date(2026, 9, 2))] == ["C-due"]
-
-
-def test_after_y_skips_a_claim_that_is_also_due_today() -> None:
-    text = _FIXTURE.replace(
-        "- Due: 2026-08-18\n- Owner:",
-        "- Due: 2026-08-18\n- Y: 2026-08-01\n- Owner:",
-        1,
-    )
-    book = parse_ledger(text)
-    assert [c.id for c in book.due_today(date(2026, 8, 18))] == ["C-due"]
-    assert [c.id for c in book.after_y(date(2026, 8, 18))] == []
-    assert [c.id for c in book.after_y(date(2026, 8, 19))] == ["C-due"]
+def test_missing_resolution_is_an_error() -> None:
+    text = _FIXTURE.replace("Resolution: 2026-12-31\n\n", "")
+    try:
+        parse_ledger(text)
+    except ValueError as exc:
+        assert "missing Resolution" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
 
 
 def test_repo_ledger_is_the_schedule_book() -> None:
@@ -112,8 +96,7 @@ def test_repo_ledger_is_the_schedule_book() -> None:
     book = parse_ledger(path.read_text(encoding="utf-8"))
     assert book.k == 1
     assert book.problems
-    assert all(problem.motivation for problem in book.problems)
-    assert book.claims
-    assert all(
-        claim.owner and claim.claim and claim.justification for claim in book.claims
-    )
+    assert all(problem.motivation and problem.resolution_day for problem in book.problems)
+    for claim in book.claims:
+        assert claim.owner and claim.claim and claim.justification and claim.forecast_day
+        assert book.problem(claim.problem_id) is not None

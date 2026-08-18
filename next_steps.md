@@ -6,8 +6,8 @@ Domain language: [`CONTEXT.md`](CONTEXT.md). Decisions: [`docs/adr/`](docs/adr/)
 
 ## Next
 
-1. **Arm the host ticker** — three separate jobs (due-today daily, reflect daily, discover weekly) via `/loop` or `/automate`. No repo daemon. Cloud jobs must check out `harness-only` after this branch is pushed.
-2. **Live claims** — keep scoring `C-usca-338-deal` at `Y`; replace `C-seed` when convenient. Reflection edits the plugin only (ADR 0007).
+1. **Arm the host ticker** — three separate jobs (predict daily, reflect daily several hours later, discover weekly) via `/loop` or `/automate`. No repo daemon. Each job pull-ff, one tick, commit+push `harness-only`, no PR.
+2. **Live claims** — keep scoring `P-usca-338` after 19 Aug; `P-il-knesset-26` is the hard months-out starter. Reflection edits the plugin only (ADR 0007).
 3. **Polymarket testbed** — historical gold/probes; retrieve from git history after the live loop is ticking. Live markets are a discovery surface, not that testbed.
 
 ## Do not pick up

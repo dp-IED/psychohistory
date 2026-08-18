@@ -20,27 +20,27 @@ Purpose: harness-agnostic plugin training bed for live forecasting. Canonical de
 - `CONTEXT.md` (glossary)
 - `README.md` / `project.md`
 - `next_steps.md`
-- `docs/adr/` (0001–0007)
+- `docs/adr/` (0001–0010)
 
 ## Non-negotiables
 
 - Plugin overlay (`skills/`, `agents/`, `references/`); host owns `/loop` / `/automate`. No plugin daemon.
 - Repo is the plugin: `claude --plugin-dir .`. No marketplace cache as the live copy.
 - Portable overlay must not import hermes or a retired orchestrator.
-- Training loop is forward: discover → ledger → due-today → reflect at `Y`.
-- Reflection grows or culls the plugin (ADR 0007). No `graph-vault/` write. GNN stays parked.
+- Training loop is forward: discover (problem + resolution day) → predict while live → reflect after resolution day.
+- Reflection grows or culls the plugin (ADR 0007). No `graph-vault/` write. Do not restore the France GNN tree; new simulators only when a grade earns overlay tools.
 
 ## Strategic defaults
 
 - Epochs = plugin growth (new skills, agents, tools, strategies); later reflection culls; weights frozen.
 - Ungated problem discovery; cull on reflection; `K` new problems per discovery tick (start 1).
 - Ledger is `ledger.md` at repo root.
-- Due-today, discovery, and reflect are separate host jobs.
+- Predict, discover, and reflect are separate host jobs.
 - This branch does not ship the old PIT/eval/`graph-vault/` corpus.
 
 ## Sequencing (compressed)
 
-Next: arm host ticker (`/due-today` daily, `/reflect` daily, `/discover` weekly), then live claims. Polymarket testbed after live loop. Do not restore orchestrator/PIT/gold vault onto this branch.
+Next: overlay + tests for discover-schedules / predict-writes (ADR 0008–0010), then host ticker (`/predict` daily, `/reflect` daily later, `/discover` weekly). Polymarket testbed after live loop. Do not restore orchestrator/PIT/gold vault onto this branch.
 
 ## Engineering checks
 
@@ -56,11 +56,14 @@ Next: arm host ticker (`/due-today` daily, `/reflect` daily, `/discover` weekly)
 - 2026-08-17: Pivot to harness-only training bed; v1 hermes runner was temporary.
 - 2026-08-18: Live ledger training loop (plugin + host `/loop`/`/automate`); Claude-style plugin layout; in-place load; branch ships plugin + context only.
 - 2026-08-19: Self-improving plugin: reflection may add skills, agents, tools, strategies; durable facts live in the overlay, not `graph-vault/`.
+- 2026-08-19: Overlay is memory. Live problems may append revision claims (ADR 0008). Horizons lengthen across epochs; simulators only when a grade earns them.
+- 2026-08-19: Discover sets first Due; predict writes claim+justification (ADR 0009). Rename due-today → predict.
+- 2026-08-19: Due and Y are one clock: resolution day on the problem; forecast day on each claim (ADR 0010).
 
 ## Parked / planned later (agent-maintained)
 
 - Old tree (PIT, hermes, gold vault, probes) · git history · `e867bec3` / `origin/main`.
-- France/GNN/warehouse/builder/WM · parked · last full tree: `b8ac2d66`.
+- France/GNN/warehouse/builder/WM · parked · `b8ac2d66`; do not restore onto this branch. Plugin-grown simulator later if a grade earns it.
 - GNN analysis of a live overlay graph · later; do not recreate `graph-vault/`.
 - Polymarket testbed · after live loop; retrieve from history.
 - Tournament watcher · rewrite from scratch; do not restore v2.

@@ -9,26 +9,29 @@ The loadable instruction surface of this repository: skills, agents, references,
 *Avoid:* graph-vault, sidecar vault, inherited corpus
 
 ### Reflection
-The host tick after a claim’s resolution date. Parent grades the claim and the justification, then grows or culls the plugin overlay. It is not a due-today wakeup and not a weight update.
-*Avoid:* vault append, tighten-only patch
+The host tick after a problem’s resolution day. Parent grades the whole dated-claim series, then grows or culls the plugin overlay. It is not a predict wakeup and not a weight update.
+*Avoid:* vault append, tighten-only patch, grading only the last row
 
-Reflection may add new skills, agents, tools, strategies, and instructions when the grade earned a new capability. Later reflection deletes or merges overlay that failed to transfer.
+Reflection may add new or rewritten skills, agents, references, scripts/tools, strategies, and instructions when the grade earned a new capability. Later reflection deletes or merges overlay that failed to transfer.
 
 ### Training epoch
 One scored pass whose intended outcome is plugin overlay change, including new files, not a change to foundation model weights.
 *Avoid:* fine-tuning run, historical Brier label
 
 ### Parent
-The overlay writer. On due-today it wakes claim owners. On reflection it edits the plugin. On discovery it opens problems. One host job runs exactly one of those ticks.
+The overlay writer. On predict it wakes claim workers for live problems. On reflection it edits the plugin. On discovery it opens problems and sets resolution day. One host job runs exactly one of those ticks.
 
 ### Claim worker
 A consumer of the overlay. It updates Claim and Justification on one due ledger row and does not edit the overlay.
 
 ### Ledger
-The Parent’s one schedule book: problems with motivation, and dated claims with due date, optional resolution date, owner, claim, and justification.
+The Parent’s one schedule book: problems (id, title, motivation, resolution day), dated claims (id, problem, forecast day, owner, claim, justification), and K (max new problems per discover tick).
 
-### Y
-The resolution date on a dated claim. Reflection selects claims whose Y is strictly before today and that are not due today. If Y is omitted on the ledger, it equals Due.
+### Resolution day
+The date the world answers the problem. Discover sets it. Predict runs while today is on or before it. Reflection runs after it. Due and Y were this one date.
+
+### Forecast day
+The date predict wrote a dated claim. How early the outcome showed up.
 
 ## Flagged ambiguities
 

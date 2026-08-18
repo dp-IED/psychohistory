@@ -38,15 +38,15 @@ A competing product reading — **tighten existing files first, and do not add a
 
 Role split: Parent is the overlay writer (`skills/reflect/SKILL.md:17`). Claim workers consume `skills/`, `agents/`, and `references/` and update only **Claim** and **Justification** on their ledger row; they leave overlay trees as they found them (`agents/claim-worker.md:6`, `agents/claim-worker.md:14`). Parent runs exactly one tick per host job (`agents/parent.md:8-12`).
 
-Tests: `references/vault.md` was removed by this decision and must stay gone; reflect’s body must mention `graph-vault` (as a prohibition) and “new or rewritten”; the worker must not mention `references/vault.md` (`tests/test_plugin_overlay.py:45`, `tests/test_plugin_overlay.py:66-67`, `tests/test_plugin_overlay.py:77`). Overlay edits that exist only as uncommitted local work are pending, not merged.
+Tests: `references/vault.md` was removed by this decision and must stay gone; reflect’s body must contain the substring `graph-vault` (the skill uses it as “do not write”) and “new or rewritten”; the worker must not mention `references/vault.md` (`tests/test_plugin_overlay.py:45`, `tests/test_plugin_overlay.py:66-67`, `tests/test_plugin_overlay.py:77`). As of `origin/harness-only` this is on the branch, not only a local working tree.
 
-Older notes under `docs/plans/` that leave `graph-vault/.gitkeep` as a write target are a pre-fix plan, historical relative to ADR 0007. The live reflect skill forbids writing `graph-vault/` (`skills/reflect/SKILL.md:15`).
+The 2026-08-18 cleanup plan still lists `graph-vault/.gitkeep` as a write target (`docs/plans/2026-08-18-plugin-first-branch-cleanup.md`). That is a pre-fix plan, historical relative to ADR 0007. The live reflect skill forbids writing `graph-vault/` (`skills/reflect/SKILL.md:15`).
 
 ## Guidance
 
 Treat reflection as **plugin surgery with an add/cull pair**, not as a vault append and not as an “edit in place only” tax.
 
-1. **After `Y`, grade then grow.** On a reflection tick, parse the ledger, select claims with `Y` strictly before today, grade Claim and Justification, then change the plugin so the next tick is stronger (`skills/reflect/SKILL.md:9-15`). Completion is either working-tree plugin diffs that match the grades, or an explicit note that nothing in the plugin needed to change (`skills/reflect/SKILL.md:15`).
+1. **After resolution day, grade then grow.** On a reflection tick, parse the ledger, select `ledger.after_resolution(as_of)`, grade the whole Claim/Justification series, then change the plugin so the next tick is stronger (`skills/reflect/SKILL.md`). Completion is either working-tree plugin diffs that match the grades, or an explicit note that nothing in the plugin needed to change.
 
 2. **Add files when the grade earned a new capability.** New or rewritten skills, agents, references, scripts/tools, strategies, and instructions are in-scope (`skills/reflect/SKILL.md:15`; `CONTEXT.md:75-76`). Do not interpret “cull later” as “never create a new skill.” One new skill (or agent, reference, or strategy) per transferred method is fine when that is the point of the grade. Avoid a mechanical new skill per dated claim only when the grade did not earn a distinct capability — that is a quality judgment, not a product ban.
 
@@ -56,7 +56,7 @@ Treat reflection as **plugin surgery with an add/cull pair**, not as a vault app
 
 5. **Workers do not grow the plugin.** Claim workers update the assigned ledger row only (`agents/claim-worker.md:12-14`). Parent (or whoever the host wakes for `/reflect`) owns overlay diffs (`skills/reflect/SKILL.md:17`).
 
-6. **Epochs are not weight updates.** Do not treat forecast scores as fine-tuning labels (`docs/adr/0002-training-epochs-improve-plugin.md:5`; `CONTEXT.md:35-37`).
+6. **Epochs are not weight updates.** Do not treat forecast scores as fine-tuning labels (`docs/adr/0002-training-epochs-improve-plugin.md:3-5`; `CONTEXT.md:35-37`).
 
 7. **Keep the ticker on the host.** Scheduling remains `/loop`, `/automate`, or equivalent; do not add a repo-owned daemon (`docs/adr/0004-reflection-writes-graph-host-schedules.md:5`).
 
@@ -64,9 +64,9 @@ Treat reflection as **plugin surgery with an add/cull pair**, not as a vault app
 
 If reflection only tightens existing files, the training loop cannot acquire new methods, owners, tools, or strategies. ADR 0002 and ADR 0007 define the epoch as plugin growth including new files (`docs/adr/0002-training-epochs-improve-plugin.md:3`; `docs/adr/0007-reflection-grows-the-plugin.md:3`). Blocking adds would freeze capability at the seed overlay and turn “cull” into a ban instead of a later prune.
 
-If reflection writes a sidecar `graph-vault/` (or a `references/vault.md` stand-in), durable knowledge splits from the loadable plugin. Overlay tests fail if `vault.md` exists or if workers point at it (`tests/test_plugin_overlay.py:45`, `tests/test_plugin_overlay.py:77`). The reflect skill must mention `graph-vault` so the prohibition stays in the instruction surface agents actually read (`tests/test_plugin_overlay.py:66`; `skills/reflect/SKILL.md:15`).
+If reflection writes a sidecar `graph-vault/` (or a `references/vault.md` stand-in), durable knowledge splits from the loadable plugin. Overlay tests fail if `vault.md` exists or if workers point at it (`tests/test_plugin_overlay.py:45`, `tests/test_plugin_overlay.py:77`). The reflect skill must contain the substring `graph-vault` (`tests/test_plugin_overlay.py:66`; `skills/reflect/SKILL.md:15`).
 
-If workers edit overlay, due-today ticks mix forecasting with training, and Parent no longer has a single writer for growth vs cull (`agents/claim-worker.md:14`; `skills/reflect/SKILL.md:17`).
+If workers edit overlay, predict ticks mix forecasting with training, and Parent no longer has a single writer for growth vs cull (`agents/claim-worker.md`; `skills/reflect/SKILL.md`).
 
 Misreading ADR 0004 as still authorizing vault writes would resurrect a layout the current ADRs forbid (`docs/adr/0004-reflection-writes-graph-host-schedules.md:3`; `docs/adr/0007-reflection-grows-the-plugin.md:7`).
 
