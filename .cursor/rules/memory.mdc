@@ -62,7 +62,7 @@ Next: host ticker (`/predict` daily, `/reflect` daily later, `/discover` weekly)
 - 2026-08-19: Raise discover `K` to 15 to take more end-August / early-September clocks.
 - 2026-08-19: Discover sets first Due; predict writes claim+justification (ADR 0009). Rename due-today → predict.
 - 2026-08-19: Due and Y are one clock: resolution day on the problem; forecast day on each claim (ADR 0010).
-- 2026-08-19: Long-term Gramsci/mental modeling uses scored events as Y and analog cards as mechanisms; no a-priori taxonomy; simulators only if a grade earns them.
+- 2026-08-19: Long-term “how society works” modeling waits on plain-language locks in `docs/plans/2026-08-19-scale-forecast-roadmap.md`; scored events stay the test; no a-priori taxonomy.
 
 ## Parked / planned later (agent-maintained)
 
