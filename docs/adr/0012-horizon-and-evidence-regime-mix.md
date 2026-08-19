@@ -8,6 +8,6 @@ Domain mix (ADR 0011) stops a large `K` from clustering in one topic. A second c
 - **Evidence-regime mix.** At least one new problem should be **news-now** (deadline, live talks, a scrape can move the claim). At least one should be **analog/base-rate**: motivation says the interesting method is a past class of cases, a structural rate, or a method this plugin already claimed after a prior reflection — still scored in the future.
 - **Transfer reopen.** After reflection grows the overlay, prefer a *new live* problem in that structural class so the next series can falsify transfer. That is learning from this plugin’s past. It is not replaying gold.
 
-**Not this mix** (ADR 0002, 0003; `next_steps.md`): do not open problems whose resolution day is already past; do not use historical cutoffs, PIT, or gold Brier as the epoch; do not ask the model to “forecast” what the world already answered. A 2023 replay cannot grade this LLM. Learning from the past belongs in **justification methods** and in **which live problems we open**, not in the scoring clock.
+**Not this mix** (ADR 0002, 0003; `next_steps.md`): do not open problems whose resolution day is already past; do not use historical cutoffs, PIT, or gold Brier as the epoch; do not ask the model to “forecast” what the world already answered. A 2023 replay cannot grade this LLM. Learning from the past belongs in **justification methods**, **analog cards** (ADR 0013), and in **which live problems we open**, not in the scoring clock.
 
 No quality gate (ADR 0005). Discover still does not write claims (ADR 0009).

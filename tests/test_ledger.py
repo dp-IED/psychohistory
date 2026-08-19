@@ -94,7 +94,7 @@ def test_missing_resolution_is_an_error() -> None:
 def test_repo_ledger_is_the_schedule_book() -> None:
     path = REPO_ROOT / "ledger.md"
     book = parse_ledger(path.read_text(encoding="utf-8"))
-    assert book.k == 1
+    assert book.k == 10
     assert book.problems
     assert all(problem.motivation and problem.resolution_day for problem in book.problems)
     for claim in book.claims:

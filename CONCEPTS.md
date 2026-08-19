@@ -12,7 +12,7 @@ The loadable instruction surface of this repository: skills, agents, references,
 The host tick after a problem’s resolution day. Parent grades the whole dated-claim series, then grows or culls the plugin overlay. It is not a predict wakeup and not a weight update.
 *Avoid:* vault append, tighten-only patch, grading only the last row
 
-Reflection may add new or rewritten skills, agents, references, scripts/tools, strategies, and instructions when the grade earned a new capability. Later reflection deletes or merges overlay that failed to transfer.
+Reflection may add new or rewritten skills, agents, references (including analog case cards), scripts/tools, strategies, and instructions when the grade earned a new capability. Later reflection deletes or merges overlay that failed to transfer.
 
 ### Training epoch
 One scored pass whose intended outcome is plugin overlay change, including new files, not a change to foundation model weights.
@@ -22,7 +22,11 @@ One scored pass whose intended outcome is plugin overlay change, including new f
 The overlay writer. On predict it wakes claim workers for live problems. On reflection it edits the plugin. On discovery it opens problems and sets resolution day. One host job runs exactly one of those ticks.
 
 ### Claim worker
-A consumer of the overlay. It updates Claim and Justification on one due ledger row and does not edit the overlay.
+A consumer of the overlay. It updates Claim and Justification on one due ledger row, including a Structure block from analog cards, and does not edit the overlay.
+
+### Analog card
+A `references/` case card for a discovered class of past cases: mechanism, instantiations, base rate, disanalogy, falsifiers. Written on reflection, consulted on predict. Not a ledger problem and not a historical forecast to score.
+*Avoid:* graph-vault, global taxonomy, PIT labels
 
 ### Ledger
 The Parent’s one schedule book: problems (id, title, motivation, resolution day), dated claims (id, problem, forecast day, owner, claim, justification), and K (max new problems per discover tick).

@@ -19,7 +19,7 @@ Suggested host cadence (host may change it): predict daily, reflect daily later 
 | [`CONTEXT.md`](CONTEXT.md) | Domain language |
 | [`project.md`](project.md) | What this repo is |
 | [`next_steps.md`](next_steps.md) | Current work order |
-| [`docs/adr/`](docs/adr/) | Locked decisions |
+| [`docs/adr/`](docs/adr/) | Locked decisions (through 0013) |
 | [`ledger.md`](ledger.md) | Schedule book |
 
 ## Layout
@@ -30,6 +30,6 @@ Suggested host cadence (host may change it): predict daily, reflect daily later 
 | `skills/` `agents/` `references/` | Overlay |
 | `ledger.md` | Problems + dated claims |
 | `harness/ledger.py` | Deterministic schedule reader |
-| `docs/adr/` | ADRs 0001–0010 |
+| `docs/adr/` | ADRs 0001–0013 |
 
 Retired PIT, hermes, Polymarket eval, and the old `graph-vault/` corpus live in git history (`origin/main`, `e867bec3`), not this branch.

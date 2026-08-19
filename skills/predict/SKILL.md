@@ -17,4 +17,4 @@ Run this from the repository root with the plugin loaded in place (`claude --plu
 5. After workers return, re-read `ledger.md`. Completion: each live problem either has a new dated claim dated today whose **claim** (outcome line) differs from the previous row, or it has no new row because the outcome did not change. No new problem headings. No overwrite of old rows.
 6. If the ledger changed, commit and push to `harness-only`. Do not open a pull request. Completion: origin has the commit, or you stopped because nothing changed.
 
-This tick writes forecasts. Open problems on a discover tick; that procedure is `references/discovery.md`.
+This tick writes forecasts. Workers follow `references/structure.md` for the Structure block. Open problems on a discover tick; that procedure is `references/discovery.md`.

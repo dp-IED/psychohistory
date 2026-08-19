@@ -57,8 +57,8 @@ One dated claim in the ledger. Not its own file.
 _Avoid_: One markdown file per hypothesis
 
 **Justification**:
-Explanation and reasoning trace for a **claim**. Graded after **resolution day**, as part of the whole series.
-_Avoid_: Backup, chain, second clock, problem motivation
+Explanation and reasoning trace for a **claim**, including a **Structure** block (class, mechanism, base rate, disanalogy, falsifiers). Graded after **resolution day**, as part of the whole series.
+_Avoid_: Backup, chain, second clock, problem motivation; reciting parametric history as if it were a card
 
 **Problem**:
 A prediction setup that may emit many dated claims. It owns the **resolution day**. Opened without a quality gate; reflection culls losers later.
@@ -85,23 +85,27 @@ How far **resolution day** sits from today when the **problem** is opened. Lengt
 _Avoid_: Counting daily revisions as horizon growth; using Y as a second field; filling `K` with only this week’s news
 
 **Evidence regime**:
-How a live problem is supposed to be reasoned: **news-now** (deadline, live talks) vs **analog/base-rate** (a past class of cases, a structural rate, or a method this plugin already claimed). Discover mixes both (ADR 0012). Scoring stays in the future.
+How a live problem is supposed to be reasoned: **news-now** (deadline, live talks) vs **analog/base-rate** (a past class of cases, a structural rate, or a method this plugin already claimed). Discover mixes both (ADR 0012). Analog-regime Motivation names a **structural class**. Scoring stays in the future.
 _Avoid_: Historical cutoffs as the epoch; opening already-resolved questions; PIT/gold replay as discover
 
+**Analog card**:
+A loadable **case card** in `references/` (usually `references/cases/`) that states a discovered class’s mechanism, instantiations, base rate, disanalogy, and falsifiers. This is how the plugin understands the past. Predict consults it; reflection writes or culls it (ADR 0013, `references/structure.md`).
+_Avoid_: graph-vault; a global ontology of types; scoring historical episodes as forecasts; “I remember 1992”
+
 **Discover**:
-Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). When opening more than one problem, spread the batch across domains (ADR 0011) and across **horizon** / **evidence regime** (ADR 0012), weighed against what is already open. It does not write **claim** or **justification**.
+Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). When opening more than one problem, spread the batch across domains (ADR 0011) and across **horizon** / **evidence regime** (ADR 0012), weighed against what is already open. Analog-regime Motivation names the class (ADR 0013). It does not write **claim** or **justification**.
 _Avoid_: Full forecast on discover; leaving a problem with no resolution day; letting a large `K` cluster in one domain or in the current week; scoring the past
 
 **Predict**:
-Host tick that writes **claim** and **justification** on **live problems** (first row or **revision** when the outcome changes). Formerly called due-today. It does not invent **resolution day**.
-_Avoid_: Due-today as the current name; waking only rows whose Due equals today
+Host tick that writes **claim** and **justification** on **live problems** (first row or **revision** when the outcome changes). Formerly called due-today. It does not invent **resolution day**. Workers fill a Structure block from analog cards before news (`references/structure.md`).
+_Avoid_: Due-today as the current name; waking only rows whose Due equals today; forecasting from uncited parametric history
 
 **Memory**:
 The plugin overlay. Not the ledger and not a sidecar store.
 _Avoid_: Using memory for justification traces, Cursor automation memories, or graph-vault
 
 **Motivation**:
-Why this problem was opened. Stored on the problem in the ledger so Parent does not forget.
+Why this problem was opened. Stored on the problem in the ledger so Parent does not forget. Analog-regime rows name the structural class.
 _Avoid_: Justification (that belongs on a dated claim)
 
 **Parent**:
@@ -113,8 +117,8 @@ Breadth of live claims plus ungated proactive **problem** finding. Reflection cu
 _Avoid_: Multi-agent roster on one question; replaying old gold
 
 **Reflection**:
-After **resolution day**, grade every **dated claim** in the series (claim and justification). The earliest matching **claim** is the prize. Then change the **plugin**. Add files when the grade earned a new capability. Cull overlay that failed. Durable facts live in the overlay.
-_Avoid_: Sidecar `graph-vault/`; silent weight updates; grading only the last row
+After **resolution day**, grade every **dated claim** in the series (claim, justification, Structure block). The earliest matching **claim** is the prize. Then change the **plugin**. Add or rewrite analog cards when a class transferred; cull false mechanisms. Add files when the grade earned a new capability. Durable facts live in the overlay.
+_Avoid_: Sidecar `graph-vault/`; silent weight updates; grading only the last row; minting forecasts for historical episodes used to deepen a card
 
 **Training loop**:
 Forward only: **discover** (problem + **resolution day**) → **predict** (claim + justification, **revisions** while live) → after **resolution day**, **reflection** → **plugin**. Three separate host jobs.

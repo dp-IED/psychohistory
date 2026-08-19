@@ -38,16 +38,19 @@ def test_overlay_lives_at_plugin_root() -> None:
     parent = REPO_ROOT / "agents" / "parent.md"
     worker = REPO_ROOT / "agents" / "claim-worker.md"
     discovery = REPO_ROOT / "references" / "discovery.md"
+    structure = REPO_ROOT / "references" / "structure.md"
     assert skill.is_file()
     assert parent.is_file()
     assert worker.is_file()
     assert discovery.is_file()
+    assert structure.is_file()
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
     assert skill_meta.get("disable-model-invocation") == "true"
     assert "ledger.md" in skill_body
     assert "references/discovery.md" in skill_body
+    assert "references/structure.md" in skill_body
     discover = REPO_ROOT / "skills" / "discover" / "SKILL.md"
     assert discover.is_file()
     discover_meta, discover_body = _frontmatter(discover)
@@ -55,6 +58,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert discover_meta.get("disable-model-invocation") == "true"
     assert "ledger.md" in discover_body
     assert "references/discovery.md" in discover_body
+    assert "references/structure.md" in discover_body
     assert "predict" in discover_body.lower()
     reflect = REPO_ROOT / "skills" / "reflect" / "SKILL.md"
     assert reflect.is_file()
@@ -65,6 +69,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "justification" in reflect_body.lower()
     assert "graph-vault" in reflect_body
     assert "new or rewritten" in reflect_body.lower()
+    assert "analog case cards" in reflect_body.lower()
+    assert "references/structure.md" in reflect_body
     parent_meta, parent_body = _frontmatter(parent)
     assert parent_meta["name"] == "parent"
     assert "skills/predict/SKILL.md" in parent_body
@@ -74,6 +80,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert worker_meta["name"] == "claim-worker"
     assert "ledger.md" in worker_body
     assert "skills/" in worker_body
+    assert "references/structure.md" in worker_body
     assert "references/vault.md" not in worker_body
     pointer = REPO_ROOT / ".cursor" / "agents" / "parent.md"
     pointer_meta, pointer_body = _frontmatter(pointer)
