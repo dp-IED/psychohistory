@@ -57,6 +57,7 @@ Next: overlay + tests for discover-schedules / predict-writes (ADR 0008–0010),
 - 2026-08-18: Live ledger training loop (plugin + host `/loop`/`/automate`); Claude-style plugin layout; in-place load; branch ships plugin + context only.
 - 2026-08-19: Self-improving plugin: reflection may add skills, agents, tools, strategies; durable facts live in the overlay, not `graph-vault/`.
 - 2026-08-19: Overlay is memory. Live problems may append revision claims (ADR 0008). Horizons lengthen across epochs; simulators only when a grade earns them.
+- 2026-08-19: While the overlay is thin, discover overweights short resolution days (days–weeks) so reflection can score; keep a minority far analog clock per tick, not a 2027-heavy batch.
 - 2026-08-19: Discover sets first Due; predict writes claim+justification (ADR 0009). Rename due-today → predict.
 - 2026-08-19: Due and Y are one clock: resolution day on the problem; forecast day on each claim (ADR 0010).
 

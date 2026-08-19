@@ -30,53 +30,53 @@ Resolution: 2026-09-01
 
 Motivation: Remaining New England primary, not a national generic ballot. Incumbent Sen. Ed Markey faces Rep. Seth Moulton on Sep 1. Mid-August Suffolk/Globe and UMass/WCVB polls still have Markey ahead; early voting starts Aug 22. Gives a Northeast incumbent-vs-challenger series distinct from the South Carolina runoff.
 
-### P-br-pres-26 — Brazil's elected president 2026
+### P-ok-sen-d-run — Oklahoma Democratic Senate runoff nominee
 
-Resolution: 2026-10-25
+Resolution: 2026-08-25
 
-Motivation: Analog/base-rate: this is a live instance of the **two-round presidential incumbent bid** class (first Sunday in October, runoff last Sunday if needed; polarized PT vs right tickets). Campaigns opened 16 Aug 2026; first round is 4 Oct, runoff 25 Oct. Prefer the farther clock so the problem is who takes the office, not a one-day first-round scrape. Latin America, not another US map.
+Motivation: Same-week Plains primary runoff, not a national Senate-control call. Open seat after Mullin left for DHS; Jun 16 Dem primary went to an Aug 25 runoff between nurse N'Kiyla Jasmine Thomas (~45%) and attorney Jim Priest (~24%). Winner faces Rep. Kevin Hern in November. Second short series on the 25th besides South Carolina.
+
+### P-nh-sen-r-prim — New Hampshire GOP Senate nominee
+
+Resolution: 2026-09-08
+
+Motivation: Remaining Sep 8 New Hampshire primary. Open Shaheen seat; Republicans choose between former Sen. John E. Sununu and former Sen. Scott Brown. News-now, not the November general. Geographic spread inside the leftover primary calendar (South, Plains, then another Northeast seat).
+
+### P-venice-lion-83 — Venice 83 Golden Lion
+
+Resolution: 2026-09-12
+
+Motivation: News-now culture clock in Italy, not a US award season. Venezia 83 closes 12 Sep 2026; the Golden Lion for best film in competition is announced that night (Biennale). Short series so reflection can score a jury prize before Oscar season exists.
+
+### P-se-riksdag-26 — Largest party in Sweden's 2026 Riksdag
+
+Resolution: 2026-09-13
+
+Motivation: Analog/base-rate: **fixed-date list-PR election with a 4% threshold** (not Israel's wartime Knesset row). Official election day is 13 Sep 2026 (val.se / Riksdag). Score which single party wins the most seats. Europe, 25 days out.
+
+### P-uso-ms-26 — US Open 2026 men's singles champion
+
+Resolution: 2026-09-13
+
+Motivation: News-now sports. Men's final is scheduled 13 Sep 2026 at Flushing Meadows. A two-week slam is a scrape-friendly short series and is not a nationwide political event.
+
+### P-fomc-sep-26 — September 2026 FOMC funds-rate change
+
+Resolution: 2026-09-16
+
+Motivation: News-now economics. FOMC meets 15–16 Sep 2026; the statement and rate decision are due 16 Sep 2:00 p.m. ET (federalreserve.gov). Score whether the committee changes the federal funds target range that day. Near-term macro clock for reflection.
 
 ### P-nobel-phy-26 — US affiliation among 2026 Physics Nobel laureates
 
 Resolution: 2026-10-06
 
-Motivation: Analog/base-rate: **Nobel scientific prize clustering** — Physics often lands on US/Europe lab networks rather than a news-week name. Official announcement is 6 Oct 2026, 11:45 CEST at the earliest (KVA). Score whether at least one named laureate has a primary US institutional affiliation the day the prize is announced. Science/tech, Stockholm, not a US election.
-
-### P-cv-pres-26 — Cabo Verde presidential election 2026
-
-Resolution: 2026-11-29
-
-Motivation: Analog/base-rate: **small-electorate two-round presidency that often resolves in round one** (Neves won on the first ballot in 2021). Decree sets the first round for 15 Nov 2026 and a runoff, if needed, for 29 Nov (Presidência, Decreto 22/2026). West Africa/Atlantic, not a US midterm. Farther clock is who is elected, including whether the runoff is used.
+Motivation: Analog/base-rate: **Nobel scientific prize clustering** — Physics often lands on US/Europe lab networks rather than a news-week name. Official announcement is 6 Oct 2026, 11:45 CEST at the earliest (KVA). Score whether at least one named laureate has a primary US institutional affiliation the day the prize is announced. Mid-horizon science, Stockholm.
 
 ### P-unifil-ops — UNIFIL still on a 1701 operations mandate
 
 Resolution: 2026-12-31
 
-Motivation: Analog/base-rate: **UN peacekeeping mandate sunset**. UNSC 2790 (28 Aug 2025) extended UNIFIL "for a final time" until 31 Dec 2026 and told the force to cease operations that day and begin a one-year drawdown. Conflict/security in Lebanon, not another election. Score whether the Council has replaced that cease-ops clock with a new operations mandate before the year ends.
-
-### P-oscars-bp-99 — 99th Oscars Best Picture
-
-Resolution: 2027-03-14
-
-Motivation: Analog/base-rate: **precursor-award Best Picture conversion** (PGA/DGA/BAFTA/critics vs the Academy). Ceremony is 14 Mar 2027 at the Dolby Theatre (AMPAS/ABC). Culture/entertainment with a long campaign, not a polling-week politics row.
-
-### P-fr-pres-27 — France's elected president 2027
-
-Resolution: 2027-05-02
-
-Motivation: Analog/base-rate: **term-limited incumbent succession in a two-round presidential system**. Macron cannot run again; Service-Public dates are 18 Apr 2027 (first round) and 2 May 2027 (runoff). Europe, far horizon. Prefer the runoff day so the problem is who takes the Élysée.
-
-### P-ucl-27 — 2026/27 UEFA Champions League winner
-
-Resolution: 2027-06-05
-
-Motivation: Analog/base-rate: **Champions League favorite conversion** — whether a club that finished in the league-phase top eight lifts the cup, vs a knockout giant-killing. Final is 5 Jun 2027 at Estadio Metropolitano, Madrid (UEFA). Sports in Spain, not a US league.
-
-### P-suncor-ot26 — Suncor climate-tort preemption, OT 2026
-
-Resolution: 2027-06-30
-
-Motivation: Analog/base-rate: **federal preemption of state climate public-nuisance suits** (the AEP / municipal climate-tort line). Suncor Energy v. Boulder County is set for argument 5 Oct 2026 (SCOTUSblog): whether federal law bars state-law claims for injuries from interstate/international greenhouse-gas emissions. Courts/legal. Resolution day is the conventional end of OT 2026, by which the opinion should be out.
+Motivation: Analog/base-rate: **UN peacekeeping mandate sunset**. UNSC 2790 (28 Aug 2025) extended UNIFIL "for a final time" until 31 Dec 2026 and told the force to cease operations that day and begin a one-year drawdown. The minority far clock this tick (≥90 days) so analog methods have time to matter. Conflict/security in Lebanon. Score whether the Council has replaced that cease-ops clock with a new operations mandate before the year ends.
 
 ## Claims
 
