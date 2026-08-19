@@ -28,7 +28,7 @@ A consumer of the overlay. It updates Claim and Justification on one due ledger 
 The Parent’s one schedule book: problems (id, title, motivation, resolution day), dated claims (id, problem, forecast day, owner, claim, justification), and K (max new problems per discover tick).
 
 ### Resolution day
-The date the world answers the problem. Discover sets it. Predict runs while today is on or before it. Reflection runs after it. Due and Y were this one date.
+The date the world answers the problem. Discover sets it. Predict runs while today is on or before it. Reflection runs after it. Due and Y were this one date. Discover may mix near and far resolution days in one tick; it does not set a date already in the past.
 
 ### Forecast day
 The date predict wrote a dated claim. How early the outcome showed up.

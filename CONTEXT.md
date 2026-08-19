@@ -81,12 +81,16 @@ A new dated claim on a live problem, appended when the predicted outcome changes
 _Avoid_: Overwriting an old row; a justification-only update with the same outcome
 
 **Horizon**:
-How far **resolution day** sits from today when the **problem** is opened. Lengthens when **discover** prefers farther **resolution day**. More **revisions** of a near event are not a longer horizon. **Resolution day** moves later only if the public date moved.
-_Avoid_: Counting daily revisions as horizon growth; using Y as a second field
+How far **resolution day** sits from today when the **problem** is opened. Lengthens when **discover** prefers farther **resolution day**. A multi-problem discover tick still keeps some **near** horizons so reflection has a fast series (ADR 0012). More **revisions** of a near event are not a longer horizon. **Resolution day** moves later only if the public date moved.
+_Avoid_: Counting daily revisions as horizon growth; using Y as a second field; filling `K` with only this week’s news
+
+**Evidence regime**:
+How a live problem is supposed to be reasoned: **news-now** (deadline, live talks) vs **analog/base-rate** (a past class of cases, a structural rate, or a method this plugin already claimed). Discover mixes both (ADR 0012). Scoring stays in the future.
+_Avoid_: Historical cutoffs as the epoch; opening already-resolved questions; PIT/gold replay as discover
 
 **Discover**:
-Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). When opening more than one problem, spread the batch across domains (politics, economics/markets, courts/legal, science/tech, conflict/security, sports, culture) rather than clustering one vein, weighed against what is already open (ADR 0011). It does not write **claim** or **justification**.
-_Avoid_: Full forecast on discover; leaving a problem with no resolution day; letting a large `K` cluster in one domain
+Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). When opening more than one problem, spread the batch across domains (ADR 0011) and across **horizon** / **evidence regime** (ADR 0012), weighed against what is already open. It does not write **claim** or **justification**.
+_Avoid_: Full forecast on discover; leaving a problem with no resolution day; letting a large `K` cluster in one domain or in the current week; scoring the past
 
 **Predict**:
 Host tick that writes **claim** and **justification** on **live problems** (first row or **revision** when the outcome changes). Formerly called due-today. It does not invent **resolution day**.
