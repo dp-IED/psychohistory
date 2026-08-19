@@ -2,7 +2,7 @@
 
 Parent's schedule book. `K` is max new problems per discover tick.
 
-K: 10
+K: 15
 
 ## Problems
 
@@ -42,6 +42,24 @@ Resolution: 2026-09-08
 
 Motivation: Remaining Sep 8 New Hampshire primary. Open Shaheen seat; Republicans choose between former Sen. John E. Sununu and former Sen. Scott Brown. News-now, not the November general. Geographic spread inside the leftover primary calendar (South, Plains, then another Northeast seat).
 
+### P-ok-gov-r-gop — Oklahoma GOP gubernatorial nominee
+
+Resolution: 2026-08-25
+
+Motivation: Same Tuesday as the Oklahoma Senate runoff. Term-limited open governor's race; Jun 16 GOP primary sent Attorney General Gentner Drummond and Trump-endorsed financier Mike Mazzei to an Aug 25 runoff (each ~26% in June). Early voting starts 20 Aug. State executive clock, not a national House map.
+
+### P-is-eu-ref — Iceland resumes EU accession talks
+
+Resolution: 2026-08-29
+
+Motivation: News-now European referendum, 10 days out. Official question (government.is / Ísland.is): whether Iceland should resume EU accession negotiations; yes/no on 29 Aug 2026. Not membership itself. Nordic geo spread beside the Swedish Riksdag row.
+
+### P-gw-const-ref — Guinea-Bissau constitutional referendum
+
+Resolution: 2026-08-30
+
+Motivation: Analog/base-rate: **junta-run constitutional referendum**. Transition president Horta N'Tam set 30 Aug 2026 for a yes/no on a new constitution expanding presidential power (decree 6 Jul 2026). Conflict/institutional clock in West Africa, not another US primary.
+
 ### P-venice-lion-83 — Venice 83 Golden Lion
 
 Resolution: 2026-09-12
@@ -59,6 +77,18 @@ Motivation: Analog/base-rate: **fixed-date list-PR election with a 4% threshold*
 Resolution: 2026-09-13
 
 Motivation: News-now sports. Men's final is scheduled 13 Sep 2026 at Flushing Meadows. A two-week slam is a scrape-friendly short series and is not a nationwide political event.
+
+### P-uso-ws-26 — US Open 2026 women's singles champion
+
+Resolution: 2026-09-12
+
+Motivation: News-now sports. Women's final is scheduled 12 Sep 2026, the day before the men's. Same tournament, different draw, so reflection gets two slam series in 48 hours.
+
+### P-wauc-m100-26 — World Athletics Ultimate men's 100m
+
+Resolution: 2026-09-12
+
+Motivation: News-now sports in Budapest, not a US league. Inaugural World Athletics Ultimate Championship; men's 100m final is on 12 Sep 2026 at the National Athletics Centre (World Athletics). Early-September track clock beside the US Open.
 
 ### P-fomc-sep-26 — September 2026 FOMC funds-rate change
 

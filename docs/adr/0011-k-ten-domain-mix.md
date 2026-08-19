@@ -1,6 +1,6 @@
-# K raised to 10; discover ticks must mix domains
+# K raised to 15; discover ticks must mix domains
 
-`K` on `ledger.md` moves from 1 to 10. A bigger intake cap raises overfitting risk: both problems opened so far (`P-usca-338`, `P-il-knesset-26`) are trade/geopolitics, so an unguided K=10 tick could hand reflection ten more rows of the same shape and grow overlay that only transfers within that one domain.
+`K` on `ledger.md` is 15 (was 10, originally 1). A bigger intake cap raises overfitting risk: both problems opened so far (`P-usca-338`, `P-il-knesset-26`) are trade/geopolitics, so an unguided large-K tick could hand reflection many more rows of the same shape and grow overlay that only transfers within that one domain.
 
 Discovery must spread a multi-problem tick across domains, not just fill the cap. A tick opening more than one problem should draw from at least three of: politics/institutional power, economics/markets/trade, courts/legal, science/tech, conflict/security, sports, culture/entertainment. No single domain may take more than half of the problems opened in one tick. Discover should also weigh the domain mix of currently open and recent problems, not only the new batch, and prefer an underrepresented domain when motivations are otherwise comparable.
 
