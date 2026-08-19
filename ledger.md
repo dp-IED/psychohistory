@@ -2,7 +2,7 @@
 
 Parent's schedule book. `K` is max new problems per discover tick.
 
-K: 1
+K: 10
 
 ## Problems
 

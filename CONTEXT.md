@@ -85,8 +85,8 @@ How far **resolution day** sits from today when the **problem** is opened. Lengt
 _Avoid_: Counting daily revisions as horizon growth; using Y as a second field
 
 **Discover**:
-Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). It does not write **claim** or **justification**.
-_Avoid_: Full forecast on discover; leaving a problem with no resolution day
+Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). When opening more than one problem, spread the batch across domains (politics, economics/markets, courts/legal, science/tech, conflict/security, sports, culture) rather than clustering one vein, weighed against what is already open (ADR 0011). It does not write **claim** or **justification**.
+_Avoid_: Full forecast on discover; leaving a problem with no resolution day; letting a large `K` cluster in one domain
 
 **Predict**:
 Host tick that writes **claim** and **justification** on **live problems** (first row or **revision** when the outcome changes). Formerly called due-today. It does not invent **resolution day**.
