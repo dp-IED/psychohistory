@@ -18,6 +18,66 @@ Resolution: 2026-10-27
 
 Motivation: First Israeli national election since the Gaza war. Seat lead is not a one-source scrape: wartime incumbency, Gaza and Iran, polling error, and coalition math all move the outcome. A months-out resolution day gives predict a long revision trail so reflection has methods to add, not a one-day news hit.
 
+### P-sc-sen-r-gop — South Carolina GOP Senate runoff nominee
+
+Resolution: 2026-08-25
+
+Motivation: News-now state primary, not a nationwide House call. After Lindsey Graham's death, South Carolina Republicans choose a November nominee in an Aug 25 runoff between appointed Sen. Darline Graham and Rep. Ralph Norman (special primary Aug 11: Graham ~33%, Norman ~25%). Early voting is already open. Scores a Southern runoff clock six days out.
+
+### P-ma-sen-d-prim — Massachusetts Democratic Senate nominee
+
+Resolution: 2026-09-01
+
+Motivation: Remaining New England primary, not a national generic ballot. Incumbent Sen. Ed Markey faces Rep. Seth Moulton on Sep 1. Mid-August Suffolk/Globe and UMass/WCVB polls still have Markey ahead; early voting starts Aug 22. Gives a Northeast incumbent-vs-challenger series distinct from the South Carolina runoff.
+
+### P-br-pres-26 — Brazil's elected president 2026
+
+Resolution: 2026-10-25
+
+Motivation: Analog/base-rate: this is a live instance of the **two-round presidential incumbent bid** class (first Sunday in October, runoff last Sunday if needed; polarized PT vs right tickets). Campaigns opened 16 Aug 2026; first round is 4 Oct, runoff 25 Oct. Prefer the farther clock so the problem is who takes the office, not a one-day first-round scrape. Latin America, not another US map.
+
+### P-nobel-phy-26 — US affiliation among 2026 Physics Nobel laureates
+
+Resolution: 2026-10-06
+
+Motivation: Analog/base-rate: **Nobel scientific prize clustering** — Physics often lands on US/Europe lab networks rather than a news-week name. Official announcement is 6 Oct 2026, 11:45 CEST at the earliest (KVA). Score whether at least one named laureate has a primary US institutional affiliation the day the prize is announced. Science/tech, Stockholm, not a US election.
+
+### P-cv-pres-26 — Cabo Verde presidential election 2026
+
+Resolution: 2026-11-29
+
+Motivation: Analog/base-rate: **small-electorate two-round presidency that often resolves in round one** (Neves won on the first ballot in 2021). Decree sets the first round for 15 Nov 2026 and a runoff, if needed, for 29 Nov (Presidência, Decreto 22/2026). West Africa/Atlantic, not a US midterm. Farther clock is who is elected, including whether the runoff is used.
+
+### P-unifil-ops — UNIFIL still on a 1701 operations mandate
+
+Resolution: 2026-12-31
+
+Motivation: Analog/base-rate: **UN peacekeeping mandate sunset**. UNSC 2790 (28 Aug 2025) extended UNIFIL "for a final time" until 31 Dec 2026 and told the force to cease operations that day and begin a one-year drawdown. Conflict/security in Lebanon, not another election. Score whether the Council has replaced that cease-ops clock with a new operations mandate before the year ends.
+
+### P-oscars-bp-99 — 99th Oscars Best Picture
+
+Resolution: 2027-03-14
+
+Motivation: Analog/base-rate: **precursor-award Best Picture conversion** (PGA/DGA/BAFTA/critics vs the Academy). Ceremony is 14 Mar 2027 at the Dolby Theatre (AMPAS/ABC). Culture/entertainment with a long campaign, not a polling-week politics row.
+
+### P-fr-pres-27 — France's elected president 2027
+
+Resolution: 2027-05-02
+
+Motivation: Analog/base-rate: **term-limited incumbent succession in a two-round presidential system**. Macron cannot run again; Service-Public dates are 18 Apr 2027 (first round) and 2 May 2027 (runoff). Europe, far horizon. Prefer the runoff day so the problem is who takes the Élysée.
+
+### P-ucl-27 — 2026/27 UEFA Champions League winner
+
+Resolution: 2027-06-05
+
+Motivation: Analog/base-rate: **Champions League favorite conversion** — whether a club that finished in the league-phase top eight lifts the cup, vs a knockout giant-killing. Final is 5 Jun 2027 at Estadio Metropolitano, Madrid (UEFA). Sports in Spain, not a US league.
+
+### P-suncor-ot26 — Suncor climate-tort preemption, OT 2026
+
+Resolution: 2027-06-30
+
+Motivation: Analog/base-rate: **federal preemption of state climate public-nuisance suits** (the AEP / municipal climate-tort line). Suncor Energy v. Boulder County is set for argument 5 Oct 2026 (SCOTUSblog): whether federal law bars state-law claims for injuries from interstate/international greenhouse-gas emissions. Courts/legal. Resolution day is the conventional end of OT 2026, by which the opinion should be out.
+
 ## Claims
 
 ### C-usca-338-deal
