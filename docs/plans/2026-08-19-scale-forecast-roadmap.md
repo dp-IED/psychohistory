@@ -1,11 +1,16 @@
-# Scale forecast: questions to answer in plain language
+# Scale forecast: grill-with-docs session
 
-**Status:** proposed (not an ADR). Fill answers here or in chat; then lock.  
-**Date:** 2026-08-19 (questions rewritten for plain language)
+**Status:** in session (not an ADR). One question at a time. Write glossary/ADRs only when a term or trade-off actually settles.  
+**Skill:** Matt Pocock `grill-with-docs` (grilling + domain-modeling).  
+**Date:** 2026-08-20
 
-You already have a loop: pick questions about the future, write guesses before the date, score them after, keep only the methods that worked. The long-term goal is to use those scored guesses to get better at predicting real-world events, including “how the economy and institutions work” and “what people tell themselves.”
+## Settled so far
 
-This file is the question list. Skip the appendix until you want the mapping back to plugin jargon.
+**Q1 — What would “it worked” look like?**  
+All four: dated events, material facts, official machines, and what people treat as obvious.  
+**Why:** the product is meant to help **LFI, DSA, and similar parties** run a Gramscian **war of position** (long fight over institutions and common sense) and **war of movement** (short fight when power is actually contestable). A trivia scorer for elections is not the goal.
+
+**Glossary tension (not locked):** `CONTEXT.md` still defines this repo as a **forecasting** training bed. The user’s goal is **partisan strategy support**. Next question is which of those the system is allowed to *do*.
 
 ---
 
