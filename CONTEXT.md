@@ -5,8 +5,8 @@ A harness-agnostic plugin training bed. Live dated claims train the plugin; the 
 ## Language
 
 **Psychohistory**:
-The target capability named by this repo: longer-horizon forecasting from accumulated overlay patterns, eventually with plugin-grown simulation tools. Not Seldon mathematics, and not a restored GNN corpus as the product on this branch.
-_Avoid_: Treating one dated claim as psychohistory; France/warehouse GNN as this branch’s loop
+The target capability named by this repo: longer-horizon forecasting from accumulated overlay patterns, eventually with plugin-grown simulation tools. Intended later use: help parties such as LFI and DSA see **openings**, not run their campaigns. Not Seldon mathematics, and not a restored GNN corpus as the product on this branch.
+_Avoid_: Treating one dated claim as psychohistory; France/warehouse GNN as this branch’s loop; treating a playbook as psychohistory
 
 **Plugin**:
 The unit this repo ships: a Claude-style package with `skills/`, `agents/`, `references/`, and `scripts/`. Consuming harnesses (Cursor, Claude Code, Codex, and others) load it; they own orchestration.
@@ -58,7 +58,15 @@ _Avoid_: One markdown file per hypothesis
 
 **Justification**:
 Explanation and reasoning trace for a **claim**, including a **Structure** block (class, mechanism, base rate, disanalogy, falsifiers). Graded after **resolution day**, as part of the whole series.
-_Avoid_: Backup, chain, second clock, problem motivation; reciting parametric history as if it were a card
+_Avoid_: Backup, chain, second clock, problem motivation; reciting parametric history as if it were a card; treating an **opening** as the claim
+
+**Opening**:
+A note about where a named party or similar organisation can push, where they will be blocked, or where the other side is weak. Not a **dated claim**. Not graded right/wrong on **resolution day**. Not an instruction to act (that is a **playbook**).
+_Avoid_: Mixing openings into the claim sentence; scoring “you should organise X”
+
+**Playbook**:
+A list of actions a party should take next. Not a scored plugin output. Humans decide that.
+_Avoid_: Grading strategy advice as if it were a forecast
 
 **Problem**:
 A prediction setup that may emit many dated claims. It owns the **resolution day**. Opened without a quality gate; reflection culls losers later.

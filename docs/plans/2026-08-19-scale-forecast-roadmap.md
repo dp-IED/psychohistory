@@ -8,9 +8,11 @@
 
 **Q1 — What would “it worked” look like?**  
 All four: dated events, material facts, official machines, and what people treat as obvious.  
-**Why:** the product is meant to help **LFI, DSA, and similar parties** run a Gramscian **war of position** (long fight over institutions and common sense) and **war of movement** (short fight when power is actually contestable). A trivia scorer for elections is not the goal.
+**Why:** help **LFI, DSA, and similar parties** with a long fight over institutions and common sense, and a short fight when power is contestable.
 
-**Glossary tension (not locked):** `CONTEXT.md` still defines this repo as a **forecasting** training bed. The user’s goal is **partisan strategy support**. Next question is which of those the system is allowed to *do*.
+**Q2 — What should come out for those parties?**  
+**A + B, not C as a scored guess.** Forecasts (dated, public, gradeable) plus a **map of openings**. Not a **playbook** (“do this next”) treated as a forecast.  
+Locked in glossary + ADR 0014. Where openings are written is not locked.
 
 ---
 
