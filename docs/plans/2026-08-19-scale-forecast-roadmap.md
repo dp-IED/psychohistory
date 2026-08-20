@@ -20,7 +20,10 @@ All four: dated events, material facts, official machines, and what people treat
 **A + B.** Shared analog cards and **opening types**. Private this-run **openings**. ADR 0015.
 
 **Q6 — Country names on shared notes.**  
-**C.** Keep country and case names (with sources) on instantiations so people can look the case up. Class name remains the kind of fight; tenant names stay off the lesson.
+**C.** Instantiations keep country and case names plus sources so people can look the case up.
+
+**Q7 — One pile or two.**  
+**A.** One analog-card pile. Optional typical openings on the same card when earned. Not a second library; not country folders.
 
 ---
 

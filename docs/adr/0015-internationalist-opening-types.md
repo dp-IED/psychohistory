@@ -10,6 +10,8 @@ Test for the boundary: if you must name the tenant or “this month” for the s
 
 **Cases stay look-up-able (Q6):** Instantiations on analog cards and opening types **keep country and case names plus sources**. The class name is still the kind of fight, not a tenant. Do not strip countries from the cases list.
 
-Does not add a fourth host job. Does not specify file layout for opening types yet. Does not restore graph-vault.
+**One pile (Q7):** Opening types are not a second folder. They are an optional **typical openings** field on the same analog card. Fill it only when reflection earned it.
+
+Does not add a fourth host job. Does not restore graph-vault.
 
 Extends ADR 0014. Glossary: `CONTEXT.md` (**Opening**, **Opening type**, **Tenant**).

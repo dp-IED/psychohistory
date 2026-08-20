@@ -14,6 +14,7 @@ Keep this shape. Do not add a global type system. Class names are discovered fro
 - Instantiations: <P-ids>; <named historical episodes + country + URLs, so a later reader can look the case up>
 - Mechanism: actors, incentives, constraints, clock
 - Base rate: what this class usually does
+- Typical openings: <optional; earned on reflection; anonymized, no tenant name>
 - Disanalogy: why a live instance might not belong
 - Falsifiers: what would kill this analog
 ```
@@ -40,7 +41,7 @@ Grade the Structure block with the claim series. The prize is still the earliest
 
 Then grow or cull cards:
 
-- Early hit that used the analog → write or deepen the card. When deepening, pull **several** past instantiations of the class from public sources and state the mechanism and base rate. That is allowed historical work. Do not mint dated claims for those episodes.
+- Early hit that used the analog → write or deepen the card. When deepening, pull **several** past instantiations of the class from public sources and state the mechanism and base rate. If the series earned it, add or rewrite **typical openings** (no tenant name). That is allowed historical work. Do not mint dated claims for those episodes.
 - Miss caused by a bad analog → rewrite or delete the card. Do not keep a false mechanism.
 - No card existed and Structure was empty or parametric → add a card if the series showed a transferable class; otherwise note that nothing earned a file.
 
