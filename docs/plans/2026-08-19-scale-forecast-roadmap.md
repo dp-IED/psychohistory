@@ -16,8 +16,8 @@ All four: dated events, material facts, official machines, and what people treat
 **Q3 — Whose openings?**  
 **Multitenant:** whoever is asking this run (C), not one hardcoded party. Openings are from that **tenant’s** point of view.
 
-**Q4 — Shared vs private (in tension with internationalism; not locked).**  
-User wants both: tenant-private openings *and* learning across countries/parties. Proposed split is Q5.
+**Q4 / Q5 — Shared vs private vs internationalism.**  
+**A + B.** Shared: analog cards and **opening types** (anonymized “kind of opening,” no party name). Private: this-run **openings**. ADR 0015. When a type may be written (only after reflection vs also on predict) not fully grilled; proposal is reflection-only.
 
 ---
 

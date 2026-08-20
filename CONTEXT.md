@@ -61,12 +61,16 @@ Explanation and reasoning trace for a **claim**, including a **Structure** block
 _Avoid_: Backup, chain, second clock, problem motivation; reciting parametric history as if it were a card; treating an **opening** as the claim
 
 **Opening**:
-A note about where **the asking tenant** can push, where they will be blocked, or where the other side is weak. The tenant is whoever is asking this run (a party or similar organisation), not a single hardcoded party. Not a **dated claim**. Not graded right/wrong on **resolution day**. Not an instruction to act (that is a **playbook**).
-_Avoid_: Mixing openings into the claim sentence; scoring “you should organise X”; baking one party’s map into shared overlay as if it were everyone’s
+A note about where **the asking tenant** can push, where they will be blocked, or where the other side is weak. This-run, tenant-private. Not a **dated claim**. Not graded right/wrong on **resolution day**. Not a **playbook**.
+_Avoid_: Mixing openings into the claim sentence; scoring “you should organise X”; copying a tenant opening into shared overlay
+
+**Opening type**:
+A reusable, **anonymized** lesson: where a *kind* of actor (challenger, incumbent, union, junta opposition) is usually able to push or is usually blocked. No party name. Shared overlay. Internationalist learning lives here, plus **analog cards**. Written only when a live series earned it (**reflection**), not from an unscored guess.
+_Avoid_: “DSA should…”; treating an opening type as a dated claim; minting types before **resolution day**
 
 **Tenant**:
-Who is asking this run: a party or similar organisation (LFI, DSA, or another). The system is **multitenant**. Forecast methods can be shared. An **opening** is from that tenant’s point of view for that run.
-_Avoid_: Hardcoding one party as the only user; treating “the left” as the tenant
+Who is asking this run: a party or similar organisation (LFI, DSA, or another). The system is **multitenant**. Shared: forecast methods, **analog cards**, **opening types**. Private to the run: **openings**.
+_Avoid_: Hardcoding one party as the only user; treating “the left” as the tenant; sharing tenant openings as if they were opening types
 
 **Playbook**:
 A list of actions a party should take next. Not a scored plugin output. Humans decide that.

@@ -1,0 +1,13 @@
+# Internationalist learning is shared analog cards and opening types, not tenant openings
+
+Q5: share both reusable “kind of fight” mechanisms and anonymized **opening types**. Keep this-run **openings** private to the asking **tenant**.
+
+**Shared (internationalist):** **analog cards** (ADR 0013) and **opening types** — what would still be true if a different party in a different country asked. No party name. A type of opening enters overlay only when **reflection** says a live series earned it (same bar as analog cards). Unscored guesses do not mint shared types.
+
+**Private:** **openings** for whoever is asking this run.
+
+Test for the boundary: if you must name the tenant or “this month” for the sentence to be true, it is an opening, not an opening type.
+
+Does not add a fourth host job. Does not specify file layout for opening types yet. Does not restore graph-vault.
+
+Extends ADR 0014. Glossary: `CONTEXT.md` (**Opening**, **Opening type**, **Tenant**).
