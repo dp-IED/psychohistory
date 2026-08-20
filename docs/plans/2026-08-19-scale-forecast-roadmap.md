@@ -14,7 +14,10 @@ All four: dated events, material facts, official machines, and what people treat
 **A + B, not C as a scored guess.** Forecasts (dated, public, gradeable) plus a **map of openings**. Not a **playbook**. ADR 0014.
 
 **Q3 — Whose openings?**  
-**Multitenant:** whoever is asking this run (C), not one hardcoded party. Openings are from that **tenant’s** point of view. Not a nameless “the left,” and not “LFI-only.” Where tenant id is passed, and what is shared vs private, not locked.
+**Multitenant:** whoever is asking this run (C), not one hardcoded party. Openings are from that **tenant’s** point of view.
+
+**Q4 — Shared vs private (in tension with internationalism; not locked).**  
+User wants both: tenant-private openings *and* learning across countries/parties. Proposed split is Q5.
 
 ---
 
