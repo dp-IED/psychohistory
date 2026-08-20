@@ -17,7 +17,10 @@ All four: dated events, material facts, official machines, and what people treat
 **Multitenant:** whoever is asking this run (C), not one hardcoded party. Openings are from that **tenant’s** point of view.
 
 **Q4 / Q5 — Shared vs private vs internationalism.**  
-**A + B.** Shared: analog cards and **opening types** (anonymized “kind of opening,” no party name). Private: this-run **openings**. ADR 0015. When a type may be written (only after reflection vs also on predict) not fully grilled; proposal is reflection-only.
+**A + B.** Shared analog cards and **opening types**. Private this-run **openings**. ADR 0015.
+
+**Q6 — Country names on shared notes.**  
+**C.** Keep country and case names (with sources) on instantiations so people can look the case up. Class name remains the kind of fight; tenant names stay off the lesson.
 
 ---
 

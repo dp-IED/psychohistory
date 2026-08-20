@@ -11,7 +11,7 @@ Keep this shape. Do not add a global type system. Class names are discovered fro
 ```text
 # Class: <discovered name>
 
-- Instantiations: <P-ids>; <named historical episodes + URLs>
+- Instantiations: <P-ids>; <named historical episodes + country + URLs, so a later reader can look the case up>
 - Mechanism: actors, incentives, constraints, clock
 - Base rate: what this class usually does
 - Disanalogy: why a live instance might not belong

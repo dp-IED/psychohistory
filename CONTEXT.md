@@ -65,8 +65,8 @@ A note about where **the asking tenant** can push, where they will be blocked, o
 _Avoid_: Mixing openings into the claim sentence; scoring “you should organise X”; copying a tenant opening into shared overlay
 
 **Opening type**:
-A reusable, **anonymized** lesson: where a *kind* of actor (challenger, incumbent, union, junta opposition) is usually able to push or is usually blocked. No party name. Shared overlay. Internationalist learning lives here, plus **analog cards**. Written only when a live series earned it (**reflection**), not from an unscored guess.
-_Avoid_: “DSA should…”; treating an opening type as a dated claim; minting types before **resolution day**
+A reusable lesson: where a *kind* of actor is usually able to push or is usually blocked. **Class name** = the kind of fight, not a tenant. **Instantiations** keep **country and case names plus sources** so another tenant can look the case up (Q6). No tenant playbook. Shared overlay. Written when **reflection** says a live series earned it.
+_Avoid_: “DSA should…”; treating an opening type as a dated claim; minting types before **resolution day**; stripping country from the cases list so nobody can look it up
 
 **Tenant**:
 Who is asking this run: a party or similar organisation (LFI, DSA, or another). The system is **multitenant**. Shared: forecast methods, **analog cards**, **opening types**. Private to the run: **openings**.
@@ -105,8 +105,8 @@ How a live problem is supposed to be reasoned: **news-now** (deadline, live talk
 _Avoid_: Historical cutoffs as the epoch; opening already-resolved questions; PIT/gold replay as discover
 
 **Analog card**:
-A loadable **case card** in `references/` (usually `references/cases/`) that states a discovered class’s mechanism, instantiations, base rate, disanalogy, and falsifiers. This is how the plugin understands the past. Predict consults it; reflection writes or culls it (ADR 0013, `references/structure.md`).
-_Avoid_: graph-vault; a global ontology of types; scoring historical episodes as forecasts; “I remember 1992”
+A loadable **case card** in `references/` (usually `references/cases/`) that states a discovered class’s mechanism, instantiations, base rate, disanalogy, and falsifiers. Instantiations keep country and case names plus sources so a later tenant can look them up. Predict consults it; reflection writes or culls it (ADR 0013, `references/structure.md`).
+_Avoid_: graph-vault; a global ontology of types; scoring historical episodes as forecasts; “I remember 1992”; stripping country from instantiations
 
 **Discover**:
 Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). When opening more than one problem, spread the batch across domains (ADR 0011) and across **horizon** / **evidence regime** (ADR 0012), weighed against what is already open. Analog-regime Motivation names the class (ADR 0013). It does not write **claim** or **justification**.
