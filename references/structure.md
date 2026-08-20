@@ -24,7 +24,7 @@ On analog/base-rate problems, Motivation must name the **structural class** this
 
 ## Predict (claim worker)
 
-1. Read any matching card in `references/` / `references/cases/` before live news.
+1. Read any matching card in `references/` / `references/cases/` before live news. For an administrative tariff or trade clock, that card is `references/cases/tariff-proclamation-deadline-delay.md`.
 2. Put a **Structure** block in every Justification, even for news-now:
    - Class (card name, Motivation’s name, or `none`)
    - Mechanism in one short pass

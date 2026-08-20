@@ -39,11 +39,14 @@ def test_overlay_lives_at_plugin_root() -> None:
     worker = REPO_ROOT / "agents" / "claim-worker.md"
     discovery = REPO_ROOT / "references" / "discovery.md"
     structure = REPO_ROOT / "references" / "structure.md"
+    cases = REPO_ROOT / "references" / "cases"
     assert skill.is_file()
     assert parent.is_file()
     assert worker.is_file()
     assert discovery.is_file()
     assert structure.is_file()
+    assert cases.is_dir()
+    assert any(cases.glob("*.md"))
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
