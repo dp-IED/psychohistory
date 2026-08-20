@@ -5,7 +5,7 @@ A harness-agnostic plugin training bed. Live dated claims train the plugin; the 
 ## Language
 
 **Psychohistory**:
-The target capability named by this repo: longer-horizon forecasting from accumulated overlay patterns, eventually with plugin-grown simulation tools. Intended later use: help parties such as LFI and DSA see **openings**, not run their campaigns. Not Seldon mathematics, and not a restored GNN corpus as the product on this branch.
+The target capability named by this repo: longer-horizon forecasting from accumulated overlay patterns, eventually with plugin-grown simulation tools. Intended later use: **tenants** (LFI, DSA, or another asking party) see **openings**, not run their campaigns. Not Seldon mathematics, and not a restored GNN corpus as the product on this branch.
 _Avoid_: Treating one dated claim as psychohistory; France/warehouse GNN as this branch’s loop; treating a playbook as psychohistory
 
 **Plugin**:
@@ -61,8 +61,12 @@ Explanation and reasoning trace for a **claim**, including a **Structure** block
 _Avoid_: Backup, chain, second clock, problem motivation; reciting parametric history as if it were a card; treating an **opening** as the claim
 
 **Opening**:
-A note about where a named party or similar organisation can push, where they will be blocked, or where the other side is weak. Not a **dated claim**. Not graded right/wrong on **resolution day**. Not an instruction to act (that is a **playbook**).
-_Avoid_: Mixing openings into the claim sentence; scoring “you should organise X”
+A note about where **the asking tenant** can push, where they will be blocked, or where the other side is weak. The tenant is whoever is asking this run (a party or similar organisation), not a single hardcoded party. Not a **dated claim**. Not graded right/wrong on **resolution day**. Not an instruction to act (that is a **playbook**).
+_Avoid_: Mixing openings into the claim sentence; scoring “you should organise X”; baking one party’s map into shared overlay as if it were everyone’s
+
+**Tenant**:
+Who is asking this run: a party or similar organisation (LFI, DSA, or another). The system is **multitenant**. Forecast methods can be shared. An **opening** is from that tenant’s point of view for that run.
+_Avoid_: Hardcoding one party as the only user; treating “the left” as the tenant
 
 **Playbook**:
 A list of actions a party should take next. Not a scored plugin output. Humans decide that.

@@ -11,8 +11,10 @@ All four: dated events, material facts, official machines, and what people treat
 **Why:** help **LFI, DSA, and similar parties** with a long fight over institutions and common sense, and a short fight when power is contestable.
 
 **Q2 — What should come out for those parties?**  
-**A + B, not C as a scored guess.** Forecasts (dated, public, gradeable) plus a **map of openings**. Not a **playbook** (“do this next”) treated as a forecast.  
-Locked in glossary + ADR 0014. Where openings are written is not locked.
+**A + B, not C as a scored guess.** Forecasts (dated, public, gradeable) plus a **map of openings**. Not a **playbook**. ADR 0014.
+
+**Q3 — Whose openings?**  
+**Multitenant:** whoever is asking this run (C), not one hardcoded party. Openings are from that **tenant’s** point of view. Not a nameless “the left,” and not “LFI-only.” Where tenant id is passed, and what is shared vs private, not locked.
 
 ---
 
