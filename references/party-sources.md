@@ -2,6 +2,8 @@
 
 Public channels and extracted questions that **orient** discover. Not a transcript vault. Do not score the past recording. Open a **live** problem whose **resolution day** is still ahead, and cite the URL in Motivation (ADR 0018).
 
+**First pass (2026-08-21):** captions we could fetch without a residential IP, plus `amfis.fr/programme`. **Still missing:** the rest of Amfis 2026 once LFI publishes the year playlist. That wait is parked on the scale-forecast roadmap until a home-network scrape. Being on site is not a source for this file.
+
 Refresh this index on later discover ticks from the same public pages. Closed Slack/Discord stays in harness chat.
 
 ## How to scrape (public only)
@@ -57,9 +59,21 @@ Each row is orientation, not a scored forecast of the talk. Suggested resolution
 | DSA convention + NEC https://convention2025.dsausa.org/ · https://electoral.dsausa.org/reflecting-on-the-2025-national-convention/ | 2025-08 | 2026 midterms; 2028 Congress slate (Carnation: 5 House candidates); independent ballot lines | 2026-11-03 / 2028 | news-now / analog | House opened |
 | DSA R30 / co-chair May Day 2028 (public reports of the convention labor resolution; Fain Big Three expiration 2028-04-30) | 2025-08 | Coordinated May Day strike when auto contracts expire | 2028-05-01 | analog: **aligned-contract May Day general strike** | `P-us-mayday-28` |
 | DSA program https://program.dsausa.org/ · launch video https://www.youtube.com/watch?v=GzhPYE_OWW0 | 2026-07 | Medicare for All, abolish ICE, Green New Deal, Free Palestine as endorsement tests | various 2027–28 | analog cards later | class only |
-| DSA Socialist Summit 2026 https://www.youtube.com/watch?v=kuKLtHkS20s | 2026-08-17 | Same 2026–28 fights in a public assembly | n/a | orientation | not scored |
+| DSA Socialist Summit 2026 https://www.youtube.com/watch?v=kuKLtHkS20s | 2026-08-17 | ICE, Palestine/militarism, climate, electeds — same 2026–28 fights | n/a | orientation | not scored |
+| DSA 2023 convention keynote https://www.youtube.com/watch?v=yA13mlaiw1w (Mamdani) | 2023-08-04 | How chapters bind electeds after a win (socialists-in-office committee) | none — past talk | analog: **socialists-in-office committee vs individual corruption** | class only |
+| Same Amfis welcome (Bompard) | 2026-08-20 | Next campaign meeting Sunday 11 Oct 2026, Clermont-Ferrand | 2026-10-11 | news-now campaign event, not a world clock | index only |
 
-Other Amfis 2026 watch URLs on the LFI RSS at scrape time (several still `length=0` placeholders, no captions yet): `RqQQ_cDyYGQ` Guetté; `Uqe5vvsXsZ4` La Boétie *L’État et la révolution citoyenne*; `KJvF-KUAFqE` Palestine solidarity criminalization; `gIg8h2TEiRE` ecological planning (Panot / Chatelain); `zfSZ82IaRZg` Lordon; `ZoRWhmtiWsc` Pigasse. Closing meeting Sunday 23 Aug 2026 is a campaign event, not a resolution day.
+**Captions in hand:** `HW03wZDi6Tk` (welcome), `Z5YIa1QD178` (Saint-Denis), `-0BYHdRe2b8` (Tlaib), `yA13mlaiw1w` (Mamdani), `kuKLtHkS20s` (summit). WebFetch also returned a long dump for `GzhPYE_OWW0` (Workers Deserve More launch).
+
+**Amfis 2026 still to pull at home** (no year playlist yet; several RSS ids were empty shells): `RqQQ_cDyYGQ` Guetté; `Uqe5vvsXsZ4` La Boétie *L’État et la révolution citoyenne*; `KJvF-KUAFqE` Palestine solidarity criminalization; `gIg8h2TEiRE` ecological planning (Panot / Chatelain); `zfSZ82IaRZg` Lordon; `ZoRWhmtiWsc` Pigasse; Sunday 23 Aug closing meeting; then whatever LFI adds to an `AMFIS 2026` playlist. Closing meeting is a campaign event, not a resolution day. Local command once the playlist exists:
+
+```
+yt-dlp --skip-download --write-auto-subs --write-subs --sub-langs "fr,en" --convert-subs vtt \
+  -o "subs/%(playlist_title)s/%(id)s.%(ext)s" \
+  'https://www.youtube.com/playlist?list=PLAYLIST_ID'
+```
+
+Drop files in gitignored `.scratch/`; do not commit raw hours of VTT.
 
 ## Anti-patterns
 

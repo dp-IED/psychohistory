@@ -64,7 +64,7 @@ Next: host ticker (`/predict` daily, `/reflect` daily later, `/discover` weekly)
 - 2026-08-19: Due and Y are one clock: resolution day on the problem; forecast day on each claim (ADR 0010).
 - 2026-08-19: Long-term “how society works” modeling waits on plain-language locks in `docs/plans/2026-08-19-scale-forecast-roadmap.md`; scored events stay the test; no a-priori taxonomy.
 - 2026-08-21: Next session: scrape public LFI/DSA transcripts per `docs/plans/ce-handoff-lfi-dsa-transcripts.md`. Architecture grill closed.
-- 2026-08-21: Party-source scrape landed: `references/party-sources.md` plus six live ledger rows; YouTube caption APIs blocked from cloud IPs so the index uses programme/RSS plus WebFetch captions.
+- 2026-08-21: Party-source first corpus: `references/party-sources.md` plus six live ledger rows from captions we could get (welcome, Saint-Denis, Tlaib, Mamdani, summit). Rest of Amfis 2026 after home + official playlist.
 
 ## Parked / planned later (agent-maintained)
 
@@ -74,3 +74,4 @@ Next: host ticker (`/predict` daily, `/reflect` daily later, `/discover` weekly)
 - GNN analysis of a live overlay graph · later; do not recreate `graph-vault/`.
 - Polymarket testbed · after live loop; retrieve from history.
 - Tournament watcher · rewrite from scratch; do not restore v2.
+- Rest of Amfis 2026 captions · after user is home and LFI publishes the year playlist; residential `yt-dlp` into `.scratch/`; then refresh `references/party-sources.md`.

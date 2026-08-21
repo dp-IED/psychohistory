@@ -56,9 +56,9 @@ Branch `dp-ied/scale-forecast-roadmap-6072` tracking origin. Tip at capture: `3c
 
 ## Current state of the scrape task
 
-- **Not started:** no Amfis/DSA transcript fetch, no source index of video URLs, no new ledger problems from those talks.
-- **Started:** discover *method* in overlay (`references/discovery.md`, ADR 0018).
-- **Do not do:** score Amfis 2024/2025 as if they were forecasts; dump closed Slack/Discord into the shared repo; fill `K` from one week of news only.
+- **First pass done (2026-08-21):** `references/party-sources.md`; six live ledger problems; captions for welcome / Saint-Denis / Tlaib / Mamdani / summit.
+- **Parked:** rest of Amfis 2026 until the official LFI playlist exists and a home-network `yt-dlp` run. Roadmap note: `docs/plans/2026-08-19-scale-forecast-roadmap.md` (After the grill).
+- **Do not do:** score Amfis 2024/2025 as if they were forecasts; dump closed Slack/Discord or on-site hallway notes into the shared repo; fill `K` from one week of news only.
 
 ## Constraints for the scrape session
 

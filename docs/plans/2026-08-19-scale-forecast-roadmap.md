@@ -46,3 +46,9 @@ The **reflector decides per experiment**. Record it on the branch.
 
 **Q15 — Problem sourcing (architecture grill closed).**  
 No extra field quota; mixed-field problems are good. Discover orients from **public** party questions (Amfis YouTube, public DSA debates, etc.), cited in Motivation. Score only a live future resolution day. Closed internals stay in chat. Anti-cluster mix (ADR 0011–0012) remains a brake on large `K`, not a curriculum. ADR 0018, `references/discovery.md`.
+
+## After the grill (implementation)
+
+**First corpus (2026-08-21):** public programme + the captions we could get without a residential IP (Amfis 2026 welcome, Saint-Denis launch, Tlaib 2025, Mamdani 2023, DSA Socialist Summit 2026). Index: `references/party-sources.md`. Six live ledger rows opened from that set. Do not score the recordings.
+
+**Deferred — rest of Amfis 2026:** LFI had not published a year playlist yet; several watch URLs were still empty livestream shells; YouTube caption CLIs fail from this cloud IP. **Trigger:** user is home (residential `yt-dlp` / local subs) **after** the official Amfis 2026 playlist exists on the LFI channel (usually a few days after the 23 Aug closing). Fold new public questions into the same index; open further live problems only if anti-cluster still holds. Hallway notes from being on site stay in chat unless they are already on a public page.
