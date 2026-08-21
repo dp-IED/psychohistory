@@ -129,16 +129,20 @@ Why this problem was opened. Stored on the problem in the ledger so Parent does 
 _Avoid_: Justification (that belongs on a dated claim)
 
 **Parent**:
-**Predict** tick: write today’s forecasts and revisions on **live problems**. **Discover** tick: open **problems** and set **resolution day**. **Reflection** tick: after **resolution day**, grade the whole series and grow or cull the plugin. At most **K** new problems per discover tick; open inventory unbounded.
-_Avoid_: Repo crontab; combining predict, discover, and reflect in one host job
+**Predict** tick: write today’s forecasts and revisions on **live problems**. **Discover** tick: open **problems** and set **resolution day**. **Reflection** tick: after **resolution day**, grade the whole series and grow or cull the plugin. Tiny edits may land on the live branch. Risky experiments go on an **experiment branch**; the reflect **host job** may start a Cursor automation on that branch. At most **K** new problems per discover tick; open inventory unbounded.
+_Avoid_: Repo crontab; combining predict, discover, and reflect in one host job; making the reflector the daily traffic cop; experiment runs spawning more experiments
+
+**Experiment branch**:
+A git branch that holds a plugin experiment (new agent, skill, tool, or organisation). Not the live daily branch. Created from **reflection**. A host run on that branch tries the experiment. Merge or cull from a later live reflect tick (ADR 0016).
+_Avoid_: Treating every overlay typo as a branch; in-repo daemon that launches agents
 
 **Fan-out**:
 Breadth of live claims plus ungated proactive **problem** finding. Reflection culls. Calibration is the whole series after **resolution day**, plus whether methods transferred.
 _Avoid_: Multi-agent roster on one question; replaying old gold
 
 **Reflection**:
-After **resolution day**, grade every **dated claim** in the series (claim, justification, Structure block). The earliest matching **claim** is the prize. Then change the **plugin**. Add or rewrite analog cards when a class transferred; cull false mechanisms. Add files when the grade earned a new capability. Durable facts live in the overlay.
-_Avoid_: Sidecar `graph-vault/`; silent weight updates; grading only the last row; minting forecasts for historical episodes used to deepen a card
+After **resolution day**, grade every **dated claim** in the series (claim, justification, Structure block). The earliest matching **claim** is the prize. Then change the **plugin**: tiny edits on live; new capabilities may go to an **experiment branch** whose host run the reflect job may start (ADR 0016). Add or rewrite analog cards when a class transferred; cull false mechanisms.
+_Avoid_: Sidecar `graph-vault/`; silent weight updates; grading only the last row; minting forecasts for historical episodes used to deepen a card; a plugin-owned automation daemon
 
 **Training loop**:
 Forward only: **discover** (problem + **resolution day**) → **predict** (claim + justification, **revisions** while live) → after **resolution day**, **reflection** → **plugin**. Three separate host jobs.

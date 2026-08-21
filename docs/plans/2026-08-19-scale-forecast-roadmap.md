@@ -30,8 +30,11 @@ One-off analysis and openings: conversation history. Forecasts: repo. Chat-made 
 
 ## Remaining (training and agent structure)
 
-Do not re-ask storage, tenants, or Gramsci layers.
+Do not re-ask storage, tenants, Gramsci layers, or “is reflector the daily parent.”
 
-**Intent (not locked):** architecture stays open-ended. Agents may propose new skills, agents, tools, and how they are organised. That is why there is a reflector. Git branches are a candidate way to try experiments without wrecking the live plugin. Open: whether that makes the reflector “Parent.”
+**Q11 — Risky experiments.**  
+**C.** Tiny edits on the live plugin. New agents/tools/how-tos on a git **experiment branch**. The **reflect host job** may autonomously create that branch and start a Cursor automation on it. Plugin markdown instructs; it is not a daemon. Reflector writes evolution; harness still starts daily predict/discover/reflect. ADR 0016.
 
-Repo today: Parent + claim-worker; three host jobs (discover / predict / reflect); only reflection after the score date rewrites plugin files; the **harness** starts those jobs (ADR 0001); breadth is more live questions, not a committee on one question.
+**Spawn bound (locked unless you override):** only a reflect job on the **live** branch starts experiment automations. A run already on an experiment branch does not start children.
+
+Not implemented yet: reflect skill still only commits `harness-only`. Host must actually expose “start automation on branch.”

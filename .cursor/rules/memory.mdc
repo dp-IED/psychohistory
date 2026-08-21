@@ -20,7 +20,7 @@ Purpose: harness-agnostic plugin training bed for live forecasting. Canonical de
 - `CONTEXT.md` (glossary)
 - `README.md` / `project.md`
 - `next_steps.md`
-- `docs/adr/` (0001–0015)
+- `docs/adr/` (0001–0016)
 - `docs/plans/2026-08-19-scale-forecast-roadmap.md` (how plugin results feed scale prediction; not an ADR)
 
 ## Non-negotiables
@@ -63,7 +63,7 @@ Next: host ticker (`/predict` daily, `/reflect` daily later, `/discover` weekly)
 - 2026-08-19: Discover sets first Due; predict writes claim+justification (ADR 0009). Rename due-today → predict.
 - 2026-08-19: Due and Y are one clock: resolution day on the problem; forecast day on each claim (ADR 0010).
 - 2026-08-19: Long-term “how society works” modeling waits on plain-language locks in `docs/plans/2026-08-19-scale-forecast-roadmap.md`; scored events stay the test; no a-priori taxonomy.
-- 2026-08-21: One-off analysis/openings stay in conversation (optional harness FS if asked). Forecasts live in the repo; chat-made forecasts get an anonymized ledger copy. Grill next: how the plugin trains and which agents exist, not storage.
+- 2026-08-21: Open-ended evolution: tiny live overlay edits; new agents/tools on experiment branches. Live reflect host job may autonomously start a Cursor automation on that branch. Experiment runs do not spawn children (ADR 0016). Harness still starts daily ticks.
 
 ## Parked / planned later (agent-maintained)
 
