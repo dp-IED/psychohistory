@@ -35,6 +35,5 @@ Do not re-ask storage, tenants, Gramsci layers, or “is reflector the daily par
 **Q11 — Risky experiments.**  
 **C.** Tiny edits on the live plugin. New agents/tools/how-tos on a git **experiment branch**. The **reflect host job** may autonomously create that branch and start a Cursor automation on it. Plugin markdown instructs; it is not a daemon. Reflector writes evolution; harness still starts daily predict/discover/reflect. ADR 0016.
 
-**Spawn bound (locked unless you override):** only a reflect job on the **live** branch starts experiment automations. A run already on an experiment branch does not start children.
-
-Not implemented yet: reflect skill still only commits `harness-only`. Host must actually expose “start automation on branch.”
+**Q12 — What an experiment run does.**  
+The **reflector decides per experiment**. No global A/B/C. Write the choice on the branch (slug and/or commit message). Track experiments by listing `exp/*` (prefix proposed; confirm Q13).

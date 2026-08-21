@@ -133,8 +133,8 @@ _Avoid_: Justification (that belongs on a dated claim)
 _Avoid_: Repo crontab; combining predict, discover, and reflect in one host job; making the reflector the daily traffic cop; experiment runs spawning more experiments
 
 **Experiment branch**:
-A git branch that holds a plugin experiment (new agent, skill, tool, or organisation). Not the live daily branch. Created from **reflection**. A host run on that branch tries the experiment. Merge or cull from a later live reflect tick (ADR 0016).
-_Avoid_: Treating every overlay typo as a branch; in-repo daemon that launches agents
+A git branch named `exp/<slug>` that holds a plugin experiment. Not the live daily branch. Created from **reflection**. The reflector chooses what the host run on that branch does and records it on the branch. Listing `exp/*` is how experiments are tracked (ADR 0016).
+_Avoid_: Treating every overlay typo as a branch; in-repo daemon that launches agents; a second experiment ledger
 
 **Fan-out**:
 Breadth of live claims plus ungated proactive **problem** finding. Reflection culls. Calibration is the whole series after **resolution day**, plus whether methods transferred.

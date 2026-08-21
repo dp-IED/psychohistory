@@ -6,7 +6,11 @@ Open-ended evolution: after a score, reflection may propose new skills, agents, 
 
 **Experiment branch:** a git branch for a new agent, skill, script, or organisation. Live predict stays on the live plugin until the experiment **transfers** on later scored problems.
 
-**Who starts the experiment run:** the **reflection host job** (a Cursor automation / `/automate` / `/loop` run), autonomously: create/push the branch, then start a host run **on that branch**. This repo does not ship a daemon. The reflect skill *instructs* the already-running host agent. If the host has no way to start another automation, stop and say so; do not fake an orchestrator in-tree.
+**What the experiment run does:** the reflector chooses per experiment (same live questions, load-only check, extra questions, etc.). Record that choice on the branch (commit message and/or branch slug). There is no single global experiment tick.
+
+**How experiments are tracked:** git branches with prefix `exp/`. Live reflect lists `exp/*`, starts/merges/deletes them. No sidecar experiment database. The prefix is the index.
+
+**Who starts the experiment run:** the **reflection host job** (a Cursor automation / `/automate` / `/loop` run), autonomously: create/push the `exp/…` branch, then start a host run **on that branch**. This repo does not ship a daemon. The reflect skill *instructs* the already-running host agent. If the host has no way to start another automation, stop and say so; do not fake an orchestrator in-tree.
 
 **Spawn bound (until superseded):** only a reflect job on the **live** plugin may start experiment automations. A run already on an experiment branch does not start further experiments.
 
