@@ -8,7 +8,7 @@ Open-ended evolution: after a score, reflection may propose new skills, agents, 
 
 **What the experiment run does:** the reflector chooses per experiment (same live questions, load-only check, extra questions, etc.). Record that choice on the branch (commit message and/or branch slug). There is no single global experiment tick.
 
-**How experiments are tracked:** git branches with prefix `exp/`. Live reflect lists `exp/*`, starts/merges/deletes them. No sidecar experiment database. The prefix is the index.
+**How experiments are tracked:** git branches with prefix `exp/` (locked; example `exp/claim-critic`). Live reflect lists `exp/*`, starts/merges/deletes them. No sidecar experiment database. The prefix is the index.
 
 **Who starts the experiment run:** the **reflection host job** (a Cursor automation / `/automate` / `/loop` run), autonomously: create/push the `exp/…` branch, then start a host run **on that branch**. This repo does not ship a daemon. The reflect skill *instructs* the already-running host agent. If the host has no way to start another automation, stop and say so; do not fake an orchestrator in-tree.
 

@@ -63,7 +63,7 @@ Next: host ticker (`/predict` daily, `/reflect` daily later, `/discover` weekly)
 - 2026-08-19: Discover sets first Due; predict writes claim+justification (ADR 0009). Rename due-today → predict.
 - 2026-08-19: Due and Y are one clock: resolution day on the problem; forecast day on each claim (ADR 0010).
 - 2026-08-19: Long-term “how society works” modeling waits on plain-language locks in `docs/plans/2026-08-19-scale-forecast-roadmap.md`; scored events stay the test; no a-priori taxonomy.
-- 2026-08-21: Open-ended evolution: tiny live edits; `exp/` branches for risky work. Reflector chooses each experiment’s run. Live reflect may start a host run on that branch. Experiment runs do not spawn children (ADR 0016).
+- 2026-08-21: Experiment branches use prefix `exp/`. Reflector chooses each run. Cap and roster still open.
 
 ## Parked / planned later (agent-maintained)
 

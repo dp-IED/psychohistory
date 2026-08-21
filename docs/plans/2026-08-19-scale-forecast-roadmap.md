@@ -36,4 +36,7 @@ Do not re-ask storage, tenants, Gramsci layers, or “is reflector the daily par
 **C.** Tiny edits on the live plugin. New agents/tools/how-tos on a git **experiment branch**. The **reflect host job** may autonomously create that branch and start a Cursor automation on it. Plugin markdown instructs; it is not a daemon. Reflector writes evolution; harness still starts daily predict/discover/reflect. ADR 0016.
 
 **Q12 — What an experiment run does.**  
-The **reflector decides per experiment**. No global A/B/C. Write the choice on the branch (slug and/or commit message). Track experiments by listing `exp/*` (prefix proposed; confirm Q13).
+The **reflector decides per experiment**. Record it on the branch.
+
+**Q13 — Branch prefix.**  
+**`exp/`** (decided). Example: `exp/claim-critic`. List `exp/*` to track. No sidecar file.
