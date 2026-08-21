@@ -40,6 +40,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     reflector = REPO_ROOT / "agents" / "reflector.md"
     discovery = REPO_ROOT / "references" / "discovery.md"
     structure = REPO_ROOT / "references" / "structure.md"
+    analog_prior = REPO_ROOT / "references" / "analog-prior.md"
     cases = REPO_ROOT / "references" / "cases"
     assert skill.is_file()
     assert parent.is_file()
@@ -47,8 +48,16 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert reflector.is_file()
     assert discovery.is_file()
     assert structure.is_file()
+    assert analog_prior.is_file()
+    analog_prior_body = analog_prior.read_text(encoding="utf-8").lower()
+    assert "base rate" in analog_prior_body
+    assert "falsifier" in analog_prior_body
+    assert "source-split" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
+    tariff_card = cases / "tariff-proclamation-deadline-delay.md"
+    assert tariff_card.is_file()
+    assert "typical openings" in tariff_card.read_text(encoding="utf-8").lower()
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
@@ -56,6 +65,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "ledger.md" in skill_body
     assert "references/discovery.md" in skill_body
     assert "references/structure.md" in skill_body
+    assert "references/analog-prior.md" in skill_body
     discover = REPO_ROOT / "skills" / "discover" / "SKILL.md"
     assert discover.is_file()
     discover_meta, discover_body = _frontmatter(discover)
@@ -87,6 +97,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "ledger.md" in worker_body
     assert "skills/" in worker_body
     assert "references/structure.md" in worker_body
+    assert "references/analog-prior.md" in worker_body
     assert "references/vault.md" not in worker_body
     pointer = REPO_ROOT / ".cursor" / "agents" / "parent.md"
     pointer_meta, pointer_body = _frontmatter(pointer)
