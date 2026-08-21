@@ -61,8 +61,12 @@ Explanation and reasoning trace for a **claim**, including a **Structure** block
 _Avoid_: Backup, chain, second clock, problem motivation; reciting parametric history as if it were a card; treating an **opening** as the claim
 
 **Opening**:
-A note about where **the asking tenant** can push, where they will be blocked, or where the other side is weak. Lives in the **harness** (conversation, artifacts, host filesystem) for that run. Not in this plugin repo. Not a **dated claim**. Not graded on **resolution day**. Not a **playbook**.
+A note about where **the asking tenant** can push, where they will be blocked, or where the other side is weak. Default: **one-off in conversation history**. User may ask to save it on the harness filesystem after. Not in this plugin repo. Not a **dated claim**. Not graded on **resolution day**. Not a **playbook**.
 _Avoid_: Mixing openings into the claim sentence; scoring “you should organise X”; copying a tenant opening into `ledger.md` or overlay
+
+**Chat forecast**:
+A forecast written in conversation. The wording the user saw stays in chat (and on harness FS only if they ask). An **anonymized** copy must be written to the **ledger** as a dated **claim** so the training loop can score it.
+_Avoid_: Leaving a chat-made forecast only in conversation; copying tenant openings or party names into the ledger copy
 
 **Opening type**:
 The **typical openings** bit on an **analog card** (same pile, not a second filing system). Anonymized: no tenant name. Instantiations still name countries and cases. Written when **reflection** earns it.
