@@ -11,9 +11,10 @@ Forecasting improves when the plugin has an explicit, loadable model of **how a 
 **Minimal envelope** (audit/logging, not a global ontology). Discover class names from use; merge cards later when two names are the same mechanism. Do not grow a taxonomy in advance.
 
 - Class (discovered name)
-- Instantiations (ledger problem ids, plus named historical episodes with sources)
+- Instantiations (ledger problem ids, plus named historical episodes with country and sources)
 - Mechanism (actors, incentives, constraints, clock)
 - Base rate (what the class usually does)
+- Typical openings (optional; earned on reflection; no tenant name)
 - Disanalogy (why the live instance might not belong)
 - Falsifiers (what would kill the analog)
 
