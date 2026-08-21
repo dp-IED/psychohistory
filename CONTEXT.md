@@ -29,8 +29,8 @@ Deterministic code. The live schedule reader is `harness.ledger`. No LLM.
 _Avoid_: Hermes CLI wrapper, LLM synthesis
 
 **Harness**:
-The host that runs agents: Cursor, Claude Code, Codex, or any other. It schedules skills and agents and supplies the LLM. This plugin does not inject a model backend.
-_Avoid_: hermes, orchestrator.py
+The host that runs agents: Cursor, Claude Code, Codex, or any other. It schedules skills and agents, supplies the LLM, and holds **conversation history**, artifacts, and local files. **Openings** live there, not in this plugin repo. This plugin does not inject a model backend.
+_Avoid_: hermes, orchestrator.py; committing tenant openings into `ledger.md` or overlay
 
 **PIT**:
 Retired vault filter (git history). Not the training loop.
@@ -61,8 +61,8 @@ Explanation and reasoning trace for a **claim**, including a **Structure** block
 _Avoid_: Backup, chain, second clock, problem motivation; reciting parametric history as if it were a card; treating an **opening** as the claim
 
 **Opening**:
-A note about where **the asking tenant** can push, where they will be blocked, or where the other side is weak. This-run, tenant-private. Not a **dated claim**. Not graded right/wrong on **resolution day**. Not a **playbook**.
-_Avoid_: Mixing openings into the claim sentence; scoring “you should organise X”; copying a tenant opening into shared overlay
+A note about where **the asking tenant** can push, where they will be blocked, or where the other side is weak. Lives in the **harness** (conversation, artifacts, host filesystem) for that run. Not in this plugin repo. Not a **dated claim**. Not graded on **resolution day**. Not a **playbook**.
+_Avoid_: Mixing openings into the claim sentence; scoring “you should organise X”; copying a tenant opening into `ledger.md` or overlay
 
 **Opening type**:
 The **typical openings** bit on an **analog card** (same pile, not a second filing system). Anonymized: no tenant name. Instantiations still name countries and cases. Written when **reflection** earns it.
@@ -117,8 +117,8 @@ Host tick that writes **claim** and **justification** on **live problems** (firs
 _Avoid_: Due-today as the current name; waking only rows whose Due equals today; forecasting from uncited parametric history
 
 **Memory**:
-The plugin overlay. Not the ledger and not a sidecar store.
-_Avoid_: Using memory for justification traces, Cursor automation memories, or graph-vault
+The plugin overlay. Not the ledger, not a sidecar store, and not harness conversation/artifacts (**openings** live there).
+_Avoid_: Using memory for justification traces, Cursor automation memories, graph-vault, or tenant openings
 
 **Motivation**:
 Why this problem was opened. Stored on the problem in the ledger so Parent does not forget. Analog-regime rows name the structural class.

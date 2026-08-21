@@ -23,7 +23,10 @@ All four: dated events, material facts, official machines, and what people treat
 **C.** Instantiations keep country and case names plus sources so people can look the case up.
 
 **Q7 — One pile or two.**  
-**A.** One analog-card pile. Optional typical openings on the same card when earned. Not a second library; not country folders.
+**A.** One analog-card pile. Optional typical openings on the same card when earned.
+
+**Q8 — Where this-run openings live.**  
+**A.** In the **harness** (Claude Code conversation, artifacts, host filesystem), not in this plugin repo. The plugin stays the shared training bed.
 
 ---
 
