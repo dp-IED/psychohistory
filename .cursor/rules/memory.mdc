@@ -1,7 +1,7 @@
 ---
 description: Psychohistory memory distillate — concise defaults, sequencing, and agent-maintained preferences
 alwaysApply: true
-last_reviewed: 2026-08-19
+last_reviewed: 2026-08-21
 ---
 
 # Project memory (concise)
@@ -41,7 +41,7 @@ Purpose: harness-agnostic plugin training bed for live forecasting. Canonical de
 
 ## Sequencing (compressed)
 
-Next: host ticker (`/predict` daily, `/reflect` daily later, `/discover` weekly). After live series, harvest analog cards; scale prediction is survived cards + composition, not a world-model schema. Polymarket testbed after live loop. Do not restore orchestrator/PIT/gold vault onto this branch.
+Next: host ticker (`/predict` daily, `/reflect` daily later, `/discover` weekly). Party-source starter is `references/party-sources.md`. After live series, harvest analog cards; scale prediction is survived cards + composition, not a world-model schema. Polymarket testbed after live loop. Do not restore orchestrator/PIT/gold vault onto this branch.
 
 ## Engineering checks
 
@@ -64,6 +64,7 @@ Next: host ticker (`/predict` daily, `/reflect` daily later, `/discover` weekly)
 - 2026-08-19: Due and Y are one clock: resolution day on the problem; forecast day on each claim (ADR 0010).
 - 2026-08-19: Long-term “how society works” modeling waits on plain-language locks in `docs/plans/2026-08-19-scale-forecast-roadmap.md`; scored events stay the test; no a-priori taxonomy.
 - 2026-08-21: Next session: scrape public LFI/DSA transcripts per `docs/plans/ce-handoff-lfi-dsa-transcripts.md`. Architecture grill closed.
+- 2026-08-21: Party-source scrape landed: `references/party-sources.md` plus six live ledger rows; YouTube caption APIs blocked from cloud IPs so the index uses programme/RSS plus WebFetch captions.
 
 ## Parked / planned later (agent-maintained)
 

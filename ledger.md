@@ -108,6 +108,42 @@ Resolution: 2026-12-31
 
 Motivation: Analog/base-rate: **UN peacekeeping mandate sunset**. UNSC 2790 (28 Aug 2025) extended UNIFIL "for a final time" until 31 Dec 2026 and told the force to cease operations that day and begin a one-year drawdown. The minority far clock this tick (≥90 days) so analog methods have time to matter. Conflict/security in Lebanon. Score whether the Council has replaced that cease-ops clock with a new operations mandate before the year ends.
 
+### P-fr-pest-street — National pesticide-law demonstration on 15 Sep 2026
+
+Resolution: 2026-09-15
+
+Motivation: News-now, near. LFI’s 19 Aug 2026 tribune and the 20 Aug Amfis welcome treat 15 Sep as the street start against the agricultural-law pesticide provisions (https://lafranceinsoumise.fr/2026/08/19/tribune-le-29-octobre-pesticides/ ; captions https://www.youtube.com/watch?v=HW03wZDi6Tk). Score whether at least one nationally reported demonstration against those provisions takes place in France on 15 Sep 2026. The 19 Aug tribune is not the forecast.
+
+### P-fr-gir-sen — Gironde LFI list wins a Senate seat
+
+Resolution: 2026-09-27
+
+Motivation: News-now institutional. The Amfis 2026 welcome presents Aminata Pouille as insoumise head of list for the Gironde senatorial (captions https://www.youtube.com/watch?v=HW03wZDi6Tk). Official clock: grands électeurs vote 27 Sep 2026; Gironde elects 6 senators by PR (https://www.interieur.gouv.fr/actualites/actualites-du-ministere/elections-senatoriales-27-septembre-2026). Score whether the France insoumise list in Gironde wins at least one of those six seats. Indirect election, not a national presidential call.
+
+### P-fr-pest-niche — Assemblée repeals the 2026 pesticide derogations
+
+Resolution: 2026-10-29
+
+Motivation: News-now courts/legal. Amfis welcome and the same tribune name LFI’s 29 Oct 2026 parliamentary niche as the vote to abrogate the agricultural-law derogations that reopened acétamipride and flupyradifurone (https://www.youtube.com/watch?v=HW03wZDi6Tk ; https://lafranceinsoumise.fr/2026/08/19/tribune-le-29-octobre-pesticides/). Structural class: **opposition niche-day repeal of a just-passed majority law**. Score whether the Assemblée that day adopts a text that repeals those derogations.
+
+### P-us-house-26 — Democratic majority in the 2026 US House
+
+Resolution: 2026-11-03
+
+Motivation: News-now politics. Public DSA 2025 convention materials treat the 2026 midterms as the near electoral fight (https://convention2025.dsausa.org/ ; Tlaib keynote https://www.youtube.com/watch?v=-0BYHdRe2b8). Score whether the Democratic Party holds at least 218 US House seats after the 3 Nov 2026 election. Not a playbook for who DSA should run.
+
+### P-fr-pres-t1 — Most votes in France’s 2027 presidential first round
+
+Resolution: 2027-04-18
+
+Motivation: Analog/base-rate: **two-round presidential first-round plurality**. Amfis 2026 is framed as the opening of the presidential year (welcome captions https://www.youtube.com/watch?v=HW03wZDi6Tk ; programme https://amfis.fr/programme ; Saint-Denis launch https://www.youtube.com/watch?v=Z5YIa1QD178). Official first round is 18 Apr 2027 (https://www.service-public.gouv.fr/particuliers/actualites/A15053). Score which candidate wins the most votes nationwide that day, not who takes the Élysée on 2 May.
+
+### P-us-mayday-28 — UAW on strike 1 May 2028
+
+Resolution: 2028-05-01
+
+Motivation: Analog/base-rate: **aligned-contract May Day general strike**. DSA’s 2025 convention passed a May Day 2028 labor resolution after UAW’s public April 30 2028 Big Three expiration (https://convention2025.dsausa.org/ ; https://bostondsa.org/2025/08/22/opinion-2025-dsa-convention-socialists-set-sights-on-may-day-2028-and-left-labor-power/). Score whether UAW is on strike against at least one of GM, Ford, or Stellantis on 1 May 2028. Far clock (≥90 days) so analog methods have time. The 2025 convention is not the thing we score.
+
 ## Claims
 
 ### C-usca-338-deal

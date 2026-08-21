@@ -10,7 +10,7 @@ Domain language: [`CONTEXT.md`](CONTEXT.md). Decisions: [`docs/adr/`](docs/adr/)
 2. **Live claims** — keep scoring `P-usca-338` after 19 Aug; `P-il-knesset-26` is the hard months-out starter. Reflector edits the plugin (ADR 0007, 0017).
 3. **Polymarket testbed** — historical gold/probes; retrieve from git history after the live loop is ticking. Live markets are a discovery surface, not that testbed.
 4. **Use of run results / evolution** — ADR 0014–0018. Party-sourced discover; reflector + `exp/` experiments.
-5. **Party-source scrape (next session)** — public LFI Amfis / DSA channel transcripts → discover index + live future problems. Handoff: [`docs/plans/ce-handoff-lfi-dsa-transcripts.md`](docs/plans/ce-handoff-lfi-dsa-transcripts.md).
+5. **Party-source scrape** — first index is [`references/party-sources.md`](references/party-sources.md). Later discover ticks refresh it; do not score past Amfis/DSA recordings.
 
 ## Do not pick up
 

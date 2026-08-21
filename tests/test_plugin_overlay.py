@@ -39,6 +39,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     worker = REPO_ROOT / "agents" / "claim-worker.md"
     reflector = REPO_ROOT / "agents" / "reflector.md"
     discovery = REPO_ROOT / "references" / "discovery.md"
+    party_sources = REPO_ROOT / "references" / "party-sources.md"
     structure = REPO_ROOT / "references" / "structure.md"
     cases = REPO_ROOT / "references" / "cases"
     assert skill.is_file()
@@ -46,6 +47,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert worker.is_file()
     assert reflector.is_file()
     assert discovery.is_file()
+    assert party_sources.is_file()
+    assert "party-sources.md" in discovery.read_text(encoding="utf-8")
     assert structure.is_file()
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
@@ -64,6 +67,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "ledger.md" in discover_body
     assert "references/discovery.md" in discover_body
     assert "references/structure.md" in discover_body
+    assert "references/party-sources.md" in discover_body
     assert "predict" in discover_body.lower()
     reflect = REPO_ROOT / "skills" / "reflect" / "SKILL.md"
     assert reflect.is_file()
