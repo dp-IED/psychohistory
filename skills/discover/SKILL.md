@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Discover
 
-Run from the repository root with the plugin loaded in place (`claude --plugin-dir .`). Today is the session calendar date. This tick is discovery, not predict and not reflect.
+Run from the repository root. Cursor: `.cursor/agents/parent.md`. Claude Code: `claude --plugin-dir .`. Live-tick contract: `references/host-jobs.md`. Today is the session calendar date. This tick is discovery, not predict and not reflect.
 
 ## Steps
 

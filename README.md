@@ -6,11 +6,11 @@ Harness-agnostic **plugin** for live forecasting. The repository **is** the plug
 claude --plugin-dir .
 ```
 
-Then `/predict`, `/reflect`, or `/discover`. Cursor: project-root Parent pointer at `.cursor/agents/parent.md`.
+Then `/predict`, `/reflect`, or `/discover`. Cursor: project-root Parent pointer at `.cursor/agents/parent.md`. Dashboard automations already run those three jobs; contract: [`references/host-jobs.md`](references/host-jobs.md).
 
-Epochs grow `skills/`, `agents/`, `references/`, and `scripts/` when a grade earns it. The host owns three separate jobs (`/loop` or `/automate`). Do not add a repo daemon. Weights stay frozen.
+Epochs grow `skills/`, `agents/`, `references/`, and `scripts/` when a grade earns it. The host owns three separate jobs. Do not add a repo daemon. Weights stay frozen.
 
-Suggested host cadence (host may change it): predict daily, reflect daily later the same day, discover weekly after both. Each job runs one tick only. Jobs must not overlap: pull fast-forward, then one tick, then commit and push `harness-only` (no pull request).
+Cadence (already set in the Cursor dashboard): predict daily, reflect daily later the same day, discover weekly after both. Each job runs one tick only. Jobs must not overlap: pull fast-forward, then one tick, then commit and push `harness-only` (no pull request).
 
 ## Start here
 
@@ -19,7 +19,7 @@ Suggested host cadence (host may change it): predict daily, reflect daily later 
 | [`CONTEXT.md`](CONTEXT.md) | Domain language |
 | [`project.md`](project.md) | What this repo is |
 | [`next_steps.md`](next_steps.md) | Current work order |
-| [`docs/adr/`](docs/adr/) | Locked decisions (through 0013) |
+| [`docs/adr/`](docs/adr/) | Locked decisions (0001–0018) |
 | [`ledger.md`](ledger.md) | Schedule book |
 
 ## Layout
@@ -30,6 +30,7 @@ Suggested host cadence (host may change it): predict daily, reflect daily later 
 | `skills/` `agents/` `references/` | Overlay |
 | `ledger.md` | Problems + dated claims |
 | `harness/ledger.py` | Deterministic schedule reader |
-| `docs/adr/` | ADRs 0001–0013 |
+| `docs/adr/` | ADRs 0001–0018 |
+| `references/host-jobs.md` | Live-tick contract for existing dashboard automations |
 
 Retired PIT, hermes, Polymarket eval, and the old `graph-vault/` corpus live in git history (`origin/main`, `e867bec3`), not this branch.

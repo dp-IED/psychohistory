@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Reflect
 
-Run from the repository root with the plugin loaded in place (`claude --plugin-dir .`). Today is the session calendar date. This tick is reflection, not predict.
+Run from the repository root. Cursor: `.cursor/agents/parent.md`. Claude Code: `claude --plugin-dir .`. Live-tick contract: `references/host-jobs.md`. Today is the session calendar date. This tick is reflection, not predict. Parent starts `agents/reflector.md`; the reflector follows this skill.
 
 ## Steps
 
@@ -16,4 +16,4 @@ Run from the repository root with the plugin loaded in place (`claude --plugin-d
 4. Change the plugin so the next tick is stronger. Write whatever the grade earned: new or rewritten skills, agents, references, scripts/tools, strategies, and instructions. Add or rewrite **analog case cards** when the Structure block earned a transferable class (deepen with several past instantiations from public sources; do not score those as forecasts). Cull or rewrite cards whose mechanism was load-bearing and wrong. Add files when a new capability is the point. Delete or merge overlay that failed to transfer. Durable facts belong in the overlay, usually `references/`. Do not write `graph-vault/`. Completion: the working tree shows plugin diffs that match the grades, or an explicit note that nothing in the plugin needed to change.
 5. If the overlay changed, commit and push to `harness-only`. Do not open a pull request.
 
-Parent is the overlay writer. Workers stay consumers until Parent adds or retargets an owner.
+The reflector is the overlay writer on this tick. Workers stay consumers until the reflector adds or retargets an owner.

@@ -149,5 +149,5 @@ After **resolution day**, grade every **dated claim** in the series (claim, just
 _Avoid_: Sidecar `graph-vault/`; silent weight updates; grading only the last row; minting forecasts for historical episodes used to deepen a card; a plugin-owned automation daemon
 
 **Training loop**:
-Forward only: **discover** (problem + **resolution day**) → **predict** (claim + justification, **revisions** while live) → after **resolution day**, **reflection** → **plugin**. Three separate host jobs.
-_Avoid_: PIT backtest as the epoch; gold Brier as quality; due-today as the current tick name; Due and Y as two clocks
+Forward only: **discover** (problem + **resolution day**) → **predict** (claim + justification, **revisions** while live) → after **resolution day**, **reflection** → **plugin**. Three separate host jobs. Cursor dashboard automations already run them (`references/host-jobs.md`).
+_Avoid_: PIT backtest as the epoch; gold Brier as quality; due-today as the current tick name; Due and Y as two clocks; treating ticker setup as unfinished
