@@ -1,6 +1,6 @@
 # Scale forecast: grill-with-docs session
 
-**Status:** in session (not an ADR). One question at a time. Write glossary/ADRs only when a term or trade-off actually settles.  
+**Status:** architecture grill closed (Q15). Implementation is separate.  
 **Skill:** Matt Pocock `grill-with-docs` (grilling + domain-modeling).  
 **Date:** 2026-08-21
 
@@ -30,7 +30,7 @@ One-off analysis and openings: conversation history. Forecasts: repo. Chat-made 
 
 ## Remaining (training and agent structure)
 
-Do not re-ask storage, tenants, Gramsci layers, or “is reflector the daily parent.”
+Closed. Reflector may still change sourcing later on `exp/`.
 
 **Q11 — Risky experiments.**  
 **C.** Tiny edits on the live plugin. New agents/tools/how-tos on a git **experiment branch**. The **reflect host job** may autonomously create that branch and start a Cursor automation on it. Plugin markdown instructs; it is not a daemon. Reflector writes evolution; harness still starts daily predict/discover/reflect. ADR 0016.
@@ -44,4 +44,5 @@ The **reflector decides per experiment**. Record it on the branch.
 **Q14 — Reflector vs Parent.**  
 **B.** Parent starts **reflector** on reflect ticks (`agents/reflector.md`, ADR 0017). At most three `exp/` branches (decided).
 
-**Remaining from you: 1 question** — how discover sources live problems so history/sociology/psychology train the plugin without a PIT backtest (Q15 in chat). After that, architecture grill stops.
+**Q15 — Problem sourcing (architecture grill closed).**  
+No extra field quota; mixed-field problems are good. Discover orients from **public** party questions (Amfis YouTube, public DSA debates, etc.), cited in Motivation. Score only a live future resolution day. Closed internals stay in chat. Anti-cluster mix (ADR 0011–0012) remains a brake on large `K`, not a curriculum. ADR 0018, `references/discovery.md`.

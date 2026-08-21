@@ -113,8 +113,8 @@ A loadable **case card** in `references/` (usually `references/cases/`). One pil
 _Avoid_: graph-vault; a global ontology of types; scoring historical episodes as forecasts; “I remember 1992”; stripping country from instantiations; a separate opening-types folder
 
 **Discover**:
-Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). When opening more than one problem, spread the batch across domains (ADR 0011) and across **horizon** / **evidence regime** (ADR 0012), weighed against what is already open. Analog-regime Motivation names the class (ADR 0013). It does not write **claim** or **justification**.
-_Avoid_: Full forecast on discover; leaving a problem with no resolution day; letting a large `K` cluster in one domain or in the current week; scoring the past
+Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). Orient from **public** questions similar parties ask (e.g. LFI Amfis recordings, public DSA debates); cite the URL. A problem may mix fields; no sociology quota (ADR 0018). When opening more than one problem, still anti-cluster across domains and **horizon** / **evidence regime** (ADR 0011–0012). Analog-regime Motivation names the class (ADR 0013). It does not write **claim** or **justification**.
+_Avoid_: Full forecast on discover; leaving a problem with no resolution day; scoring a past transcript; a field curriculum split; scraping closed internals into the shared ledger
 
 **Predict**:
 Host tick that writes **claim** and **justification** on **live problems** (first row or **revision** when the outcome changes). Formerly called due-today. It does not invent **resolution day**. Workers fill a Structure block from analog cards before news (`references/structure.md`).

@@ -9,3 +9,13 @@ Domain mix: when a tick opens more than one problem, draw from at least three of
 Horizon and evidence mix: when a tick opens more than one problem, include at least one **near** resolution day (about ≤30 days) and at least one **far** (about ≥90 days). Include at least one **news-now** problem and at least one whose motivation is **analog/base-rate** (a past class of cases, a structural rate, or a method this plugin already claimed — still scored in the future). Analog-regime Motivation names the **structural class** (`references/structure.md`). After reflection, prefer a new live problem in a class the overlay just claimed to learn. Do not open already-resolved history as problems (ADR 0012, ADR 0013).
 
 When this tick runs, append problem headings under `## Problems`. Do not add dated claims. **Predict** writes **claim** and **justification** while the problem is live.
+
+## Party-sourced orientation
+
+Do not treat domain buckets as a curriculum. One problem may mix economy, institutions, and what people treat as obvious.
+
+Orient new problems from **public** questions similar parties ask: LFI Amfis (YouTube and transcripts), published congresses and platforms, public DSA debates and similar. Put the source URL in **Motivation**. That recording is not the thing we score. Open a **live** question with a **resolution day** after today that the discussion points at (or a live instance of the same class). Analog-regime rows still name the **structural class**.
+
+Closed internal docs stay in conversation. They are not the shared discover scrape.
+
+Anti-cluster (ADR 0011, 0012) still applies when this tick opens more than one problem, so a large `K` does not collapse onto one headline. Prefer a mixed-field row over splitting one party question into fake pure buckets.
