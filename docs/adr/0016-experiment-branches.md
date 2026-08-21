@@ -12,7 +12,7 @@ Open-ended evolution: after a score, reflection may propose new skills, agents, 
 
 **Who starts the experiment run:** the **reflection host job** (a Cursor automation / `/automate` / `/loop` run), autonomously: create/push the `exp/…` branch, then start a host run **on that branch**. This repo does not ship a daemon. The reflect skill *instructs* the already-running host agent. If the host has no way to start another automation, stop and say so; do not fake an orchestrator in-tree.
 
-**Spawn bound (until superseded):** only a reflect job on the **live** plugin may start experiment automations. A run already on an experiment branch does not start further experiments.
+**Spawn bound (until superseded):** only a reflect job on the **live** plugin may start experiment automations. A run already on an experiment branch does not start further experiments. At most **three** `exp/` branches at once; if at cap, cull or merge before opening another.
 
 Merge or delete the branch from a later **live** reflect tick. Do not require a PR for daily live ticks; experiment merge is still the live reflect writer (or a host rule it follows).
 

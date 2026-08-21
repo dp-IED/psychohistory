@@ -40,3 +40,8 @@ The **reflector decides per experiment**. Record it on the branch.
 
 **Q13 — Branch prefix.**  
 **`exp/`** (decided). Example: `exp/claim-critic`. List `exp/*` to track. No sidecar file.
+
+**Q14 — Reflector vs Parent.**  
+**B.** Parent starts **reflector** on reflect ticks (`agents/reflector.md`, ADR 0017). At most three `exp/` branches (decided).
+
+**Remaining from you: 1 question** — how discover sources live problems so history/sociology/psychology train the plugin without a PIT backtest (Q15 in chat). After that, architecture grill stops.

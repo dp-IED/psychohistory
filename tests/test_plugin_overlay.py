@@ -37,11 +37,13 @@ def test_overlay_lives_at_plugin_root() -> None:
     skill = REPO_ROOT / "skills" / "predict" / "SKILL.md"
     parent = REPO_ROOT / "agents" / "parent.md"
     worker = REPO_ROOT / "agents" / "claim-worker.md"
+    reflector = REPO_ROOT / "agents" / "reflector.md"
     discovery = REPO_ROOT / "references" / "discovery.md"
     structure = REPO_ROOT / "references" / "structure.md"
     assert skill.is_file()
     assert parent.is_file()
     assert worker.is_file()
+    assert reflector.is_file()
     assert discovery.is_file()
     assert structure.is_file()
     assert not (REPO_ROOT / "references" / "vault.md").exists()
@@ -75,6 +77,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert parent_meta["name"] == "parent"
     assert "skills/predict/SKILL.md" in parent_body
     assert "skills/reflect/SKILL.md" in parent_body
+    assert "agents/reflector.md" in parent_body
     assert "skills/discover/SKILL.md" in parent_body
     worker_meta, worker_body = _frontmatter(worker)
     assert worker_meta["name"] == "claim-worker"

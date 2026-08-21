@@ -129,8 +129,12 @@ Why this problem was opened. Stored on the problem in the ledger so Parent does 
 _Avoid_: Justification (that belongs on a dated claim)
 
 **Parent**:
-**Predict** tick: write today’s forecasts and revisions on **live problems**. **Discover** tick: open **problems** and set **resolution day**. **Reflection** tick: after **resolution day**, grade the whole series and grow or cull the plugin. Tiny edits may land on the live branch. Risky experiments go on an **experiment branch**; the reflect **host job** may start a Cursor automation on that branch. At most **K** new problems per discover tick; open inventory unbounded.
+**Predict** tick: write today’s forecasts and revisions on **live problems**. **Discover** tick: open **problems** and set **resolution day**. **Reflection** tick: start **reflector**, which grades the series and grows or culls the plugin (ADR 0017). Tiny edits may land on the live branch. Risky experiments go on `exp/<slug>`. At most **K** new problems per discover tick; open inventory unbounded.
 _Avoid_: Repo crontab; combining predict, discover, and reflect in one host job; making the reflector the daily traffic cop; experiment runs spawning more experiments
+
+**Reflector**:
+Named agent Parent starts on a **reflection** tick (`agents/reflector.md`). Owns overlay evolution and `exp/` experiments. Not a fourth host job.
+_Avoid_: Reflector running predict/discover; in-repo daemon
 
 **Experiment branch**:
 A git branch named `exp/<slug>` that holds a plugin experiment. Not the live daily branch. Created from **reflection**. The reflector chooses what the host run on that branch does and records it on the branch. Listing `exp/*` is how experiments are tracked (ADR 0016).
