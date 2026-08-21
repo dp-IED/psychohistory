@@ -63,7 +63,7 @@ Next: host ticker (`/predict` daily, `/reflect` daily later, `/discover` weekly)
 - 2026-08-19: Discover sets first Due; predict writes claim+justification (ADR 0009). Rename due-today → predict.
 - 2026-08-19: Due and Y are one clock: resolution day on the problem; forecast day on each claim (ADR 0010).
 - 2026-08-19: Long-term “how society works” modeling waits on plain-language locks in `docs/plans/2026-08-19-scale-forecast-roadmap.md`; scored events stay the test; no a-priori taxonomy.
-- 2026-08-21: Discover orients from public party questions (Amfis, etc.); mixed-field problems OK; no extra quota. ADR 0018. Architecture grill closed.
+- 2026-08-21: Next session: scrape public LFI/DSA transcripts per `docs/plans/ce-handoff-lfi-dsa-transcripts.md`. Architecture grill closed.
 
 ## Parked / planned later (agent-maintained)
 
