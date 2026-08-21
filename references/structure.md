@@ -25,7 +25,7 @@ On analog/base-rate problems, Motivation must name the **structural class** this
 
 ## Predict (claim worker)
 
-1. Read any matching card in `references/` / `references/cases/` before live news. For an administrative tariff or trade clock, that card is `references/cases/tariff-proclamation-deadline-delay.md`.
+1. Read any matching card in `references/` / `references/cases/` before live news. For an administrative tariff or trade clock, that card is `references/cases/tariff-proclamation-deadline-delay.md`. Then read `references/analog-prior.md`.
 2. Put a **Structure** block in every Justification, even for news-now:
    - Class (card name, Motivation’s name, or `none`)
    - Mechanism in one short pass
@@ -33,7 +33,7 @@ On analog/base-rate problems, Motivation must name the **structural class** this
    - Disanalogy
    - Falsifiers
    - Sources for historical episodes actually fetched this tick (not “I remember”)
-3. If news and analog disagree, say which you followed and why.
+3. If a card matches, analog is the default. Follow news against the base rate only when a listed falsifier has fired this tick (`references/analog-prior.md`). Last-day source-split and remaining bargain gaps are not falsifiers. Name which you followed.
 
 ## Reflect
 
