@@ -32,6 +32,6 @@ One-off analysis and openings: conversation history. Forecasts: repo. Chat-made 
 
 Do not re-ask storage, tenants, or Gramsci layers.
 
-Still open: **what evolves**, **which agents exist**, **who may change the plugin**, **many questions vs many agents on one question**.
+**Intent (not locked):** architecture stays open-ended. Agents may propose new skills, agents, tools, and how they are organised. That is why there is a reflector. Git branches are a candidate way to try experiments without wrecking the live plugin. Open: whether that makes the reflector “Parent.”
 
-Repo today: Parent + claim-worker; three host jobs (discover / predict / reflect); only reflection after the score date rewrites plugin files; breadth is more live questions, not a committee on one question.
+Repo today: Parent + claim-worker; three host jobs (discover / predict / reflect); only reflection after the score date rewrites plugin files; the **harness** starts those jobs (ADR 0001); breadth is more live questions, not a committee on one question.
