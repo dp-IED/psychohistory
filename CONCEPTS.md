@@ -9,7 +9,7 @@ The loadable instruction surface of this repository: skills, agents, references,
 *Avoid:* graph-vault, sidecar vault, inherited corpus
 
 ### Reflection
-The host tick after a problem’s resolution day. Parent grades the whole dated-claim series, then grows or culls the plugin overlay. It is not a predict wakeup and not a weight update.
+The host tick after a problem’s resolution day. Parent starts the reflector, which grades the whole dated-claim series, then grows or culls the plugin overlay. It is not a predict wakeup and not a weight update.
 *Avoid:* vault append, tighten-only patch, grading only the last row
 
 Reflection may add new or rewritten skills, agents, references (including analog case cards), scripts/tools, strategies, and instructions when the grade earned a new capability. Later reflection deletes or merges overlay that failed to transfer.
@@ -19,10 +19,10 @@ One scored pass whose intended outcome is plugin overlay change, including new f
 *Avoid:* fine-tuning run, historical Brier label
 
 ### Parent
-The overlay writer. On predict it wakes claim workers for live problems. On reflection it edits the plugin. On discovery it opens problems and sets resolution day. One host job runs exactly one of those ticks.
+One host job, one tick. On predict it wakes claim workers for live problems. On reflection it starts the reflector, which edits the plugin. On discovery it opens problems and sets resolution day.
 
 ### Claim worker
-A consumer of the overlay. It updates Claim and Justification on one due ledger row, including a Structure block from analog cards, and does not edit the overlay.
+A consumer of the overlay. It updates Claim and Justification on one live problem, including a Structure block from analog cards, and does not edit the overlay.
 
 ### Analog card
 A `references/` case card for a discovered class of past cases: mechanism, instantiations, base rate, disanalogy, falsifiers. Written on reflection, consulted on predict. Not a ledger problem and not a historical forecast to score.

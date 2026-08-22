@@ -2,6 +2,6 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "psychohistory",
   "displayName": "Psychohistory",
-  "description": "Live forecasting plugin: Parent due-today, consumer workers, ledger at repo root.",
+  "description": "Live forecasting plugin: Parent predict/reflect/discover ticks, consumer workers, ledger at repo root.",
   "keywords": ["forecasting", "ledger", "parent"]
 }

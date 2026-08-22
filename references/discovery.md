@@ -16,6 +16,8 @@ Do not treat domain buckets as a curriculum. One problem may mix economy, instit
 
 Orient new problems from **public** questions similar parties ask: LFI Amfis (YouTube and transcripts), published congresses and platforms, public DSA debates and similar. Put the source URL in **Motivation**. That recording is not the thing we score. Open a **live** question with a **resolution day** after today that the discussion points at (or a live instance of the same class). Analog-regime rows still name the **structural class**.
 
+**Starter index:** `references/party-sources.md` (channel/playlist URLs, extracted questions, suggested future resolution days). Extend that file; do not replace this section. Amfis and DSA are examples of the method, not the only tenants.
+
 Closed internal docs stay in conversation. They are not the shared discover scrape.
 
 Anti-cluster (ADR 0011, 0012) still applies when this tick opens more than one problem, so a large `K` does not collapse onto one headline. Prefer a mixed-field row over splitting one party question into fake pure buckets.

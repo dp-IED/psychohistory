@@ -113,7 +113,7 @@ A loadable **case card** in `references/` (usually `references/cases/`). One pil
 _Avoid_: graph-vault; a global ontology of types; scoring historical episodes as forecasts; “I remember 1992”; stripping country from instantiations; a separate opening-types folder
 
 **Discover**:
-Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). Orient from **public** questions similar parties ask (e.g. LFI Amfis recordings, public DSA debates); cite the URL. A problem may mix fields; no sociology quota (ADR 0018). When opening more than one problem, still anti-cluster across domains and **horizon** / **evidence regime** (ADR 0011–0012). Analog-regime Motivation names the class (ADR 0013). It does not write **claim** or **justification**.
+Host tick that opens at most **K** new **problems** (each with **Motivation** and **resolution day**). Orient from **public** questions similar parties ask (e.g. LFI Amfis recordings, public DSA debates); cite the URL. Starter index: `references/party-sources.md`. A problem may mix fields; no sociology quota (ADR 0018). When opening more than one problem, still anti-cluster across domains and **horizon** / **evidence regime** (ADR 0011–0012). Analog-regime Motivation names the class (ADR 0013). It does not write **claim** or **justification**.
 _Avoid_: Full forecast on discover; leaving a problem with no resolution day; scoring a past transcript; a field curriculum split; scraping closed internals into the shared ledger
 
 **Predict**:
@@ -149,5 +149,5 @@ After **resolution day**, grade every **dated claim** in the series (claim, just
 _Avoid_: Sidecar `graph-vault/`; silent weight updates; grading only the last row; minting forecasts for historical episodes used to deepen a card; a plugin-owned automation daemon
 
 **Training loop**:
-Forward only: **discover** (problem + **resolution day**) → **predict** (claim + justification, **revisions** while live) → after **resolution day**, **reflection** → **plugin**. Three separate host jobs.
-_Avoid_: PIT backtest as the epoch; gold Brier as quality; due-today as the current tick name; Due and Y as two clocks
+Forward only: **discover** (problem + **resolution day**) → **predict** (claim + justification, **revisions** while live) → after **resolution day**, **reflection** → **plugin**. Three separate host jobs. Cursor dashboard automations already run them (`references/host-jobs.md`).
+_Avoid_: PIT backtest as the epoch; gold Brier as quality; due-today as the current tick name; Due and Y as two clocks; treating ticker setup as unfinished

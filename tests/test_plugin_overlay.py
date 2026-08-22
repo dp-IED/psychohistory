@@ -31,6 +31,7 @@ def test_plugin_manifest_declares_in_place_plugin() -> None:
     assert "version" not in manifest
     assert "skills" not in manifest
     assert "agents" not in manifest
+    assert "due-today" not in manifest["description"]
 
 
 def test_overlay_lives_at_plugin_root() -> None:
@@ -39,6 +40,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     worker = REPO_ROOT / "agents" / "claim-worker.md"
     reflector = REPO_ROOT / "agents" / "reflector.md"
     discovery = REPO_ROOT / "references" / "discovery.md"
+    party_sources = REPO_ROOT / "references" / "party-sources.md"
+    host_jobs = REPO_ROOT / "references" / "host-jobs.md"
     structure = REPO_ROOT / "references" / "structure.md"
     analog_prior = REPO_ROOT / "references" / "analog-prior.md"
     cases = REPO_ROOT / "references" / "cases"
@@ -47,6 +50,14 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert worker.is_file()
     assert reflector.is_file()
     assert discovery.is_file()
+    assert party_sources.is_file()
+    assert host_jobs.is_file()
+    host_jobs_text = host_jobs.read_text(encoding="utf-8")
+    assert "harness-only" in host_jobs_text
+    assert "do not open a pull request" in host_jobs_text.lower()
+    assert "agents/reflector.md" in host_jobs_text
+    assert "references/party-sources.md" in host_jobs_text
+    assert "party-sources.md" in discovery.read_text(encoding="utf-8")
     assert structure.is_file()
     assert analog_prior.is_file()
     analog_prior_body = analog_prior.read_text(encoding="utf-8").lower()
@@ -65,6 +76,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "ledger.md" in skill_body
     assert "references/discovery.md" in skill_body
     assert "references/structure.md" in skill_body
+    assert "references/host-jobs.md" in skill_body
     assert "references/analog-prior.md" in skill_body
     discover = REPO_ROOT / "skills" / "discover" / "SKILL.md"
     assert discover.is_file()
@@ -74,6 +86,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "ledger.md" in discover_body
     assert "references/discovery.md" in discover_body
     assert "references/structure.md" in discover_body
+    assert "references/party-sources.md" in discover_body
+    assert "references/host-jobs.md" in discover_body
     assert "predict" in discover_body.lower()
     reflect = REPO_ROOT / "skills" / "reflect" / "SKILL.md"
     assert reflect.is_file()
@@ -86,12 +100,15 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "new or rewritten" in reflect_body.lower()
     assert "analog case cards" in reflect_body.lower()
     assert "references/structure.md" in reflect_body
+    assert "agents/reflector.md" in reflect_body
+    assert "references/host-jobs.md" in reflect_body
     parent_meta, parent_body = _frontmatter(parent)
     assert parent_meta["name"] == "parent"
     assert "skills/predict/SKILL.md" in parent_body
     assert "skills/reflect/SKILL.md" in parent_body
     assert "agents/reflector.md" in parent_body
     assert "skills/discover/SKILL.md" in parent_body
+    assert "references/host-jobs.md" in parent_body
     worker_meta, worker_body = _frontmatter(worker)
     assert worker_meta["name"] == "claim-worker"
     assert "ledger.md" in worker_body

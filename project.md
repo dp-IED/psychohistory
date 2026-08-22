@@ -4,7 +4,7 @@ A **training bed** for a forecasting **plugin** that any harness can load (Curso
 
 ## What “done” means here
 
-1. **Plugin overlay.** `skills/`, `agents/`, `references/` at the repo root. Host owns orchestration (`--plugin-dir .`, then separate `/predict`, `/reflect`, `/discover` jobs via `/loop` or `/automate`).
+1. **Plugin overlay.** `skills/`, `agents/`, `references/` at the repo root. Host owns orchestration (Cursor dashboard automations already run `/predict`, `/reflect`, `/discover`; contract `references/host-jobs.md`).
 2. **Live training loop.** Discover problems + resolution day → `ledger.md` → predict while live → after resolution day reflect into the plugin.
 3. **Epochs grow the plugin.** Frozen model weights. Later reflection culls overlay that did not transfer.
 
