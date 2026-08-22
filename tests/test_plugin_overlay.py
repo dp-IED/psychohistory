@@ -64,11 +64,16 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "base rate" in analog_prior_body
     assert "falsifier" in analog_prior_body
     assert "source-split" in analog_prior_body
+    assert "clock phase" in analog_prior_body
+    assert "already-extended" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
     tariff_card = cases / "tariff-proclamation-deadline-delay.md"
     assert tariff_card.is_file()
-    assert "typical openings" in tariff_card.read_text(encoding="utf-8").lower()
+    tariff_card_body = tariff_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in tariff_card_body
+    assert "already-extended" in tariff_card_body
+    assert "post-pause" in tariff_card_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"

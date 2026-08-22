@@ -33,7 +33,7 @@ On analog/base-rate problems, Motivation must name the **structural class** this
    - Disanalogy
    - Falsifiers
    - Sources for historical episodes actually fetched this tick (not “I remember”)
-3. If a card matches, analog is the default. Follow news against the base rate only when a listed falsifier has fired this tick (`references/analog-prior.md`). Last-day source-split and remaining bargain gaps are not falsifiers. Name which you followed.
+3. If a card matches, analog is the default for this **clock phase**. Follow news against that phase only when a listed falsifier has fired this tick (`references/analog-prior.md`). Last-day source-split and remaining bargain gaps are not falsifiers. On a tariff card, a first deadline and an already-extended date are different priors. Name which you followed.
 
 ## Reflect
 
