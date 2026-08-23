@@ -18,3 +18,5 @@ Class is `none`. Say why. Do not invent a base rate from parametric memory. News
 ## Prize
 
 The earliest matching **claim** is still the prize. A last-day scrape that ignored a good analog is a method miss even if that scrape is correct.
+
+A second miss on P-usca-338: after the 19 Aug three-day pause, **Resolution** stayed 19 Aug, so predict stopped and there was no scored 20–21 Aug take-effect row. When a delay instrument names a new public date, slide that problem’s resolution day later (same heading). Then the post-pause prior can be a dated claim, not only a card footnote. Do not wait for weekly discover, and do not open a duplicate problem for that pause.

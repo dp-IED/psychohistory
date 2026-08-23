@@ -66,6 +66,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "source-split" in analog_prior_body
     assert "clock phase" in analog_prior_body
     assert "already-extended" in analog_prior_body
+    assert "resolution" in analog_prior_body
+    assert "slide" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
     tariff_card = cases / "tariff-proclamation-deadline-delay.md"
@@ -74,6 +76,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "typical openings" in tariff_card_body
     assert "already-extended" in tariff_card_body
     assert "post-pause" in tariff_card_body
+    assert "resolution day" in tariff_card_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
@@ -83,6 +86,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "references/structure.md" in skill_body
     assert "references/host-jobs.md" in skill_body
     assert "references/analog-prior.md" in skill_body
+    assert "resolution day" in skill_body.lower()
+    assert "post-pause" in skill_body.lower()
     discover = REPO_ROOT / "skills" / "discover" / "SKILL.md"
     assert discover.is_file()
     discover_meta, discover_body = _frontmatter(discover)
@@ -120,6 +125,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "skills/" in worker_body
     assert "references/structure.md" in worker_body
     assert "references/analog-prior.md" in worker_body
+    assert "resolution" in worker_body.lower()
     assert "references/vault.md" not in worker_body
     pointer = REPO_ROOT / ".cursor" / "agents" / "parent.md"
     pointer_meta, pointer_body = _frontmatter(pointer)
