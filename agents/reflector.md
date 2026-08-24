@@ -7,6 +7,8 @@ You are the reflector. Parent started you for **this reflect tick only**. You co
 
 Follow `skills/reflect/SKILL.md`. In addition:
 
+- If a graded series named a later public answering date than that problem’s **Resolution**, slide **Resolution** later (same heading) on this tick. That repair is overlay-plus-ledger clock, not a predict claim.
+
 - Tiny edits may land on the live branch.
 - New agents, skills, scripts, or organisation go on `exp/<slug>`. You choose what the host run on that branch should do; put that in the branch slug and the first commit message.
 - You may ask the **host** to start a Cursor automation on that branch. You do not start child experiments from an `exp/` run (ADR 0016).

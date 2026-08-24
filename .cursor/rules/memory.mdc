@@ -1,7 +1,7 @@
 ---
 description: Psychohistory memory distillate — concise defaults, sequencing, and agent-maintained preferences
 alwaysApply: true
-last_reviewed: 2026-08-22
+last_reviewed: 2026-08-24
 ---
 
 # Project memory (concise)
@@ -67,6 +67,7 @@ Ticker is already three Cursor dashboard automations (`/predict` daily, `/reflec
 - 2026-08-21: Party-source first corpus: `references/party-sources.md` plus six live ledger rows from captions we could get (welcome, Saint-Denis, Tlaib, Mamdani, summit). Rest of Amfis 2026 after home + official playlist.
 - 2026-08-21: Host ticker is already set as Cursor dashboard automations. Do not treat “arm the ticker” as unfinished. In-repo skills are the live procedure; dashboard prompts should follow those files.
 - 2026-08-22: Tariff analog card has two clock phases: first deadline → delay prior; already-extended / post-pause clock → take-effect unless a new suspend instrument appears.
+- 2026-08-24: On reflect, if a graded series named a later public answering date than **Resolution**, slide that heading later in the same tick so a freeze cannot drop the next phase off predict.
 
 ## Parked / planned later (agent-maintained)
 

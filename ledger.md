@@ -8,7 +8,7 @@ K: 15
 
 ### P-usca-338 — US Section 338 tariffs on Canada
 
-Resolution: 2026-08-19
+Resolution: 2026-08-22
 
 Motivation: A public 12:01 a.m. ET 19 Aug 2026 deadline on 50% Section 338 duties. Near-term score so reflection has a first series quickly.
 

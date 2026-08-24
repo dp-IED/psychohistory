@@ -68,6 +68,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "already-extended" in analog_prior_body
     assert "resolution" in analog_prior_body
     assert "slide" in analog_prior_body
+    assert "reflect" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
     tariff_card = cases / "tariff-proclamation-deadline-delay.md"
@@ -109,6 +110,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "graph-vault" in reflect_body
     assert "new or rewritten" in reflect_body.lower()
     assert "analog case cards" in reflect_body.lower()
+    assert "slide" in reflect_body.lower()
+    assert "resolution" in reflect_body.lower()
     assert "references/structure.md" in reflect_body
     assert "agents/reflector.md" in reflect_body
     assert "references/host-jobs.md" in reflect_body
