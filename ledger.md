@@ -144,6 +144,36 @@ Resolution: 2028-05-01
 
 Motivation: Analog/base-rate: **aligned-contract May Day general strike**. DSA’s 2025 convention passed a May Day 2028 labor resolution after UAW’s public April 30 2028 Big Three expiration (https://convention2025.dsausa.org/ ; https://bostondsa.org/2025/08/22/opinion-2025-dsa-convention-socialists-set-sights-on-may-day-2028-and-left-labor-power/). Score whether UAW is on strike against at least one of GM, Ford, or Stellantis on 1 May 2028. Far clock (≥90 days) so analog methods have time. The 2025 convention is not the thing we score.
 
+### P-ca-retal-08 — Canada dollar-for-dollar US tariffs on 8 Sep 2026
+
+Resolution: 2026-09-08
+
+Motivation: News-now, near. After Section 338 duties took effect 22 Aug, Carney named 8 Sep 2026 as the start of dollar-for-dollar Canadian tariffs on US steel, dairy, appliances, agricultural equipment, pulp and paper, and electronics (https://www.aljazeera.com/news/2026/8/22/carney-canada-will-enact-retaliatory-us-tariffs-starting-september-8). Distinct from P-usca-338 (duties already in force; talks declared over). Score whether those retaliatory duties are in force on US goods that day, not whether a later US counter-round exists.
+
+### P-232-poly-04 — Section 232 polysilicon MIP and duties take effect
+
+Resolution: 2026-12-04
+
+Motivation: Analog/base-rate: **tariff-proclamation deadline delay**. After P-usca-338 fully took effect, Proclamation 11052 (6 Aug 2026) set a first public take-effect at 12:01 a.m. ET 4 Dec 2026 for the polysilicon MIP and 15% ad valorem on listed derivatives (https://www.whitehouse.gov/presidential-actions/2026/08/adjusting-imports-of-polysilicon-and-its-derivatives-into-the-united-states/). Far first clock (≥90 days). Score whether those instruments apply as written that morning, versus a new suspend/amend that delays or cancels them. Do not reopen P-usca-338.
+
+### P-ndaa27-iltech — FY2027 NDAA keeps US–Israel defense-tech cooperation
+
+Resolution: 2026-12-31
+
+Motivation: Analog/base-rate: **arms-embargo legislative rider**. Public DSA materials treat stopping US weapons/tech integration with Israel as a live congressional fight (Tlaib keynote https://www.youtube.com/watch?v=-0BYHdRe2b8 ; https://program.dsausa.org/). House-passed H.R. 8800 still carried Section 219 (US–Israel Defense Technology Cooperation Initiative); the Senate has not passed an FY2027 NDAA (https://www.congress.gov/bill/119th-congress/house-bill/8800/all-actions). Score whether a signed FY2027 NDAA public law by 31 Dec 2026 still includes that cooperation/integration title or a conference successor. The 2025 keynote is not the forecast.
+
+### P-nobel-lit-26 — 2026 Nobel Prize in Literature laureate
+
+Resolution: 2026-10-08
+
+Motivation: News-now culture. The Swedish Academy announces the 2026 Literature prize on 8 Oct 2026, 13:00 CEST at the earliest (https://www.nobelprize.org/press-release/the-2026-nobel-prize-announcements/). Score the named laureate(s) that day. Not Physics (already P-nobel-phy-26) and not a US-affiliation bar.
+
+### P-genalo-bond — SCOTUS requires a §1226(c) prolonged-detention bond hearing
+
+Resolution: 2027-06-30
+
+Motivation: Analog/base-rate: **prolonged mandatory immigration detention without a bond hearing**. DSA’s 2026–27 program treats ICE detention as a live rights fight (https://program.dsausa.org/ ; Socialist Summit orientation https://www.youtube.com/watch?v=kuKLtHkS20s). *Genalo v. Black*, No. 25-886, is set for argument 13 Oct 2026 on whether due process requires a bond hearing once §1226(c) detention becomes unreasonably prolonged (https://www.scotusblog.com/cases/genalo-v-black/). Far OT2026 merits clock. Score whether the Court’s opinion on this case holds that due process requires such a hearing (Question 1), not the burden-of-proof sub-issue and not a campaign plank.
+
 ## Claims
 
 ### C-usca-338-deal

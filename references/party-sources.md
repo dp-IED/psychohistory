@@ -4,6 +4,8 @@ Public channels and extracted questions that **orient** discover. Not a transcri
 
 **First pass (2026-08-21):** captions we could fetch without a residential IP, plus `amfis.fr/programme`. **Still missing:** the rest of Amfis 2026 once LFI publishes the year playlist. That wait is parked on the scale-forecast roadmap until a home-network scrape. Being on site is not a source for this file.
 
+**Refresh (2026-08-24):** `amfis.fr/programme` still lists the 20–23 Aug edition; LFI home still points at Amfis and the 29 Oct pesticide tribune. Closing-meeting coverage (Mélenchon 23 Aug, Châteauneuf-sur-Isère) is ecology/conscription/éco-régions — campaign programme, not a new resolution day (https://www.france24.com/fr/info-en-continu/20260823-pr%C3%A9sidentielle-m%C3%A9lenchon-colore-sa-rentr%C3%A9e-en-vert-en-proposant-la-conscription-%C3%A9cologique). DSA program page unchanged. YouTube RSS fetches from this host returned 500; no new caption dump.
+
 Refresh this index on later discover ticks from the same public pages. Closed Slack/Discord stays in harness chat.
 
 ## How to scrape (public only)
@@ -62,6 +64,11 @@ Each row is orientation, not a scored forecast of the talk. Suggested resolution
 | DSA Socialist Summit 2026 https://www.youtube.com/watch?v=kuKLtHkS20s | 2026-08-17 | ICE, Palestine/militarism, climate, electeds — same 2026–28 fights | n/a | orientation | not scored |
 | DSA 2023 convention keynote https://www.youtube.com/watch?v=yA13mlaiw1w (Mamdani) | 2023-08-04 | How chapters bind electeds after a win (socialists-in-office committee) | none — past talk | analog: **socialists-in-office committee vs individual corruption** | class only |
 | Same Amfis welcome (Bompard) | 2026-08-20 | Next campaign meeting Sunday 11 Oct 2026, Clermont-Ferrand | 2026-10-11 | news-now campaign event, not a world clock | index only |
+| Amfis 23 Aug closing (Mélenchon), France 24 / RFI | 2026-08-23 | Ecological state, conscription écologique, éco-régions | no independent date | programme talk; 2027 clocks already open | index only |
+| FSU / CGT intersyndicale https://fsu.fr/29-septembre-mobilisons-nous-pour-imposer-dautres-choix/ · https://www.cgt.fr/actualites/france/fonction-publique/fonction-publique-appel-la-greve-le-29-septembre | 2026-07-10 / 2026-06-25 | Fonction publique strike/manifestation day | 2026-09-29 | news-now labor | index only (France already has Sep 15 street + Sep 27 Gironde) |
+| DSA program https://program.dsausa.org/ · *Genalo v. Black* https://www.scotusblog.com/cases/genalo-v-black/ | 2026-08-24 | Due process bond hearing once ICE §1226(c) detention is unreasonably prolonged | 2027-06-30 | analog: **prolonged mandatory immigration detention without a bond hearing** | `P-genalo-bond` |
+| DSA Tlaib keynote (same URL) + House FY2027 NDAA https://www.congress.gov/bill/119th-congress/house-bill/8800/all-actions | 2026-08-24 | Signed FY2027 NDAA still carries US–Israel defense-tech cooperation | 2026-12-31 | analog: **arms-embargo legislative rider** | `P-ndaa27-iltech` |
+| Swedish Academy announcement calendar https://www.nobelprize.org/press-release/the-2026-nobel-prize-announcements/ | 2026-02-02 | Named 2026 Literature laureate | 2026-10-08 | news-now culture | `P-nobel-lit-26` |
 
 **Captions in hand:** `HW03wZDi6Tk` (welcome), `Z5YIa1QD178` (Saint-Denis), `-0BYHdRe2b8` (Tlaib), `yA13mlaiw1w` (Mamdani), `kuKLtHkS20s` (summit). WebFetch also returned a long dump for `GzhPYE_OWW0` (Workers Deserve More launch).
 
