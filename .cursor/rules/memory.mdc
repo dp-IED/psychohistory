@@ -1,7 +1,7 @@
 ---
 description: Psychohistory memory distillate — concise defaults, sequencing, and agent-maintained preferences
 alwaysApply: true
-last_reviewed: 2026-08-24
+last_reviewed: 2026-08-25
 ---
 
 # Project memory (concise)
@@ -41,7 +41,7 @@ Purpose: harness-agnostic plugin training bed for live forecasting. Canonical de
 
 ## Sequencing (compressed)
 
-Ticker is already three Cursor dashboard automations (`/predict` daily, `/reflect` daily later, `/discover` weekly); contract `references/host-jobs.md`. Party-source starter is `references/party-sources.md`. After live series, harvest analog cards; scale prediction is survived cards + composition, not a world-model schema. Polymarket testbed after live loop. Do not restore orchestrator/PIT/gold vault onto this branch.
+Ticker is already three Cursor dashboard automations (`/predict` daily, `/reflect` daily later, `/discover` weekly); they are firing onto `harness-only`; contract `references/host-jobs.md`. Next human job: home Amfis caption scrape (`docs/plans/ce-handoff-lfi-dsa-transcripts.md`). Party-source starter is `references/party-sources.md`. After live series, harvest analog cards; scale prediction is survived cards + composition, not a world-model schema. Polymarket testbed after live loop. Do not restore orchestrator/PIT/gold vault onto this branch.
 
 ## Engineering checks
 
@@ -63,9 +63,9 @@ Ticker is already three Cursor dashboard automations (`/predict` daily, `/reflec
 - 2026-08-19: Discover sets first Due; predict writes claim+justification (ADR 0009). Rename due-today → predict.
 - 2026-08-19: Due and Y are one clock: resolution day on the problem; forecast day on each claim (ADR 0010).
 - 2026-08-19: Long-term “how society works” modeling waits on plain-language locks in `docs/plans/2026-08-19-scale-forecast-roadmap.md`; scored events stay the test; no a-priori taxonomy.
-- 2026-08-21: Next session: scrape public LFI/DSA transcripts per `docs/plans/ce-handoff-lfi-dsa-transcripts.md`. Architecture grill closed.
-- 2026-08-21: Party-source first corpus: `references/party-sources.md` plus six live ledger rows from captions we could get (welcome, Saint-Denis, Tlaib, Mamdani, summit). Rest of Amfis 2026 after home + official playlist.
+- 2026-08-21: Architecture grill closed. Party-source first corpus: `references/party-sources.md` plus six live ledger rows from captions we could get (welcome, Saint-Denis, Tlaib, Mamdani, summit).
 - 2026-08-21: Host ticker is already set as Cursor dashboard automations. Do not treat “arm the ticker” as unfinished. In-repo skills are the live procedure; dashboard prompts should follow those files.
+- 2026-08-25: User is home. Next human job is residential Amfis 2026 caption scrape (no year playlist yet; known ids + channel). Cloud session is not on the laptop; continuity is `docs/plans/ce-handoff-lfi-dsa-transcripts.md`.
 - 2026-08-22: Tariff analog card has two clock phases: first deadline → delay prior; already-extended / post-pause clock → take-effect unless a new suspend instrument appears.
 - 2026-08-24: On reflect, if a graded series named a later public answering date than **Resolution**, slide that heading later in the same tick so a freeze cannot drop the next phase off predict.
 
@@ -77,4 +77,4 @@ Ticker is already three Cursor dashboard automations (`/predict` daily, `/reflec
 - GNN analysis of a live overlay graph · later; do not recreate `graph-vault/`.
 - Polymarket testbed · after live loop; retrieve from history.
 - Tournament watcher · rewrite from scratch; do not restore v2.
-- Rest of Amfis 2026 captions · after user is home and LFI publishes the year playlist; residential `yt-dlp` into `.scratch/`; then refresh `references/party-sources.md`.
+- Rest of Amfis 2026 captions · **unparked 2026-08-25** (user home). Still no official year playlist as of that morning; scrape known ids + channel from residential IP. Do not wait on a playlist id forever.

@@ -13,7 +13,7 @@ A card is a **prior**, not a citation to paste after the scrape. Last-day quotes
 
 ## When no card matches
 
-Class is `none`. Say why. Do not invent a base rate from parametric memory. News-now then carries the claim.
+Class is `none`. Say why. Do not invent a base rate from parametric memory. News-now then carries the claim. A Motivation that names a structural class is **not** a card; do not treat it as analog-prior until reflection files `references/cases/…`. Far analog-regime clocks with no live news still wait on a card.
 
 ## Prize
 

@@ -2,9 +2,11 @@
 
 Public channels and extracted questions that **orient** discover. Not a transcript vault. Do not score the past recording. Open a **live** problem whose **resolution day** is still ahead, and cite the URL in Motivation (ADR 0018).
 
-**First pass (2026-08-21):** captions we could fetch without a residential IP, plus `amfis.fr/programme`. **Still missing:** the rest of Amfis 2026 once LFI publishes the year playlist. That wait is parked on the scale-forecast roadmap until a home-network scrape. Being on site is not a source for this file.
+**First pass (2026-08-21):** captions we could fetch without a residential IP, plus `amfis.fr/programme`.
 
 **Refresh (2026-08-24):** `amfis.fr/programme` still lists the 20–23 Aug edition; LFI home still points at Amfis and the 29 Oct pesticide tribune. Closing-meeting coverage (Mélenchon 23 Aug, Châteauneuf-sur-Isère) is ecology/conscription/éco-régions — campaign programme, not a new resolution day (https://www.france24.com/fr/info-en-continu/20260823-pr%C3%A9sidentielle-m%C3%A9lenchon-colore-sa-rentr%C3%A9e-en-vert-en-proposant-la-conscription-%C3%A9cologique). DSA program page unchanged. YouTube RSS fetches from this host returned 500; no new caption dump.
+
+**Home scrape (2026-08-25):** user is home. No official `AMFIS 2026` playlist id found yet. Pull remaining public videos from a **residential** IP (cloud `yt-dlp` is bot-walled; do not ask for Google cookies). Being on site is not a source for this file.
 
 Refresh this index on later discover ticks from the same public pages. Closed Slack/Discord stays in harness chat.
 
@@ -72,7 +74,7 @@ Each row is orientation, not a scored forecast of the talk. Suggested resolution
 
 **Captions in hand:** `HW03wZDi6Tk` (welcome), `Z5YIa1QD178` (Saint-Denis), `-0BYHdRe2b8` (Tlaib), `yA13mlaiw1w` (Mamdani), `kuKLtHkS20s` (summit). WebFetch also returned a long dump for `GzhPYE_OWW0` (Workers Deserve More launch).
 
-**Amfis 2026 still to pull at home** (no year playlist yet; several RSS ids were empty shells): `RqQQ_cDyYGQ` Guetté; `Uqe5vvsXsZ4` La Boétie *L’État et la révolution citoyenne*; `KJvF-KUAFqE` Palestine solidarity criminalization; `gIg8h2TEiRE` ecological planning (Panot / Chatelain); `zfSZ82IaRZg` Lordon; `ZoRWhmtiWsc` Pigasse; Sunday 23 Aug closing meeting; then whatever LFI adds to an `AMFIS 2026` playlist. Closing meeting is a campaign event, not a resolution day. Local command once the playlist exists:
+**Amfis 2026 still to pull at home** (no year playlist as of 2026-08-25; several RSS ids were empty shells on 21 Aug — retry): `RqQQ_cDyYGQ` Guetté; `Uqe5vvsXsZ4` La Boétie *L’État et la révolution citoyenne*; `KJvF-KUAFqE` Palestine solidarity criminalization; `gIg8h2TEiRE` ecological planning (Panot / Chatelain); `zfSZ82IaRZg` Lordon; `ZoRWhmtiWsc` Pigasse; Sunday 23 Aug closing (press-cited id `k_EnPQyVYLs` — confirm on channel); then new channel uploads / an `AMFIS 2026` playlist if LFI publishes one. Closing meeting is a campaign event, not a resolution day unless a dated world clock appears. Local command (playlist or a list of watch URLs):
 
 ```
 yt-dlp --skip-download --write-auto-subs --write-subs --sub-langs "fr,en" --convert-subs vtt \

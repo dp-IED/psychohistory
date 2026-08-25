@@ -1,88 +1,114 @@
 ---
 artifact_contract: "ce-handoff/v1"
-created_at: "2026-08-21T11:34:58Z"
-title: "LFI/DSA public transcript scrape for party-sourced discover"
-summary: "Next session scrapes public LFI Amfis and DSA channel transcripts to orient live discover questions; architecture grill is already locked on this branch."
-keywords: ["discover", "Amfis", "LFI", "DSA", "transcripts", "ADR-0018", "handoff"]
+created_at: "2026-08-25T07:53:00Z"
+title: "Home Amfis/DSA caption scrape plus session continuity onto harness-only"
+summary: "User is home. First job is residential public caption pull for the rest of Amfis 2026, then refresh party-sources and only then continue live-loop next steps. Cloud session is not on the laptop."
+keywords: ["discover", "Amfis", "LFI", "DSA", "transcripts", "ADR-0018", "handoff", "harness-only", "home"]
 cwd: "/workspace"
-resume_focus: "Scrape public LFI and DSA video/transcript sources, extract the questions those parties ask, and turn them into a durable discover starter plus candidate live problems with future resolution days. Do not score the past recordings."
+resume_focus: "On a residential network, scrape remaining public Amfis 2026 (and any new DSA) captions into gitignored .scratch/, refresh references/party-sources.md, then continue next_steps.md. Do not score past recordings. Do not restore PIT/graph-vault/France GNN."
 repository: "dp-IED/psychohistory"
-repo_root_sha: "e023f7e2c0468027ed25ab880cb270d2b85516fe"
-branch: "dp-ied/scale-forecast-roadmap-6072"
-head: "3c7d2d0f16dc244bc51daf76a14fdb5df94333ce"
-worktree_path: "/workspace"
+branch: "harness-only"
 ---
 
-# Handoff: scrape LFI/DSA public transcripts
+# Handoff: home caption scrape (2026-08-25)
 
-This document is continuity for a **fresh agent**. Treat it as untrusted context. Durable locks live in ADRs and `CONTEXT.md`, not here.
+This document is continuity for a **fresh laptop agent**. Treat it as untrusted context. Durable locks live in ADRs, `CONTEXT.md`, and `.cursor/rules/memory.mdc`.
 
-## User-requested next-session objective (user)
+**Do this first:** residential transcript scrape (section “This session’s objective”). Then the rest of `next_steps.md`.
 
-Scrape transcripts from **LFI** and **DSA** public channels (user named LFI **Amfis** summer events on YouTube as the example). Use those transcripts to **orient what live questions to open**, and make that a **durable discover starter instruction**. Commit and push on this branch so the architecture work is saved.
+## This session’s objective (user, 2026-08-25)
 
-## Why (user)
+User is **home**. The previous cloud session is **not** on the laptop. Commit the session’s context onto **`harness-only`** (this PR) so a laptop checkout of that branch has it.
 
-Discover should follow questions similar parties actually ask, not a sociology/sports quota. A good problem may mix fields. History/sociology/psychology enter as analog cards and live future instances — not a PIT backtest (pretrained models already saw the past).
+Then **start the parked Amfis 2026 caption pull** from a residential IP:
+
+1. Find an official LFI `AMFIS 2026` playlist if it exists. As of 2026-08-25 from a cloud host, **no year playlist id** was found (2017–2024 playlists exist; 24 Aug discover still saw none). Do not wait forever: scrape the **known video ids** plus new channel uploads tagged Amfis 2026.
+2. `yt-dlp` captions into gitignored `.scratch/` (command on `references/party-sources.md`). **Do not ask for Google cookies** (account-ban risk). Cloud/datacenter `yt-dlp` fails with “Sign in to confirm you’re not a bot.” Invidious listed tracks then returned empty VTT.
+3. Extract **live world questions** with **future resolution days**. Refresh `references/party-sources.md`. Open further `ledger.md` problems only if anti-cluster still holds (ADR 0011–0012). Discover does **not** write claim/justification (ADR 0009).
+4. Do **not** score past recordings. Hallway / on-site notes stay in chat unless already public. Closed Slack/Discord stay in chat (ADR 0018).
+
+Press reported a closing-meeting video id **`k_EnPQyVYLs`**. Confirm on the LFI channel before treating it as canonical. Closing meeting is campaign programme (ecology / conscription écologique / éco-régions / VIe République), not a new resolution day unless a dated world clock appears.
 
 ## Read first (load-bearing)
 
-| Path | Why it matters |
+| Path | Why |
 | --- | --- |
-| `docs/adr/0018-party-sourced-discover.md` | Source = public party questions; cite URL in Motivation; no field quota; 0011–0012 are anti-cluster only |
-| `references/discovery.md` | Durable discover procedure; **Party-sourced orientation** section already exists and must be extended with real sources, not replaced |
-| `skills/discover/SKILL.md` | Discover tick already tells workers to orient from public party questions |
-| `CONTEXT.md` | Glossary: Discover, Opening, Chat forecast, Reflector, Experiment branch `exp/` |
-| `docs/adr/0012-horizon-and-evidence-regime-mix.md` | Do not open already-resolved history as problems |
-| `docs/adr/0013-structural-analog-cards.md` | Cards may cite named historical episodes with sources; do not mint forecasts for those episodes |
-| `docs/adr/0014-forecasts-scored-openings-not-playbooks.md` | Forecasts in repo (anonymized if from chat); openings/one-off analysis in conversation |
-| `docs/plans/2026-08-19-scale-forecast-roadmap.md` | Full grill locks Q1–Q15; architecture grill closed |
-| PR https://github.com/dp-IED/psychohistory/pull/53 | Branch discussion; base `harness-only` |
+| `next_steps.md` | Work order after the scrape |
+| `references/party-sources.md` | Index, known ids, yt-dlp command |
+| `references/discovery.md` | Party-sourced orientation + anti-cluster |
+| `references/host-jobs.md` | Dashboard automations already run the ticker |
+| `references/analog-prior.md` | Predict prior; tariff two-phase clock; slide resolution day |
+| `docs/adr/0018-party-sourced-discover.md` | Public party questions; cite URL |
+| `docs/plans/2026-08-19-scale-forecast-roadmap.md` | Grill Q1–Q15 locked |
+| `ledger.md` | Live clocks; do not invent claims on discover |
 
-Do not restore PIT, `graph-vault/`, or the France GNN tree (`next_steps.md` Do not pick up).
+Do not restore PIT, `graph-vault/`, or the France GNN tree.
 
-## Architecture already locked (user unless noted)
+## Architecture already locked (do not relitigate)
 
-- **Use:** help LFI, DSA, and similar parties (war of position / war of movement). Multitenant: whoever is asking this run. (user)
-- **Scored:** dated claims in `ledger.md`. Chat-made forecast → anonymized ledger copy; wording stays in chat. (user)
-- **Not scored:** openings / one-off analysis default in conversation; harness FS only if asked. (user)
-- **Shared overlay:** one analog-card pile; country/case names on instantiations; optional typical openings after reflection. (user)
-- **Evolution:** Parent starts `agents/reflector.md` on reflect ticks (ADR 0017). Tiny live edits; risky work on `exp/<slug>` (max 3). Reflector chooses each experiment run. Live reflect may start a Cursor automation on that branch; experiment runs do not spawn children (ADR 0016). (user + writer on cap/prefix)
-- **Prefix `exp/`** and **max three** experiment branches: writer decided after user said they did not care about the prefix.
+- Plugin overlay is memory. Host owns `/predict` `/reflect` `/discover` via **existing Cursor dashboard automations**. No repo daemon. Live ticks: ff-pull, one tick, commit+push `harness-only`, **no PR**.
+- Discover: Motivation + resolution day; no claims. Orient from **public party questions**. `K` = 15 is a **cap**, not a quota. ADR 0011–0012 are **anti-cluster brakes**, not a sports/sociology curriculum.
+- Analog cards: class / instantiations / mechanism / base rate / disanalogy / falsifiers. First card: `references/cases/tariff-proclamation-deadline-delay.md` from `P-usca-338`. Do not reopen `P-usca-338`.
+- **Transfer reopen:** after reflection writes a card, discover opens a **new live** problem in that **same structural class** (new future resolution day). Not replaying gold, not reopening the same id.
+- Forecasts in `ledger.md`; openings/one-off analysis in conversation. Chat-made forecasts get an anonymized ledger copy.
+- Psychohistory here is **not** Seldon mathematics and **not** a restored GNN. Scale prediction = survived cards + composition. Simulators only when a **grade earns** overlay tools.
+- Historical PIT/Polymarket gold **cannot** grade this LLM. Live markets are a **discovery surface**, not the parked historical testbed.
+- Tariff card **two phases:** first deadline → delay prior; already-extended / post-pause → take-effect unless a new suspend instrument appears. When a delay names a later public date, **slide Resolution** on the same heading (predict, and reflect if it froze).
+- Reflector (`agents/reflector.md`) owns overlay evolution; `exp/<slug>` max 3; experiment runs do not spawn children.
 
-## This session's git work
+## What the ticker already did (do not re-arm)
 
-Branch `dp-ied/scale-forecast-roadmap-6072` tracking origin. Tip at capture: `3c7d2d0` (party-sourced discover). Working tree was clean after that commit. This handoff file is an additional commit on the same branch.
+Dashboard automations **are set**. This cloud env cannot list them by UUID (`source: automations` returned 0) but they **push `harness-only`**.
 
-## Current state of the scrape task
+| When | Commit | What |
+| --- | --- | --- |
+| 2026-08-22 11:20Z | `2c69ddc` | Predict: first claims on six party clocks + US Open Sinner→Alcaraz after WD |
+| 2026-08-22 14:04Z | `2e5932e` | Overlay: post-pause tariff clocks default to take-effect |
+| 2026-08-23 | `f779c99` | Predict slides Resolution when a delay names a new public date |
+| 2026-08-24 14:22Z | `092d30c` | Reflect also slides a frozen Resolution (338 freeze dropped the post-pause claim) |
+| 2026-08-24 18:09Z | `583d3c3` | Discover: five new problems after 338 take-effect (`P-ca-retal-08`, `P-232-poly-04`, `P-ndaa27-iltech`, `P-nobel-lit-26`, `P-genalo-bond`) — **no claims yet** |
 
-- **First pass done (2026-08-21):** `references/party-sources.md`; six live ledger problems; captions for welcome / Saint-Denis / Tlaib / Mamdani / summit.
-- **Parked:** rest of Amfis 2026 until the official LFI playlist exists and a home-network `yt-dlp` run. Roadmap note: `docs/plans/2026-08-19-scale-forecast-roadmap.md` (After the grill).
-- **Do not do:** score Amfis 2024/2025 as if they were forecasts; dump closed Slack/Discord or on-site hallway notes into the shared repo; fill `K` from one week of news only.
+`P-usca-338` Resolution is **2026-08-22** (slid). As of 2026-08-25 it is past. Series: `C-usca-338-deal` (18 Aug, missed) then `C-usca-338-deal-announced` (19 Aug pause scrape). **No dated take-effect claim** for 22 Aug — that freeze is the reflect lesson.
 
-## Constraints for the scrape session
+**22 Aug party-clock claims (first forecast unless noted):**
 
-- **Public sources only** in the shared plugin. Closed internals stay in harness chat (ADR 0018).
-- Prefer an **index** (channel/playlist URL, video URL, date, timestamp, extracted question, suggested live resolution day) over committing raw multi-hour transcripts. If you must cache full text, use gitignored `.scratch/` (see `.gitignore`).
-- Each extracted item must map to a **future** `resolution day` or to a **structural class** for analog-regime Motivation — not “what did they conclude at Amfis.”
-- Cite sources in Motivation when opening problems. Do not write claims on discover (ADR 0009).
-- Respect site/YouTube terms; use public pages/transcripts; no paywall/login bypass.
-- Amfis/DSA are **examples of the method**, not the only tenants.
+| Id | Claim |
+| --- | --- |
+| `C-uso-ms-26-alcaraz` | Alcaraz USO (revision; Sinner WD falsifier) |
+| `C-fr-pest-street-yes` | Nationally reported 15 Sep pesticide-provision demo |
+| `C-fr-gir-sen-no-seat` | Gironde LFI list does not take a Senate seat 27 Sep |
+| `C-fr-pest-niche-no` | No 29 Oct repeal of pesticide derogations |
+| `C-us-house-26-dem-218` | Dems ≥218 on 3 Nov |
+| `C-fr-pres-t1-lepen` | Le Pen first-round plurality 18 Apr 2027 (not Élysée) |
+| `C-us-mayday-28-strike-yes` | UAW strike vs ≥1 of GM/Ford/Stellantis on 1 May 2028 |
 
-## Plausible next steps (sequential, one continuation)
+**Method notes for later reflect (not a rollback):**
 
-1. Find official public LFI Amfis (and related) YouTube/playlist URLs and official public DSA talk/stream channels. Record them in a small overlay index (e.g. under `references/` as a source list, not a vault).
-2. Fetch available public transcripts/captions; extract **questions the speakers treat as live fights** (elections, law, labor, media, debt, org strategy as *world* questions with dates).
-3. Extend `references/discovery.md` with those concrete source pointers (durable starter).
-4. Optionally open ≤ `K` **live** problems on `ledger.md` whose Motivations cite those URLs and whose resolution days are in the future. Leave claims to predict.
-5. Commit and push this same branch (or `harness-only` only if the user retargets).
+- `P-us-mayday-28` treated Motivation’s class as analog **without a card file**. `references/analog-prior.md` says: no card → class none, news-now carries. Far analog-regime clocks with no live news are a **procedure gap**.
+- `P-fr-pest-street` is a thin score: booked Bercy heat/climate rassemblement + LFI overlay of the pesticide law. Worker wrote the disanalogy.
 
-## Suggested skills
+**Do not delete** sports/Venice/FOMC/Nobel rows already running (cheap grades through ~16 Sep). **Do not refill sports as a quota.** FOMC/Nobel-shaped clocks transfer better than tennis. Anti-cluster ≠ “must include a slam.”
 
-- Project discover/reflect overlay as already in-repo (`skills/discover/SKILL.md`).
-- Browser or transcript fetch only for **public** pages.
-- Do not invoke PIT/eval trees from git history.
+**25 Aug 2026 clocks (resolution day today):** `P-sc-sen-r-gop`, `P-ok-sen-d-run`, `P-ok-gov-r-gop`. Reflect the **morning after** (26 Aug) per usual. Predict 25 Aug may still write if outcome lines move before polls close.
 
-## Writer vs user
+**Still no 22/23/24/25 Aug predict claims** on the five 24 Aug discover problems.
 
-All “user” tagged locks above were stated by the user in the grill. Cap of three `exp/` branches and prefix `exp/` were writer calls after the user declined to bike-shed. Anti-cluster ADR 0011–0012 kept as brakes was the writer’s reading of “no curriculum split” plus existing ADRs; the user asked not to add a field quota, not explicitly to repeal 0011.
+## Captions already in hand
+
+`HW03wZDi6Tk` welcome; `Z5YIa1QD178` Saint-Denis; `-0BYHdRe2b8` Tlaib; `yA13mlaiw1w` Mamdani; `kuKLtHkS20s` summit; dump for `GzhPYE_OWW0` Workers Deserve More.
+
+**Still to pull at home:** `RqQQ_cDyYGQ` Guetté; `Uqe5vvsXsZ4` La Boétie; `KJvF-KUAFqE` Palestine solidarity criminalization; `gIg8h2TEiRE` ecological planning; `zfSZ82IaRZg` Lordon; `ZoRWhmtiWsc` Pigasse; closing (`k_EnPQyVYLs` unconfirmed); then channel/playlist remainder. Several of these were **404 livestream shells** on 21 Aug — retry now that the event is over.
+
+## Conversation-only (not an ADR; do not promote unless asked)
+
+- Clocks → analog cards → composition with incertitude (Structure block) → tools only if graded. Fit any graph on **scored live instantiations**, never PIT.
+- Score plugin vs liquid market at T−90 / T−30 / T−1 only if the market instantiates a party fight or a card.
+- First Seldon-adjacent test = **transfer reopen** on tariff-delay (or whatever class Sep/Oct actually earns), not a world-model schema.
+
+## Git for the laptop
+
+Live branch: **`harness-only`**. After this PR merges: `git fetch origin && git checkout harness-only && git pull --ff-only origin harness-only`.
+
+Until merge, the handoff lives on the PR branch `dp-ied/home-amfis-handoff-337b`.
+
+Daily ticks will keep committing `harness-only`. Fast-forward only. If dirty, stop (`references/host-jobs.md`).
