@@ -65,7 +65,7 @@ Ticker is already three Cursor dashboard automations (`/predict` daily, `/reflec
 - 2026-08-19: Long-term “how society works” modeling waits on plain-language locks in `docs/plans/2026-08-19-scale-forecast-roadmap.md`; scored events stay the test; no a-priori taxonomy.
 - 2026-08-21: Architecture grill closed. Party-source first corpus: `references/party-sources.md` plus six live ledger rows from captions we could get (welcome, Saint-Denis, Tlaib, Mamdani, summit).
 - 2026-08-21: Host ticker is already set as Cursor dashboard automations. Do not treat “arm the ticker” as unfinished. In-repo skills are the live procedure; dashboard prompts should follow those files.
-- 2026-08-25: User is home. Next human job is residential Amfis 2026 caption scrape (no year playlist yet; known ids + channel). Cloud session is not on the laptop; continuity is `docs/plans/ce-handoff-lfi-dsa-transcripts.md`.
+- 2026-08-25: Home Amfis/DSA caption scrape done. Human job while the ticker runs is overlay review after graded series, not another tick. Hallway/on-site notes stay in chat unless already public.
 - 2026-08-22: Tariff analog card has two clock phases: first deadline → delay prior; already-extended / post-pause clock → take-effect unless a new suspend instrument appears.
 - 2026-08-24: On reflect, if a graded series named a later public answering date than **Resolution**, slide that heading later in the same tick so a freeze cannot drop the next phase off predict.
 
@@ -77,4 +77,4 @@ Ticker is already three Cursor dashboard automations (`/predict` daily, `/reflec
 - GNN analysis of a live overlay graph · later; do not recreate `graph-vault/`.
 - Polymarket testbed · after live loop; retrieve from history.
 - Tournament watcher · rewrite from scratch; do not restore v2.
-- Rest of Amfis 2026 captions · **unparked 2026-08-25** (user home). Still no official year playlist as of that morning; scrape known ids + channel from residential IP. Do not wait on a playlist id forever.
+- Rest of Amfis 2026 captions · scraped 2026-08-25 (no year playlist; `.scratch/` + `references/party-sources.md`). Retry only if LFI publishes a year playlist or new tagged talks.
