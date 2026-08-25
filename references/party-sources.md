@@ -6,7 +6,7 @@ Public channels and extracted questions that **orient** discover. Not a transcri
 
 **Refresh (2026-08-24):** `amfis.fr/programme` still lists the 20–23 Aug edition; LFI home still points at Amfis and the 29 Oct pesticide tribune. Closing-meeting coverage (Mélenchon 23 Aug, Châteauneuf-sur-Isère) is ecology/conscription/éco-régions — campaign programme, not a new resolution day (https://www.france24.com/fr/info-en-continu/20260823-pr%C3%A9sidentielle-m%C3%A9lenchon-colore-sa-rentr%C3%A9e-en-vert-en-proposant-la-conscription-%C3%A9cologique). DSA program page unchanged. YouTube RSS fetches from this host returned 500; no new caption dump.
 
-**Home scrape (2026-08-25):** user is home. No official `AMFIS 2026` playlist id found yet. Pull remaining public videos from a **residential** IP (cloud `yt-dlp` is bot-walled; do not ask for Google cookies). Being on site is not a source for this file.
+**Home scrape (2026-08-25):** residential IP. Still **no official `AMFIS 2026` year playlist**. Official channel playlist is the multi-year [Nos AMFIS d'été](https://www.youtube.com/playlist?list=PL49hPUZTPboUqdlnZfCffD-2HW7fvj3_f) (`PL49hPUZTPboUqdlnZfCffD-2HW7fvj3_f`). Closing id `k_EnPQyVYLs` is on the LFI channel (title: *Meeting aux #AMFIS2026 de Jean-Luc Mélenchon à Valence*). `yt-dlp` French auto-captions landed in gitignored `.scratch/amfis-2026/` for the 21 2026 talks on that playlist after the welcome (English tracks often 429). New DSA upload: *2026 DSA Primary Election Cycle Recap* `qAKMlyMWIko` (captions in `.scratch/dsa/`). Channel RSS from this IP worked; do not ask for Google cookies. Being on site is not a source for this file.
 
 Refresh this index on later discover ticks from the same public pages. Closed Slack/Discord stays in harness chat.
 
@@ -44,10 +44,11 @@ Refresh this index on later discover ticks from the same public pages. Closed Sl
 | 2023 | https://www.youtube.com/playlist?list=PL49hPUZTPboUQNJoinG2chvPrSmrYzX4n |
 | 2024 | https://www.youtube.com/playlist?list=PL49hPUZTPboWbL4l9vHGyXAn-wlAsatpk |
 | 2025 | https://www.youtube.com/watch?v=dqCa8r6TOLw (wiki lists a video, not a playlist id) |
+| 2026 | **No year playlist as of 2026-08-25.** Use channel RSS + [Nos AMFIS d'été](https://www.youtube.com/playlist?list=PL49hPUZTPboUqdlnZfCffD-2HW7fvj3_f) (2026 talks sit above 2025 rows). Closing: https://www.youtube.com/watch?v=k_EnPQyVYLs |
 
-## Extracted questions (2026-08-21 scrape)
+## Extracted questions (2026-08-21 scrape; 2026-08-25 home captions)
 
-Each row is orientation, not a scored forecast of the talk. Suggested resolution days are **after 2026-08-21**.
+Each row is orientation, not a scored forecast of the talk. Suggested resolution days are **after the scrape date**. Do not open another France-September street row while `P-fr-pest-street` is live.
 
 | Source | Date of source | Extracted question (live fight) | Suggested resolution day | Class / regime | Opened? |
 | --- | --- | --- | --- | --- | --- |
@@ -71,10 +72,18 @@ Each row is orientation, not a scored forecast of the talk. Suggested resolution
 | DSA program https://program.dsausa.org/ · *Genalo v. Black* https://www.scotusblog.com/cases/genalo-v-black/ | 2026-08-24 | Due process bond hearing once ICE §1226(c) detention is unreasonably prolonged | 2027-06-30 | analog: **prolonged mandatory immigration detention without a bond hearing** | `P-genalo-bond` |
 | DSA Tlaib keynote (same URL) + House FY2027 NDAA https://www.congress.gov/bill/119th-congress/house-bill/8800/all-actions | 2026-08-24 | Signed FY2027 NDAA still carries US–Israel defense-tech cooperation | 2026-12-31 | analog: **arms-embargo legislative rider** | `P-ndaa27-iltech` |
 | Swedish Academy announcement calendar https://www.nobelprize.org/press-release/the-2026-nobel-prize-announcements/ | 2026-02-02 | Named 2026 Literature laureate | 2026-10-08 | news-now culture | `P-nobel-lit-26` |
+| Amfis closing captions https://www.youtube.com/watch?v=k_EnPQyVYLs (Mélenchon, Valence 23 Aug) + LFI/LDH call https://lafranceinsoumise.fr/2026/07/22/permis-de-tuer-19-septembre/ | 2026-08-23 / 2026-07-22 | National march against the police “permis de tuer” / presumption of legitimate weapon use (captions said 20 Sep; public clock is **19 Sep 2026**) | 2026-09-19 | news-now street | index only (France already has 15 Sep pesticide street) |
+| Ecological-planning captions https://www.youtube.com/watch?v=gIg8h2TEiRE (Panot / Chatelain) · https://26septembre.org/ | 2026-08-21 | National climate / paix / solidarités marches | 2026-09-26 | news-now street | index only (third France-September street this autumn) |
+| Same closing (pompiers) + FSU/CGT 29 Sep already indexed | 2026-08-23 | Firefighters / fonction publique day | 2026-09-29 | news-now labor | index only |
+| Palestine-criminalization captions https://www.youtube.com/watch?v=KJvF-KUAFqE + PJL https://www.senat.fr/dossier-legislatif/pjl25-890.html | 2026-08-22 / 2026-07-09 | Sénat first reading of *cohésion républicaine* / racisme-antisémitisme PJL (Bergé; speakers treat it as the criminalization instrument). Government said “dès octobre,” year-end adoption; **no séance date** on the dossier as of 25 Aug | none dated | analog: **speech-crime / ineligibility bill after a withdrawn predecessor** | index only until a public vote day |
+| *En Campagne — Zapper Bolloré* captions https://www.youtube.com/watch?v=9oBeKuCbogY | 2026-08-20 | CGT Spectacle / LDH civil action vs Canal+ (Nanterre); speakers hoped January. Union hope is not a court calendar | none dated | analog: **media-concentration blacklist litigation** | class only |
+| Zarah Sultana entretien https://www.youtube.com/watch?v=_fktFxfFV9Y | 2026-08-24 | UK Your Party / anti-conscription / anti-war-economy (no UK general-election date in the talk) | none dated | analog: **new left party after a Labour split** | class only |
+| DSA primary recap https://www.youtube.com/watch?v=qAKMlyMWIko (Singh / O’Neill) | 2026-08-21 | Recap of **past** 2026 primaries; remaining fight named is House composition in November | 2026-11-03 | news-now (House already open) | do not score the recap; House is `P-us-house-26` |
+| Same closing + welcome (500 parrainages, 11 Oct Clermont, 6e République, conscription écologique) | 2026-08-23 | Campaign programme / citizen parrainages / 11 Oct meeting | 2026-10-11 / 2027-03-26 | news-now campaign event or already-open 2027 clock | index only |
 
-**Captions in hand:** `HW03wZDi6Tk` (welcome), `Z5YIa1QD178` (Saint-Denis), `-0BYHdRe2b8` (Tlaib), `yA13mlaiw1w` (Mamdani), `kuKLtHkS20s` (summit). WebFetch also returned a long dump for `GzhPYE_OWW0` (Workers Deserve More launch).
+**Captions in hand (gitignored `.scratch/`, not committed):** welcome `HW03wZDi6Tk`; Saint-Denis `Z5YIa1QD178`; Tlaib `-0BYHdRe2b8`; Mamdani `yA13mlaiw1w`; summit `kuKLtHkS20s`; Workers Deserve More dump `GzhPYE_OWW0`. **2026-08-25 home pull:** Guetté `RqQQ_cDyYGQ`; La Boétie `Uqe5vvsXsZ4`; Palestine `KJvF-KUAFqE`; bifurcations éco `gIg8h2TEiRE`; Lordon `zfSZ82IaRZg`; Pigasse `ZoRWhmtiWsc`; closing `k_EnPQyVYLs`; Sultana `_fktFxfFV9Y`; Watta `QYr6Jmg6geE`; *2027, la victoire* `s4W3GoNCfiY`; éco rupture `hefmL-vkxKw`; Lemaitre `inzHheSCkLQ`; Mouglalis `BehMsf30zn4`; LFI peut gagner `QPCsUF2_PL0`; Yon `Mwe2EI0jHnA`; milliardaires `anVooQj8LlE`; Vuillard `XxoDaE38c4A`; Bolloré `9oBeKuCbogY`; Weimar/Ve `MmFe9a2tsd0`; sécu `cBrdHBzbYPU`; planif éco formation `eqFprNO0dwM`; DSA recap `qAKMlyMWIko`.
 
-**Amfis 2026 still to pull at home** (no year playlist as of 2026-08-25; several RSS ids were empty shells on 21 Aug — retry): `RqQQ_cDyYGQ` Guetté; `Uqe5vvsXsZ4` La Boétie *L’État et la révolution citoyenne*; `KJvF-KUAFqE` Palestine solidarity criminalization; `gIg8h2TEiRE` ecological planning (Panot / Chatelain); `zfSZ82IaRZg` Lordon; `ZoRWhmtiWsc` Pigasse; Sunday 23 Aug closing (press-cited id `k_EnPQyVYLs` — confirm on channel); then new channel uploads / an `AMFIS 2026` playlist if LFI publishes one. Closing meeting is a campaign event, not a resolution day unless a dated world clock appears. Local command (playlist or a list of watch URLs):
+**Amfis 2026 still to pull:** none of the known 2026 talk ids on *Nos AMFIS d'été* after the welcome. Retry if LFI later publishes a year playlist or new tagged uploads. Closing meeting is a campaign event, not a resolution day unless a dated world clock appears. Local command (playlist or a list of watch URLs):
 
 ```
 yt-dlp --skip-download --write-auto-subs --write-subs --sub-langs "fr,en" --convert-subs vtt \
