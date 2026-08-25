@@ -15,6 +15,10 @@ Procedure lives in `skills/` and `agents/` on `harness-only`. Dashboard prompts 
 - Reflect: Parent starts `agents/reflector.md`, which follows `skills/reflect/SKILL.md`. May start one automation on `exp/<slug>` (max three `exp/` branches; ADR 0016). Experiment runs do not spawn children.
 - Discover: `skills/discover/SKILL.md`, `references/discovery.md`, `references/party-sources.md`. `K` is a cap. No claim or justification.
 
+## Owner (between ticks)
+
+Humans do not run predict / reflect / discover while these jobs are armed. After a graded series, review the overlay diff; openings and hallway notes stay in chat unless already public. Keep `harness-only` clean. Full list: `next_steps.md` (**While the ticker runs**).
+
 ## In-repo names that changed after the automations were first written
 
 Skills on `harness-only` are current. A dashboard prompt that still uses the old names should follow the current skill, not the old word:

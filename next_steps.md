@@ -7,10 +7,21 @@ Domain language: [`CONTEXT.md`](CONTEXT.md). Decisions: [`docs/adr/`](docs/adr/)
 ## Next
 
 1. **Home caption scrape** — done 2026-08-25 from this residential IP. No `AMFIS 2026` year playlist; multi-year *Nos AMFIS d'été* + channel RSS. French captions in gitignored `.scratch/`. Index refreshed. No new ledger problems (anti-cluster: France already has 15 Sep street; Senate PJL and Canal+ have no public vote/hearing day). Do not score past recordings.
-2. **Host ticker** — already three Cursor dashboard automations (predict daily, reflect daily later, discover weekly). They **are firing** (22–24 Aug commits on `harness-only`). Contract: [`references/host-jobs.md`](references/host-jobs.md). Do not re-arm. Do not open PRs on ticks.
+2. **Host ticker** — already three Cursor dashboard automations (predict daily, reflect daily later, discover weekly). They **are firing** (22–24 Aug commits on `harness-only`). Contract: [`references/host-jobs.md`](references/host-jobs.md). Do not re-arm. Do not open PRs on ticks. Do not hand-run predict / reflect / discover while the jobs are armed.
 3. **Live claims / reflect** — `P-usca-338` is past (Resolution slid to 2026-08-22; no dated take-effect row). `P-il-knesset-26` remains the hard months-out starter. 25 Aug runoffs (`P-sc-sen-r-gop`, `P-ok-sen-d-run`, `P-ok-gov-r-gop`) grade on the **26 Aug** reflect (polls still open 25 Aug; no revision). First predict claims written 25 Aug on the five 24 Aug discover rows: `P-ca-retal-08`, `P-232-poly-04`, `P-ndaa27-iltech`, `P-nobel-lit-26`, `P-genalo-bond`.
-4. **Use of run results / evolution** — ADR 0014–0018. Transfer reopen in a graded class (do not reopen `P-usca-338`). Reflector + `exp/` (max 3).
-5. **Polymarket testbed** — historical gold/probes; retrieve from git history after the live loop is ticking. Live markets are a discovery surface, not that testbed.
+4. **Owner between ticks** — overlay review after a graded series, not another tick. First pass: after the 26 Aug runoff reflect. See **While the ticker runs** below.
+5. **Use of run results / evolution** — ADR 0014–0018. Transfer reopen in a graded class (do not reopen `P-usca-338`). Reflector + `exp/` (max 3).
+6. **Polymarket testbed** — historical gold/probes; retrieve from git history after the live loop is ticking. Live markets are a discovery surface, not that testbed.
+
+## While the ticker runs
+
+The ticker owns the loop. The human job is **review**, not a fourth automation.
+
+- **After a graded series** (first: 26 Aug runoff reflect): read the overlay diff. Cards that survived, cards that should have been written and were not, Motivation treated as a card, sports refill, 338-style reopen. Chat back if a change should stick; otherwise leave the next tick alone.
+- **Chat, not the ledger:** openings you want on a later discover pass; hallway / on-site notes that are not already public. If you make a forecast in chat, copy it into the ledger anonymized (ADR 0014).
+- **Keep `harness-only` clean** so automations can ff-pull. Do not leave uncommitted work on the live branch.
+- **Near clocks after 26 Aug:** Iceland 29 Aug, GW 30 Aug, MA 1 Sep, Canada retal 8 Sep. `P-il-knesset-26` is the long series. France September street is taken; wait for a named Senate vote day or Canal+ hearing day. Do not refill sports as a quota.
+- **Do not** restore parked trees to fill quiet (PIT, hermes, gold vault, France GNN, Polymarket historical testbed, tournament watcher).
 
 ## Do not pick up
 
