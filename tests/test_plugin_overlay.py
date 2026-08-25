@@ -69,6 +69,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "resolution" in analog_prior_body
     assert "slide" in analog_prior_body
     assert "reflect" in analog_prior_body
+    assert "is **not** a card" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
     tariff_card = cases / "tariff-proclamation-deadline-delay.md"
