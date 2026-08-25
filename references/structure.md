@@ -33,7 +33,7 @@ On analog/base-rate problems, Motivation must name the **structural class** this
    - Disanalogy
    - Falsifiers
    - Sources for historical episodes actually fetched this tick (not “I remember”)
-3. If a card matches, analog is the default for this **clock phase**. Follow news against that phase only when a listed falsifier has fired this tick (`references/analog-prior.md`). Last-day source-split and remaining bargain gaps are not falsifiers. On a tariff card, a first deadline and an already-extended date are different priors. Name which you followed. If the cheap instrument is a delay to a named next public date, that date is the new **resolution day** of the same problem so the next phase can still be forecast.
+3. If a card matches, analog is the default for this **clock phase**. Follow news against that phase only when a listed falsifier has fired this tick (`references/analog-prior.md`). Last-day source-split and remaining bargain gaps are not falsifiers. On a tariff card, a first deadline and an already-extended date are different priors. Name which you followed. If the cheap instrument is a delay to a named next public date, that date is the new **resolution day** of the same problem so the next phase can still be forecast. The claim on that tick is the new phase’s modal, not a recap that the first deadline was paused.
 
 ## Reflect
 

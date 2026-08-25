@@ -70,6 +70,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "slide" in analog_prior_body
     assert "reflect" in analog_prior_body
     assert "is **not** a card" in analog_prior_body
+    assert "pause recap" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
     tariff_card = cases / "tariff-proclamation-deadline-delay.md"
@@ -130,6 +131,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "references/structure.md" in worker_body
     assert "references/analog-prior.md" in worker_body
     assert "resolution" in worker_body.lower()
+    assert "pause recap" in worker_body.lower()
+    assert "new clock" in worker_body.lower()
     assert "references/vault.md" not in worker_body
     pointer = REPO_ROOT / ".cursor" / "agents" / "parent.md"
     pointer_meta, pointer_body = _frontmatter(pointer)
