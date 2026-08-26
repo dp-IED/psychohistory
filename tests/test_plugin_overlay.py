@@ -80,6 +80,13 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "already-extended" in tariff_card_body
     assert "post-pause" in tariff_card_body
     assert "resolution day" in tariff_card_body
+    runoff_card = cases / "majority-primary-runoff.md"
+    assert runoff_card.is_file()
+    runoff_card_body = runoff_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in runoff_card_body
+    assert "wide-gap" in runoff_card_body
+    assert "consolidator" in runoff_card_body
+    assert "p-sc-sen-r-gop" in runoff_card_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
