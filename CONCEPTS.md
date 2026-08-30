@@ -9,10 +9,10 @@ The loadable instruction surface of this repository: skills, agents, references,
 *Avoid:* graph-vault, sidecar vault, inherited corpus
 
 ### Reflection
-The host tick after a problem’s resolution day. Parent starts the reflector, which grades the whole dated-claim series, then grows or culls the plugin overlay. It is not a predict wakeup and not a weight update.
-*Avoid:* vault append, tighten-only patch, grading only the last row
+The host tick after a problem’s resolution day. Parent starts the reflector, which grades the whole dated-claim series **and** the overlay system that produced it, then grows or culls the plugin overlay. It is not a predict wakeup and not a weight update.
+*Avoid:* vault append, tighten-only patch, grading only the last row, grading claims while skipping scripts
 
-Reflection may add new or rewritten skills, agents, references (including analog case cards), scripts/tools, strategies, and instructions when the grade earned a new capability. Later reflection deletes or merges overlay that failed to transfer.
+Reflection may add new or rewritten skills, agents, references (including analog case cards), **deterministic scripts/models**, strategies, and instructions when the grade earned a new capability. The overlay is not markdown-only. Later reflection deletes or merges overlay that failed to transfer, including scripts that missed.
 
 ### Training epoch
 One scored pass whose intended outcome is plugin overlay change, including new files, not a change to foundation model weights.

@@ -5,8 +5,8 @@ A harness-agnostic plugin training bed. Live dated claims train the plugin; the 
 ## Language
 
 **Psychohistory**:
-The target capability named by this repo: longer-horizon forecasting from accumulated overlay patterns, eventually with plugin-grown simulation tools. Intended later use: **tenants** (LFI, DSA, or another asking party) see **openings**, not run their campaigns. Not Seldon mathematics, and not a restored GNN corpus as the product on this branch.
-_Avoid_: Treating one dated claim as psychohistory; France/warehouse GNN as this branch’s loop; treating a playbook as psychohistory
+The target capability named by this repo: longer-horizon forecasting from accumulated overlay patterns, including **plugin-grown** simulation and other deterministic tools when reflection earns them. Intended later use: **tenants** (LFI, DSA, or another asking party) see **openings**, not run their campaigns. Not Seldon mathematics. Not a restored France/warehouse GNN as this branch’s loop.
+_Avoid_: Treating one dated claim as psychohistory; markdown-only overlay as the product; treating a playbook as psychohistory
 
 **Plugin**:
 The unit this repo ships: a Claude-style package with `skills/`, `agents/`, `references/`, and `scripts/`. Consuming harnesses (Cursor, Claude Code, Codex, and others) load it; they own orchestration.
@@ -25,8 +25,8 @@ Long-form material under `references/` that skills and agents consult (procedure
 _Avoid_: Spec dump; restoring `graph-vault/` layout; CONTEXT.md as a spec
 
 **Script**:
-Deterministic code. The live schedule reader is `harness.ledger`. No LLM.
-_Avoid_: Hermes CLI wrapper, LLM synthesis
+Deterministic code under `scripts/` (and tests beside it). The live schedule reader is `harness.ledger`. **Reflection** may add class-local calculators, simulators, or a GNN when a grade earned them (ADR 0019). No LLM inside the script.
+_Avoid_: Hermes CLI wrapper; LLM synthesis; restoring the parked France GNN tree; treating overlay as markdown-only
 
 **Harness**:
 The host that runs agents: Cursor, Claude Code, Codex, or any other. It schedules skills and agents, supplies the LLM, and holds **conversation history**, artifacts, and local files. **Openings** live there, not in this plugin repo. This plugin does not inject a model backend.
@@ -133,8 +133,8 @@ _Avoid_: Justification (that belongs on a dated claim)
 _Avoid_: Repo crontab; combining predict, discover, and reflect in one host job; making the reflector the daily traffic cop; experiment runs spawning more experiments
 
 **Reflector**:
-Named agent Parent starts on a **reflection** tick (`agents/reflector.md`). Owns overlay evolution and `exp/` experiments. Not a fourth host job.
-_Avoid_: Reflector running predict/discover; in-repo daemon
+Named agent Parent starts on a **reflection** tick (`agents/reflector.md`). Owns overlay evolution and `exp/` experiments: grades claims **and** the systems it authored, then writes or culls code the next predict needs. Not a fourth host job.
+_Avoid_: Reflector running predict/discover; in-repo daemon; scoring forecasts while leaving a false script loaded
 
 **Experiment branch**:
 A git branch named `exp/<slug>` that holds a plugin experiment. Not the live daily branch. Created from **reflection**. The reflector chooses what the host run on that branch does and records it on the branch. Listing `exp/*` is how experiments are tracked (ADR 0016).
@@ -145,8 +145,8 @@ Breadth of live claims plus ungated proactive **problem** finding. Reflection cu
 _Avoid_: Multi-agent roster on one question; replaying old gold
 
 **Reflection**:
-After **resolution day**, grade every **dated claim** in the series (claim, justification, Structure block). The earliest matching **claim** is the prize. Then change the **plugin**: tiny edits on live; new capabilities may go to an **experiment branch** whose host run the reflect job may start (ADR 0016). Add or rewrite analog cards when a class transferred; cull false mechanisms.
-_Avoid_: Sidecar `graph-vault/`; silent weight updates; grading only the last row; minting forecasts for historical episodes used to deepen a card; a plugin-owned automation daemon
+After **resolution day**, grade every **dated claim** in the series (claim, justification, Structure block) **and** the overlay **system** that produced it (cards, skills, scripts, models, `exp/` tools). The earliest matching **claim** is the prize. Then change the **plugin**: keep or deepen what transferred; rewrite or cull what was load-bearing and wrong; new capabilities may go to an **experiment branch** (ADR 0016, 0019).
+_Avoid_: Sidecar `graph-vault/`; silent weight updates; grading only the last row; grading claims while leaving a broken script in place; minting forecasts for historical episodes used to deepen a card; a plugin-owned automation daemon; markdown-only overlay
 
 **Training loop**:
 Forward only: **discover** (problem + **resolution day**) → **predict** (claim + justification, **revisions** while live) → after **resolution day**, **reflection** → **plugin**. Three separate host jobs. Cursor dashboard automations already run them (`references/host-jobs.md`).

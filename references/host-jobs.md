@@ -12,7 +12,7 @@ Procedure lives in `skills/` and `agents/` on `harness-only`. Dashboard prompts 
 - Commit and push `harness-only` only. **Do not open a pull request.** Cloud-agent defaults that create PRs do not apply. Do not call `ManagePullRequest`.
 - Cursor loads Parent via `.cursor/agents/parent.md`. Claude Code: `claude --plugin-dir .`.
 - Predict: `skills/predict/SKILL.md` (spawn `claim-worker`).
-- Reflect: Parent starts `agents/reflector.md`, which follows `skills/reflect/SKILL.md`. May start one automation on `exp/<slug>` (max three `exp/` branches; ADR 0016). Experiment runs do not spawn children.
+- Reflect: Parent starts `agents/reflector.md`, which follows `skills/reflect/SKILL.md`. Grade the claim series **and** the overlay system that produced it. Overlay is not markdown-only: the reflector may add or cull `scripts/` / models on `exp/<slug>` when a grade needs a system (ADR 0016, 0019). Max three `exp/` branches. Experiment runs do not spawn children.
 - Discover: `skills/discover/SKILL.md`, `references/discovery.md`, `references/party-sources.md`. `K` is a cap. No claim or justification.
 
 ## Owner (between ticks)

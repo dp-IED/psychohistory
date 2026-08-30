@@ -20,7 +20,7 @@ Purpose: harness-agnostic plugin training bed for live forecasting. Canonical de
 - `CONTEXT.md` (glossary)
 - `README.md` / `project.md`
 - `next_steps.md`
-- `docs/adr/` (0001–0018)
+- `docs/adr/` (0001–0019)
 - `docs/plans/2026-08-19-scale-forecast-roadmap.md` (how plugin results feed scale prediction; not an ADR)
 
 ## Non-negotiables
@@ -29,11 +29,11 @@ Purpose: harness-agnostic plugin training bed for live forecasting. Canonical de
 - Repo is the plugin: `claude --plugin-dir .`. No marketplace cache as the live copy.
 - Portable overlay must not import hermes or a retired orchestrator.
 - Training loop is forward: discover (problem + resolution day) → predict while live → reflect after resolution day.
-- Reflection grows or culls the plugin (ADR 0007). No `graph-vault/` write. Do not restore the France GNN tree; new simulators only when a grade earns overlay tools.
+- Reflection grows or culls the plugin (ADR 0007, 0019). Overlay is not markdown-only: the reflector **grades** cards/skills/scripts/models/`exp/` on the same series, then authors or culls systems when the grade needs them. No `graph-vault/` write. Do not restore the France GNN tree.
 
 ## Strategic defaults
 
-- Epochs = plugin growth (new skills, agents, tools, strategies); later reflection culls; weights frozen.
+- Epochs = plugin growth (skills, agents, tools, **code**, strategies); later reflection culls; weights frozen.
 - Ungated problem discovery; cull on reflection; `K` new problems per discovery tick (ledger knob, now 15).
 - Ledger is `ledger.md` at repo root.
 - Predict, discover, and reflect are separate host jobs.
@@ -68,13 +68,14 @@ Ticker is already three Cursor dashboard automations (`/predict` daily, `/reflec
 - 2026-08-25: Home Amfis/DSA caption scrape done. Human job while the ticker runs is overlay review after graded series, not another tick. Hallway/on-site notes stay in chat unless already public.
 - 2026-08-22: Tariff analog card has two clock phases: first deadline → delay prior; already-extended / post-pause clock → take-effect unless a new suspend instrument appears.
 - 2026-08-24: On reflect, if a graded series named a later public answering date than **Resolution**, slide that heading later in the same tick so a freeze cannot drop the next phase off predict.
+- 2026-08-30: Overlay is not markdown-only. The reflector writes the systems it needs (scripts, tests, small models, GNN) from the grade. It also **grades those systems** on the same series (keep / rewrite / cull), not only the claims. Ban is restoring parked trees (`graph-vault/`, France GNN), not a ban on deterministic code.
 
 ## Parked / planned later (agent-maintained)
 
 - Old tree (PIT, hermes, gold vault, probes) · git history · `e867bec3` / `origin/main`.
-- France/GNN/warehouse/builder/WM · parked · `b8ac2d66`; do not restore onto this branch. Plugin-grown simulator later if a grade earns it.
+- France/GNN/warehouse/builder/WM · parked · `b8ac2d66`; do not restore onto this branch. A **new** simulator/GNN is reflector-grown overlay code (ADR 0019), not that tree.
 - Hegemony / historic bloc as overlay fields · later; only if a live series needs observables that transfer.
-- GNN analysis of a live overlay graph · later; do not recreate `graph-vault/`.
+- GNN over a restored `graph-vault/` · parked. A reflector-authored graph tool is allowed if a grade earns it and it does not recreate that corpus.
 - Polymarket testbed · after live loop; retrieve from history.
 - Tournament watcher · rewrite from scratch; do not restore v2.
 - Rest of Amfis 2026 captions · scraped 2026-08-25 (no year playlist; `.scratch/` + `references/party-sources.md`). Retry only if LFI publishes a year playlist or new tagged talks.

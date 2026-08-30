@@ -125,6 +125,10 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "justification" in reflect_body.lower()
     assert "graph-vault" in reflect_body
     assert "new or rewritten" in reflect_body.lower()
+    assert "not markdown-only" in reflect_body.lower()
+    assert "scripts/" in reflect_body
+    assert "grade two things" in reflect_body.lower()
+    assert "overlay that was supposed to produce" in reflect_body.lower()
     assert "analog case cards" in reflect_body.lower()
     assert "slide" in reflect_body.lower()
     assert "resolution" in reflect_body.lower()

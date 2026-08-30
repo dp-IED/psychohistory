@@ -37,12 +37,13 @@ On analog/base-rate problems, Motivation must name the **structural class** this
 
 ## Reflect
 
-Grade the Structure block with the claim series. The prize is still the earliest matching claim; a last-day scrape that ignored a good analog is a miss of method.
+Grade the Structure block with the claim series. Grade the **system** that was in force: cards named, skills followed, any `scripts/` or `exp/` tool predict was to use. The prize is still the earliest matching claim; a last-day scrape that ignored a good analog is a miss of method. A tool that pointed at the wrong clock phase is a system miss.
 
-Then grow or cull cards:
+Then grow or cull cards **and** tools:
 
 - Early hit that used the analog → write or deepen the card. When deepening, pull **several** past instantiations of the class from public sources and state the mechanism and base rate. If the series earned it, add or rewrite **typical openings** (no tenant name). That is allowed historical work. Do not mint dated claims for those episodes.
 - Miss caused by a bad analog → rewrite or delete the card. Do not keep a false mechanism.
+- Load-bearing script or model that missed → rewrite or delete it the same way. Do not leave a false tool loaded.
 - No card existed and Structure was empty or parametric → add a card if the series showed a transferable class; otherwise note that nothing earned a file.
 
 Do not write `graph-vault/`.

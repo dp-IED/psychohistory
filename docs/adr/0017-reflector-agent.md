@@ -4,7 +4,7 @@ Open-ended evolution needs a dedicated evolution role. **Parent** still means: t
 
 **Predict / discover:** Parent follows those skills (and may spawn claim-workers).
 
-**Reflect:** Parent starts **reflector** (`agents/reflector.md`). The reflector grades the series and writes overlay: tiny live edits, `exp/` experiments, analog cards (ADR 0007, 0013, 0016).
+**Reflect:** Parent starts **reflector** (`agents/reflector.md`). The reflector grades the series **and** the overlay system, then writes or culls overlay: tiny live edits, `exp/` experiments, analog cards, and **code** when the grade needs a system (ADR 0007, 0013, 0016, 0019).
 
 The reflector does not become the daily traffic cop. The harness still starts the three jobs.
 
