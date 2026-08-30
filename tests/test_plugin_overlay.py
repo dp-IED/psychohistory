@@ -87,6 +87,13 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "wide-gap" in runoff_card_body
     assert "consolidator" in runoff_card_body
     assert "p-sc-sen-r-gop" in runoff_card_body
+    eu_talks_card = cases / "eea-fisheries-eu-talks-referendum.md"
+    assert eu_talks_card.is_file()
+    eu_talks_body = eu_talks_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in eu_talks_body
+    assert "p-is-eu-ref" in eu_talks_body
+    assert "talks" in eu_talks_body
+    assert "fisheries" in eu_talks_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
