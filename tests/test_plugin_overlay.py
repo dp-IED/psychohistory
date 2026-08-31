@@ -71,6 +71,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "reflect" in analog_prior_body
     assert "is **not** a card" in analog_prior_body
     assert "pause recap" in analog_prior_body
+    assert "p-gw-const-ref" in analog_prior_body
+    assert "junta" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
     tariff_card = cases / "tariff-proclamation-deadline-delay.md"
@@ -94,6 +96,13 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-is-eu-ref" in eu_talks_body
     assert "talks" in eu_talks_body
     assert "fisheries" in eu_talks_body
+    junta_card = cases / "junta-constitutional-referendum.md"
+    assert junta_card.is_file()
+    junta_body = junta_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in junta_body
+    assert "p-gw-const-ref" in junta_body
+    assert "official" in junta_body
+    assert "polling" in junta_body or "held" in junta_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
@@ -151,6 +160,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "resolution" in worker_body.lower()
     assert "pause recap" in worker_body.lower()
     assert "new clock" in worker_body.lower()
+    assert "junta-constitutional-referendum.md" in worker_body
     assert "references/vault.md" not in worker_body
     pointer = REPO_ROOT / ".cursor" / "agents" / "parent.md"
     pointer_meta, pointer_body = _frontmatter(pointer)

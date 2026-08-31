@@ -1,7 +1,7 @@
 ---
 description: Psychohistory memory distillate — concise defaults, sequencing, and agent-maintained preferences
 alwaysApply: true
-last_reviewed: 2026-08-30
+last_reviewed: 2026-08-31
 ---
 
 # Project memory (concise)
@@ -41,7 +41,7 @@ Purpose: harness-agnostic plugin training bed for live forecasting. Canonical de
 
 ## Sequencing (compressed)
 
-Ticker is already three Cursor dashboard automations (`/predict` daily, `/reflect` daily later, `/discover` weekly); they are firing onto `harness-only`; contract `references/host-jobs.md`. Home Amfis/DSA caption scrape done 2026-08-25. 26 Aug reflect graded the 25 Aug runoffs (all three 19 Aug rows matched) and filed `references/cases/majority-primary-runoff.md`; 338 overlay unchanged. 30 Aug reflect graded Iceland `P-is-eu-ref` (19 Aug Já missed; prize = 28 Aug Nei scrape) and filed `references/cases/eea-fisheries-eu-talks-referendum.md`. Human job while ticker runs: overlay review after graded series (`next_steps.md` **While the ticker runs**); do not hand-run ticks. After live series, harvest analog cards; scale prediction is survived cards + composition. Polymarket testbed after live loop. Do not restore orchestrator/PIT/gold vault onto this branch.
+Ticker is already three Cursor dashboard automations (`/predict` daily, `/reflect` daily later, `/discover` weekly); they are firing onto `harness-only`; contract `references/host-jobs.md`. Home Amfis/DSA caption scrape done 2026-08-25. 26 Aug reflect graded the 25 Aug runoffs (all three 19 Aug rows matched) and filed `references/cases/majority-primary-runoff.md`; 338 overlay unchanged. 30 Aug reflect graded Iceland `P-is-eu-ref` (19 Aug Já missed; prize = 28 Aug Nei scrape) and filed `references/cases/eea-fisheries-eu-talks-referendum.md`. 31 Aug reflect graded Guinea-Bissau `P-gw-const-ref` (held 30 Aug matches the 19 Aug held conjunct; official Yes/No still unpublished) and slid Resolution to 2026-09-06; filed `references/cases/junta-constitutional-referendum.md`. Human job while ticker runs: overlay review after graded series (`next_steps.md` **While the ticker runs**); do not hand-run ticks. After live series, harvest analog cards; scale prediction is survived cards + composition. Polymarket testbed after live loop. Do not restore orchestrator/PIT/gold vault onto this branch.
 
 ## Engineering checks
 

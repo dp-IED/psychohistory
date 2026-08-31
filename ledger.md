@@ -56,7 +56,7 @@ Motivation: News-now European referendum, 10 days out. Official question (govern
 
 ### P-gw-const-ref — Guinea-Bissau constitutional referendum
 
-Resolution: 2026-08-30
+Resolution: 2026-09-06
 
 Motivation: Analog/base-rate: **junta-run constitutional referendum**. Transition president Horta N'Tam set 30 Aug 2026 for a yes/no on a new constitution expanding presidential power (decree 6 Jul 2026). Conflict/institutional clock in West Africa, not another US primary.
 
