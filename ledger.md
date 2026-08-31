@@ -174,6 +174,54 @@ Resolution: 2027-06-30
 
 Motivation: Analog/base-rate: **prolonged mandatory immigration detention without a bond hearing**. DSA’s 2026–27 program treats ICE detention as a live rights fight (https://program.dsausa.org/ ; Socialist Summit orientation https://www.youtube.com/watch?v=kuKLtHkS20s). *Genalo v. Black*, No. 25-886, is set for argument 13 Oct 2026 on whether due process requires a bond hearing once §1226(c) detention becomes unreasonably prolonged (https://www.scotusblog.com/cases/genalo-v-black/). Far OT2026 merits clock. Score whether the Court’s opinion on this case holds that due process requires such a hearing (Question 1), not the burden-of-proof sub-issue and not a campaign plank.
 
+### P-ch-neut-26 — Swiss Neutrality Initiative adopted
+
+Resolution: 2026-09-27
+
+Motivation: News-now, near. Official 27 Sep 2026 federal vote on the popular initiative “Safeguard Swiss neutrality (Neutrality Initiative)” (https://www.admin.ch/en/popular-vote-on-27-september-2026 ; https://www.admin.ch/de/newnsb/CLRxpT5ktMLL-mWqNQGXv/). Score whether the initiative is adopted that day (people and cantons). Conflict/institutional clock in Switzerland, not another US primary or France street row.
+
+### P-fr-fp-0929 — National fonction-publique strike on 29 Sep 2026
+
+Resolution: 2026-09-29
+
+Motivation: News-now, near. Amfis programme treated late September as a labor rentrée; the public clock is the intersyndicale (CGT, FO, CFDT, UNSA, FSU, Solidaires, CFE-CGC, FA-FP) strike and manifestation day for the fonction publique (https://amfis.fr/programme ; https://fsu.fr/29-septembre-mobilisons-nous-pour-imposer-dautres-choix/ ; https://www.cgt.fr/actualites/france/fonction-publique/fonction-publique-appel-la-greve-le-29-septembre). Score whether at least one nationally reported fonction-publique strike or demonstration takes place in France on 29 Sep 2026. Distinct from P-fr-pest-street (15 Sep pesticide street).
+
+### P-nobel-chem-26 — US affiliation among 2026 Chemistry Nobel laureates
+
+Resolution: 2026-10-07
+
+Motivation: Analog/base-rate: **Nobel scientific prize clustering** — Chemistry, like Physics, often lands on US/Europe lab networks rather than a news-week name. Official announcement is 7 Oct 2026, 11:45 CEST at the earliest (https://www.nobelprize.org/press-release/the-2026-nobel-prize-announcements/). Score whether at least one named laureate has a primary US institutional affiliation the day the prize is announced. Not Physics (P-nobel-phy-26) and not a named-person Literature bar.
+
+### P-nobel-peace-26 — 2026 Nobel Peace Prize laureate
+
+Resolution: 2026-10-09
+
+Motivation: News-now conflict/security. The Norwegian Nobel Committee announces the 2026 Peace Prize on 9 Oct 2026, 11:00 CEST in Oslo (https://www.nobelprize.org/press-release/the-2026-nobel-prize-announcements/). Score the named laureate(s) or organization that day. Not Physics/Chemistry affiliation bars and not Literature.
+
+### P-fomc-dec-26 — December 2026 FOMC funds-rate change
+
+Resolution: 2026-12-09
+
+Motivation: News-now economics. FOMC meets 8–9 Dec 2026; the statement and rate decision are due 9 Dec 2:00 p.m. ET (https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm). Far SEP clock (≥90 days). Score whether the committee changes the federal funds target range that day. Distinct from P-fomc-sep-26 (16 Sep).
+
+### P-sb-lxi — Super Bowl LXI champion
+
+Resolution: 2027-02-14
+
+Motivation: News-now sports. Super Bowl LXI is scheduled 14 Feb 2027 at SoFi Stadium, Inglewood (https://en.wikipedia.org/wiki/Super_Bowl_LXI ; https://www.espn.com/nfl/story/_/id/47819308/super-bowl-2027-espn-how-watch-schedule-facts-stats). Far NFL clock after slam season. Score which team wins the game that day.
+
+### P-oscars-99-bp — 99th Oscars Best Picture
+
+Resolution: 2027-03-14
+
+Motivation: News-now culture. The Academy and ABC set the 99th Oscars for 14 Mar 2027 at the Dolby Theatre (https://press.oscars.org/news/academy-and-abc-announce-show-dates-99th-and-100th-oscarsr). Far awards clock after Venice. Score which film wins Best Picture that night. Not the Golden Lion (P-venice-lion-83).
+
+### P-fr-parr-27 — Mélenchon on the 2027 presidential official list
+
+Resolution: 2027-03-26
+
+Motivation: Analog/base-rate: **two-round presidential ballot-access endorsements**. Amfis programme and LFI home treat the 500 elected présentations as the live access fight, distinct from citizen parrainages on melenchon2027.fr (https://amfis.fr/programme ; https://lafranceinsoumise.fr/ ; https://www.youtube.com/watch?v=Z5YIa1QD178). Official latest clock: Conseil constitutionnel publishes the first-round list no later than the fourth Friday before 18 Apr 2027, 26 Mar 2027 (https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-calendrier-dates-inscription-candidats-vote/ ; https://www.service-public.gouv.fr/particuliers/actualites/A15053). Score whether Jean-Luc Mélenchon appears on that official list. Not who wins 18 Apr (P-fr-pres-t1).
+
 ## Claims
 
 ### C-usca-338-deal
