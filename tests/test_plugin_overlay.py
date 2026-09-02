@@ -73,6 +73,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "pause recap" in analog_prior_body
     assert "p-gw-const-ref" in analog_prior_body
     assert "junta" in analog_prior_body
+    assert "incumbent-plurality-primary" in analog_prior_body
+    assert "p-ma-sen-d-prim" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
     tariff_card = cases / "tariff-proclamation-deadline-delay.md"
@@ -103,6 +105,13 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-gw-const-ref" in junta_body
     assert "official" in junta_body
     assert "polling" in junta_body or "held" in junta_body
+    incumbent_card = cases / "incumbent-plurality-primary.md"
+    assert incumbent_card.is_file()
+    incumbent_body = incumbent_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in incumbent_body
+    assert "p-ma-sen-d-prim" in incumbent_body
+    assert "plurality" in incumbent_body
+    assert "incumbent" in incumbent_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
@@ -161,6 +170,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "pause recap" in worker_body.lower()
     assert "new clock" in worker_body.lower()
     assert "junta-constitutional-referendum.md" in worker_body
+    assert "incumbent-plurality-primary.md" in worker_body
     assert "references/vault.md" not in worker_body
     pointer = REPO_ROOT / ".cursor" / "agents" / "parent.md"
     pointer_meta, pointer_body = _frontmatter(pointer)
