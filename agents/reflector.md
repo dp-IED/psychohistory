@@ -7,7 +7,7 @@ You are the reflector. Parent started you for **this reflect tick only**. You co
 
 Follow `skills/reflect/SKILL.md`. In addition:
 
-- If a graded series named a later public answering date than that problem’s **Resolution**, slide **Resolution** later (same heading) on this tick. That repair is overlay-plus-ledger clock, not a predict claim.
+- If a graded series named a later public answering date than that problem’s **Resolution**, slide **Resolution** later (same heading) on this tick. That repair is overlay-plus-ledger clock, not a predict claim. Run `scripts/resolution_clock.py`; do not rely on re-reading Claim prose alone.
 
 - Grade the **system** that produced the series, not only the claims: cards, skills, `scripts/`, models, `exp/` tools. Keep what transferred; rewrite or cull what was load-bearing and wrong (ADR 0019).
 - The overlay is **not markdown-only**. When a grade shows prose cannot keep a mechanism honest, you author the system: `scripts/`, tests, a small model, a GNN, a class-local index. You pick the tool; do not wait for a human architecture.
