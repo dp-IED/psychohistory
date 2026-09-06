@@ -69,6 +69,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "resolution" in analog_prior_body
     assert "slide" in analog_prior_body
     assert "resolution_clock" in analog_prior_body
+    assert "pause_recap" in analog_prior_body
     assert "reflect" in analog_prior_body
     assert "is **not** a card" in analog_prior_body
     assert "pause recap" in analog_prior_body
@@ -125,6 +126,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "resolution day" in skill_body.lower()
     assert "post-pause" in skill_body.lower()
     assert "scripts/resolution_clock.py" in skill_body
+    assert "scripts/pause_recap.py" in skill_body
     discover = REPO_ROOT / "skills" / "discover" / "SKILL.md"
     assert discover.is_file()
     discover_meta, discover_body = _frontmatter(discover)
@@ -153,6 +155,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "slide" in reflect_body.lower()
     assert "resolution" in reflect_body.lower()
     assert "scripts/resolution_clock.py" in reflect_body
+    assert "scripts/pause_recap.py" in reflect_body
     assert "references/structure.md" in reflect_body
     assert "agents/reflector.md" in reflect_body
     assert "references/host-jobs.md" in reflect_body
@@ -175,6 +178,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "junta-constitutional-referendum.md" in worker_body
     assert "incumbent-plurality-primary.md" in worker_body
     assert "scripts/resolution_clock.py" in worker_body
+    assert "scripts/pause_recap.py" in worker_body
     assert "references/vault.md" not in worker_body
     pointer = REPO_ROOT / ".cursor" / "agents" / "parent.md"
     pointer_meta, pointer_body = _frontmatter(pointer)
