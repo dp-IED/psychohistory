@@ -75,6 +75,9 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "pause recap" in analog_prior_body
     assert "p-gw-const-ref" in analog_prior_body
     assert "junta" in analog_prior_body
+    assert "c-gw-const-ref-yes-held" in analog_prior_body
+    assert "70" in analog_prior_body
+    assert "capital" in analog_prior_body
     assert "incumbent-plurality-primary" in analog_prior_body
     assert "p-ma-sen-d-prim" in analog_prior_body
     assert cases.is_dir()
@@ -107,6 +110,9 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-gw-const-ref" in junta_body
     assert "official" in junta_body
     assert "polling" in junta_body or "held" in junta_body
+    assert "70" in junta_body
+    assert "bissau" in junta_body
+    assert "capital" in junta_body
     incumbent_card = cases / "incumbent-plurality-primary.md"
     assert incumbent_card.is_file()
     incumbent_body = incumbent_card.read_text(encoding="utf-8").lower()
