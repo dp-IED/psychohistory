@@ -222,6 +222,36 @@ Resolution: 2027-03-26
 
 Motivation: Analog/base-rate: **two-round presidential ballot-access endorsements**. Amfis programme and LFI home treat the 500 elected présentations as the live access fight, distinct from citizen parrainages on melenchon2027.fr (https://amfis.fr/programme ; https://lafranceinsoumise.fr/ ; https://www.youtube.com/watch?v=Z5YIa1QD178). Official latest clock: Conseil constitutionnel publishes the first-round list no later than the fourth Friday before 18 Apr 2027, 26 Mar 2027 (https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-calendrier-dates-inscription-candidats-vote/ ; https://www.service-public.gouv.fr/particuliers/actualites/A15053). Score whether Jean-Luc Mélenchon appears on that official list. Not who wins 18 Apr (P-fr-pres-t1).
 
+### P-de-sen-d-prim — Delaware Democratic Senate nominee
+
+Resolution: 2026-09-15
+
+Motivation: Analog/base-rate: **incumbent plurality primary vs named intra-party challenger**. After the Markey series transferred that class, the remaining statewide clock is Delaware’s 15 Sep 2026 Democratic Senate primary: sitting Sen. Chris Coons vs named same-party challengers Jeff Appelhans, Mary Louve, and Eric No-Trump Hansen (https://whyy.org/articles/election-2026-delaware-primary-senate-voter-guide/ ; https://ballotpedia.org/United_States_Senate_election_in_Delaware,_2026_(September_15_Democratic_primary)). Score whether Coons wins that nomination. Not the November general, not New Hampshire’s open GOP seat (P-nh-sen-r-prim), and not a delayed majority runoff.
+
+### P-aramburu-assises — Paris Assises finds Le Priol guilty of assassinat
+
+Resolution: 2026-09-25
+
+Motivation: News-now courts/legal. LFI’s 7 Sep 2026 communiqué treats the opening of the Aramburu Assises as the live fight against far-right lethal violence (https://lafranceinsoumise.fr/2026/09/07/louverture-du-proces-daramburu-nous-rappelle-que-lextreme-droite-tue/). Public clock: cour d’assises de Paris, verdict expected 25 Sep 2026 (https://www.france24.com/fr/france/20260906-le-proc%C3%A8s-des-meurtriers-pr%C3%A9sum%C3%A9s-de-l-ex-rugbyman-argentin-aramburu-s-ouvre-%C3%A0-paris). Score whether that court finds Loïk Le Priol guilty of assassinat in the killing of Federico Martín Aramburú. The 7 Sep opening is not the forecast.
+
+### P-br-pres-t1 — Most votes in Brazil’s 2026 presidential first round
+
+Resolution: 2026-10-04
+
+Motivation: Analog/base-rate: **two-round presidential first-round plurality**. Official first round is 4 Oct 2026; a runoff, if needed, is 25 Oct (https://www.tse.jus.br/comunicacao/noticias/2026/Marco/eleicoes-2026-confira-as-principais-datas-do-calendario-eleitoral). Score which candidate wins the most valid votes nationwide that Sunday, not who is diplomado president. Distinct from France 2027 (P-fr-pres-t1). Geographic mix outside the US primary leftover and the French presidential year.
+
+### P-gw-pres-26 — Most votes in Guinea-Bissau’s 2026 presidential first round
+
+Resolution: 2026-12-06
+
+Motivation: Analog/base-rate: **junta-scheduled transition election**. After P-gw-const-ref fully resolved on official Yes, the High Military Command’s remaining public clock is general elections on 6 Dec 2026 for president and the National People’s Assembly (https://en.wikipedia.org/wiki/2026_Guinea-Bissau_general_election ; https://apnews.com/article/guinea-bissau-coup-election-7d2066d1b9e3e2943c9182a9f2c27839). Far first-round clock (≥90 days). Score which presidential candidate wins the most votes that day (two-round system). Do not reopen P-gw-const-ref.
+
+### P-ecb-dec-26 — December 2026 ECB deposit-facility-rate change
+
+Resolution: 2026-12-17
+
+Motivation: News-now economics. ECB Governing Council monetary-policy meeting in Frankfurt ends 17 Dec 2026 with a press conference that day (https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html). Far euro-area clock after the two FOMC rows. Score whether the Council changes the deposit facility rate that day. Distinct from P-fomc-dec-26 (9 Dec).
+
 ## Claims
 
 ### C-usca-338-deal
