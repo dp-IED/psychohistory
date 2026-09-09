@@ -80,6 +80,10 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "capital" in analog_prior_body
     assert "incumbent-plurality-primary" in analog_prior_body
     assert "p-ma-sen-d-prim" in analog_prior_body
+    assert "open-seat-plurality-primary" in analog_prior_body
+    assert "p-nh-sen-r-prim" in analog_prior_body
+    assert "counterpart-retaliation-after-close" in analog_prior_body
+    assert "p-ca-retal-08" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
     tariff_card = cases / "tariff-proclamation-deadline-delay.md"
@@ -120,6 +124,21 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-ma-sen-d-prim" in incumbent_body
     assert "plurality" in incumbent_body
     assert "incumbent" in incumbent_body
+    open_seat_card = cases / "open-seat-plurality-primary.md"
+    assert open_seat_card.is_file()
+    open_seat_body = open_seat_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in open_seat_body
+    assert "p-nh-sen-r-prim" in open_seat_body
+    assert "plurality" in open_seat_body
+    assert "open" in open_seat_body
+    assert "sununu" in open_seat_body
+    retal_card = cases / "counterpart-retaliation-after-close.md"
+    assert retal_card.is_file()
+    retal_body = retal_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in retal_body
+    assert "p-ca-retal-08" in retal_body
+    assert "retal" in retal_body
+    assert "talks" in retal_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
@@ -183,6 +202,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "new clock" in worker_body.lower()
     assert "junta-constitutional-referendum.md" in worker_body
     assert "incumbent-plurality-primary.md" in worker_body
+    assert "open-seat-plurality-primary.md" in worker_body
+    assert "counterpart-retaliation-after-close.md" in worker_body
     assert "scripts/resolution_clock.py" in worker_body
     assert "scripts/pause_recap.py" in worker_body
     assert "references/vault.md" not in worker_body
