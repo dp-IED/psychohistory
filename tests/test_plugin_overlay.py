@@ -84,6 +84,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-nh-sen-r-prim" in analog_prior_body
     assert "counterpart-retaliation-after-close" in analog_prior_body
     assert "p-ca-retal-08" in analog_prior_body
+    assert "2026-09-11" in analog_prior.read_text(encoding="utf-8")
+    assert "disputed" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
     tariff_card = cases / "tariff-proclamation-deadline-delay.md"
@@ -107,6 +109,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-is-eu-ref" in eu_talks_body
     assert "talks" in eu_talks_body
     assert "fisheries" in eu_talks_body
+    assert "disputed" in eu_talks_body
+    assert "22 sep" in eu_talks_body
     junta_card = cases / "junta-constitutional-referendum.md"
     assert junta_card.is_file()
     junta_body = junta_card.read_text(encoding="utf-8").lower()
@@ -132,6 +136,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "plurality" in open_seat_body
     assert "open" in open_seat_body
     assert "sununu" in open_seat_body
+    assert "75,789" in open_seat_body
     retal_card = cases / "counterpart-retaliation-after-close.md"
     assert retal_card.is_file()
     retal_body = retal_card.read_text(encoding="utf-8").lower()
@@ -139,6 +144,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-ca-retal-08" in retal_body
     assert "retal" in retal_body
     assert "talks" in retal_body
+    assert "cbsa" in retal_body or "surtax" in retal_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
