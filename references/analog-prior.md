@@ -52,3 +52,7 @@ P-is-eu-ref: Landskjörstjórn’s 30 Aug count (Nei 118,040 / 52.8%) is still t
 P-nh-sen-r-prim: NH Secretary of State official totals (InDepthNH 10 Sep): Sununu 75,789 / 68% vs Brown 29,672 / 27% of 111,018 GOP Senate votes. Confirms the 19 Aug prize; deepen the open-seat card with those certified numbers, not a new class.
 
 P-ca-retal-08: CBSA Customs Notice 26-23 confirms the United States Surtax Order (2026) in force 8 Sep. No later Canadian answering date. A later US counter-round is a different problem.
+
+Re-graded 12 Sep 2026 (`as_of` 2026-09-12). Selected: the same nine past series (Venice Lion, US Open women’s, and WAUC men’s 100m stay live — Resolution is today, not strictly before). `scripts/resolution_clock.py` exit 0; `scripts/pause_recap.py --as-of 2026-09-12` exit 0. No Resolution slide. Prior prizes unchanged. Cards that transferred stay. `exp/*`: none.
+
+P-ma-sen-d-prim: Massachusetts Secretary of the Commonwealth official (PD43): Markey 580,628 vs Moulton 314,198 of 913,768 ballots. Confirms the 19 Aug prize; deepen the incumbent card with those certified numbers, not a new class. Iceland’s 22 Sep Landskjörstjórn sitting is still not a later answering date.
