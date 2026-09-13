@@ -85,6 +85,13 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "counterpart-retaliation-after-close" in analog_prior_body
     assert "p-ca-retal-08" in analog_prior_body
     assert "2026-09-11" in analog_prior.read_text(encoding="utf-8")
+    assert "2026-09-13" in analog_prior.read_text(encoding="utf-8")
+    assert "cinephile-jury-festival-top-prize" in analog_prior_body
+    assert "p-venice-lion-83" in analog_prior_body
+    assert "defending-slam-three-peat" in analog_prior_body
+    assert "p-uso-ws-26" in analog_prior_body
+    assert "stacked-invitational-championship-100m" in analog_prior_body
+    assert "p-wauc-m100-26" in analog_prior_body
     assert "disputed" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
@@ -145,6 +152,27 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "retal" in retal_body
     assert "talks" in retal_body
     assert "cbsa" in retal_body or "surtax" in retal_body
+    festival_card = cases / "cinephile-jury-festival-top-prize.md"
+    assert festival_card.is_file()
+    festival_body = festival_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in festival_body
+    assert "p-venice-lion-83" in festival_body
+    assert "ovation" in festival_body
+    assert "naza" in festival_body
+    slam_card = cases / "defending-slam-three-peat.md"
+    assert slam_card.is_file()
+    slam_body = slam_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in slam_body
+    assert "p-uso-ws-26" in slam_body
+    assert "sabalenka" in slam_body
+    assert "rybakina" in slam_body
+    sprint_card = cases / "stacked-invitational-championship-100m.md"
+    assert sprint_card.is_file()
+    sprint_body = sprint_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in sprint_body
+    assert "p-wauc-m100-26" in sprint_body
+    assert "bednarek" in sprint_body
+    assert "seville" in sprint_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
@@ -210,6 +238,9 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "incumbent-plurality-primary.md" in worker_body
     assert "open-seat-plurality-primary.md" in worker_body
     assert "counterpart-retaliation-after-close.md" in worker_body
+    assert "cinephile-jury-festival-top-prize.md" in worker_body
+    assert "defending-slam-three-peat.md" in worker_body
+    assert "stacked-invitational-championship-100m.md" in worker_body
     assert "scripts/resolution_clock.py" in worker_body
     assert "scripts/pause_recap.py" in worker_body
     assert "references/vault.md" not in worker_body
