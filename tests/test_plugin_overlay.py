@@ -92,6 +92,11 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-uso-ws-26" in analog_prior_body
     assert "stacked-invitational-championship-100m" in analog_prior_body
     assert "p-wauc-m100-26" in analog_prior_body
+    assert "2026-09-14" in analog_prior.read_text(encoding="utf-8")
+    assert "list-pr-plurality-threshold" in analog_prior_body
+    assert "p-se-riksdag-26" in analog_prior_body
+    assert "injured-defending-slam-return" in analog_prior_body
+    assert "p-uso-ms-26" in analog_prior_body
     assert "disputed" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
@@ -173,6 +178,20 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-wauc-m100-26" in sprint_body
     assert "bednarek" in sprint_body
     assert "seville" in sprint_body
+    list_pr_card = cases / "list-pr-plurality-threshold.md"
+    assert list_pr_card.is_file()
+    list_pr_body = list_pr_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in list_pr_body
+    assert "p-se-riksdag-26" in list_pr_body
+    assert "sainte" in list_pr_body or "threshold" in list_pr_body
+    assert "plurality" in list_pr_body
+    layoff_card = cases / "injured-defending-slam-return.md"
+    assert layoff_card.is_file()
+    layoff_body = layoff_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in layoff_body
+    assert "p-uso-ms-26" in layoff_body
+    assert "alcaraz" in layoff_body
+    assert "zverev" in layoff_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
@@ -241,6 +260,8 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "cinephile-jury-festival-top-prize.md" in worker_body
     assert "defending-slam-three-peat.md" in worker_body
     assert "stacked-invitational-championship-100m.md" in worker_body
+    assert "injured-defending-slam-return.md" in worker_body
+    assert "list-pr-plurality-threshold.md" in worker_body
     assert "scripts/resolution_clock.py" in worker_body
     assert "scripts/pause_recap.py" in worker_body
     assert "references/vault.md" not in worker_body
