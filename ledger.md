@@ -252,6 +252,42 @@ Resolution: 2026-12-17
 
 Motivation: News-now economics. ECB Governing Council monetary-policy meeting in Frankfurt ends 17 Dec 2026 with a press conference that day (https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html). Far euro-area clock after the two FOMC rows. Score whether the Council changes the deposit facility rate that day. Distinct from P-fomc-dec-26 (9 Dec).
 
+### P-lv-saeima-26 — Largest party in Latvia's 2026 Saeima
+
+Resolution: 2026-10-03
+
+Motivation: Analog/base-rate: **fixed-date list-PR plurality with a nationwide threshold**. After P-se-riksdag-26 transferred that class, the next live largest-party clock is Latvia’s 15th Saeima on 3 Oct 2026 (https://www.cvk.lv/saeimas-velesanas-2026): open-list Sainte-Laguë in five constituencies, 5% national threshold, 100 seats (https://en.wikipedia.org/wiki/2026_Latvian_parliamentary_election). Score which single list wins the most seats. Do not reopen P-se-riksdag-26. Not Israel’s wartime 3.25% Knesset row (P-il-knesset-26). Near series so the new card can be falsified.
+
+### P-us-sen-26 — Democratic majority in the 2026 US Senate
+
+Resolution: 2026-11-03
+
+Motivation: News-now politics. Public DSA 2025 convention materials and the 2026–27 program treat the 2026 midterms as the near electoral fight, including Senate composition rather than only the House already open as P-us-house-26 (https://convention2025.dsausa.org/ ; https://program.dsausa.org/ ; Tlaib keynote https://www.youtube.com/watch?v=-0BYHdRe2b8). Official clock: 3 Nov 2026, 33 regular Senate seats plus Ohio and Florida specials (https://ballotpedia.org/United_States_Senate_elections,_2026). Score whether the Democratic caucus holds a Senate majority after that day.
+
+### P-fomc-mar-27 — March 2027 FOMC funds-rate change
+
+Resolution: 2027-03-17
+
+Motivation: News-now economics. Far SEP meeting after the 2026 FOMC rows. FOMC meets 16–17 Mar 2027; the statement is due 17 Mar 2:00 p.m. ET (https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm ; https://www.federalreserve.gov/newsevents/pressreleases/monetary20250905a.htm). Score whether the committee changes the federal funds target range that day. Distinct from P-fomc-sep-26 and P-fomc-dec-26.
+
+### P-suncor-boulder — SCOTUS bars Boulder’s state climate claims against Suncor
+
+Resolution: 2027-06-30
+
+Motivation: News-now courts/legal. DSA’s Green New Deal plank treats fossil-fuel accountability as a live fight (https://program.dsausa.org/). Public clock: *Suncor Energy (U.S.A.) Inc. v. Commissioners of Boulder County*, No. 25-170, argument 5 Oct 2026, first case of OT2026 (https://www.supremecourt.gov/oral_arguments/argument_calendars/MonthlyArgumentCalOctober2026.pdf ; https://www.scotusblog.com/2026/08/court-announces-cases-it-will-hear-in-october-which-include-significant-disputes-on-climate-chan/). Score whether the opinion holds that federal law bars Boulder’s state-law claims for climate injuries from greenhouse-gas emissions. Distinct from P-genalo-bond (same term, different question). Far opinion window; not the October argument.
+
+### P-cannes-80-palme — Cannes 80 Palme d'Or
+
+Resolution: 2027-05-22
+
+Motivation: Analog/base-rate: **cinephile-jury festival top prize**. After P-venice-lion-83 transferred that class, the next live Competition Best Film clock is the 80th Festival de Cannes, 11–22 May 2027, Palme d’Or at the closing ceremony 22 May (https://www.screendaily.com/news/cannes-film-festival-confirms-2027-dates-for-80th-edition/5217448.article ; https://en.palaisdesfestivals.com/offers/cannes-film-festival-cannes-en-3605871/). Score which Competition film wins the Palme. Do not reopen P-venice-lion-83. Far culture series, not the 99th Oscars (P-oscars-99-bp).
+
+### P-wwc27 — FIFA Women's World Cup 2027 champion
+
+Resolution: 2027-07-25
+
+Motivation: News-now sports. FIFA set Brazil 2027 for 24 Jun–25 Jul 2027; the final is 25 Jul at Estádio do Maracanã (https://www.fifa.com/en/tournaments/womens/womensworldcup/brazil-2027/articles/match-schedule-results-fixtures-teams-stadiums ; https://inside.fifa.com/organisation/media-releases/womens-world-cup-2027-brazil-maracana-match-schedule-unveiled ; https://en.wikipedia.org/wiki/2027_FIFA_Women%27s_World_Cup). Far sports clock after Super Bowl LXI. Score which national team wins that final. Distinct from P-sb-lxi.
+
 ## Claims
 
 ### C-usca-338-deal
