@@ -54,7 +54,7 @@ Refresh this index on later discover ticks from the same public pages. Closed Sl
 
 ## Extracted questions (2026-08-21 scrape; 2026-08-25 home captions)
 
-Each row is orientation, not a scored forecast of the talk. Suggested resolution days are **after the scrape date**. Do not open another France-September street row while `P-fr-pest-street` is live.
+Each row is orientation, not a scored forecast of the talk. Suggested resolution days are **after the scrape date**. `P-fr-pest-street` resolved 15 Sep 2026 as climate-austerity Bercy, not pesticide-provision street (`references/cases/hitchhiked-street-organizer-object.md`). Do not reopen it. A later France street must be an organizer-owned object (or a distinct LFI-owned date such as 20 Sep permis de tuer), not another hitchhike onto someone else’s hour.
 
 | Source | Date of source | Extracted question (live fight) | Suggested resolution day | Class / regime | Opened? |
 | --- | --- | --- | --- | --- | --- |

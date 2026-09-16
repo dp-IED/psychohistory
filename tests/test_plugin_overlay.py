@@ -97,6 +97,10 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-se-riksdag-26" in analog_prior_body
     assert "injured-defending-slam-return" in analog_prior_body
     assert "p-uso-ms-26" in analog_prior_body
+    assert "2026-09-16" in analog_prior.read_text(encoding="utf-8")
+    assert "hitchhiked-street-organizer-object" in analog_prior_body
+    assert "p-fr-pest-street" in analog_prior_body
+    assert "p-de-sen-d-prim" in analog_prior_body
     assert "disputed" in analog_prior_body
     assert cases.is_dir()
     assert any(cases.glob("*.md"))
@@ -192,6 +196,15 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "p-uso-ms-26" in layoff_body
     assert "alcaraz" in layoff_body
     assert "zverev" in layoff_body
+    hitchhike_card = cases / "hitchhiked-street-organizer-object.md"
+    assert hitchhike_card.is_file()
+    hitchhike_body = hitchhike_card.read_text(encoding="utf-8").lower()
+    assert "typical openings" in hitchhike_body
+    assert "p-fr-pest-street" in hitchhike_body
+    assert "hitchhik" in hitchhike_body
+    assert "bercy" in hitchhike_body
+    assert "p-de-sen-d-prim" in incumbent_body
+    assert "coons" in incumbent_body
     assert not (REPO_ROOT / "references" / "vault.md").exists()
     skill_meta, skill_body = _frontmatter(skill)
     assert skill_meta["name"] == "predict"
@@ -262,6 +275,7 @@ def test_overlay_lives_at_plugin_root() -> None:
     assert "stacked-invitational-championship-100m.md" in worker_body
     assert "injured-defending-slam-return.md" in worker_body
     assert "list-pr-plurality-threshold.md" in worker_body
+    assert "hitchhiked-street-organizer-object.md" in worker_body
     assert "scripts/resolution_clock.py" in worker_body
     assert "scripts/pause_recap.py" in worker_body
     assert "references/vault.md" not in worker_body
